@@ -1,0 +1,12 @@
+[package]
+name = "rtc_sdk"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust package scaffold for rtc_sdk with build system: cargo"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[workspace]

@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for Jitsi Meet"
+
+extra["sdkworkRtcProviderKey"] = "jitsi"
+extra["sdkworkRtcPluginId"] = "rtc-jitsi"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-jitsi"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-jitsi"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/jitsi/RtcProviderJitsiPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderJitsiPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

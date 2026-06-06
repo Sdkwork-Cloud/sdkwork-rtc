@@ -1,0 +1,21 @@
+[package]
+name = "rtc-sdk-provider-mediasoup"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust provider package boundary for mediasoup RTC"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[package.metadata.sdkwork-rtc-provider]
+providerKey = "mediasoup"
+pluginId = "rtc-mediasoup"
+driverId = "sdkwork-rtc-driver-mediasoup"
+packageIdentity = "rtc-sdk-provider-mediasoup"
+sourcePath = "src/lib.rs"
+sourceSymbol = "RtcProviderMediasoupPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

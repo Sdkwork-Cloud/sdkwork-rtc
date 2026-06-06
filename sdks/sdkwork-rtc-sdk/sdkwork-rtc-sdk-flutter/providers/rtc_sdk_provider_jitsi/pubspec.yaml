@@ -1,0 +1,24 @@
+name: rtc_sdk_provider_jitsi
+description: >
+  Reserved Flutter provider package boundary for Jitsi Meet.
+  providerKey: jitsi
+  pluginId: rtc-jitsi
+  driverId: sdkwork-rtc-driver-jitsi
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+sdkwork_rtc_provider:
+  providerKey: jitsi
+  pluginId: rtc-jitsi
+  driverId: sdkwork-rtc-driver-jitsi
+  packageIdentity: rtc_sdk_provider_jitsi
+  sourcePath: lib/src/rtc_provider_jitsi_package_contract.dart
+  sourceSymbol: RtcProviderJitsiPackageContract
+  rootPublic: false
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-mediasoup"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for mediasoup RTC"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_mediasoup"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "mediasoup"
+pluginId = "rtc-mediasoup"
+driverId = "sdkwork-rtc-driver-mediasoup"
+packageIdentity = "sdkwork-rtc-sdk-provider-mediasoup"
+sourcePath = "sdkwork_rtc_sdk_provider_mediasoup/__init__.py"
+sourceSymbol = "RtcProviderMediasoupPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

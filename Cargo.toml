@@ -1,0 +1,34 @@
+[workspace]
+resolver = "2"
+members = [
+    "adapters/rtc-aliyun",
+    "adapters/rtc-agora",
+    "adapters/rtc-tencent",
+    "adapters/rtc-livekit",
+    "adapters/rtc-volcengine",
+    "crates/sdkwork-rtc-api-registry",
+    "crates/sdkwork-rtc-app-context",
+    "crates/sdkwork-rtc-core",
+    "crates/sdkwork-rtc-openapi",
+    "crates/sdkwork-rtc-storage-sqlx",
+    "crates/sdkwork-rtc-state-store",
+    "services/sdkwork-routes-rtc-app-api",
+    "services/sdkwork-routes-rtc-backend-api",
+    "services/sdkwork-rtc-signaling-service",
+    "services/sdkwork-rtc-product",
+]
+
+[workspace.package]
+edition = "2024"
+license = "LicenseRef-SDKWork-Commercial"
+version = "0.1.0"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+axum = { version = "0.8.8", features = ["ws"] }
+http-body-util = "0.1.3"
+tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread", "net", "signal", "sync", "time"] }
+tower = { version = "0.5.3", features = ["util"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

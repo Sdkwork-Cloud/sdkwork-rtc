@@ -1,0 +1,8 @@
+[package]
+name = "sdkwork-routes-rtc-backend-api"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdkwork-rtc-core = { path = "../../crates/sdkwork-rtc-core" }

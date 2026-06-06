@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Sdkwork.Rtc.Sdk.Provider.Livekit</AssemblyName>
+    <RootNamespace>Sdkwork.Rtc.Sdk.Provider.Livekit</RootNamespace>
+    <PackageId>Sdkwork.Rtc.Sdk.Provider.Livekit</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Reserved C# provider package boundary for LiveKit RTC</Description>
+    <IsPackable>true</IsPackable>
+    <SdkworkRtcProviderKey>livekit</SdkworkRtcProviderKey>
+    <SdkworkRtcPluginId>rtc-livekit</SdkworkRtcPluginId>
+    <SdkworkRtcDriverId>sdkwork-rtc-driver-livekit</SdkworkRtcDriverId>
+    <SdkworkRtcSourcePath>src/RtcProviderLivekitPackageContract.cs</SdkworkRtcSourcePath>
+    <SdkworkRtcSourceSymbol>RtcProviderLivekitPackageContract</SdkworkRtcSourceSymbol>
+    <SdkworkRtcRootPublic>false</SdkworkRtcRootPublic>
+    <SdkworkRtcStatus>future-runtime-bridge-only</SdkworkRtcStatus>
+    <SdkworkRtcRuntimeBridgeStatus>reserved</SdkworkRtcRuntimeBridgeStatus>
+  </PropertyGroup>
+</Project>

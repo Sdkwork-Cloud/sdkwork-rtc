@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-jitsi"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for Jitsi Meet"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_jitsi"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "jitsi"
+pluginId = "rtc-jitsi"
+driverId = "sdkwork-rtc-driver-jitsi"
+packageIdentity = "sdkwork-rtc-sdk-provider-jitsi"
+sourcePath = "sdkwork_rtc_sdk_provider_jitsi/__init__.py"
+sourceSymbol = "RtcProviderJitsiPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

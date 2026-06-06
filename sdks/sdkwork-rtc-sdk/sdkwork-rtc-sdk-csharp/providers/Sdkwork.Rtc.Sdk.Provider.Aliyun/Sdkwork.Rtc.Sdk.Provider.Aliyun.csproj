@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Sdkwork.Rtc.Sdk.Provider.Aliyun</AssemblyName>
+    <RootNamespace>Sdkwork.Rtc.Sdk.Provider.Aliyun</RootNamespace>
+    <PackageId>Sdkwork.Rtc.Sdk.Provider.Aliyun</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Reserved C# provider package boundary for Aliyun RTC</Description>
+    <IsPackable>true</IsPackable>
+    <SdkworkRtcProviderKey>aliyun</SdkworkRtcProviderKey>
+    <SdkworkRtcPluginId>rtc-aliyun</SdkworkRtcPluginId>
+    <SdkworkRtcDriverId>sdkwork-rtc-driver-aliyun</SdkworkRtcDriverId>
+    <SdkworkRtcSourcePath>src/RtcProviderAliyunPackageContract.cs</SdkworkRtcSourcePath>
+    <SdkworkRtcSourceSymbol>RtcProviderAliyunPackageContract</SdkworkRtcSourceSymbol>
+    <SdkworkRtcRootPublic>false</SdkworkRtcRootPublic>
+    <SdkworkRtcStatus>future-runtime-bridge-only</SdkworkRtcStatus>
+    <SdkworkRtcRuntimeBridgeStatus>reserved</SdkworkRtcRuntimeBridgeStatus>
+  </PropertyGroup>
+</Project>

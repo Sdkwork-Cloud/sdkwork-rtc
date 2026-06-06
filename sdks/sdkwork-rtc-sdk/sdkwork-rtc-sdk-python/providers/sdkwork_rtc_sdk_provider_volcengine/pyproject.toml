@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-volcengine"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for Volcengine RTC"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_volcengine"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "volcengine"
+pluginId = "rtc-volcengine"
+driverId = "sdkwork-rtc-driver-volcengine"
+packageIdentity = "sdkwork-rtc-sdk-provider-volcengine"
+sourcePath = "sdkwork_rtc_sdk_provider_volcengine/__init__.py"
+sourceSymbol = "RtcProviderVolcenginePackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

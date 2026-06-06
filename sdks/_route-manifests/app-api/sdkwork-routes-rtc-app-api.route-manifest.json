@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.route.manifest",
+  "packageName": "sdkwork-routes-rtc-app-api",
+  "surface": "app-api",
+  "owner": "sdkwork-rtc",
+  "domain": "rtc",
+  "capability": "rtc",
+  "apiAuthority": "sdkwork-rtc-app-api",
+  "sdkFamily": "sdkwork-rtc-app-sdk",
+  "prefix": "/app/v3/api",
+  "source": {
+    "crateRoot": "services/sdkwork-routes-rtc-app-api/src",
+    "crateImport": "sdkwork_routes_rtc_app_api"
+  },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/provider_callbacks",
+      "operationId": "rtc.providerCallbacks.create",
+      "tags": [
+        "rtcProviderCallbacks"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_callbacks.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerCallbacks_create"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/rtc/provider_health",
+      "operationId": "rtc.providerHealth.retrieve",
+      "tags": [
+        "rtcProviderHealth"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_health.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerHealth_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/sessions",
+      "operationId": "rtc.sessions.create",
+      "tags": [
+        "rtcSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.sessions.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "sessions_create"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}",
+      "operationId": "rtc.sessions.retrieve",
+      "tags": [
+        "rtcSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.sessions.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "sessions_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/accept",
+      "operationId": "rtc.sessions.accept",
+      "tags": [
+        "rtcSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.accept",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "sessions_accept"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/artifacts/recording",
+      "operationId": "rtc.artifacts.recording.retrieve",
+      "tags": [
+        "rtcArtifacts"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.artifact",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "artifacts_recording_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/credentials",
+      "operationId": "rtc.credentials.issue",
+      "tags": [
+        "rtcCredentials"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.issue_credential",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "credentials_issue"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/end",
+      "operationId": "rtc.sessions.end",
+      "tags": [
+        "rtcSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.end",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "sessions_end"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/invite",
+      "operationId": "rtc.sessions.invite",
+      "tags": [
+        "rtcSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.invite",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "sessions_invite"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/reject",
+      "operationId": "rtc.sessions.reject",
+      "tags": [
+        "rtcSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.reject",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "sessions_reject"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/signals",
+      "operationId": "rtc.signals.list",
+      "tags": [
+        "rtcSignals"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.signal",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "signals_list"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/signals",
+      "operationId": "rtc.signals.create",
+      "tags": [
+        "rtcSignals"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.signal",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "signals_create"
+      },
+      "schemas": {
+        "request": "RtcOperationCommand",
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    }
+  ]
+}

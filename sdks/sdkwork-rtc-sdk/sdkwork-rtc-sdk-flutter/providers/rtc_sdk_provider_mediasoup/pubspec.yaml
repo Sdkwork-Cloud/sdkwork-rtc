@@ -1,0 +1,24 @@
+name: rtc_sdk_provider_mediasoup
+description: >
+  Reserved Flutter provider package boundary for mediasoup RTC.
+  providerKey: mediasoup
+  pluginId: rtc-mediasoup
+  driverId: sdkwork-rtc-driver-mediasoup
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+sdkwork_rtc_provider:
+  providerKey: mediasoup
+  pluginId: rtc-mediasoup
+  driverId: sdkwork-rtc-driver-mediasoup
+  packageIdentity: rtc_sdk_provider_mediasoup
+  sourcePath: lib/src/rtc_provider_mediasoup_package_contract.dart
+  sourceSymbol: RtcProviderMediasoupPackageContract
+  rootPublic: false
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved

@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for Janus RTC"
+
+extra["sdkworkRtcProviderKey"] = "janus"
+extra["sdkworkRtcPluginId"] = "rtc-janus"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-janus"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-janus"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/janus/RtcProviderJanusPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderJanusPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

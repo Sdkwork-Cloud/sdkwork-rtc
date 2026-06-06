@@ -1,0 +1,9 @@
+[package]
+name = "sdkwork-rtc-openapi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdkwork-rtc-api-registry = { path = "../sdkwork-rtc-api-registry" }
+serde_json.workspace = true

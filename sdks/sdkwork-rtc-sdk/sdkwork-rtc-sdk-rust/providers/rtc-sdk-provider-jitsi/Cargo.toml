@@ -1,0 +1,21 @@
+[package]
+name = "rtc-sdk-provider-jitsi"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust provider package boundary for Jitsi Meet"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[package.metadata.sdkwork-rtc-provider]
+providerKey = "jitsi"
+pluginId = "rtc-jitsi"
+driverId = "sdkwork-rtc-driver-jitsi"
+packageIdentity = "rtc-sdk-provider-jitsi"
+sourcePath = "src/lib.rs"
+sourceSymbol = "RtcProviderJitsiPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

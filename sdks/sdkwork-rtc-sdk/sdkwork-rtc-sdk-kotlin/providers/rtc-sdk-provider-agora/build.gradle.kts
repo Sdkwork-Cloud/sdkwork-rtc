@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for Agora RTC"
+
+extra["sdkworkRtcProviderKey"] = "agora"
+extra["sdkworkRtcPluginId"] = "rtc-agora"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-agora"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-agora"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/agora/RtcProviderAgoraPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderAgoraPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

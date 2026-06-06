@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "sdkName": "sdkwork-rtc-app-sdk",
+  "sdkOwner": "sdkwork-rtc",
+  "apiAuthority": "sdkwork-rtc-app-api",
+  "sdkFamily": "sdkwork-rtc-app-sdk",
+  "sdkType": "app",
+  "apiPrefix": "/app/v3/api",
+  "generationInputSpec": "openapi/sdkwork-rtc-app-api.sdkgen.json",
+  "sdkDependencies": [
+    {
+      "workspace": "sdkwork-rtc-sdk",
+      "role": "provider-runtime-sdk",
+      "required": true,
+      "dependencyMode": "consumer-sdk",
+      "apiPrefix": null,
+      "generatedTransportImportPolicy": "forbidden",
+      "packageByLanguage": {
+        "typescript": "@sdkwork/rtc-sdk",
+        "rust": "sdkwork-rtc-sdk",
+        "java": "com.sdkwork:sdkwork-rtc-sdk",
+        "python": "sdkwork-rtc-sdk",
+        "go": "github.com/sdkwork/sdkwork-rtc-sdk"
+      }
+    }
+  ],
+  "generatorName": "@sdkwork/sdk-generator",
+  "generatorEntryPoint": "D:\\javasource\\spring-ai-plus\\sdk\\sdkwork-sdk-generator\\bin\\sdkgen.js",
+  "standardProfile": "sdkwork-v3",
+  "ownerOnlyOperationCount": 12
+}

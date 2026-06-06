@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-aliyun"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for Aliyun RTC"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_aliyun"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "aliyun"
+pluginId = "rtc-aliyun"
+driverId = "sdkwork-rtc-driver-aliyun"
+packageIdentity = "sdkwork-rtc-sdk-provider-aliyun"
+sourcePath = "sdkwork_rtc_sdk_provider_aliyun/__init__.py"
+sourceSymbol = "RtcProviderAliyunPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

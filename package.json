@@ -1,0 +1,29 @@
+{
+  "name": "@sdkwork/rtc-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "audit:migration": "node --test tests/rtc-migration-contract.test.mjs",
+    "materialize:openapi": "node sdks/materialize-rtc-v3-openapi-boundaries.mjs",
+    "sdk:check": "node sdks/sdkwork-rtc-app-sdk/bin/generate-sdk.mjs --check && node sdks/sdkwork-rtc-backend-sdk/bin/generate-sdk.mjs --check",
+    "test": "vitest run packages/pc-react/communication/sdkwork-rtc-pc-react/tests",
+    "test:rust": "cargo test --workspace",
+    "typecheck": "tsc --noEmit",
+    "verify": "pnpm run audit:migration && pnpm run materialize:openapi && pnpm run sdk:check && pnpm run typecheck && pnpm test && pnpm run test:rust"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.8"
+  }
+}

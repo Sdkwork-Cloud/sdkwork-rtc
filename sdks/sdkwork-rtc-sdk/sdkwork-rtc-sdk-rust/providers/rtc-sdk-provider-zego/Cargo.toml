@@ -1,0 +1,21 @@
+[package]
+name = "rtc-sdk-provider-zego"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust provider package boundary for ZEGO RTC"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[package.metadata.sdkwork-rtc-provider]
+providerKey = "zego"
+pluginId = "rtc-zego"
+driverId = "sdkwork-rtc-driver-zego"
+packageIdentity = "rtc-sdk-provider-zego"
+sourcePath = "src/lib.rs"
+sourceSymbol = "RtcProviderZegoPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

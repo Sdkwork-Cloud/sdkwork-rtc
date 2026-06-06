@@ -1,0 +1,58 @@
+{
+  "name": "@sdkwork/rtc-sdk-provider-mediasoup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference TypeScript provider boundary for mediasoup RTC within sdkwork-rtc-sdk",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "sdkworkRtcProvider": {
+    "providerKey": "mediasoup",
+    "displayName": "mediasoup RTC",
+    "tier": "tier-c",
+    "builtin": false,
+    "status": "package_reference_boundary",
+    "registrationContract": "RtcProviderModule",
+    "sourceModule": "../../src/providers/mediasoup.ts",
+    "driverFactory": "createMediasoupRtcDriver",
+    "metadataSymbol": "MEDIASOUP_RTC_PROVIDER_METADATA",
+    "moduleSymbol": "MEDIASOUP_RTC_PROVIDER_MODULE",
+    "rootPublic": false,
+    "requiredCapabilities": [
+      "session",
+      "credential",
+      "callback",
+      "health",
+      "call.audio",
+      "call.video",
+      "live.broadcast",
+      "live.audience"
+    ],
+    "optionalCapabilities": [
+      "data-channel"
+    ],
+    "extensionKeys": [
+      "mediasoup.native-client"
+    ],
+    "typescriptAdapter": {
+      "sdkProvisioning": "consumer-supplied",
+      "bindingStrategy": "native-factory",
+      "bundlePolicy": "must-not-bundle",
+      "runtimeBridgeStatus": "reference-baseline",
+      "officialVendorSdkRequirement": "required"
+    }
+  }
+}

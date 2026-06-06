@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-twilio"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for Twilio Video"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_twilio"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "twilio"
+pluginId = "rtc-twilio"
+driverId = "sdkwork-rtc-driver-twilio"
+packageIdentity = "sdkwork-rtc-sdk-provider-twilio"
+sourcePath = "sdkwork_rtc_sdk_provider_twilio/__init__.py"
+sourceSymbol = "RtcProviderTwilioPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

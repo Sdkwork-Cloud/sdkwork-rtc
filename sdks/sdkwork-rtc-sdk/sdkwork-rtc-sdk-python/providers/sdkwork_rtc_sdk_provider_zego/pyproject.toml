@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-zego"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for ZEGO RTC"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_zego"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "zego"
+pluginId = "rtc-zego"
+driverId = "sdkwork-rtc-driver-zego"
+packageIdentity = "sdkwork-rtc-sdk-provider-zego"
+sourcePath = "sdkwork_rtc_sdk_provider_zego/__init__.py"
+sourceSymbol = "RtcProviderZegoPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

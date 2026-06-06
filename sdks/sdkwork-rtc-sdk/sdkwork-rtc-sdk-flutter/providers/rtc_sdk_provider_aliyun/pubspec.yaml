@@ -1,0 +1,24 @@
+name: rtc_sdk_provider_aliyun
+description: >
+  Reserved Flutter provider package boundary for Aliyun RTC.
+  providerKey: aliyun
+  pluginId: rtc-aliyun
+  driverId: sdkwork-rtc-driver-aliyun
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+sdkwork_rtc_provider:
+  providerKey: aliyun
+  pluginId: rtc-aliyun
+  driverId: sdkwork-rtc-driver-aliyun
+  packageIdentity: rtc_sdk_provider_aliyun
+  sourcePath: lib/src/rtc_provider_aliyun_package_contract.dart
+  sourceSymbol: RtcProviderAliyunPackageContract
+  rootPublic: false
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved

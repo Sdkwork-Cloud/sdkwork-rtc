@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-livekit"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for LiveKit RTC"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_livekit"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "livekit"
+pluginId = "rtc-livekit"
+driverId = "sdkwork-rtc-driver-livekit"
+packageIdentity = "sdkwork-rtc-sdk-provider-livekit"
+sourcePath = "sdkwork_rtc_sdk_provider_livekit/__init__.py"
+sourceSymbol = "RtcProviderLivekitPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

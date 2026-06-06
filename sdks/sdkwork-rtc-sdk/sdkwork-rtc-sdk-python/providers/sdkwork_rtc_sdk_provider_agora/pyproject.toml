@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-agora"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for Agora RTC"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_agora"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "agora"
+pluginId = "rtc-agora"
+driverId = "sdkwork-rtc-driver-agora"
+packageIdentity = "sdkwork-rtc-sdk-provider-agora"
+sourcePath = "sdkwork_rtc_sdk_provider_agora/__init__.py"
+sourceSymbol = "RtcProviderAgoraPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

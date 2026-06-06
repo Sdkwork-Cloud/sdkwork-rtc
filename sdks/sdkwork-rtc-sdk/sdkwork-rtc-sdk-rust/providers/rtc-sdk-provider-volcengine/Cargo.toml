@@ -1,0 +1,21 @@
+[package]
+name = "rtc-sdk-provider-volcengine"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust provider package boundary for Volcengine RTC"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[package.metadata.sdkwork-rtc-provider]
+providerKey = "volcengine"
+pluginId = "rtc-volcengine"
+driverId = "sdkwork-rtc-driver-volcengine"
+packageIdentity = "rtc-sdk-provider-volcengine"
+sourcePath = "src/lib.rs"
+sourceSymbol = "RtcProviderVolcenginePackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

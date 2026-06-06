@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-backend-sdk",
+    "displayName": "SDKWork RTC Backend SDK",
+    "version": "0.1.0",
+    "type": "sdk-family",
+    "root": "sdkwork-rtc/sdks/sdkwork-rtc-backend-sdk",
+    "domain": "rtc",
+    "declaredDomain": "rtc",
+    "capability": "backend-sdk",
+    "status": "standardizing",
+    "languages": [
+      "typescript",
+      "rust",
+      "java",
+      "python",
+      "go"
+    ],
+    "generated": true,
+    "private": true,
+    "manifests": [
+      ".sdkwork-assembly.json"
+    ]
+  },
+  "contracts": {
+    "publicExports": [],
+    "runtimeEntrypoints": [
+      "bin/generate-sdk.mjs"
+    ],
+    "sdkClients": [],
+    "sdkDependencies": [
+      {
+        "workspace": "sdkwork-rtc-sdk",
+        "role": "provider-runtime-sdk",
+        "required": true,
+        "dependencyMode": "consumer-sdk",
+        "apiPrefix": null,
+        "generatedTransportImportPolicy": "forbidden",
+        "packageByLanguage": {
+          "typescript": "@sdkwork/rtc-sdk",
+          "rust": "sdkwork-rtc-sdk",
+          "java": "com.sdkwork:sdkwork-rtc-sdk",
+          "python": "sdkwork-rtc-sdk",
+          "go": "github.com/sdkwork/sdkwork-rtc-sdk"
+        }
+      }
+    ],
+    "events": [],
+    "configKeys": [],
+    "ownedOperations": [
+      "rtc.providerProfiles.list",
+      "rtc.providerProfiles.create",
+      "rtc.providerProfiles.update",
+      "rtc.providerRoutes.list",
+      "rtc.providerRoutes.create",
+      "rtc.qualitySamples.list",
+      "rtc.sessions.list",
+      "rtc.sessions.retrieve",
+      "rtc.sessions.terminate",
+      "rtc.signalingEvents.list"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "node tools/rtc_sdk_generate.mjs --check --family sdkwork-rtc-backend-sdk"
+    ]
+  }
+}

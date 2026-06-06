@@ -1,0 +1,9 @@
+[package]
+name = "sdkwork-rtc-contract"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+serde.workspace = true
+sdkwork-rtc-core = { path = "../sdkwork-rtc-core" }

@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for Tencent RTC"
+
+extra["sdkworkRtcProviderKey"] = "tencent"
+extra["sdkworkRtcPluginId"] = "rtc-tencent"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-tencent"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-tencent"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/tencent/RtcProviderTencentPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderTencentPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

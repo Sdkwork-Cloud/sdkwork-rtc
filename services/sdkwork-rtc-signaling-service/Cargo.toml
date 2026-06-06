@@ -1,0 +1,27 @@
+[package]
+name = "sdkwork-rtc-signaling-service"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+axum.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sdkwork-rtc-adapter-agora = { path = "../../adapters/rtc-agora" }
+sdkwork-rtc-adapter-aliyun = { path = "../../adapters/rtc-aliyun" }
+sdkwork-rtc-adapter-livekit = { path = "../../adapters/rtc-livekit" }
+sdkwork-rtc-adapter-tencent = { path = "../../adapters/rtc-tencent" }
+sdkwork-rtc-adapter-volcengine = { path = "../../adapters/rtc-volcengine" }
+sdkwork-rtc-api-registry = { path = "../../crates/sdkwork-rtc-api-registry" }
+sdkwork-rtc-app-context = { path = "../../crates/sdkwork-rtc-app-context" }
+sdkwork-rtc-core = { path = "../../crates/sdkwork-rtc-core" }
+sdkwork-rtc-openapi = { path = "../../crates/sdkwork-rtc-openapi" }
+sdkwork-rtc-state-store = { path = "../../crates/sdkwork-rtc-state-store" }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+http-body-util.workspace = true
+tower.workspace = true

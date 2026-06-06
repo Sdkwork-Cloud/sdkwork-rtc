@@ -1,0 +1,61 @@
+{
+  "name": "@sdkwork/rtc-sdk-provider-tencent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference TypeScript provider boundary for Tencent RTC within sdkwork-rtc-sdk",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "sdkworkRtcProvider": {
+    "providerKey": "tencent",
+    "displayName": "Tencent RTC",
+    "tier": "tier-a",
+    "builtin": true,
+    "status": "root_public_reference_boundary",
+    "registrationContract": "RtcProviderModule",
+    "sourceModule": "../../src/providers/tencent.ts",
+    "driverFactory": "createTencentRtcDriver",
+    "metadataSymbol": "TENCENT_RTC_PROVIDER_METADATA",
+    "moduleSymbol": "TENCENT_RTC_PROVIDER_MODULE",
+    "rootPublic": true,
+    "requiredCapabilities": [
+      "session",
+      "credential",
+      "callback",
+      "health",
+      "call.audio",
+      "call.video",
+      "live.broadcast",
+      "live.audience"
+    ],
+    "optionalCapabilities": [
+      "screen-share",
+      "recording",
+      "artifact",
+      "cdn-relay"
+    ],
+    "extensionKeys": [
+      "tencent.native-client"
+    ],
+    "typescriptAdapter": {
+      "sdkProvisioning": "consumer-supplied",
+      "bindingStrategy": "native-factory",
+      "bundlePolicy": "must-not-bundle",
+      "runtimeBridgeStatus": "reference-baseline",
+      "officialVendorSdkRequirement": "required"
+    }
+  }
+}

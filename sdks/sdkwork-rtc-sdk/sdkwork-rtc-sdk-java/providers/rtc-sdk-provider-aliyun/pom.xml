@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.sdkwork</groupId>
+  <artifactId>rtc-sdk-provider-aliyun</artifactId>
+  <version>0.1.0</version>
+  <name>com.sdkwork:rtc-sdk-provider-aliyun</name>
+  <description>Reserved Java provider package boundary for Aliyun RTC</description>
+
+  <properties>
+    <sdkwork.rtc.providerKey>aliyun</sdkwork.rtc.providerKey>
+    <sdkwork.rtc.pluginId>rtc-aliyun</sdkwork.rtc.pluginId>
+    <sdkwork.rtc.driverId>sdkwork-rtc-driver-aliyun</sdkwork.rtc.driverId>
+    <sdkwork.rtc.packageIdentity>com.sdkwork:rtc-sdk-provider-aliyun</sdkwork.rtc.packageIdentity>
+    <sdkwork.rtc.sourcePath>src/main/java/com/sdkwork/rtc/provider/aliyun/RtcProviderAliyunPackageContract.java</sdkwork.rtc.sourcePath>
+    <sdkwork.rtc.sourceSymbol>RtcProviderAliyunPackageContract</sdkwork.rtc.sourceSymbol>
+    <sdkwork.rtc.rootPublic>false</sdkwork.rtc.rootPublic>
+    <sdkwork.rtc.status>future-runtime-bridge-only</sdkwork.rtc.status>
+    <sdkwork.rtc.runtimeBridgeStatus>reserved</sdkwork.rtc.runtimeBridgeStatus>
+  </properties>
+</project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Sdkwork.Rtc.Sdk.Provider.Tencent</AssemblyName>
+    <RootNamespace>Sdkwork.Rtc.Sdk.Provider.Tencent</RootNamespace>
+    <PackageId>Sdkwork.Rtc.Sdk.Provider.Tencent</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Reserved C# provider package boundary for Tencent RTC</Description>
+    <IsPackable>true</IsPackable>
+    <SdkworkRtcProviderKey>tencent</SdkworkRtcProviderKey>
+    <SdkworkRtcPluginId>rtc-tencent</SdkworkRtcPluginId>
+    <SdkworkRtcDriverId>sdkwork-rtc-driver-tencent</SdkworkRtcDriverId>
+    <SdkworkRtcSourcePath>src/RtcProviderTencentPackageContract.cs</SdkworkRtcSourcePath>
+    <SdkworkRtcSourceSymbol>RtcProviderTencentPackageContract</SdkworkRtcSourceSymbol>
+    <SdkworkRtcRootPublic>false</SdkworkRtcRootPublic>
+    <SdkworkRtcStatus>future-runtime-bridge-only</SdkworkRtcStatus>
+    <SdkworkRtcRuntimeBridgeStatus>reserved</SdkworkRtcRuntimeBridgeStatus>
+  </PropertyGroup>
+</Project>

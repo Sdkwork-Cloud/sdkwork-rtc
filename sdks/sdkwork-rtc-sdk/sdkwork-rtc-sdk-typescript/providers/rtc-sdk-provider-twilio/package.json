@@ -1,0 +1,61 @@
+{
+  "name": "@sdkwork/rtc-sdk-provider-twilio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference TypeScript provider boundary for Twilio Video within sdkwork-rtc-sdk",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "sdkworkRtcProvider": {
+    "providerKey": "twilio",
+    "displayName": "Twilio Video",
+    "tier": "tier-b",
+    "builtin": false,
+    "status": "package_reference_boundary",
+    "registrationContract": "RtcProviderModule",
+    "sourceModule": "../../src/providers/twilio.ts",
+    "driverFactory": "createTwilioRtcDriver",
+    "metadataSymbol": "TWILIO_RTC_PROVIDER_METADATA",
+    "moduleSymbol": "TWILIO_RTC_PROVIDER_MODULE",
+    "rootPublic": false,
+    "requiredCapabilities": [
+      "session",
+      "credential",
+      "callback",
+      "health",
+      "call.audio",
+      "call.video",
+      "live.broadcast",
+      "live.audience"
+    ],
+    "optionalCapabilities": [
+      "screen-share",
+      "recording",
+      "artifact",
+      "data-channel"
+    ],
+    "extensionKeys": [
+      "twilio.native-client"
+    ],
+    "typescriptAdapter": {
+      "sdkProvisioning": "consumer-supplied",
+      "bindingStrategy": "native-factory",
+      "bundlePolicy": "must-not-bundle",
+      "runtimeBridgeStatus": "reference-baseline",
+      "officialVendorSdkRequirement": "required"
+    }
+  }
+}

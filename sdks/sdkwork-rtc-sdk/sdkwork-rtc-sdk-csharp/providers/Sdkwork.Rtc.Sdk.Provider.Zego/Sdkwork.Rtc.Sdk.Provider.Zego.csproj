@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Sdkwork.Rtc.Sdk.Provider.Zego</AssemblyName>
+    <RootNamespace>Sdkwork.Rtc.Sdk.Provider.Zego</RootNamespace>
+    <PackageId>Sdkwork.Rtc.Sdk.Provider.Zego</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Reserved C# provider package boundary for ZEGO RTC</Description>
+    <IsPackable>true</IsPackable>
+    <SdkworkRtcProviderKey>zego</SdkworkRtcProviderKey>
+    <SdkworkRtcPluginId>rtc-zego</SdkworkRtcPluginId>
+    <SdkworkRtcDriverId>sdkwork-rtc-driver-zego</SdkworkRtcDriverId>
+    <SdkworkRtcSourcePath>src/RtcProviderZegoPackageContract.cs</SdkworkRtcSourcePath>
+    <SdkworkRtcSourceSymbol>RtcProviderZegoPackageContract</SdkworkRtcSourceSymbol>
+    <SdkworkRtcRootPublic>false</SdkworkRtcRootPublic>
+    <SdkworkRtcStatus>future-runtime-bridge-only</SdkworkRtcStatus>
+    <SdkworkRtcRuntimeBridgeStatus>reserved</SdkworkRtcRuntimeBridgeStatus>
+  </PropertyGroup>
+</Project>

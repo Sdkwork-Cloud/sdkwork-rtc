@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for Volcengine RTC"
+
+extra["sdkworkRtcProviderKey"] = "volcengine"
+extra["sdkworkRtcPluginId"] = "rtc-volcengine"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-volcengine"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-volcengine"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/volcengine/RtcProviderVolcenginePackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderVolcenginePackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

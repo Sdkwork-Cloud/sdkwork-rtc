@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for Twilio Video"
+
+extra["sdkworkRtcProviderKey"] = "twilio"
+extra["sdkworkRtcPluginId"] = "rtc-twilio"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-twilio"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-twilio"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/twilio/RtcProviderTwilioPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderTwilioPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

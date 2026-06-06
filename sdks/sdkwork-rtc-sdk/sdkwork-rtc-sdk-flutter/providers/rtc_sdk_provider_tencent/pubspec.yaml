@@ -1,0 +1,24 @@
+name: rtc_sdk_provider_tencent
+description: >
+  Reserved Flutter provider package boundary for Tencent RTC.
+  providerKey: tencent
+  pluginId: rtc-tencent
+  driverId: sdkwork-rtc-driver-tencent
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+sdkwork_rtc_provider:
+  providerKey: tencent
+  pluginId: rtc-tencent
+  driverId: sdkwork-rtc-driver-tencent
+  packageIdentity: rtc_sdk_provider_tencent
+  sourcePath: lib/src/rtc_provider_tencent_package_contract.dart
+  sourceSymbol: RtcProviderTencentPackageContract
+  rootPublic: false
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved

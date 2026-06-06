@@ -1,0 +1,21 @@
+[package]
+name = "rtc-sdk-provider-agora"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust provider package boundary for Agora RTC"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[package.metadata.sdkwork-rtc-provider]
+providerKey = "agora"
+pluginId = "rtc-agora"
+driverId = "sdkwork-rtc-driver-agora"
+packageIdentity = "rtc-sdk-provider-agora"
+sourcePath = "src/lib.rs"
+sourceSymbol = "RtcProviderAgoraPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

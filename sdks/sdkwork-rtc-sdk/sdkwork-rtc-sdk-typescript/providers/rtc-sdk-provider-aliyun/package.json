@@ -1,0 +1,60 @@
+{
+  "name": "@sdkwork/rtc-sdk-provider-aliyun",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference TypeScript provider boundary for Aliyun RTC within sdkwork-rtc-sdk",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "sdkworkRtcProvider": {
+    "providerKey": "aliyun",
+    "displayName": "Aliyun RTC",
+    "tier": "tier-a",
+    "builtin": true,
+    "status": "root_public_reference_boundary",
+    "registrationContract": "RtcProviderModule",
+    "sourceModule": "../../src/providers/aliyun.ts",
+    "driverFactory": "createAliyunRtcDriver",
+    "metadataSymbol": "ALIYUN_RTC_PROVIDER_METADATA",
+    "moduleSymbol": "ALIYUN_RTC_PROVIDER_MODULE",
+    "rootPublic": true,
+    "requiredCapabilities": [
+      "session",
+      "credential",
+      "callback",
+      "health",
+      "call.audio",
+      "call.video",
+      "live.broadcast",
+      "live.audience"
+    ],
+    "optionalCapabilities": [
+      "screen-share",
+      "recording",
+      "artifact"
+    ],
+    "extensionKeys": [
+      "aliyun.native-client"
+    ],
+    "typescriptAdapter": {
+      "sdkProvisioning": "consumer-supplied",
+      "bindingStrategy": "native-factory",
+      "bundlePolicy": "must-not-bundle",
+      "runtimeBridgeStatus": "reference-baseline",
+      "officialVendorSdkRequirement": "required"
+    }
+  }
+}

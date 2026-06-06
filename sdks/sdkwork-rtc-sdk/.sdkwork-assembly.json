@@ -1,0 +1,2099 @@
+{
+  "workspace": "sdkwork-rtc-sdk",
+  "title": "RTC Provider Standard SDK",
+  "apiVersion": "0.1.0",
+  "architecture": "jdbc-style-provider-standard",
+  "defaults": {
+    "providerKey": "volcengine",
+    "pluginId": "rtc-volcengine",
+    "driverId": "sdkwork-rtc-driver-volcengine"
+  },
+  "providerSelectionStandard": {
+    "sourceTerms": [
+      "provider_url",
+      "provider_key",
+      "tenant_override",
+      "deployment_profile",
+      "default_provider"
+    ],
+    "precedence": [
+      "provider_url",
+      "provider_key",
+      "tenant_override",
+      "deployment_profile",
+      "default_provider"
+    ],
+    "defaultSource": "default_provider"
+  },
+  "providerSupportStandard": {
+    "statusTerms": [
+      "builtin_registered",
+      "official_registered",
+      "official_unregistered",
+      "unknown"
+    ]
+  },
+  "providerActivationStandard": {
+    "statusTerms": [
+      "root-public-builtin",
+      "package-boundary",
+      "control-metadata-only"
+    ]
+  },
+  "capabilityStandard": {
+    "categoryTerms": [
+      "required-baseline",
+      "optional-advanced"
+    ],
+    "surfaceTerms": [
+      "control-plane",
+      "runtime-bridge",
+      "cross-surface"
+    ]
+  },
+  "capabilityNegotiationStandard": {
+    "statusTerms": [
+      "supported",
+      "degraded",
+      "unsupported"
+    ],
+    "statusRules": {
+      "supported": "all-requested-capabilities-available",
+      "degraded": "all-required-capabilities-available_optional-capabilities-missing",
+      "unsupported": "required-capabilities-missing"
+    }
+  },
+  "runtimeSurfaceStandard": {
+    "methodTerms": [
+      "join",
+      "leave",
+      "publish",
+      "unpublish",
+      "muteAudio",
+      "muteVideo"
+    ],
+    "failureCode": "native_sdk_not_available"
+  },
+  "signalingTransportStandard": {
+    "transportTerm": "websocket-only",
+    "authConfigPath": "connectOptions.webSocketAuth",
+    "authPassThroughTerm": "signaling-adapter-pass-through",
+    "authModeTerms": [
+      "automatic",
+      "headerBearer",
+      "queryBearer",
+      "none"
+    ],
+    "recommendedAuthMode": "automatic",
+    "deviceIdAuthorityTerm": "top-level-device-id",
+    "connectOptionsDeviceIdRuleTerm": "must-match-top-level-device-id",
+    "liveConnectionTerm": "shared-rtc-live-connection",
+    "pollingFallbackTerm": "not-supported",
+    "authFailureTerm": "fail-fast"
+  },
+  "runtimeImmutabilityStandard": {
+    "frozenTerm": "runtime-frozen",
+    "snapshotTerm": "immutable-snapshots",
+    "controllerContextTerm": "shallow-immutable-context",
+    "nativeClientTerm": "mutable-native-client"
+  },
+  "rootPublicSurfaceStandard": {
+    "typescriptProviderNeutralExportPaths": [
+      "./errors.js",
+      "./runtime-surface.js",
+      "./signaling-transport.js",
+      "./runtime-immutability.js",
+      "./root-public-surface.js",
+      "./types.js",
+      "./call-types.js",
+      "./call-controller.js",
+      "./call-session.js",
+      "./signaling-adapter.js",
+      "./standard-call-stack.js",
+      "./app-http-client.js",
+      "./capability-catalog.js",
+      "./capability-negotiation.js",
+      "./language-workspace-catalog.js",
+      "./provider-selection.js",
+      "./provider-support.js",
+      "./provider-extension-catalog.js",
+      "./provider-package-catalog.js",
+      "./provider-package-loader.js",
+      "./provider-activation-catalog.js",
+      "./capabilities.js",
+      "./client.js",
+      "./driver.js",
+      "./driver-manager.js",
+      "./data-source.js",
+      "./provider-module.js",
+      "./providers/index.js"
+    ],
+    "typescriptBuiltinProviderExportPaths": [
+      "./providers/volcengine.js",
+      "./providers/aliyun.js",
+      "./providers/tencent.js",
+      "./providers/agora.js",
+      "./providers/livekit.js"
+    ],
+    "typescriptInlineHelperNames": [
+      "createBuiltinRtcDriverManager"
+    ],
+    "reservedSurfaceFamilies": [
+      "standard-contract",
+      "provider-catalog",
+      "provider-package-catalog",
+      "provider-activation-catalog",
+      "capability-catalog",
+      "provider-extension-catalog",
+      "language-workspace-catalog",
+      "provider-selection",
+      "provider-package-loader",
+      "provider-support",
+      "driver-manager",
+      "data-source"
+    ],
+    "reservedEntryPointKinds": {
+      "flutter": "barrel",
+      "python": "package-init"
+    },
+    "builtinProviderExposureTerm": "root-public-builtin-only",
+    "nonBuiltinProviderExposureTerm": "package-boundary-only"
+  },
+  "lookupHelperNamingStandard": {
+    "profileTerms": [
+      "lower-camel-rtc",
+      "upper-camel-rtc",
+      "snake-case-rtc"
+    ],
+    "familyTerms": [
+      "provider-catalog-by-provider-key",
+      "provider-package-by-provider-key",
+      "provider-package-by-package-identity",
+      "provider-activation-by-provider-key",
+      "capability-catalog",
+      "capability-descriptor-by-capability-key",
+      "provider-extension-catalog",
+      "provider-extension-descriptor-by-extension-key",
+      "provider-extensions-for-provider",
+      "provider-extensions-by-extension-keys",
+      "provider-extension-membership",
+      "language-workspace-by-language",
+      "provider-url-parser",
+      "provider-selection-resolver",
+      "provider-support-status-resolver",
+      "provider-support-state-factory",
+      "provider-package-loader-factory",
+      "provider-package-load-target-resolver",
+      "provider-module-loader",
+      "single-provider-package-installer",
+      "batch-provider-package-installer"
+    ],
+    "profiles": {
+      "lower-camel-rtc": {
+        "languages": [
+          "typescript",
+          "flutter",
+          "java",
+          "swift",
+          "kotlin"
+        ],
+        "helpers": {
+          "providerCatalogByProviderKey": "getRtcProviderByProviderKey",
+          "providerPackageByProviderKey": "getRtcProviderPackageByProviderKey",
+          "providerPackageByPackageIdentity": "getRtcProviderPackageByPackageIdentity",
+          "providerActivationByProviderKey": "getRtcProviderActivationByProviderKey",
+          "capabilityCatalog": "getRtcCapabilityCatalog",
+          "capabilityDescriptorByCapabilityKey": "getRtcCapabilityDescriptor",
+          "providerExtensionCatalog": "getRtcProviderExtensionCatalog",
+          "providerExtensionDescriptorByExtensionKey": "getRtcProviderExtensionDescriptor",
+          "providerExtensionsForProvider": "getRtcProviderExtensionsForProvider",
+          "providerExtensionsByExtensionKeys": "getRtcProviderExtensions",
+          "providerExtensionMembership": "hasRtcProviderExtension",
+          "languageWorkspaceByLanguage": "getRtcLanguageWorkspaceByLanguage",
+          "providerUrlParser": "parseRtcProviderUrl",
+          "providerSelectionResolver": "resolveRtcProviderSelection",
+          "providerSupportStatusResolver": "resolveRtcProviderSupportStatus",
+          "providerSupportStateFactory": "createRtcProviderSupportState",
+          "providerPackageLoaderFactory": "createRtcProviderPackageLoader",
+          "providerPackageLoadTargetResolver": "resolveRtcProviderPackageLoadTarget",
+          "providerModuleLoader": "loadRtcProviderModule",
+          "singleProviderPackageInstaller": "installRtcProviderPackage",
+          "batchProviderPackageInstaller": "installRtcProviderPackages"
+        }
+      },
+      "upper-camel-rtc": {
+        "languages": [
+          "csharp",
+          "go"
+        ],
+        "helpers": {
+          "providerCatalogByProviderKey": "GetRtcProviderByProviderKey",
+          "providerPackageByProviderKey": "GetRtcProviderPackageByProviderKey",
+          "providerPackageByPackageIdentity": "GetRtcProviderPackageByPackageIdentity",
+          "providerActivationByProviderKey": "GetRtcProviderActivationByProviderKey",
+          "capabilityCatalog": "GetRtcCapabilityCatalog",
+          "capabilityDescriptorByCapabilityKey": "GetRtcCapabilityDescriptor",
+          "providerExtensionCatalog": "GetRtcProviderExtensionCatalog",
+          "providerExtensionDescriptorByExtensionKey": "GetRtcProviderExtensionDescriptor",
+          "providerExtensionsForProvider": "GetRtcProviderExtensionsForProvider",
+          "providerExtensionsByExtensionKeys": "GetRtcProviderExtensions",
+          "providerExtensionMembership": "HasRtcProviderExtension",
+          "languageWorkspaceByLanguage": "GetRtcLanguageWorkspaceByLanguage",
+          "providerUrlParser": "ParseRtcProviderUrl",
+          "providerSelectionResolver": "ResolveRtcProviderSelection",
+          "providerSupportStatusResolver": "ResolveRtcProviderSupportStatus",
+          "providerSupportStateFactory": "CreateRtcProviderSupportState",
+          "providerPackageLoaderFactory": "CreateRtcProviderPackageLoader",
+          "providerPackageLoadTargetResolver": "ResolveRtcProviderPackageLoadTarget",
+          "providerModuleLoader": "LoadRtcProviderModule",
+          "singleProviderPackageInstaller": "InstallRtcProviderPackage",
+          "batchProviderPackageInstaller": "InstallRtcProviderPackages"
+        }
+      },
+      "snake-case-rtc": {
+        "languages": [
+          "rust",
+          "python"
+        ],
+        "helpers": {
+          "providerCatalogByProviderKey": "get_rtc_provider_by_provider_key",
+          "providerPackageByProviderKey": "get_rtc_provider_package_by_provider_key",
+          "providerPackageByPackageIdentity": "get_rtc_provider_package_by_package_identity",
+          "providerActivationByProviderKey": "get_rtc_provider_activation_by_provider_key",
+          "capabilityCatalog": "get_rtc_capability_catalog",
+          "capabilityDescriptorByCapabilityKey": "get_rtc_capability_descriptor",
+          "providerExtensionCatalog": "get_rtc_provider_extension_catalog",
+          "providerExtensionDescriptorByExtensionKey": "get_rtc_provider_extension_descriptor",
+          "providerExtensionsForProvider": "get_rtc_provider_extensions_for_provider",
+          "providerExtensionsByExtensionKeys": "get_rtc_provider_extensions",
+          "providerExtensionMembership": "has_rtc_provider_extension",
+          "languageWorkspaceByLanguage": "get_rtc_language_workspace_by_language",
+          "providerUrlParser": "parse_rtc_provider_url",
+          "providerSelectionResolver": "resolve_rtc_provider_selection",
+          "providerSupportStatusResolver": "resolve_rtc_provider_support_status",
+          "providerSupportStateFactory": "create_rtc_provider_support_state",
+          "providerPackageLoaderFactory": "create_rtc_provider_package_loader",
+          "providerPackageLoadTargetResolver": "resolve_rtc_provider_package_load_target",
+          "providerModuleLoader": "load_rtc_provider_module",
+          "singleProviderPackageInstaller": "install_rtc_provider_package",
+          "batchProviderPackageInstaller": "install_rtc_provider_packages"
+        }
+      }
+    }
+  },
+  "errorCodeStandard": {
+    "codeTerms": [
+      "provider_package_not_found",
+      "provider_package_identity_mismatch",
+      "provider_package_load_failed",
+      "provider_module_export_missing",
+      "provider_module_contract_mismatch",
+      "driver_already_registered",
+      "driver_not_found",
+      "provider_not_official",
+      "provider_not_supported",
+      "provider_metadata_mismatch",
+      "provider_selection_failed",
+      "capability_not_supported",
+      "invalid_provider_url",
+      "invalid_native_config",
+      "native_sdk_not_available",
+      "signaling_not_available",
+      "call_state_invalid",
+      "vendor_error"
+    ],
+    "fallbackCode": "vendor_error"
+  },
+  "providerExtensionStandard": {
+    "accessTerms": [
+      "unwrap-only",
+      "extension-object"
+    ],
+    "statusTerms": [
+      "reference-baseline",
+      "reserved"
+    ]
+  },
+  "providerTierStandard": {
+    "tierTerms": [
+      "tier-a",
+      "tier-b",
+      "tier-c"
+    ],
+    "tierSummaries": {
+      "tier-a": "Built-in baseline providers",
+      "tier-b": "Official extension targets with reserved adapter positions",
+      "tier-c": "Future SPI targets"
+    }
+  },
+  "languageMaturityStandard": {
+    "tierTerms": [
+      "reference",
+      "reserved"
+    ],
+    "tierSummaries": {
+      "reference": "Executable baseline language workspace",
+      "reserved": "Official but not yet executable runtime-bridge workspace"
+    }
+  },
+  "typescriptAdapterStandard": {
+    "sdkProvisioningTerms": [
+      "consumer-supplied"
+    ],
+    "bindingStrategyTerms": [
+      "native-factory"
+    ],
+    "bundlePolicyTerms": [
+      "must-not-bundle"
+    ],
+    "runtimeBridgeStatusTerms": [
+      "reference-baseline"
+    ],
+    "officialVendorSdkRequirementTerms": [
+      "required"
+    ],
+    "referenceContract": {
+      "sdkProvisioning": "consumer-supplied",
+      "bindingStrategy": "native-factory",
+      "bundlePolicy": "must-not-bundle",
+      "runtimeBridgeStatus": "reference-baseline",
+      "officialVendorSdkRequirement": "required"
+    }
+  },
+  "typescriptPackageStandard": {
+    "packageNamePattern": "@sdkwork/rtc-sdk-provider-{providerKey}",
+    "sourceModulePattern": "../../src/providers/{providerKey}.ts",
+    "driverFactoryPattern": "create{providerPascal}RtcDriver",
+    "metadataSymbolPattern": "{providerUpperSnake}_RTC_PROVIDER_METADATA",
+    "moduleSymbolPattern": "{providerUpperSnake}_RTC_PROVIDER_MODULE",
+    "rootPublicRule": "builtin-aligned"
+  },
+  "providerPackageBoundaryStandard": {
+    "modeTerms": [
+      "catalog-governed-mixed",
+      "scaffold-per-provider-package"
+    ],
+    "rootPublicPolicyTerms": [
+      "builtin-only",
+      "none"
+    ],
+    "lifecycleStatusTerms": [
+      "root_public_reference_boundary",
+      "package_reference_boundary",
+      "future-runtime-bridge-only"
+    ],
+    "runtimeBridgeStatusTerms": [
+      "reference-baseline",
+      "reserved"
+    ],
+    "profiles": {
+      "reference": {
+        "mode": "catalog-governed-mixed",
+        "rootPublicPolicy": "builtin-only",
+        "lifecycleStatusTerms": [
+          "root_public_reference_boundary",
+          "package_reference_boundary"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reference-baseline"
+        ]
+      },
+      "reserved": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      }
+    }
+  },
+  "officialLanguages": [
+    "typescript",
+    "flutter",
+    "rust",
+    "java",
+    "csharp",
+    "swift",
+    "kotlin",
+    "go",
+    "python"
+  ],
+  "capabilityCatalog": [
+    {
+      "capabilityKey": "session",
+      "category": "required-baseline",
+      "surface": "cross-surface"
+    },
+    {
+      "capabilityKey": "credential",
+      "category": "required-baseline",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "callback",
+      "category": "required-baseline",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "health",
+      "category": "required-baseline",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "call.audio",
+      "category": "required-baseline",
+      "surface": "runtime-bridge"
+    },
+    {
+      "capabilityKey": "call.video",
+      "category": "required-baseline",
+      "surface": "runtime-bridge"
+    },
+    {
+      "capabilityKey": "live.broadcast",
+      "category": "required-baseline",
+      "surface": "cross-surface"
+    },
+    {
+      "capabilityKey": "live.audience",
+      "category": "required-baseline",
+      "surface": "cross-surface"
+    },
+    {
+      "capabilityKey": "screen-share",
+      "category": "optional-advanced",
+      "surface": "runtime-bridge"
+    },
+    {
+      "capabilityKey": "recording",
+      "category": "optional-advanced",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "artifact",
+      "category": "optional-advanced",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "cloud-mix",
+      "category": "optional-advanced",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "cdn-relay",
+      "category": "optional-advanced",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "data-channel",
+      "category": "optional-advanced",
+      "surface": "runtime-bridge"
+    },
+    {
+      "capabilityKey": "transcription",
+      "category": "optional-advanced",
+      "surface": "control-plane"
+    },
+    {
+      "capabilityKey": "beauty",
+      "category": "optional-advanced",
+      "surface": "runtime-bridge"
+    },
+    {
+      "capabilityKey": "spatial-audio",
+      "category": "optional-advanced",
+      "surface": "runtime-bridge"
+    },
+    {
+      "capabilityKey": "e2ee",
+      "category": "optional-advanced",
+      "surface": "runtime-bridge"
+    }
+  ],
+  "providerExtensionCatalog": [
+    {
+      "extensionKey": "volcengine.native-client",
+      "providerKey": "volcengine",
+      "displayName": "Volcengine Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reference-baseline"
+    },
+    {
+      "extensionKey": "aliyun.native-client",
+      "providerKey": "aliyun",
+      "displayName": "Aliyun Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reference-baseline"
+    },
+    {
+      "extensionKey": "tencent.native-client",
+      "providerKey": "tencent",
+      "displayName": "Tencent Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reference-baseline"
+    },
+    {
+      "extensionKey": "agora.native-client",
+      "providerKey": "agora",
+      "displayName": "Agora Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reserved"
+    },
+    {
+      "extensionKey": "zego.native-client",
+      "providerKey": "zego",
+      "displayName": "ZEGO Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reserved"
+    },
+    {
+      "extensionKey": "livekit.native-client",
+      "providerKey": "livekit",
+      "displayName": "LiveKit Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reserved"
+    },
+    {
+      "extensionKey": "twilio.native-client",
+      "providerKey": "twilio",
+      "displayName": "Twilio Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reserved"
+    },
+    {
+      "extensionKey": "jitsi.native-client",
+      "providerKey": "jitsi",
+      "displayName": "Jitsi Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reserved"
+    },
+    {
+      "extensionKey": "janus.native-client",
+      "providerKey": "janus",
+      "displayName": "Janus Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reserved"
+    },
+    {
+      "extensionKey": "mediasoup.native-client",
+      "providerKey": "mediasoup",
+      "displayName": "mediasoup Native Client",
+      "surface": "runtime-bridge",
+      "access": "unwrap-only",
+      "status": "reserved"
+    }
+  ],
+  "providers": [
+    {
+      "providerKey": "volcengine",
+      "pluginId": "rtc-volcengine",
+      "driverId": "sdkwork-rtc-driver-volcengine",
+      "displayName": "Volcengine RTC",
+      "tier": "tier-a",
+      "builtin": true,
+      "defaultSelected": true,
+      "urlSchemes": [
+        "rtc:volcengine"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact",
+        "cloud-mix"
+      ],
+      "extensionKeys": [
+        "volcengine.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-volcengine",
+        "sourceModule": "../../src/providers/volcengine.ts",
+        "driverFactory": "createVolcengineRtcDriver",
+        "metadataSymbol": "VOLCENGINE_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "VOLCENGINE_RTC_PROVIDER_MODULE",
+        "rootPublic": true
+      }
+    },
+    {
+      "providerKey": "aliyun",
+      "pluginId": "rtc-aliyun",
+      "driverId": "sdkwork-rtc-driver-aliyun",
+      "displayName": "Aliyun RTC",
+      "tier": "tier-a",
+      "builtin": true,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:aliyun"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact"
+      ],
+      "extensionKeys": [
+        "aliyun.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-aliyun",
+        "sourceModule": "../../src/providers/aliyun.ts",
+        "driverFactory": "createAliyunRtcDriver",
+        "metadataSymbol": "ALIYUN_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "ALIYUN_RTC_PROVIDER_MODULE",
+        "rootPublic": true
+      }
+    },
+    {
+      "providerKey": "tencent",
+      "pluginId": "rtc-tencent",
+      "driverId": "sdkwork-rtc-driver-tencent",
+      "displayName": "Tencent RTC",
+      "tier": "tier-a",
+      "builtin": true,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:tencent"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact",
+        "cdn-relay"
+      ],
+      "extensionKeys": [
+        "tencent.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-tencent",
+        "sourceModule": "../../src/providers/tencent.ts",
+        "driverFactory": "createTencentRtcDriver",
+        "metadataSymbol": "TENCENT_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "TENCENT_RTC_PROVIDER_MODULE",
+        "rootPublic": true
+      }
+    },
+    {
+      "providerKey": "agora",
+      "pluginId": "rtc-agora",
+      "driverId": "sdkwork-rtc-driver-agora",
+      "displayName": "Agora RTC",
+      "tier": "tier-a",
+      "builtin": true,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:agora"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact",
+        "cloud-mix",
+        "data-channel",
+        "spatial-audio",
+        "e2ee"
+      ],
+      "extensionKeys": [
+        "agora.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-agora",
+        "sourceModule": "../../src/providers/agora.ts",
+        "driverFactory": "createAgoraRtcDriver",
+        "metadataSymbol": "AGORA_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "AGORA_RTC_PROVIDER_MODULE",
+        "rootPublic": true
+      }
+    },
+    {
+      "providerKey": "zego",
+      "pluginId": "rtc-zego",
+      "driverId": "sdkwork-rtc-driver-zego",
+      "displayName": "ZEGO RTC",
+      "tier": "tier-b",
+      "builtin": false,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:zego"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact",
+        "cloud-mix",
+        "beauty"
+      ],
+      "extensionKeys": [
+        "zego.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-zego",
+        "sourceModule": "../../src/providers/zego.ts",
+        "driverFactory": "createZegoRtcDriver",
+        "metadataSymbol": "ZEGO_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "ZEGO_RTC_PROVIDER_MODULE",
+        "rootPublic": false
+      }
+    },
+    {
+      "providerKey": "livekit",
+      "pluginId": "rtc-livekit",
+      "driverId": "sdkwork-rtc-driver-livekit",
+      "displayName": "LiveKit RTC",
+      "tier": "tier-a",
+      "builtin": true,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:livekit"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact",
+        "data-channel",
+        "transcription",
+        "e2ee"
+      ],
+      "extensionKeys": [
+        "livekit.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-livekit",
+        "sourceModule": "../../src/providers/livekit.ts",
+        "driverFactory": "createLivekitRtcDriver",
+        "metadataSymbol": "LIVEKIT_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "LIVEKIT_RTC_PROVIDER_MODULE",
+        "rootPublic": true
+      }
+    },
+    {
+      "providerKey": "twilio",
+      "pluginId": "rtc-twilio",
+      "driverId": "sdkwork-rtc-driver-twilio",
+      "displayName": "Twilio Video",
+      "tier": "tier-b",
+      "builtin": false,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:twilio"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact",
+        "data-channel"
+      ],
+      "extensionKeys": [
+        "twilio.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-twilio",
+        "sourceModule": "../../src/providers/twilio.ts",
+        "driverFactory": "createTwilioRtcDriver",
+        "metadataSymbol": "TWILIO_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "TWILIO_RTC_PROVIDER_MODULE",
+        "rootPublic": false
+      }
+    },
+    {
+      "providerKey": "jitsi",
+      "pluginId": "rtc-jitsi",
+      "driverId": "sdkwork-rtc-driver-jitsi",
+      "displayName": "Jitsi Meet",
+      "tier": "tier-b",
+      "builtin": false,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:jitsi"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "screen-share",
+        "recording",
+        "artifact",
+        "transcription"
+      ],
+      "extensionKeys": [
+        "jitsi.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-jitsi",
+        "sourceModule": "../../src/providers/jitsi.ts",
+        "driverFactory": "createJitsiRtcDriver",
+        "metadataSymbol": "JITSI_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "JITSI_RTC_PROVIDER_MODULE",
+        "rootPublic": false
+      }
+    },
+    {
+      "providerKey": "janus",
+      "pluginId": "rtc-janus",
+      "driverId": "sdkwork-rtc-driver-janus",
+      "displayName": "Janus RTC",
+      "tier": "tier-c",
+      "builtin": false,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:janus"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "data-channel"
+      ],
+      "extensionKeys": [
+        "janus.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-janus",
+        "sourceModule": "../../src/providers/janus.ts",
+        "driverFactory": "createJanusRtcDriver",
+        "metadataSymbol": "JANUS_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "JANUS_RTC_PROVIDER_MODULE",
+        "rootPublic": false
+      }
+    },
+    {
+      "providerKey": "mediasoup",
+      "pluginId": "rtc-mediasoup",
+      "driverId": "sdkwork-rtc-driver-mediasoup",
+      "displayName": "mediasoup RTC",
+      "tier": "tier-c",
+      "builtin": false,
+      "defaultSelected": false,
+      "urlSchemes": [
+        "rtc:mediasoup"
+      ],
+      "requiredCapabilities": [
+        "session",
+        "credential",
+        "callback",
+        "health",
+        "call.audio",
+        "call.video",
+        "live.broadcast",
+        "live.audience"
+      ],
+      "optionalCapabilities": [
+        "data-channel"
+      ],
+      "extensionKeys": [
+        "mediasoup.native-client"
+      ],
+      "typescriptAdapter": {
+        "sdkProvisioning": "consumer-supplied",
+        "bindingStrategy": "native-factory",
+        "bundlePolicy": "must-not-bundle",
+        "runtimeBridgeStatus": "reference-baseline",
+        "officialVendorSdkRequirement": "required"
+      },
+      "typescriptPackage": {
+        "packageName": "@sdkwork/rtc-sdk-provider-mediasoup",
+        "sourceModule": "../../src/providers/mediasoup.ts",
+        "driverFactory": "createMediasoupRtcDriver",
+        "metadataSymbol": "MEDIASOUP_RTC_PROVIDER_METADATA",
+        "moduleSymbol": "MEDIASOUP_RTC_PROVIDER_MODULE",
+        "rootPublic": false
+      }
+    }
+  ],
+  "languages": [
+    {
+      "language": "typescript",
+      "workspace": "sdkwork-rtc-sdk-typescript",
+      "workspaceCatalogRelativePath": "src/language-workspace-catalog.ts",
+      "runtimeBridge": true,
+      "controlSdk": true,
+      "publicPackage": "@sdkwork/rtc-sdk",
+      "maturityTier": "reference",
+      "displayName": "TypeScript",
+      "currentRole": "Executable reference implementation",
+      "workspaceSummary": "This workspace is the executable reference implementation for provider-neutral RTC contracts, JDBC-style driver selection, standardized runtime lifecycle delegation, and provider package boundaries in sdkwork-rtc-sdk.",
+      "roleHighlights": [
+        "provider-neutral RTC contracts",
+        "first-class StandardRtcCallController public module at src/call-controller.ts for invite discovery and RTC session orchestration",
+        "JDBC-style driver and data-source model",
+        "assembly-driven provider catalog at src/provider-catalog.ts",
+        "assembly-driven capability catalog at src/capability-catalog.ts with required-baseline and optional-advanced surface descriptors",
+        "assembly-driven provider extension catalog at src/provider-extension-catalog.ts with unwrap-only extension metadata",
+        "surface-aware capability negotiation and degradation helpers with supported, degraded, and unsupported outcomes",
+        "assembly-driven runtimeSurfaceStandard methodTerms join, leave, publish, unpublish, muteAudio, and muteVideo",
+        "assembly-driven runtimeSurfaceStandard failureCode native_sdk_not_available when no runtime bridge is registered",
+        "root public runtime surface constants RTC_RUNTIME_SURFACE_METHODS and RTC_RUNTIME_SURFACE_FAILURE_CODE",
+        "assembly-driven default provider constants DEFAULT_RTC_PROVIDER_KEY, DEFAULT_RTC_PROVIDER_PLUGIN_ID, and DEFAULT_RTC_PROVIDER_DRIVER_ID",
+        "built-in provider adapters for volcengine, aliyun, tencent, agora, and livekit",
+        "TypeScript provider package statuses standardize built-in root-public packages as root_public_reference_boundary and executable non-builtin packages as package_reference_boundary",
+        "TypeScript runtime bridge baseline reference-baseline with official vendor SDK requirement required"
+      ],
+      "runtimeBaseline": {
+        "vendorSdkPackage": "@volcengine/rtc",
+        "vendorSdkImportPath": "@volcengine/rtc",
+        "signalingSdkPackage": "@sdkwork/rtc-sdk",
+        "signalingSdkImportPath": "@sdkwork/rtc-sdk",
+        "recommendedEntrypoint": "createStandardRtcCallControllerStack",
+        "smokeCommand": "node ./bin/sdk-call-smoke.mjs --json",
+        "smokeMode": "runtime-backed",
+        "smokeVariants": [
+          "default",
+          "reuse-live-connection"
+        ]
+      },
+      "runtimeDocumentation": {
+        "baselineConclusion": "TypeScript is the executable web/browser baseline.",
+        "guideTitle": "TypeScript / Web",
+        "runtimeLabel": "web/browser",
+        "detailedGuidePath": "./typescript-volcengine-signaling-usage.md",
+        "detailedGuideLabel": "docs/typescript-volcengine-signaling-usage.md",
+        "smokeNarrative": "exercises the public default-provider baseline without live services"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "src/provider-catalog.ts",
+        "capabilityCatalogRelativePath": "src/capability-catalog.ts",
+        "providerExtensionCatalogRelativePath": "src/provider-extension-catalog.ts",
+        "providerPackageCatalogRelativePath": "src/provider-package-catalog.ts",
+        "providerActivationCatalogRelativePath": "src/provider-activation-catalog.ts",
+        "providerSelectionRelativePath": "src/provider-selection.ts"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "src/driver-manager.ts",
+        "dataSourceRelativePath": "src/data-source.ts",
+        "providerSupportRelativePath": "src/provider-support.ts",
+        "providerPackageLoaderRelativePath": "src/provider-package-loader.ts"
+      },
+      "providerPackageBoundary": {
+        "mode": "catalog-governed-mixed",
+        "rootPublicPolicy": "builtin-only",
+        "lifecycleStatusTerms": [
+          "root_public_reference_boundary",
+          "package_reference_boundary"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reference-baseline"
+        ]
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "root-public-builtin"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "root-public-builtin"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "root-public-builtin"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "root-public-builtin"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "package-boundary"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "root-public-builtin"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "package-boundary"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "package-boundary"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "package-boundary"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "package-boundary"
+        }
+      ]
+    },
+    {
+      "language": "flutter",
+      "workspace": "sdkwork-rtc-sdk-flutter",
+      "workspaceCatalogRelativePath": "lib/src/rtc_language_workspace_catalog.dart",
+      "runtimeBridge": true,
+      "controlSdk": true,
+      "publicPackage": "rtc_sdk",
+      "maturityTier": "reference",
+      "displayName": "Flutter",
+      "currentRole": "Executable mobile runtime baseline",
+      "workspaceSummary": "This workspace is the executable Flutter/mobile runtime baseline for provider-neutral RTC contracts, Volcengine default runtime binding, RTC signaling call orchestration, and JDBC-style driver selection in sdkwork-rtc-sdk.",
+      "roleHighlights": [
+        "provider-neutral RTC contracts",
+        "JDBC-style driver manager and data source model for Flutter/mobile",
+        "official Volcengine Flutter runtime binding through package:volc_engine_rtc",
+        "RTC-owned signaling adapter integration through package:rtc_sdk/rtc_sdk.dart",
+        "assembly-driven provider catalog, capability catalog, provider extension catalog, and provider selection helpers",
+        "default mobile provider remains volcengine unless the caller explicitly overrides selection",
+        "StandardRtcCallController quick-start stack for default Volcengine plus RTC signaling"
+      ],
+      "runtimeBaseline": {
+        "vendorSdkPackage": "volc_engine_rtc",
+        "vendorSdkImportPath": "package:volc_engine_rtc/volc_engine_rtc.dart",
+        "signalingSdkPackage": "rtc_sdk",
+        "signalingSdkImportPath": "package:rtc_sdk/rtc_sdk.dart",
+        "recommendedEntrypoint": "createStandardRtcCallControllerStack",
+        "smokeCommand": "node ./bin/sdk-call-smoke.mjs --json",
+        "smokeMode": "analysis-backed",
+        "smokeVariants": [
+          "default",
+          "reuse-live-connection"
+        ]
+      },
+      "runtimeDocumentation": {
+        "baselineConclusion": "Flutter is the executable mobile baseline.",
+        "guideTitle": "Flutter / Mobile",
+        "runtimeLabel": "mobile",
+        "detailedGuidePath": "./flutter-volcengine-signaling-usage.md",
+        "detailedGuideLabel": "docs/flutter-volcengine-signaling-usage.md",
+        "smokeNarrative": "currently verifies the public baseline through the Flutter CLI wrapper and `flutter analyze` because the official vendor runtime is not yet CLI-runnable through the Dart VM toolchain"
+      },
+      "contractScaffold": {
+        "relativePath": "lib/src/rtc_standard_contract.dart",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "lib/src/rtc_provider_catalog.dart",
+        "capabilityCatalogRelativePath": "lib/src/rtc_capability_catalog.dart",
+        "providerExtensionCatalogRelativePath": "lib/src/rtc_provider_extension_catalog.dart",
+        "providerPackageCatalogRelativePath": "lib/src/rtc_provider_package_catalog.dart",
+        "providerActivationCatalogRelativePath": "lib/src/rtc_provider_activation_catalog.dart",
+        "providerSelectionRelativePath": "lib/src/rtc_provider_selection.dart"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "lib/src/rtc_driver_manager.dart",
+        "dataSourceRelativePath": "lib/src/rtc_data_source.dart",
+        "providerSupportRelativePath": "lib/src/rtc_provider_support.dart",
+        "providerPackageLoaderRelativePath": "lib/src/rtc_provider_package_loader.dart"
+      },
+      "packageScaffold": {
+        "buildSystem": "flutter-pub",
+        "manifestRelativePath": "pubspec.yaml"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "providers/rtc_sdk_provider_{providerKey}",
+        "packagePattern": "rtc_sdk_provider_{providerKey}",
+        "manifestFileName": "pubspec.yaml",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "lib/src/rtc_provider_{providerKey}_package_contract.dart",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerKey}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerKey}",
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "root-public-builtin"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    },
+    {
+      "language": "rust",
+      "workspace": "sdkwork-rtc-sdk-rust",
+      "workspaceCatalogRelativePath": "src/language_workspace_catalog.rs",
+      "runtimeBridge": false,
+      "controlSdk": true,
+      "publicPackage": "rtc_sdk",
+      "maturityTier": "reserved",
+      "displayName": "Rust",
+      "currentRole": "Reserved workspace skeleton",
+      "workspaceSummary": "This workspace is the reserved Rust standard boundary for provider metadata, selection, and future control-plane integration.",
+      "roleHighlights": [
+        "provider metadata and driver selection standards",
+        "reserved Rust workspace boundary for control-plane expansion",
+        "no runtime bridge is claimed in the current landing",
+        "code-level RtcStandardContract scaffold keeps provider-neutral core abstractions fixed before runtime bridge landing",
+        "metadata scaffold fixes provider catalog, capability catalog, provider extension catalog, and provider selection skeleton boundaries before runtime bridge landing",
+        "resolution scaffold fixes metadata-only driver manager, data source, provider support, and provider package loader boundaries before runtime bridge landing"
+      ],
+      "contractScaffold": {
+        "relativePath": "src/lib.rs",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "src/provider_catalog.rs",
+        "capabilityCatalogRelativePath": "src/capability_catalog.rs",
+        "providerExtensionCatalogRelativePath": "src/provider_extension_catalog.rs",
+        "providerPackageCatalogRelativePath": "src/provider_package_catalog.rs",
+        "providerActivationCatalogRelativePath": "src/provider_activation_catalog.rs",
+        "providerSelectionRelativePath": "src/provider_selection.rs"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "src/driver_manager.rs",
+        "dataSourceRelativePath": "src/data_source.rs",
+        "providerSupportRelativePath": "src/provider_support.rs",
+        "providerPackageLoaderRelativePath": "src/provider_package_loader.rs"
+      },
+      "packageScaffold": {
+        "buildSystem": "cargo",
+        "manifestRelativePath": "Cargo.toml"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "providers/rtc-sdk-provider-{providerKey}",
+        "packagePattern": "rtc-sdk-provider-{providerKey}",
+        "manifestFileName": "Cargo.toml",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "src/lib.rs",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerKey}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    },
+    {
+      "language": "java",
+      "workspace": "sdkwork-rtc-sdk-java",
+      "workspaceCatalogRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcLanguageWorkspaceCatalog.java",
+      "runtimeBridge": false,
+      "controlSdk": true,
+      "publicPackage": "com.sdkwork:rtc-sdk",
+      "maturityTier": "reserved",
+      "displayName": "Java",
+      "currentRole": "Reserved workspace skeleton",
+      "workspaceSummary": "This workspace is the reserved Java standard boundary for provider metadata, driver selection, and future enterprise runtime integration.",
+      "roleHighlights": [
+        "provider metadata and driver selection standards",
+        "reserved Java language boundary for future enterprise runtime integration",
+        "no runtime bridge is claimed in the current landing",
+        "code-level RtcStandardContract scaffold keeps provider-neutral core abstractions fixed before runtime bridge landing",
+        "metadata scaffold fixes provider catalog, capability catalog, provider extension catalog, and provider selection skeleton boundaries before runtime bridge landing",
+        "resolution scaffold fixes metadata-only driver manager, data source, provider support, and provider package loader boundaries before runtime bridge landing"
+      ],
+      "contractScaffold": {
+        "relativePath": "src/main/java/com/sdkwork/rtc/standard/RtcStandardContract.java",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcProviderCatalog.java",
+        "capabilityCatalogRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcCapabilityCatalog.java",
+        "providerExtensionCatalogRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcProviderExtensionCatalog.java",
+        "providerPackageCatalogRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcProviderPackageCatalog.java",
+        "providerActivationCatalogRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcProviderActivationCatalog.java",
+        "providerSelectionRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcProviderSelection.java"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcDriverManager.java",
+        "dataSourceRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcDataSource.java",
+        "providerSupportRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcProviderSupport.java",
+        "providerPackageLoaderRelativePath": "src/main/java/com/sdkwork/rtc/metadata/RtcProviderPackageLoader.java"
+      },
+      "packageScaffold": {
+        "buildSystem": "maven",
+        "manifestRelativePath": "pom.xml"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "providers/rtc-sdk-provider-{providerKey}",
+        "packagePattern": "com.sdkwork:rtc-sdk-provider-{providerKey}",
+        "manifestFileName": "pom.xml",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "src/main/java/com/sdkwork/rtc/provider/{providerKey}/RtcProvider{providerPascal}PackageContract.java",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerKey}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerKey}",
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    },
+    {
+      "language": "csharp",
+      "workspace": "sdkwork-rtc-sdk-csharp",
+      "workspaceCatalogRelativePath": "src/SDKWork.Rtc.Sdk/RtcLanguageWorkspaceCatalog.cs",
+      "runtimeBridge": false,
+      "controlSdk": true,
+      "publicPackage": "Sdkwork.Rtc.Sdk",
+      "maturityTier": "reserved",
+      "displayName": "C#",
+      "currentRole": "Reserved workspace skeleton",
+      "workspaceSummary": "This workspace is the reserved C# standard boundary for provider metadata, driver selection, and future desktop or server-side control integration.",
+      "roleHighlights": [
+        "provider metadata and driver selection standards",
+        "reserved C# language boundary for desktop or server-side control integration",
+        "no runtime bridge is claimed in the current landing",
+        "code-level RtcStandardContract scaffold keeps provider-neutral core abstractions fixed before runtime bridge landing",
+        "metadata scaffold fixes provider catalog, capability catalog, provider extension catalog, and provider selection skeleton boundaries before runtime bridge landing",
+        "resolution scaffold fixes metadata-only driver manager, data source, provider support, and provider package loader boundaries before runtime bridge landing"
+      ],
+      "contractScaffold": {
+        "relativePath": "src/SDKWork.Rtc.Sdk/RtcStandardContract.cs",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "src/SDKWork.Rtc.Sdk/RtcProviderCatalog.cs",
+        "capabilityCatalogRelativePath": "src/SDKWork.Rtc.Sdk/RtcCapabilityCatalog.cs",
+        "providerExtensionCatalogRelativePath": "src/SDKWork.Rtc.Sdk/RtcProviderExtensionCatalog.cs",
+        "providerPackageCatalogRelativePath": "src/SDKWork.Rtc.Sdk/RtcProviderPackageCatalog.cs",
+        "providerActivationCatalogRelativePath": "src/SDKWork.Rtc.Sdk/RtcProviderActivationCatalog.cs",
+        "providerSelectionRelativePath": "src/SDKWork.Rtc.Sdk/RtcProviderSelection.cs"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "src/SDKWork.Rtc.Sdk/RtcDriverManager.cs",
+        "dataSourceRelativePath": "src/SDKWork.Rtc.Sdk/RtcDataSource.cs",
+        "providerSupportRelativePath": "src/SDKWork.Rtc.Sdk/RtcProviderSupport.cs",
+        "providerPackageLoaderRelativePath": "src/SDKWork.Rtc.Sdk/RtcProviderPackageLoader.cs"
+      },
+      "packageScaffold": {
+        "buildSystem": "dotnet-sdk",
+        "manifestRelativePath": "src/SDKWork.Rtc.Sdk/SDKWork.Rtc.Sdk.csproj"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "providers/Sdkwork.Rtc.Sdk.Provider.{providerPascal}",
+        "packagePattern": "Sdkwork.Rtc.Sdk.Provider.{providerPascal}",
+        "manifestFileName": "Sdkwork.Rtc.Sdk.Provider.{providerPascal}.csproj",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "src/RtcProvider{providerPascal}PackageContract.cs",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerPascal}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    },
+    {
+      "language": "swift",
+      "workspace": "sdkwork-rtc-sdk-swift",
+      "workspaceCatalogRelativePath": "Sources/RtcSdk/RtcLanguageWorkspaceCatalog.swift",
+      "runtimeBridge": false,
+      "controlSdk": true,
+      "publicPackage": "RtcSdk",
+      "maturityTier": "reserved",
+      "displayName": "Swift",
+      "currentRole": "Reserved workspace skeleton",
+      "workspaceSummary": "This workspace is the reserved Swift standard boundary for provider metadata, driver selection, and future iOS or macOS runtime bridge integration.",
+      "roleHighlights": [
+        "provider metadata and driver selection standards",
+        "reserved Swift language boundary for iOS or macOS runtime bridge integration",
+        "no runtime bridge is claimed in the current landing",
+        "code-level RtcStandardContract scaffold keeps provider-neutral core abstractions fixed before runtime bridge landing",
+        "metadata scaffold fixes provider catalog, capability catalog, provider extension catalog, and provider selection skeleton boundaries before runtime bridge landing",
+        "resolution scaffold fixes metadata-only driver manager, data source, provider support, and provider package loader boundaries before runtime bridge landing"
+      ],
+      "contractScaffold": {
+        "relativePath": "Sources/RtcSdk/RtcStandardContract.swift",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "Sources/RtcSdk/RtcProviderCatalog.swift",
+        "capabilityCatalogRelativePath": "Sources/RtcSdk/RtcCapabilityCatalog.swift",
+        "providerExtensionCatalogRelativePath": "Sources/RtcSdk/RtcProviderExtensionCatalog.swift",
+        "providerPackageCatalogRelativePath": "Sources/RtcSdk/RtcProviderPackageCatalog.swift",
+        "providerActivationCatalogRelativePath": "Sources/RtcSdk/RtcProviderActivationCatalog.swift",
+        "providerSelectionRelativePath": "Sources/RtcSdk/RtcProviderSelection.swift"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "Sources/RtcSdk/RtcDriverManager.swift",
+        "dataSourceRelativePath": "Sources/RtcSdk/RtcDataSource.swift",
+        "providerSupportRelativePath": "Sources/RtcSdk/RtcProviderSupport.swift",
+        "providerPackageLoaderRelativePath": "Sources/RtcSdk/RtcProviderPackageLoader.swift"
+      },
+      "packageScaffold": {
+        "buildSystem": "swift-package-manager",
+        "manifestRelativePath": "Package.swift"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "Providers/RtcSdkProvider{providerPascal}",
+        "packagePattern": "RtcSdkProvider{providerPascal}",
+        "manifestFileName": "Package.swift",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "Sources/RtcSdkProvider{providerPascal}/RtcProvider{providerPascal}PackageContract.swift",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerPascal}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    },
+    {
+      "language": "kotlin",
+      "workspace": "sdkwork-rtc-sdk-kotlin",
+      "workspaceCatalogRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcLanguageWorkspaceCatalog.kt",
+      "runtimeBridge": false,
+      "controlSdk": true,
+      "publicPackage": "com.sdkwork:rtc-sdk",
+      "maturityTier": "reserved",
+      "displayName": "Kotlin",
+      "currentRole": "Reserved workspace skeleton",
+      "workspaceSummary": "This workspace is the reserved Kotlin standard boundary for provider metadata, driver selection, and future Android runtime bridge integration.",
+      "roleHighlights": [
+        "provider metadata and driver selection standards",
+        "reserved Kotlin language boundary for Android runtime bridge integration",
+        "no runtime bridge is claimed in the current landing",
+        "code-level RtcStandardContract scaffold keeps provider-neutral core abstractions fixed before runtime bridge landing",
+        "metadata scaffold fixes provider catalog, capability catalog, provider extension catalog, and provider selection skeleton boundaries before runtime bridge landing",
+        "resolution scaffold fixes metadata-only driver manager, data source, provider support, and provider package loader boundaries before runtime bridge landing"
+      ],
+      "contractScaffold": {
+        "relativePath": "src/main/kotlin/com/sdkwork/rtc/standard/RtcStandardContract.kt",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderCatalog.kt",
+        "capabilityCatalogRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcCapabilityCatalog.kt",
+        "providerExtensionCatalogRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderExtensionCatalog.kt",
+        "providerPackageCatalogRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderPackageCatalog.kt",
+        "providerActivationCatalogRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderActivationCatalog.kt",
+        "providerSelectionRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderSelection.kt"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcDriverManager.kt",
+        "dataSourceRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcDataSource.kt",
+        "providerSupportRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderSupport.kt",
+        "providerPackageLoaderRelativePath": "src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderPackageLoader.kt"
+      },
+      "packageScaffold": {
+        "buildSystem": "gradle-kotlin-dsl",
+        "manifestRelativePath": "build.gradle.kts"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "providers/rtc-sdk-provider-{providerKey}",
+        "packagePattern": "com.sdkwork:rtc-sdk-provider-{providerKey}",
+        "manifestFileName": "build.gradle.kts",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "src/main/kotlin/com/sdkwork/rtc/provider/{providerKey}/RtcProvider{providerPascal}PackageContract.kt",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerKey}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerKey}",
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    },
+    {
+      "language": "go",
+      "workspace": "sdkwork-rtc-sdk-go",
+      "workspaceCatalogRelativePath": "rtcstandard/language_workspace_catalog.go",
+      "runtimeBridge": false,
+      "controlSdk": true,
+      "publicPackage": "github.com/sdkwork/rtc-sdk",
+      "maturityTier": "reserved",
+      "displayName": "Go",
+      "currentRole": "Reserved workspace skeleton",
+      "workspaceSummary": "This workspace is the reserved Go standard boundary for provider metadata, driver selection, and future control-plane tooling integration.",
+      "roleHighlights": [
+        "provider metadata and driver selection standards",
+        "reserved Go language boundary for control-plane tooling integration",
+        "no runtime bridge is claimed in the current landing",
+        "code-level RtcStandardContract scaffold keeps provider-neutral core abstractions fixed before runtime bridge landing",
+        "metadata scaffold fixes provider catalog, capability catalog, provider extension catalog, and provider selection skeleton boundaries before runtime bridge landing",
+        "resolution scaffold fixes metadata-only driver manager, data source, provider support, and provider package loader boundaries before runtime bridge landing"
+      ],
+      "contractScaffold": {
+        "relativePath": "rtcstandard/contract.go",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "rtcstandard/provider_catalog.go",
+        "capabilityCatalogRelativePath": "rtcstandard/capability_catalog.go",
+        "providerExtensionCatalogRelativePath": "rtcstandard/provider_extension_catalog.go",
+        "providerPackageCatalogRelativePath": "rtcstandard/provider_package_catalog.go",
+        "providerActivationCatalogRelativePath": "rtcstandard/provider_activation_catalog.go",
+        "providerSelectionRelativePath": "rtcstandard/provider_selection.go"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "rtcstandard/driver_manager.go",
+        "dataSourceRelativePath": "rtcstandard/data_source.go",
+        "providerSupportRelativePath": "rtcstandard/provider_support.go",
+        "providerPackageLoaderRelativePath": "rtcstandard/provider_package_loader.go"
+      },
+      "packageScaffold": {
+        "buildSystem": "go-modules",
+        "manifestRelativePath": "go.mod"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "providers/rtc-sdk-provider-{providerKey}",
+        "packagePattern": "github.com/sdkwork/rtc-sdk-provider-{providerKey}",
+        "manifestFileName": "go.mod",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "provider_package_contract.go",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerKey}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    },
+    {
+      "language": "python",
+      "workspace": "sdkwork-rtc-sdk-python",
+      "workspaceCatalogRelativePath": "sdkwork_rtc_sdk/language_workspace_catalog.py",
+      "runtimeBridge": false,
+      "controlSdk": true,
+      "publicPackage": "sdkwork-rtc-sdk",
+      "maturityTier": "reserved",
+      "displayName": "Python",
+      "currentRole": "Reserved workspace skeleton",
+      "workspaceSummary": "This workspace is the reserved Python standard boundary for provider metadata, driver selection, and future automation or control-plane integration.",
+      "roleHighlights": [
+        "provider metadata and driver selection standards",
+        "reserved Python language boundary for automation or control-plane integration",
+        "no runtime bridge is claimed in the current landing",
+        "code-level RtcStandardContract scaffold keeps provider-neutral core abstractions fixed before runtime bridge landing",
+        "metadata scaffold fixes provider catalog, capability catalog, provider extension catalog, and provider selection skeleton boundaries before runtime bridge landing",
+        "resolution scaffold fixes metadata-only driver manager, data source, provider support, and provider package loader boundaries before runtime bridge landing"
+      ],
+      "contractScaffold": {
+        "relativePath": "sdkwork_rtc_sdk/standard_contract.py",
+        "symbol": "RtcStandardContract"
+      },
+      "metadataScaffold": {
+        "providerCatalogRelativePath": "sdkwork_rtc_sdk/provider_catalog.py",
+        "capabilityCatalogRelativePath": "sdkwork_rtc_sdk/capability_catalog.py",
+        "providerExtensionCatalogRelativePath": "sdkwork_rtc_sdk/provider_extension_catalog.py",
+        "providerPackageCatalogRelativePath": "sdkwork_rtc_sdk/provider_package_catalog.py",
+        "providerActivationCatalogRelativePath": "sdkwork_rtc_sdk/provider_activation_catalog.py",
+        "providerSelectionRelativePath": "sdkwork_rtc_sdk/provider_selection.py"
+      },
+      "resolutionScaffold": {
+        "driverManagerRelativePath": "sdkwork_rtc_sdk/driver_manager.py",
+        "dataSourceRelativePath": "sdkwork_rtc_sdk/data_source.py",
+        "providerSupportRelativePath": "sdkwork_rtc_sdk/provider_support.py",
+        "providerPackageLoaderRelativePath": "sdkwork_rtc_sdk/provider_package_loader.py"
+      },
+      "packageScaffold": {
+        "buildSystem": "pyproject",
+        "manifestRelativePath": "pyproject.toml"
+      },
+      "providerPackageBoundary": {
+        "mode": "scaffold-per-provider-package",
+        "rootPublicPolicy": "none",
+        "lifecycleStatusTerms": [
+          "future-runtime-bridge-only"
+        ],
+        "runtimeBridgeStatusTerms": [
+          "reserved"
+        ]
+      },
+      "providerPackageScaffold": {
+        "relativePath": "providers/provider-package-scaffold.md",
+        "directoryPattern": "providers/sdkwork_rtc_sdk_provider_{providerKey}",
+        "packagePattern": "sdkwork-rtc-sdk-provider-{providerKey}",
+        "manifestFileName": "pyproject.toml",
+        "readmeFileName": "README.md",
+        "sourceFilePattern": "sdkwork_rtc_sdk_provider_{providerKey}/__init__.py",
+        "sourceSymbolPattern": "RtcProvider{providerPascal}PackageContract",
+        "templateTokens": [
+          "{providerKey}"
+        ],
+        "sourceTemplateTokens": [
+          "{providerKey}",
+          "{providerPascal}"
+        ],
+        "runtimeBridgeStatus": "reserved",
+        "rootPublic": false,
+        "status": "future-runtime-bridge-only"
+      },
+      "providerActivations": [
+        {
+          "providerKey": "volcengine",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "aliyun",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "tencent",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "agora",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "zego",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "livekit",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "twilio",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "jitsi",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "janus",
+          "activationStatus": "control-metadata-only"
+        },
+        {
+          "providerKey": "mediasoup",
+          "activationStatus": "control-metadata-only"
+        }
+      ]
+    }
+  ]
+}

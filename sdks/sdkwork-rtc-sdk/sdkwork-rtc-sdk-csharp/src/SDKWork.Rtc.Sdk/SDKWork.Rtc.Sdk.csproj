@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Sdkwork.Rtc.Sdk</PackageId>
+    <AssemblyName>Sdkwork.Rtc.Sdk</AssemblyName>
+    <Description>Reserved C# package scaffold for Sdkwork.Rtc.Sdk with build system: dotnet-sdk</Description>
+  </PropertyGroup>
+</Project>

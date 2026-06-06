@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for Aliyun RTC"
+
+extra["sdkworkRtcProviderKey"] = "aliyun"
+extra["sdkworkRtcPluginId"] = "rtc-aliyun"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-aliyun"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-aliyun"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/aliyun/RtcProviderAliyunPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderAliyunPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

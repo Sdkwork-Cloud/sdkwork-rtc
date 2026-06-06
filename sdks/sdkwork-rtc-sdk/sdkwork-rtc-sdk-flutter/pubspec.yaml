@@ -1,0 +1,21 @@
+name: rtc_sdk
+description: >
+  Flutter RTC runtime baseline for rtc_sdk.
+  build system: flutter-pub
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  volc_engine_rtc: ^3.60.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: false

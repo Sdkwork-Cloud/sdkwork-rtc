@@ -1,0 +1,26 @@
+# Local workspace probes and scratch directories
+/.tmp/
+/.sdkwork/tmp/
+
+# Transient package-manager and tool state
+**/node_modules/
+**/.npm-cache/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# Local packed archives
+**/*.tgz
+
+# RTC workspace build artifacts
+/sdkwork-rtc-sdk-typescript/dist/
+/sdkwork-rtc-sdk-rust/target/
+/sdkwork-rtc-sdk-java/target/
+/sdkwork-rtc-sdk-csharp/src/**/bin/
+/sdkwork-rtc-sdk-csharp/src/**/obj/
+/sdkwork-rtc-sdk-flutter/build/
+/sdkwork-rtc-sdk-flutter/pubspec.lock
+/sdkwork-rtc-sdk-kotlin/build/
+/sdkwork-rtc-sdk-swift/.build/
+/sdkwork-rtc-sdk-python/**/__pycache__/
+/sdkwork-rtc-sdk-python/**/*.pyc

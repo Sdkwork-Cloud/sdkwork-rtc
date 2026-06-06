@@ -1,0 +1,8 @@
+[package]
+name = "sdkwork-rtc-adapter-volcengine"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+sdkwork-rtc-core = { path = "../../crates/sdkwork-rtc-core" }

@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for ZEGO RTC"
+
+extra["sdkworkRtcProviderKey"] = "zego"
+extra["sdkworkRtcPluginId"] = "rtc-zego"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-zego"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-zego"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/zego/RtcProviderZegoPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderZegoPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

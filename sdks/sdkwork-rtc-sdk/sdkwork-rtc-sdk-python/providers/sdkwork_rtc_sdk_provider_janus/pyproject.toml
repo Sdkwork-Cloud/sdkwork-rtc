@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdkwork-rtc-sdk-provider-janus"
+version = "0.1.0"
+description = "Reserved Python provider package boundary for Janus RTC"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["sdkwork_rtc_sdk_provider_janus"]
+
+[tool.sdkwork-rtc-provider]
+providerKey = "janus"
+pluginId = "rtc-janus"
+driverId = "sdkwork-rtc-driver-janus"
+packageIdentity = "sdkwork-rtc-sdk-provider-janus"
+sourcePath = "sdkwork_rtc_sdk_provider_janus/__init__.py"
+sourceSymbol = "RtcProviderJanusPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

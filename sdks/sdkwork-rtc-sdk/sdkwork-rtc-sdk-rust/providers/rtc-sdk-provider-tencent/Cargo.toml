@@ -1,0 +1,21 @@
+[package]
+name = "rtc-sdk-provider-tencent"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust provider package boundary for Tencent RTC"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[package.metadata.sdkwork-rtc-provider]
+providerKey = "tencent"
+pluginId = "rtc-tencent"
+driverId = "sdkwork-rtc-driver-tencent"
+packageIdentity = "rtc-sdk-provider-tencent"
+sourcePath = "src/lib.rs"
+sourceSymbol = "RtcProviderTencentPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

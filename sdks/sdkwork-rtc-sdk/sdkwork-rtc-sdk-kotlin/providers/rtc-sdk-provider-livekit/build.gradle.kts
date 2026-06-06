@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for LiveKit RTC"
+
+extra["sdkworkRtcProviderKey"] = "livekit"
+extra["sdkworkRtcPluginId"] = "rtc-livekit"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-livekit"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-livekit"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/livekit/RtcProviderLivekitPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderLivekitPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

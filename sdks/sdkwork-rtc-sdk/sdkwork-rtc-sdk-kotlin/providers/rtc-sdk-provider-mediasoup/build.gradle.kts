@@ -1,0 +1,13 @@
+group = "com.sdkwork"
+version = "0.1.0"
+description = "Reserved Kotlin provider package boundary for mediasoup RTC"
+
+extra["sdkworkRtcProviderKey"] = "mediasoup"
+extra["sdkworkRtcPluginId"] = "rtc-mediasoup"
+extra["sdkworkRtcDriverId"] = "sdkwork-rtc-driver-mediasoup"
+extra["sdkworkRtcPackageIdentity"] = "com.sdkwork:rtc-sdk-provider-mediasoup"
+extra["sdkworkRtcSourcePath"] = "src/main/kotlin/com/sdkwork/rtc/provider/mediasoup/RtcProviderMediasoupPackageContract.kt"
+extra["sdkworkRtcSourceSymbol"] = "RtcProviderMediasoupPackageContract"
+extra["sdkworkRtcRootPublic"] = "false"
+extra["sdkworkRtcStatus"] = "future-runtime-bridge-only"
+extra["sdkworkRtcRuntimeBridgeStatus"] = "reserved"

@@ -1,0 +1,11 @@
+node_modules/
+target/
+.pnpm-store/
+.npm-cache/
+.runtime/
+.tmp/
+tmp/
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

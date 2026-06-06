@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+import { runRtcSdkGenerator } from "../../../tools/rtc_sdk_generate.mjs";
+
+await runRtcSdkGenerator({
+  familyName: "sdkwork-rtc-app-sdk",
+  authorityName: "sdkwork-rtc-app-api",
+  sdkType: "app",
+  apiPrefix: "/app/v3/api",
+  sourceRouteCrate: "sdkwork-routes-rtc-app-api",
+  routeManifest:
+    "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+  sourceOpenapi: "generated/openapi/rtc-app-api.openapi.json",
+  defaultBaseUrl: "http://127.0.0.1:18080",
+  sdkDependencies: [
+    {
+      workspace: "sdkwork-rtc-sdk",
+      role: "provider-runtime-sdk",
+      required: true,
+      dependencyMode: "consumer-sdk",
+      apiPrefix: null,
+      generatedTransportImportPolicy: "forbidden",
+      packageByLanguage: {
+        typescript: "@sdkwork/rtc-sdk",
+        rust: "sdkwork-rtc-sdk",
+        java: "com.sdkwork:sdkwork-rtc-sdk",
+        python: "sdkwork-rtc-sdk",
+        go: "github.com/sdkwork/sdkwork-rtc-sdk",
+      },
+    },
+  ],
+}, process.argv.slice(2));

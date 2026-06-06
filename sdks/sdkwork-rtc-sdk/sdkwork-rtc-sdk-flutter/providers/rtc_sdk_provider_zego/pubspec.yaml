@@ -1,0 +1,24 @@
+name: rtc_sdk_provider_zego
+description: >
+  Reserved Flutter provider package boundary for ZEGO RTC.
+  providerKey: zego
+  pluginId: rtc-zego
+  driverId: sdkwork-rtc-driver-zego
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+sdkwork_rtc_provider:
+  providerKey: zego
+  pluginId: rtc-zego
+  driverId: sdkwork-rtc-driver-zego
+  packageIdentity: rtc_sdk_provider_zego
+  sourcePath: lib/src/rtc_provider_zego_package_contract.dart
+  sourceSymbol: RtcProviderZegoPackageContract
+  rootPublic: false
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved

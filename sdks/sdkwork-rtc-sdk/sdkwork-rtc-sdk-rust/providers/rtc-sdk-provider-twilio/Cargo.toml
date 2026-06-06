@@ -1,0 +1,21 @@
+[package]
+name = "rtc-sdk-provider-twilio"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved Rust provider package boundary for Twilio Video"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[package.metadata.sdkwork-rtc-provider]
+providerKey = "twilio"
+pluginId = "rtc-twilio"
+driverId = "sdkwork-rtc-driver-twilio"
+packageIdentity = "rtc-sdk-provider-twilio"
+sourcePath = "src/lib.rs"
+sourceSymbol = "RtcProviderTwilioPackageContract"
+rootPublic = false
+status = "future-runtime-bridge-only"
+runtimeBridgeStatus = "reserved"

@@ -1,0 +1,24 @@
+name: rtc_sdk_provider_janus
+description: >
+  Reserved Flutter provider package boundary for Janus RTC.
+  providerKey: janus
+  pluginId: rtc-janus
+  driverId: sdkwork-rtc-driver-janus
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+sdkwork_rtc_provider:
+  providerKey: janus
+  pluginId: rtc-janus
+  driverId: sdkwork-rtc-driver-janus
+  packageIdentity: rtc_sdk_provider_janus
+  sourcePath: lib/src/rtc_provider_janus_package_contract.dart
+  sourceSymbol: RtcProviderJanusPackageContract
+  rootPublic: false
+  status: future-runtime-bridge-only
+  runtimeBridgeStatus: reserved
