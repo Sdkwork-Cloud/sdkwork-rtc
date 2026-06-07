@@ -5,7 +5,7 @@
 The generator wrapper is `bin/generate-sdk.mjs`. It materializes owner-only SDK input, validates route manifests, and calls the canonical SDKWork generator:
 
 ```text
-D:\javasource\spring-ai-plus\sdk\sdkwork-sdk-generator\bin\sdkgen.js
+..\sdkwork-sdk-generator\bin\sdkgen.js
 ```
 
 Use `node bin/generate-sdk.mjs --check` to validate inputs without writing generated transport output.

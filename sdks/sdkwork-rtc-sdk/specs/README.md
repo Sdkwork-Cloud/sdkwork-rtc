@@ -2,7 +2,7 @@
 
 This directory is the local standards index for `sdkwork-rtc-sdk`.
 
-Root SDKWork standards remain authoritative. Local component specs can narrow or document this component, but they must not contradict the root standards at `D:\javasource\spring-ai-plus\spring-ai-plus-business\specs`.
+Root SDKWork standards remain authoritative. Local component specs can narrow or document this component, but they must not contradict the root standards at `../../../sdkwork-specs`.
 
 ## Component
 

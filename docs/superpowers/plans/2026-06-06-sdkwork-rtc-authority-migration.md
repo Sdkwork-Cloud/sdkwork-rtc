@@ -24,7 +24,7 @@
 ### Task 2: Migrate RTC Provider SDK
 
 **Files:**
-- Copy: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\craw-chat\sdks\sdkwork-rtc-sdk` to `sdks/sdkwork-rtc-sdk`
+- Copy: `<workspace-root>\craw-chat\sdks\sdkwork-rtc-sdk` to `sdks/sdkwork-rtc-sdk`
 - Modify: `sdks/sdkwork-rtc-sdk/README.md`
 
 - [ ] Copy the active RTC SDK workspace into `sdkwork-rtc`.

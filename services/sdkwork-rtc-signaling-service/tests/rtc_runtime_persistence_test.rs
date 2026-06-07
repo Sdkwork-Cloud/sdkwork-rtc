@@ -321,6 +321,29 @@ impl RtcProviderPort for TrackingRtcProvider {
         )))
     }
 
+    fn export_recording_artifacts(
+        &self,
+        tenant_id: &str,
+        rtc_session_id: &str,
+    ) -> Result<Vec<RtcRecordingArtifact>, RtcContractError> {
+        Ok(vec![
+            RtcRecordingArtifact::drive_backed_recording(
+                tenant_id,
+                rtc_session_id,
+                "space_rtc_recordings",
+                format!("node_{rtc_session_id}"),
+                None,
+            ),
+            RtcRecordingArtifact::drive_backed_recording(
+                tenant_id,
+                rtc_session_id,
+                "space_rtc_recordings",
+                format!("node_{rtc_session_id}_transcript"),
+                None,
+            ),
+        ])
+    }
+
     fn provider_health_snapshot(&self) -> ProviderHealthSnapshot {
         let mut details = BTreeMap::new();
         details.insert("providerKind".into(), "volcengine".into());
@@ -331,6 +354,54 @@ impl RtcProviderPort for TrackingRtcProvider {
             details,
         }
     }
+}
+
+#[test]
+fn test_runtime_lists_multiple_drive_backed_recording_artifacts_for_one_session() {
+    let rtc_store = Arc::new(MemoryRtcStateStore::default());
+    let rtc_provider = Arc::new(TrackingRtcProvider::default());
+    let rtc_descriptor = rtc_provider.descriptor();
+    let runtime = sdkwork_rtc_signaling_service::RtcRuntime::with_store_and_provider_registry(
+        rtc_store,
+        Arc::new(StaticProviderRegistry::platform_default()),
+        [(
+            rtc_descriptor.plugin_id.clone(),
+            rtc_provider.clone() as Arc<dyn RtcProviderPort>,
+        )],
+    );
+
+    let auth = demo_auth_context();
+    runtime
+        .create_session(
+            &auth,
+            sdkwork_rtc_signaling_service::CreateRtcSessionRequest {
+                rtc_session_id: "rtc_recording_multi".into(),
+                conversation_id: None,
+                rtc_mode: "video".into(),
+            },
+        )
+        .expect("rtc session should be created");
+
+    let artifacts = runtime
+        .recording_artifacts(&auth, "rtc_recording_multi")
+        .expect("rtc recording artifacts should be delegated to provider list contract");
+
+    assert_eq!(artifacts.len(), 2);
+    assert_eq!(
+        artifacts
+            .iter()
+            .map(|artifact| artifact.drive.drive_uri.as_str())
+            .collect::<Vec<_>>(),
+        vec![
+            "drive://spaces/space_rtc_recordings/nodes/node_rtc_recording_multi",
+            "drive://spaces/space_rtc_recordings/nodes/node_rtc_recording_multi_transcript",
+        ]
+    );
+    assert!(artifacts.iter().all(|artifact| {
+        artifact.drive.is_canonical()
+            && artifact.resource.uri.as_deref() == Some(artifact.drive.drive_uri.as_str())
+            && artifact.resource.source == sdkwork_rtc_core::RtcMediaSource::Drive
+    }));
 }
 
 fn demo_auth_context() -> AppContext {

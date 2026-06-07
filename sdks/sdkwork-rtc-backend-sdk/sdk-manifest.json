@@ -25,7 +25,7 @@
     }
   ],
   "generatorName": "@sdkwork/sdk-generator",
-  "generatorEntryPoint": "D:\\javasource\\spring-ai-plus\\sdk\\sdkwork-sdk-generator\\bin\\sdkgen.js",
+  "generatorEntryPoint": "../sdkwork-sdk-generator/bin/sdkgen.js",
   "standardProfile": "sdkwork-v3",
   "ownerOnlyOperationCount": 10
 }

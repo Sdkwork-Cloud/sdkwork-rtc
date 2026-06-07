@@ -345,11 +345,7 @@ pub trait RtcStateStore: Send + Sync {
 
     fn save_state(&self, record: RtcStateRecord) -> Result<(), RtcContractError>;
 
-    fn clear_state(
-        &self,
-        tenant_id: &str,
-        rtc_session_id: &str,
-    ) -> Result<bool, RtcContractError>;
+    fn clear_state(&self, tenant_id: &str, rtc_session_id: &str) -> Result<bool, RtcContractError>;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -532,9 +528,14 @@ impl StaticProviderRegistry {
             .with_default_selected(true)
             .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
             .with_optional_capabilities(RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES),
-            ProviderPluginDescriptor::new("rtc-aliyun", ProviderDomain::Rtc, "aliyun", "Aliyun RTC")
-                .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
-                .with_optional_capabilities(RTC_PROVIDER_ALIYUN_OPTIONAL_CAPABILITIES),
+            ProviderPluginDescriptor::new(
+                "rtc-aliyun",
+                ProviderDomain::Rtc,
+                "aliyun",
+                "Aliyun RTC",
+            )
+            .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
+            .with_optional_capabilities(RTC_PROVIDER_ALIYUN_OPTIONAL_CAPABILITIES),
             ProviderPluginDescriptor::new(
                 "rtc-tencent",
                 ProviderDomain::Rtc,
@@ -805,6 +806,68 @@ pub struct RtcCallbackEvent {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RtcCallRecordKind {
+    Recording,
+    Transcript,
+    ScreenShare,
+    Snapshot,
+    ChatLog,
+    Other,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RtcCallRecordStatus {
+    Pending,
+    Processing,
+    Ready,
+    Failed,
+    Deleted,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcCallRecordArtifact {
+    pub id: String,
+    pub tenant_id: String,
+    pub rtc_session_id: String,
+    pub owner_user_id: String,
+    pub record_kind: RtcCallRecordKind,
+    pub record_status: RtcCallRecordStatus,
+    pub media_role: String,
+    pub provider_profile_id: Option<String>,
+    pub provider_record_id: Option<String>,
+    pub drive: RtcDriveReference,
+    pub resource: RtcMediaResource,
+    pub resource_hash: Option<String>,
+    pub started_at: Option<String>,
+    pub ended_at: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcCallRecordList {
+    pub tenant_id: String,
+    pub rtc_session_id: String,
+    pub items: Vec<RtcCallRecordArtifact>,
+}
+
+impl RtcCallRecordList {
+    pub fn new(
+        tenant_id: impl Into<String>,
+        rtc_session_id: impl Into<String>,
+        items: Vec<RtcCallRecordArtifact>,
+    ) -> Self {
+        Self {
+            tenant_id: tenant_id.into(),
+            rtc_session_id: rtc_session_id.into(),
+            items,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RtcRecordingArtifact {
     pub tenant_id: String,
@@ -841,7 +904,7 @@ impl RtcRecordingArtifact {
             resource: RtcMediaResource {
                 id: Some(node_id),
                 kind: RtcMediaKind::Video,
-                source: RtcMediaSource::ProviderAsset,
+                source: RtcMediaSource::Drive,
                 url: None,
                 public_url: None,
                 uri: Some(drive_uri),
@@ -863,6 +926,34 @@ impl RtcRecordingArtifact {
                 metadata: None,
             },
             media_role: "rtc_recording".into(),
+        }
+    }
+
+    pub fn into_call_record_artifact(
+        self,
+        id: impl Into<String>,
+        owner_user_id: impl Into<String>,
+        record_kind: RtcCallRecordKind,
+        record_status: RtcCallRecordStatus,
+        media_role: impl Into<String>,
+        started_at: impl Into<String>,
+        ended_at: impl Into<String>,
+    ) -> RtcCallRecordArtifact {
+        RtcCallRecordArtifact {
+            id: id.into(),
+            tenant_id: self.tenant_id,
+            rtc_session_id: self.rtc_session_id,
+            owner_user_id: owner_user_id.into(),
+            record_kind,
+            record_status,
+            media_role: media_role.into(),
+            provider_profile_id: None,
+            provider_record_id: None,
+            drive: self.drive,
+            resource: self.resource,
+            resource_hash: None,
+            started_at: Some(started_at.into()),
+            ended_at: Some(ended_at.into()),
         }
     }
 }
@@ -899,6 +990,16 @@ pub trait RtcProviderPort: Send + Sync {
         tenant_id: &str,
         rtc_session_id: &str,
     ) -> Result<Option<RtcRecordingArtifact>, RtcContractError>;
+    fn export_recording_artifacts(
+        &self,
+        tenant_id: &str,
+        rtc_session_id: &str,
+    ) -> Result<Vec<RtcRecordingArtifact>, RtcContractError> {
+        Ok(self
+            .export_recording_artifact(tenant_id, rtc_session_id)?
+            .into_iter()
+            .collect())
+    }
     fn provider_health_snapshot(&self) -> ProviderHealthSnapshot;
 }
 
@@ -1092,9 +1193,7 @@ fn format_unix_millis(millis: i128) -> String {
     let hour = seconds_of_day / 3_600;
     let minute = (seconds_of_day % 3_600) / 60;
     let second = seconds_of_day % 60;
-    format!(
-        "{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millisecond:03}Z"
-    )
+    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millisecond:03}Z")
 }
 
 fn days_from_civil(year: i32, month: u32, day: u32) -> Option<i64> {
@@ -1174,6 +1273,91 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn drive_backed_recording_artifact_uses_drive_media_source() {
+        let artifact = RtcRecordingArtifact::drive_backed_recording(
+            "tenant-1",
+            "rtc-session-1",
+            "space-rtc-user-1",
+            "node-recording-1",
+            Some("1".to_string()),
+        );
+
+        assert_eq!(artifact.resource.source, RtcMediaSource::Drive);
+        assert_eq!(
+            artifact.resource.uri.as_deref(),
+            Some("drive://spaces/space-rtc-user-1/nodes/node-recording-1")
+        );
+        assert_eq!(artifact.resource.url, None);
+        assert_eq!(artifact.resource.public_url, None);
+
+        let artifact_json =
+            serde_json::to_value(&artifact).expect("RTC recording artifact should serialize");
+        for forbidden in ["bucket", "objectKey", "storageProvider", "signedUrl"] {
+            assert!(
+                artifact_json.get(forbidden).is_none(),
+                "Drive-backed RTC artifact must not expose object storage field {forbidden}"
+            );
+        }
+    }
+
+    #[test]
+    fn rtc_call_record_list_models_multiple_drive_backed_records_for_one_session() {
+        let recording = RtcRecordingArtifact::drive_backed_recording(
+            "tenant-1",
+            "rtc-session-1",
+            "space-rtc-user-1",
+            "node-recording-1",
+            Some("1".to_string()),
+        );
+        let transcript = RtcRecordingArtifact::drive_backed_recording(
+            "tenant-1",
+            "rtc-session-1",
+            "space-rtc-user-1",
+            "node-transcript-1",
+            Some("1".to_string()),
+        )
+        .into_call_record_artifact(
+            "record-transcript-1",
+            "user-1",
+            RtcCallRecordKind::Transcript,
+            RtcCallRecordStatus::Ready,
+            "rtc_transcript",
+            "2026-06-06T00:00:00.000Z",
+            "2026-06-06T00:10:00.000Z",
+        );
+        let recording = recording.into_call_record_artifact(
+            "record-recording-1",
+            "user-1",
+            RtcCallRecordKind::Recording,
+            RtcCallRecordStatus::Ready,
+            "rtc_recording",
+            "2026-06-06T00:00:00.000Z",
+            "2026-06-06T00:10:00.000Z",
+        );
+        let records =
+            RtcCallRecordList::new("tenant-1", "rtc-session-1", vec![recording, transcript]);
+
+        assert_eq!(records.items.len(), 2);
+        assert!(
+            records
+                .items
+                .iter()
+                .all(|record| record.tenant_id == "tenant-1"
+                    && record.rtc_session_id == "rtc-session-1"
+                    && record.drive.is_canonical()
+                    && record.resource.source == RtcMediaSource::Drive)
+        );
+        assert_eq!(
+            records
+                .items
+                .iter()
+                .map(|record| record.record_kind.clone())
+                .collect::<Vec<_>>(),
+            vec![RtcCallRecordKind::Recording, RtcCallRecordKind::Transcript]
+        );
     }
 
     #[test]

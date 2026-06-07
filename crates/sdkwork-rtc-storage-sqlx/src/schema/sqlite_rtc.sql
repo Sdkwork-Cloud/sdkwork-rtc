@@ -70,6 +70,40 @@ CREATE INDEX idx_rtc_call_session_tenant_room_status_updated
 CREATE INDEX idx_rtc_call_session_provider_status
     ON rtc_call_session (provider_profile_id, status, updated_at);
 
+CREATE TABLE rtc_call_record (
+    id INTEGER NOT NULL,
+    uuid TEXT NOT NULL,
+    tenant_id INTEGER NOT NULL,
+    organization_id INTEGER NOT NULL DEFAULT 0,
+    session_id TEXT NOT NULL,
+    owner_user_id INTEGER NOT NULL,
+    record_kind INTEGER NOT NULL,
+    record_status INTEGER NOT NULL,
+    media_role TEXT NOT NULL,
+    provider_profile_id TEXT,
+    provider_record_id TEXT,
+    drive_space_id TEXT NOT NULL,
+    drive_node_id TEXT NOT NULL,
+    drive_uri TEXT NOT NULL,
+    media_resource_snapshot TEXT NOT NULL,
+    resource_hash TEXT NOT NULL,
+    started_at TEXT,
+    ended_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_rtc_call_record_uuid UNIQUE (uuid),
+    CONSTRAINT uk_rtc_call_record_drive_uri UNIQUE (drive_uri),
+    CONSTRAINT ck_rtc_call_record_drive_uri CHECK (drive_uri LIKE 'drive://spaces/%/nodes/%')
+);
+
+CREATE INDEX idx_rtc_call_record_session_created
+    ON rtc_call_record (tenant_id, organization_id, session_id, created_at);
+
+CREATE INDEX idx_rtc_call_record_owner_created
+    ON rtc_call_record (tenant_id, organization_id, owner_user_id, created_at);
+
 CREATE TABLE rtc_call_participant (
     id INTEGER NOT NULL,
     uuid TEXT NOT NULL,

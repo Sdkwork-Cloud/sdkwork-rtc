@@ -59,6 +59,7 @@
       "rtc.credentials.issue",
       "rtc.sessions.end",
       "rtc.sessions.invite",
+      "rtc.records.list",
       "rtc.sessions.reject",
       "rtc.signals.list",
       "rtc.signals.create"

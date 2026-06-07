@@ -24,7 +24,10 @@ pub const RTC_TABLES: &[RtcTableContract] = &[
             "version",
             "deleted_at",
         ],
-        indexes: &["uk_rtc_room_uuid", "idx_rtc_room_tenant_owner_status_updated"],
+        indexes: &[
+            "uk_rtc_room_uuid",
+            "idx_rtc_room_tenant_owner_status_updated",
+        ],
     },
     RtcTableContract {
         table_name: "rtc_room_participant",
@@ -69,6 +72,38 @@ pub const RTC_TABLES: &[RtcTableContract] = &[
             "uk_rtc_call_session_uuid",
             "idx_rtc_call_session_tenant_room_status_updated",
             "idx_rtc_call_session_provider_status",
+        ],
+    },
+    RtcTableContract {
+        table_name: "rtc_call_record",
+        required_columns: &[
+            "id",
+            "uuid",
+            "tenant_id",
+            "organization_id",
+            "session_id",
+            "owner_user_id",
+            "record_kind",
+            "record_status",
+            "media_role",
+            "provider_profile_id",
+            "provider_record_id",
+            "drive_space_id",
+            "drive_node_id",
+            "drive_uri",
+            "media_resource_snapshot",
+            "resource_hash",
+            "started_at",
+            "ended_at",
+            "created_at",
+            "updated_at",
+            "version",
+        ],
+        indexes: &[
+            "uk_rtc_call_record_uuid",
+            "uk_rtc_call_record_drive_uri",
+            "idx_rtc_call_record_session_created",
+            "idx_rtc_call_record_owner_created",
         ],
     },
     RtcTableContract {
@@ -310,5 +345,37 @@ mod tests {
         assert!(!SQLITE_SCHEMA.contains("access_token"));
         assert!(!POSTGRES_SCHEMA.contains("secret_key"));
         assert!(!SQLITE_SCHEMA.contains("secret_key"));
+    }
+
+    #[test]
+    fn rtc_call_record_persists_drive_references_not_provider_storage_details() {
+        for schema in [POSTGRES_SCHEMA, SQLITE_SCHEMA] {
+            let table = table_block(schema, "rtc_call_record");
+
+            assert!(table.contains("drive_space_id"));
+            assert!(table.contains("drive_node_id"));
+            assert!(table.contains("drive_uri"));
+            assert!(table.contains("media_resource_snapshot"));
+            assert!(table.contains("resource_hash"));
+
+            for forbidden in ["bucket", "object_key", "signed_url", "presigned"] {
+                assert!(
+                    !table.contains(forbidden),
+                    "rtc_call_record must not persist provider storage detail {forbidden}"
+                );
+            }
+        }
+    }
+
+    fn table_block<'a>(schema: &'a str, table_name: &str) -> &'a str {
+        let start = schema
+            .find(&format!("CREATE TABLE {table_name}"))
+            .unwrap_or_else(|| panic!("schema should create table {table_name}"));
+        let after_start = &schema[start..];
+        let end = after_start
+            .find("\n\nCREATE ")
+            .or_else(|| after_start.find("\r\n\r\nCREATE "))
+            .unwrap_or(after_start.len());
+        &after_start[..end]
     }
 }

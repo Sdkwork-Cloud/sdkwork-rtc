@@ -24,9 +24,8 @@ use sdkwork_rtc_core::{
     EffectiveProviderBinding, ProviderDomain, ProviderHealthSnapshot, ProviderRegistry,
     RtcCallbackEvent, RtcCallbackRequest, RtcContractError,
     RtcCreateSessionRequest as ProviderRtcCreateSessionRequest, RtcParticipantCredential,
-    RtcProviderPort, RtcRecordingArtifact, RtcSession, RtcSessionState,
-    RtcSignalEvent, RtcSignalSender, RtcStateRecord, RtcStateStore, StaticProviderRegistry,
-    utc_now_rfc3339_millis,
+    RtcProviderPort, RtcRecordingArtifact, RtcSession, RtcSessionState, RtcSignalEvent,
+    RtcSignalSender, RtcStateRecord, RtcStateStore, StaticProviderRegistry, utc_now_rfc3339_millis,
 };
 use sdkwork_rtc_openapi::{
     OpenApiServiceSpec, build_openapi_document, extract_routes_from_function, render_docs_html,
@@ -408,6 +407,19 @@ impl RtcRuntime {
             .map_err(RtcError::rtc_provider)?
             .ok_or_else(|| RtcError::recording_artifact_not_found(rtc_session_id))?;
         Ok(artifact)
+    }
+
+    pub fn recording_artifacts(
+        &self,
+        auth: &AppContext,
+        rtc_session_id: &str,
+    ) -> Result<Vec<RtcRecordingArtifact>, RtcError> {
+        let session = self.session(auth, rtc_session_id)?;
+        let provider = self.rtc_provider_for_session(auth.tenant_id.as_str(), &session)?;
+        let artifacts = provider
+            .export_recording_artifacts(auth.tenant_id.as_str(), rtc_session_id)
+            .map_err(RtcError::rtc_provider)?;
+        Ok(artifacts)
     }
 
     pub fn provider_health_snapshot(
@@ -1153,6 +1165,10 @@ pub fn build_app(runtime: Arc<RtcRuntime>) -> Router {
             post(issue_participant_credential),
         )
         .route(
+            "/app/v3/api/rtc/sessions/{rtc_session_id}/records",
+            get(list_recording_artifacts),
+        )
+        .route(
             "/app/v3/api/rtc/sessions/{rtc_session_id}/artifacts/recording",
             get(get_recording_artifact),
         )
@@ -1452,6 +1468,21 @@ async fn get_recording_artifact(
         state
             .runtime
             .recording_artifact(&auth, rtc_session_id.as_str())?,
+    ))
+}
+
+async fn list_recording_artifacts(
+    Path(rtc_session_id): Path<String>,
+    auth: Option<Extension<AppContext>>,
+    headers: HeaderMap,
+    State(state): State<AppState>,
+) -> Result<Json<Vec<RtcRecordingArtifact>>, RtcError> {
+    let auth = resolve_request_app_context(auth, &headers)?;
+    ensure_standalone_rtc_session_allowed(&state.runtime, &auth, rtc_session_id.as_str())?;
+    Ok(Json(
+        state
+            .runtime
+            .recording_artifacts(&auth, rtc_session_id.as_str())?,
     ))
 }
 
@@ -2110,5 +2141,4 @@ mod tests {
         let error = persist_result.expect_err("missing session should return structured error");
         assert_eq!(error.code(), "rtc_session_not_found");
     }
-
 }

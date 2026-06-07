@@ -31,67 +31,67 @@
   "canonicalSpecs": [
     {
       "file": "API_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/API_SPEC.md",
+      "path": "../../../../sdkwork-specs/API_SPEC.md",
       "purpose": "HTTP/OpenAPI and generated SDK contract rules."
     },
     {
       "file": "COMPONENT_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/COMPONENT_SPEC.md",
+      "path": "../../../../sdkwork-specs/COMPONENT_SPEC.md",
       "purpose": "Local component specs directory and manifest rules."
     },
     {
       "file": "CONFIG_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/CONFIG_SPEC.md",
+      "path": "../../../../sdkwork-specs/CONFIG_SPEC.md",
       "purpose": "Runtime configuration, environment, SDK bootstrap, and feature flag rules."
     },
     {
       "file": "DOCUMENTATION_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/DOCUMENTATION_SPEC.md",
+      "path": "../../../../sdkwork-specs/DOCUMENTATION_SPEC.md",
       "purpose": "Module README, examples, ADR, changelog, and runbook rules."
     },
     {
       "file": "DOMAIN_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/DOMAIN_SPEC.md",
+      "path": "../../../../sdkwork-specs/DOMAIN_SPEC.md",
       "purpose": "Canonical domain ownership and naming."
     },
     {
       "file": "FRONTEND_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/FRONTEND_SPEC.md",
+      "path": "../../../../sdkwork-specs/FRONTEND_SPEC.md",
       "purpose": "UI, service, SDK, accessibility, and frontend runtime rules."
     },
     {
       "file": "GOVERNANCE_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/GOVERNANCE_SPEC.md",
+      "path": "../../../../sdkwork-specs/GOVERNANCE_SPEC.md",
       "purpose": "Standard ownership, exception, compatibility, and migration rules."
     },
     {
       "file": "I18N_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/I18N_SPEC.md",
+      "path": "../../../../sdkwork-specs/I18N_SPEC.md",
       "purpose": "User-facing language, locale, message catalog, and fallback rules."
     },
     {
       "file": "MODULE_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/MODULE_SPEC.md",
+      "path": "../../../../sdkwork-specs/MODULE_SPEC.md",
       "purpose": "Reusable package contract and dependency direction."
     },
     {
       "file": "README.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/README.md",
+      "path": "../../../../sdkwork-specs/README.md",
       "purpose": "SDKWork root standards entrypoint."
     },
     {
       "file": "SDK_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/SDK_SPEC.md",
+      "path": "../../../../sdkwork-specs/SDK_SPEC.md",
       "purpose": "SDK generation and SDK integration rules."
     },
     {
       "file": "SDK_WORKSPACE_GENERATION_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/SDK_WORKSPACE_GENERATION_SPEC.md",
+      "path": "../../../../sdkwork-specs/SDK_WORKSPACE_GENERATION_SPEC.md",
       "purpose": "Application-root sdks workspace, SDK family naming, provider/runtime SDK exception, and OpenAPI generation rules."
     },
     {
       "file": "TEST_SPEC.md",
-      "path": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/TEST_SPEC.md",
+      "path": "../../../../sdkwork-specs/TEST_SPEC.md",
       "purpose": "Contract, frontend, SDK, security, parity, and documentation verification rules."
     }
   ],
@@ -99,7 +99,7 @@
     "providerRuntime": {
       "kind": "provider-runtime-sdk",
       "routeGenerated": false,
-      "standard": "D:/javasource/spring-ai-plus/spring-ai-plus-business/specs/SDK_WORKSPACE_GENERATION_SPEC.md",
+      "standard": "../../../../sdkwork-specs/SDK_WORKSPACE_GENERATION_SPEC.md",
       "description": "RTC provider-standard SDK family. It is not an OpenAPI route-generated HTTP SDK family."
     },
     "publicExports": [],

@@ -37,6 +37,11 @@
       "x-sdk-nested-resource-surface": true
     },
     {
+      "name": "rtcRecords",
+      "description": "Rtc Records API resources.",
+      "x-sdk-nested-resource-surface": true
+    },
+    {
       "name": "rtcSessions",
       "description": "Rtc Sessions API resources.",
       "x-sdk-nested-resource-surface": true
@@ -1030,6 +1035,156 @@
             }
           }
         }
+      }
+    },
+    "/app/v3/api/rtc/sessions/{rtcSessionId}/records": {
+      "get": {
+        "tags": [
+          "rtcRecords"
+        ],
+        "summary": "Rtc records list.",
+        "operationId": "rtc.records.list",
+        "parameters": [
+          {
+            "name": "rtcSessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcApiResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.records",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.records.read"
       }
     },
     "/app/v3/api/rtc/sessions/{rtcSessionId}/reject": {

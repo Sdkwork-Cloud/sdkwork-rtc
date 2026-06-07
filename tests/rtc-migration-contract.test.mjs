@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const rtcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const appbaseRoot = "D:\\javasource\\spring-ai-plus\\spring-ai-plus-business\\apps\\sdkwork-appbase";
-const crawChatRoot = "D:\\javasource\\spring-ai-plus\\spring-ai-plus-business\\apps\\craw-chat";
-const sdkworkCoreRoot = "D:\\javasource\\spring-ai-plus\\spring-ai-plus-business\\apps\\sdkwork-core";
+const appbaseRoot = path.resolve(rtcRoot, "..", "sdkwork-appbase");
+const crawChatRoot = path.resolve(rtcRoot, "..", "craw-chat");
+const sdkworkCoreRoot = path.resolve(rtcRoot, "..", "sdkwork-core");
 
 const requiredRtcPaths = [
   "sdks/sdkwork-rtc-sdk/README.md",
@@ -33,7 +33,7 @@ const forbiddenAppbasePatterns = [
   /@sdkwork\/rtc-sdk/,
   /@sdkwork\/rtc-pc-react/,
   /sdkwork-rtc-sdk/,
-  /sdkwork-opensource[\\/]sdkwork-rtc/,
+  /sdkwork-space[\\/]sdkwork-rtc/,
   /\.\.\/craw-chat\/sdks\/sdkwork-rtc-sdk/,
   /sdkwork-react-backend-rtc/,
 ];
@@ -65,7 +65,7 @@ const forbiddenCrawChatPatterns = [
 
 const forbiddenSdkworkCorePatterns = [
   /@sdkwork\/rtc-sdk/,
-  /sdkwork-opensource[\\/]sdkwork-rtc/,
+  /sdkwork-space[\\/]sdkwork-rtc/,
   /craw-chat\/sdks\/sdkwork-rtc-sdk/,
   /craw-chat\\sdks\\sdkwork-rtc-sdk/,
   /link:[^\r\n]*craw-chat\/sdks\/sdkwork-rtc-sdk/,
@@ -203,18 +203,18 @@ test("craw-chat PC app consumes the RTC SDK from sdkwork-rtc", () => {
   );
   assert.match(
     packageJson,
-    /@sdkwork\/rtc-sdk[\s\S]*sdkwork-opensource\/sdkwork-rtc\/sdks\/sdkwork-rtc-sdk\/sdkwork-rtc-sdk-typescript/,
+    /@sdkwork\/rtc-sdk[\s\S]*\.\.\/\.\.\/\.\.\/sdkwork-rtc\/sdks\/sdkwork-rtc-sdk\/sdkwork-rtc-sdk-typescript/,
   );
 
   const workspace = readFileSync(workspacePath(appbaseRoot, "pnpm-workspace.yaml"), "utf8");
-  assert.doesNotMatch(workspace, /sdkwork-opensource\/sdkwork-rtc/);
+  assert.doesNotMatch(workspace, /sdkwork-space\/sdkwork-rtc/);
   const chatWorkspace = readFileSync(
     workspacePath(crawChatRoot, "apps/sdkwork-chat-pc/pnpm-workspace.yaml"),
     "utf8",
   );
   assert.match(
     chatWorkspace,
-    /\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/sdkwork-opensource\/sdkwork-rtc\/sdks\/sdkwork-rtc-sdk\/sdkwork-rtc-sdk-typescript/,
+    /\.\.\/\.\.\/\.\.\/sdkwork-rtc\/sdks\/sdkwork-rtc-sdk\/sdkwork-rtc-sdk-typescript/,
   );
 });
 
@@ -245,7 +245,7 @@ test("craw-chat Rust runtime consumes sdkwork-rtc crates from the current worksp
     "services/local-minimal-node/Cargo.toml",
   ];
   const matches = findPatternMatches(crawChatRoot, manifests, [
-    /sdkwork-rtc-core = \{ path = "D:\/sdkwork-opensource\/sdkwork-rtc\/crates\/sdkwork-rtc-core" \}/,
+    /sdkwork-rtc-core = \{ path = "\.\.\/\.\.\/\.\.\/sdkwork-rtc\/crates\/sdkwork-rtc-core" \}/,
   ]);
   assert.equal(matches.length, manifests.length);
 
@@ -255,11 +255,11 @@ test("craw-chat Rust runtime consumes sdkwork-rtc crates from the current worksp
   );
   assert.match(
     localMinimalNode,
-    /sdkwork-rtc-signaling-service = \{ path = "D:\/sdkwork-opensource\/sdkwork-rtc\/services\/sdkwork-rtc-signaling-service" \}/,
+    /sdkwork-rtc-signaling-service = \{ path = "\.\.\/\.\.\/\.\.\/sdkwork-rtc\/services\/sdkwork-rtc-signaling-service" \}/,
   );
   assert.match(
     localMinimalNode,
-    /sdkwork-rtc-state-store = \{ path = "D:\/sdkwork-opensource\/sdkwork-rtc\/crates\/sdkwork-rtc-state-store" \}/,
+    /sdkwork-rtc-state-store = \{ path = "\.\.\/\.\.\/\.\.\/sdkwork-rtc\/crates\/sdkwork-rtc-state-store" \}/,
   );
 });
 

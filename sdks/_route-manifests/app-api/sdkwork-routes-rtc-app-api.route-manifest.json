@@ -303,6 +303,38 @@
       }
     },
     {
+      "method": "GET",
+      "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/records",
+      "operationId": "rtc.records.list",
+      "tags": [
+        "rtcRecords"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.records.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "records_list"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcApiResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-app-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "services/sdkwork-routes-rtc-app-api/src/lib.rs"
+      }
+    },
+    {
       "method": "POST",
       "path": "/app/v3/api/rtc/sessions/{rtcSessionId}/reject",
       "operationId": "rtc.sessions.reject",

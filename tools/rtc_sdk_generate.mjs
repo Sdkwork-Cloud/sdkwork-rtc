@@ -13,8 +13,7 @@ const HTTP_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
 const OFFICIAL_LANGUAGE_ORDER = ["typescript", "rust", "java", "python", "go"];
 const DEFAULT_LANGUAGE = "typescript";
 const STANDARD_PROFILE = "sdkwork-v3";
-const GENERATOR_BIN =
-  "D:\\javasource\\spring-ai-plus\\sdk\\sdkwork-sdk-generator\\bin\\sdkgen.js";
+const GENERATOR_BIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "sdkwork-sdk-generator", "bin", "sdkgen.js");
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 

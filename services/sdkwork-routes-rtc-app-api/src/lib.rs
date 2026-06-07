@@ -87,6 +87,14 @@ pub const RTC_APP_ROUTES: &[RtcAppRoute] = &[
     },
     RtcAppRoute {
         method: "GET",
+        path: "/app/v3/api/rtc/sessions/{rtcSessionId}/records",
+        tag: "rtcRecords",
+        operation_id: "rtc.records.list",
+        owner: RTC_OWNER,
+        permission: "rtc.records.read",
+    },
+    RtcAppRoute {
+        method: "GET",
         path: "/app/v3/api/rtc/sessions/{rtcSessionId}/artifacts/recording",
         tag: "rtcArtifacts",
         operation_id: "rtc.artifacts.recording.retrieve",
@@ -111,7 +119,13 @@ pub const RTC_APP_ROUTES: &[RtcAppRoute] = &[
     },
 ];
 
-pub fn route_manifest_header() -> (&'static str, &'static str, &'static str, &'static str, &'static str) {
+pub fn route_manifest_header() -> (
+    &'static str,
+    &'static str,
+    &'static str,
+    &'static str,
+    &'static str,
+) {
     (
         RTC_DOMAIN,
         RTC_APP_API_AUTHORITY,
@@ -150,6 +164,7 @@ mod tests {
         assert!(operation_ids.contains(&"rtc.signals.create"));
         assert!(operation_ids.contains(&"rtc.signals.list"));
         assert!(operation_ids.contains(&"rtc.credentials.issue"));
+        assert!(operation_ids.contains(&"rtc.records.list"));
         assert!(operation_ids.contains(&"rtc.artifacts.recording.retrieve"));
         assert!(operation_ids.contains(&"rtc.providerCallbacks.create"));
         assert!(operation_ids.contains(&"rtc.providerHealth.retrieve"));

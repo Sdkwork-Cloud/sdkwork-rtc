@@ -29,10 +29,7 @@ async fn test_public_app_exports_live_openapi_json() {
         serde_json::from_slice(&body).expect("body should be valid json");
 
     assert_eq!(value["openapi"], "3.1.0");
-    assert_eq!(
-        value["info"]["title"],
-        "SDKWork RTC Signaling Service API"
-    );
+    assert_eq!(value["info"]["title"], "SDKWork RTC Signaling Service API");
     assert!(value["paths"]["/app/v3/api/rtc/sessions"].is_object());
 }
 
@@ -983,12 +980,80 @@ async fn test_get_rtc_recording_artifact_over_http() {
         "drive://spaces/space_rtc_recordings/nodes/node_rtc_recording_http"
     );
     assert_eq!(artifact_json["resource"]["kind"], "video");
-    assert_eq!(artifact_json["resource"]["source"], "provider_asset");
+    assert_eq!(artifact_json["resource"]["source"], "drive");
     assert_eq!(artifact_json["mediaRole"], "rtc_recording");
     for forbidden in ["bucket", "objectKey", "storageProvider", "playbackUrl"] {
         assert!(
             artifact_json.get(forbidden).is_none(),
             "RTC recording artifact response must not expose object-storage field {forbidden}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn test_list_rtc_recording_artifacts_over_http() {
+    let app = sdkwork_rtc_signaling_service::build_default_app();
+
+    let create_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/app/v3/api/rtc/sessions")
+                .header("x-sdkwork-tenant-id", "t_demo")
+                .header("x-sdkwork-user-id", "u_demo")
+                .header("x-sdkwork-actor-kind", "user")
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    r#"{
+                        "rtcSessionId":"rtc_records_http",
+                        "rtcMode":"video"
+                    }"#,
+                ))
+                .unwrap(),
+        )
+        .await
+        .expect("create rtc session should succeed");
+    assert_eq!(create_response.status(), StatusCode::OK);
+
+    let records_response = app
+        .oneshot(
+            Request::builder()
+                .uri("/app/v3/api/rtc/sessions/rtc_records_http/records")
+                .header("x-sdkwork-tenant-id", "t_demo")
+                .header("x-sdkwork-user-id", "u_demo")
+                .header("x-sdkwork-actor-kind", "user")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .expect("recording artifacts request should return response");
+
+    assert_eq!(records_response.status(), StatusCode::OK);
+    let records_body = records_response
+        .into_body()
+        .collect()
+        .await
+        .expect("recording artifacts body should collect")
+        .to_bytes();
+    let records_json: serde_json::Value =
+        serde_json::from_slice(&records_body).expect("recording artifacts should be valid json");
+
+    let items = records_json
+        .as_array()
+        .expect("recording artifacts response should be an array");
+    assert_eq!(items.len(), 1);
+    assert_eq!(items[0]["tenantId"], "t_demo");
+    assert_eq!(items[0]["rtcSessionId"], "rtc_records_http");
+    assert_eq!(items[0]["resource"]["source"], "drive");
+    assert_eq!(
+        items[0]["resource"]["uri"],
+        "drive://spaces/space_rtc_recordings/nodes/node_rtc_records_http"
+    );
+    for forbidden in ["bucket", "objectKey", "storageProvider", "playbackUrl"] {
+        assert!(
+            items[0].get(forbidden).is_none(),
+            "RTC recording artifacts response must not expose object-storage field {forbidden}"
         );
     }
 }
