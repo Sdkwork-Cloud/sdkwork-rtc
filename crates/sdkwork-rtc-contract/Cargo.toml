@@ -6,4 +6,4 @@ version.workspace = true
 
 [dependencies]
 serde.workspace = true
-sdkwork-rtc-core = { path = "../sdkwork-rtc-core" }
+sdkwork-rtc-core.workspace = true

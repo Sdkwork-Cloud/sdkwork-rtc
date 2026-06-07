@@ -5,5 +5,5 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-sdkwork-rtc-api-registry = { path = "../sdkwork-rtc-api-registry" }
+sdkwork-rtc-api-registry.workspace = true
 serde_json.workspace = true

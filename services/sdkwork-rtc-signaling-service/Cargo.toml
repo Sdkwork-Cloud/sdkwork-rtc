@@ -8,16 +8,16 @@ version.workspace = true
 axum.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-sdkwork-rtc-adapter-agora = { path = "../../adapters/rtc-agora" }
-sdkwork-rtc-adapter-aliyun = { path = "../../adapters/rtc-aliyun" }
-sdkwork-rtc-adapter-livekit = { path = "../../adapters/rtc-livekit" }
-sdkwork-rtc-adapter-tencent = { path = "../../adapters/rtc-tencent" }
-sdkwork-rtc-adapter-volcengine = { path = "../../adapters/rtc-volcengine" }
-sdkwork-rtc-api-registry = { path = "../../crates/sdkwork-rtc-api-registry" }
-sdkwork-rtc-app-context = { path = "../../crates/sdkwork-rtc-app-context" }
-sdkwork-rtc-core = { path = "../../crates/sdkwork-rtc-core" }
-sdkwork-rtc-openapi = { path = "../../crates/sdkwork-rtc-openapi" }
-sdkwork-rtc-state-store = { path = "../../crates/sdkwork-rtc-state-store" }
+sdkwork-rtc-adapter-agora.workspace = true
+sdkwork-rtc-adapter-aliyun.workspace = true
+sdkwork-rtc-adapter-livekit.workspace = true
+sdkwork-rtc-adapter-tencent.workspace = true
+sdkwork-rtc-adapter-volcengine.workspace = true
+sdkwork-rtc-api-registry.workspace = true
+sdkwork-rtc-app-context.workspace = true
+sdkwork-rtc-core.workspace = true
+sdkwork-rtc-openapi.workspace = true
+sdkwork-rtc-state-store.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

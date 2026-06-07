@@ -5,4 +5,4 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-sdkwork-rtc-core = { path = "../../crates/sdkwork-rtc-core" }
+sdkwork-rtc-core.workspace = true
