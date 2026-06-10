@@ -90,8 +90,6 @@ final class RtcLanguageWorkspaceRuntimeBaseline {
   const RtcLanguageWorkspaceRuntimeBaseline({
     required this.vendorSdkPackage,
     required this.vendorSdkImportPath,
-    required this.signalingSdkPackage,
-    required this.signalingSdkImportPath,
     required this.recommendedEntrypoint,
     required this.smokeCommand,
     required this.smokeMode,
@@ -100,8 +98,6 @@ final class RtcLanguageWorkspaceRuntimeBaseline {
 
   final String vendorSdkPackage;
   final String vendorSdkImportPath;
-  final String signalingSdkPackage;
-  final String signalingSdkImportPath;
   final String recommendedEntrypoint;
   final String smokeCommand;
   final String smokeMode;
@@ -179,6 +175,11 @@ final class RtcLanguageWorkspaceProviderPackageScaffold {
     required this.sourceSymbolPattern,
     required this.templateTokens,
     required this.sourceTemplateTokens,
+    required this.referenceProviderKey,
+    required this.referenceStatus,
+    required this.referenceRuntimeBridgeStatus,
+    required this.referenceVendorSdkPackage,
+    required this.referenceVendorSdkVersion,
     required this.runtimeBridgeStatus,
     required this.rootPublic,
     required this.status,
@@ -193,6 +194,11 @@ final class RtcLanguageWorkspaceProviderPackageScaffold {
   final String sourceSymbolPattern;
   final List<String> templateTokens;
   final List<String> sourceTemplateTokens;
+  final String? referenceProviderKey;
+  final String? referenceStatus;
+  final String? referenceRuntimeBridgeStatus;
+  final String? referenceVendorSdkPackage;
+  final String? referenceVendorSdkVersion;
   final String runtimeBridgeStatus;
   final bool rootPublic;
   final String status;
@@ -214,19 +220,18 @@ final class RtcLanguageWorkspaceCatalog {
       workspaceSummary: "This workspace is the executable reference implementation for provider-neutral RTC contracts, JDBC-style driver selection, standardized runtime lifecycle delegation, and provider package boundaries in sdkwork-rtc-sdk.",
       roleHighlights: <String>[
         "provider-neutral RTC contracts",
-        "first-class StandardRtcCallController public module at src/call-controller.ts for invite discovery and RTC session orchestration",
         "JDBC-style driver and data-source model",
         "assembly-driven provider catalog at src/provider-catalog.ts",
         "assembly-driven capability catalog at src/capability-catalog.ts with required-baseline and optional-advanced surface descriptors",
         "assembly-driven provider extension catalog at src/provider-extension-catalog.ts with unwrap-only extension metadata",
         "surface-aware capability negotiation and degradation helpers with supported, degraded, and unsupported outcomes",
-        "assembly-driven runtimeSurfaceStandard methodTerms join, leave, publish, unpublish, muteAudio, and muteVideo",
+        "assembly-driven runtimeSurfaceStandard methodTerms join, leave, publish, unpublish, startScreenShare, stopScreenShare, muteAudio, and muteVideo",
         "assembly-driven runtimeSurfaceStandard failureCode native_sdk_not_available when no runtime bridge is registered",
         "root public runtime surface constants RTC_RUNTIME_SURFACE_METHODS and RTC_RUNTIME_SURFACE_FAILURE_CODE",
         "assembly-driven default provider constants DEFAULT_RTC_PROVIDER_KEY, DEFAULT_RTC_PROVIDER_PLUGIN_ID, and DEFAULT_RTC_PROVIDER_DRIVER_ID",
-        "built-in provider adapters for volcengine, aliyun, tencent, agora, and livekit",
-        "TypeScript provider package statuses standardize built-in root-public packages as root_public_reference_boundary and executable non-builtin packages as package_reference_boundary",
-        "TypeScript runtime bridge baseline reference-baseline with official vendor SDK requirement required",
+        "official provider packages for volcengine, aliyun, tencent, agora, zego, livekit, twilio, jitsi, janus, and mediasoup",
+        "TypeScript provider package statuses standardize every executable provider as a package_reference_boundary",
+        "TypeScript runtime bridge baseline loads provider packages through the provider-package loader SPI",
       ],
       defaultProviderContract: RtcLanguageWorkspaceDefaultProviderContract(
         providerKey: "volcengine",
@@ -242,17 +247,15 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: RtcLanguageWorkspaceRuntimeBaseline(
-        vendorSdkPackage: "@volcengine/rtc",
-        vendorSdkImportPath: "@volcengine/rtc",
-        signalingSdkPackage: "@sdkwork/rtc-sdk",
-        signalingSdkImportPath: "@sdkwork/rtc-sdk",
-        recommendedEntrypoint: "createStandardRtcCallControllerStack",
-        smokeCommand: "node ./bin/sdk-call-smoke.mjs --json",
+        vendorSdkPackage: "@sdkwork/rtc-sdk-provider-volcengine",
+        vendorSdkImportPath: "@sdkwork/rtc-sdk-provider-volcengine",
+        recommendedEntrypoint: "installRtcProviderPackage",
+        smokeCommand: "npm run smoke",
         smokeMode: "runtime-backed",
-        smokeVariants: <String>["default", "reuse-live-connection"],
+        smokeVariants: <String>["default"],
       ),
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
         providerCatalogRelativePath: "src/provider-catalog.ts",
@@ -270,15 +273,15 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
         mode: "catalog-governed-mixed",
-        rootPublicPolicy: "builtin-only",
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary"],
-        runtimeBridgeStatusTerms: <String>["reference-baseline"],
+        rootPublicPolicy: "none",
+        lifecycleStatusTerms: <String>["package_reference_boundary"],
+        runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageScaffold: null,
     ),
@@ -292,15 +295,14 @@ final class RtcLanguageWorkspaceCatalog {
       controlSdk: true,
       runtimeBridge: true,
       currentRole: "Executable mobile runtime baseline",
-      workspaceSummary: "This workspace is the executable Flutter/mobile runtime baseline for provider-neutral RTC contracts, Volcengine default runtime binding, RTC signaling call orchestration, and JDBC-style driver selection in sdkwork-rtc-sdk.",
+      workspaceSummary: "This workspace is the executable Flutter/mobile runtime baseline for provider-neutral RTC contracts, Volcengine default runtime binding, and JDBC-style driver selection in sdkwork-rtc-sdk.",
       roleHighlights: <String>[
         "provider-neutral RTC contracts",
         "JDBC-style driver manager and data source model for Flutter/mobile",
-        "official Volcengine Flutter runtime binding through package:volc_engine_rtc",
-        "RTC-owned signaling adapter integration through package:rtc_sdk/rtc_sdk.dart",
+        "official Volcengine Flutter runtime binding through the rtc_sdk_provider_volcengine plugin package",
         "assembly-driven provider catalog, capability catalog, provider extension catalog, and provider selection helpers",
         "default mobile provider remains volcengine unless the caller explicitly overrides selection",
-        "StandardRtcCallController quick-start stack for default Volcengine plus RTC signaling",
+        "mobile runtime bridge remains media/provider focused and leaves call signaling to IM",
       ],
       defaultProviderContract: RtcLanguageWorkspaceDefaultProviderContract(
         providerKey: "volcengine",
@@ -316,17 +318,15 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: RtcLanguageWorkspaceRuntimeBaseline(
-        vendorSdkPackage: "volc_engine_rtc",
-        vendorSdkImportPath: "package:volc_engine_rtc/volc_engine_rtc.dart",
-        signalingSdkPackage: "rtc_sdk",
-        signalingSdkImportPath: "package:rtc_sdk/rtc_sdk.dart",
-        recommendedEntrypoint: "createStandardRtcCallControllerStack",
-        smokeCommand: "node ./bin/sdk-call-smoke.mjs --json",
+        vendorSdkPackage: "rtc_sdk_provider_volcengine",
+        vendorSdkImportPath: "package:rtc_sdk_provider_volcengine/rtc_sdk_provider_volcengine.dart",
+        recommendedEntrypoint: "RtcDataSource",
+        smokeCommand: "flutter analyze",
         smokeMode: "analysis-backed",
-        smokeVariants: <String>["default", "reuse-live-connection"],
+        smokeVariants: <String>["default"],
       ),
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
         providerCatalogRelativePath: "lib/src/rtc_provider_catalog.dart",
@@ -344,15 +344,15 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
         mode: "scaffold-per-provider-package",
         rootPublicPolicy: "none",
-        lifecycleStatusTerms: <String>["future-runtime-bridge-only"],
-        runtimeBridgeStatusTerms: <String>["reserved"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
+        runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageScaffold: RtcLanguageWorkspaceProviderPackageScaffold(
         relativePath: "providers/provider-package-scaffold.md",
@@ -364,6 +364,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerKey}"],
         sourceTemplateTokens: <String>["{providerKey}", "{providerPascal}"],
+        referenceProviderKey: "volcengine",
+        referenceStatus: "package_reference_boundary",
+        referenceRuntimeBridgeStatus: "reference-baseline",
+        referenceVendorSdkPackage: "volc_engine_rtc",
+        referenceVendorSdkVersion: "^3.60.4",
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",
@@ -402,7 +407,7 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: null,
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
@@ -421,8 +426,8 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
@@ -441,6 +446,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerKey}"],
         sourceTemplateTokens: <String>["{providerPascal}"],
+        referenceProviderKey: null,
+        referenceStatus: null,
+        referenceRuntimeBridgeStatus: null,
+        referenceVendorSdkPackage: null,
+        referenceVendorSdkVersion: null,
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",
@@ -479,7 +489,7 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: null,
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
@@ -498,8 +508,8 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
@@ -518,6 +528,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerKey}"],
         sourceTemplateTokens: <String>["{providerKey}", "{providerPascal}"],
+        referenceProviderKey: null,
+        referenceStatus: null,
+        referenceRuntimeBridgeStatus: null,
+        referenceVendorSdkPackage: null,
+        referenceVendorSdkVersion: null,
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",
@@ -556,7 +571,7 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: null,
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
@@ -575,8 +590,8 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
@@ -595,6 +610,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerPascal}"],
         sourceTemplateTokens: <String>["{providerPascal}"],
+        referenceProviderKey: null,
+        referenceStatus: null,
+        referenceRuntimeBridgeStatus: null,
+        referenceVendorSdkPackage: null,
+        referenceVendorSdkVersion: null,
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",
@@ -633,7 +653,7 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: null,
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
@@ -652,8 +672,8 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
@@ -672,6 +692,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerPascal}"],
         sourceTemplateTokens: <String>["{providerPascal}"],
+        referenceProviderKey: null,
+        referenceStatus: null,
+        referenceRuntimeBridgeStatus: null,
+        referenceVendorSdkPackage: null,
+        referenceVendorSdkVersion: null,
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",
@@ -710,7 +735,7 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: null,
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
@@ -729,8 +754,8 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
@@ -749,6 +774,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerKey}"],
         sourceTemplateTokens: <String>["{providerKey}", "{providerPascal}"],
+        referenceProviderKey: null,
+        referenceStatus: null,
+        referenceRuntimeBridgeStatus: null,
+        referenceVendorSdkPackage: null,
+        referenceVendorSdkVersion: null,
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",
@@ -787,7 +817,7 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: null,
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
@@ -806,8 +836,8 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
@@ -826,6 +856,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerKey}"],
         sourceTemplateTokens: <String>["{providerPascal}"],
+        referenceProviderKey: null,
+        referenceStatus: null,
+        referenceRuntimeBridgeStatus: null,
+        referenceVendorSdkPackage: null,
+        referenceVendorSdkVersion: null,
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",
@@ -864,7 +899,7 @@ final class RtcLanguageWorkspaceCatalog {
         statusTerms: <String>["builtin_registered", "official_registered", "official_unregistered", "unknown"],
       ),
       providerActivationContract: RtcLanguageWorkspaceProviderActivationContract(
-        statusTerms: <String>["root-public-builtin", "package-boundary", "control-metadata-only"],
+        statusTerms: <String>["package-boundary", "control-metadata-only"],
       ),
       runtimeBaseline: null,
       metadataScaffold: RtcLanguageWorkspaceMetadataScaffold(
@@ -883,8 +918,8 @@ final class RtcLanguageWorkspaceCatalog {
       ),
       providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract(
         modeTerms: <String>["catalog-governed-mixed", "scaffold-per-provider-package"],
-        rootPublicPolicyTerms: <String>["builtin-only", "none"],
-        lifecycleStatusTerms: <String>["root_public_reference_boundary", "package_reference_boundary", "future-runtime-bridge-only"],
+        rootPublicPolicyTerms: <String>["none"],
+        lifecycleStatusTerms: <String>["package_reference_boundary", "future-runtime-bridge-only"],
         runtimeBridgeStatusTerms: <String>["reference-baseline", "reserved"],
       ),
       providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary(
@@ -903,6 +938,11 @@ final class RtcLanguageWorkspaceCatalog {
         sourceSymbolPattern: "RtcProvider{providerPascal}PackageContract",
         templateTokens: <String>["{providerKey}"],
         sourceTemplateTokens: <String>["{providerKey}", "{providerPascal}"],
+        referenceProviderKey: null,
+        referenceStatus: null,
+        referenceRuntimeBridgeStatus: null,
+        referenceVendorSdkPackage: null,
+        referenceVendorSdkVersion: null,
         runtimeBridgeStatus: "reserved",
         rootPublic: false,
         status: "future-runtime-bridge-only",

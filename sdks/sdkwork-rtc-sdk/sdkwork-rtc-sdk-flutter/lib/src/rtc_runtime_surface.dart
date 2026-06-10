@@ -3,6 +3,8 @@ const List<String> rtcRuntimeSurfaceMethods = <String>[
   'leave',
   'publish',
   'unpublish',
+  'startScreenShare',
+  'stopScreenShare',
   'muteAudio',
   'muteVideo',
 ];

@@ -28,26 +28,25 @@ export function createSdkworkAppCapabilityManifest({
   };
 }
 
-export type SdkworkRtcCallType = "audio" | "video" | "live";
+export type SdkworkRtcMediaSessionMode = "audio" | "video" | "live";
 export type SdkworkRtcConnectionStatus =
   | "degraded"
   | "offline"
   | "online"
   | "reconnecting";
 export type SdkworkRtcSessionStatus =
-  | "connected"
-  | "connecting"
+  | "active"
+  | "closing"
   | "ended"
   | "failed"
-  | "idle"
-  | "ringing";
+  | "preparing";
 export type SdkworkRtcParticipantRole = "guest" | "host" | "listener";
 export type SdkworkRtcSessionDigestStatus =
+  | "closing"
   | "ended"
   | "issue"
   | "live"
-  | "ringing"
-  | "setup";
+  | "preparing";
 export type SdkworkRtcParticipantDigestStatus =
   | "active-speaker"
   | "local"
@@ -65,6 +64,7 @@ export type SdkworkRtcJoinIssue =
   | "microphone-denied"
   | "microphone-missing"
   | "offline"
+  | "session-closing"
   | "session-ended"
   | "session-failed";
 
@@ -80,12 +80,12 @@ export interface SdkworkRtcParticipant {
 
 export interface SdkworkRtcSession {
   activeSpeakerId?: string;
-  callType: SdkworkRtcCallType;
-  connectedAt?: string;
+  activeAt?: string;
   endedAt?: string;
   failureReason?: string;
   id: string;
   localParticipantId: string;
+  mediaMode: SdkworkRtcMediaSessionMode;
   participants: readonly SdkworkRtcParticipant[];
   roomId: string;
   startedAt?: string;
@@ -101,13 +101,13 @@ export interface CreateRtcSessionDigestOptions {
 
 export interface SdkworkRtcSessionDigest {
   activeSpeakerId?: string;
-  callType: SdkworkRtcCallType;
-  connectedAt?: string;
+  activeAt?: string;
   digestStatus: SdkworkRtcSessionDigestStatus;
   durationSeconds?: number;
   endedAt?: string;
   id: string;
   isActive: boolean;
+  mediaMode: SdkworkRtcMediaSessionMode;
   participantCount: number;
   qualityLabel?: SdkworkRtcQualityBadge["label"];
   roomId: string;
@@ -118,12 +118,13 @@ export interface SdkworkRtcSessionDigest {
 
 export interface SdkworkRtcSessionDigestSummary {
   activeSessions: number;
-  connectedSessions: number;
+  activeMediaSessions: number;
+  closingSessions: number;
   endedSessions: number;
   issueSessions: number;
   latestStartedAt?: string;
   liveSessions: number;
-  ringingSessions: number;
+  preparingSessions: number;
   totalParticipants: number;
   totalSessions: number;
   videoSessions: number;
@@ -191,7 +192,7 @@ export interface SdkworkRtcJoinReadiness {
 export type SdkworkRtcSessionEvent =
   | {
       startedAt: Date | number | string;
-      type: "ringing";
+      type: "preparing";
     }
   | {
       participant: SdkworkRtcParticipant;
@@ -202,12 +203,15 @@ export type SdkworkRtcSessionEvent =
       type: "participant-left";
     }
   | {
-      connectedAt: Date | number | string;
-      type: "connected";
+      activeAt: Date | number | string;
+      type: "active";
     }
   | {
       participantId?: string;
       type: "active-speaker";
+    }
+  | {
+      type: "closing";
     }
   | {
       endedAt: Date | number | string;
@@ -245,7 +249,9 @@ export interface SdkworkRtcWorkspaceManifest extends SdkworkAppCapabilityManifes
   sessionRoutePattern: string;
 }
 
-export interface CreateRtcWorkspaceManifestOptions
+export interface SdkworkRtcMediaWorkspaceManifest extends SdkworkRtcWorkspaceManifest {}
+
+export interface CreateRtcMediaWorkspaceManifestOptions
   extends Partial<
     Pick<CreateSdkworkAppCapabilityManifestOptions, "description" | "host" | "id" | "packageNames" | "theme" | "title">
   > {
@@ -253,15 +259,15 @@ export interface CreateRtcWorkspaceManifestOptions
   routePath?: string;
 }
 
-export interface SdkworkRtcDesktopCallIntent {
+export interface SdkworkRtcMediaSessionOpenIntent {
   focusWindow: boolean;
   route: string;
   sessionId: string;
-  source: "call-toast";
-  type: "rtc-call-intent";
+  source: "media-session-list";
+  type: "rtc-media-session-open-intent";
 }
 
-export interface CreateRtcDesktopCallIntentOptions {
+export interface CreateRtcMediaSessionOpenIntentOptions {
   basePath?: string;
   focusWindow?: boolean;
   sessionId: string;
@@ -354,7 +360,7 @@ function resolveRtcSessionDurationSeconds(
   session: SdkworkRtcSession,
   now: Date | number | string | undefined,
 ): number | undefined {
-  const startAt = session.connectedAt ?? session.startedAt;
+  const startAt = session.activeAt ?? session.startedAt;
 
   if (!startAt) {
     return undefined;
@@ -379,12 +385,12 @@ function resolveRtcSessionDigestStatus(
     return "ended";
   }
 
-  if (session.status === "ringing") {
-    return "ringing";
+  if (session.status === "closing") {
+    return "closing";
   }
 
   if (
-    session.status === "connected" &&
+    session.status === "active" &&
     qualityBadge &&
     qualityBadge.label !== "Excellent" &&
     qualityBadge.label !== "Good"
@@ -392,11 +398,11 @@ function resolveRtcSessionDigestStatus(
     return "issue";
   }
 
-  if (session.status === "connected") {
+  if (session.status === "active") {
     return "live";
   }
 
-  return "setup";
+  return "preparing";
 }
 
 function resolveRtcParticipantDigestStatus(
@@ -472,11 +478,11 @@ export function transitionRtcSession(
   event: SdkworkRtcSessionEvent,
 ): SdkworkRtcSession {
   switch (event.type) {
-    case "ringing":
+    case "preparing":
       return {
         ...session,
         startedAt: toIsoString(event.startedAt),
-        status: "ringing",
+        status: "preparing",
       };
     case "participant-joined":
       return {
@@ -493,16 +499,21 @@ export function transitionRtcSession(
           session.activeSpeakerId === event.participantId ? undefined : session.activeSpeakerId,
         participants: session.participants.filter((participant) => participant.id !== event.participantId),
       };
-    case "connected":
+    case "active":
       return {
         ...session,
-        connectedAt: toIsoString(event.connectedAt),
-        status: "connected",
+        activeAt: toIsoString(event.activeAt),
+        status: "active",
       };
     case "active-speaker":
       return {
         ...session,
         activeSpeakerId: event.participantId,
+      };
+    case "closing":
+      return {
+        ...session,
+        status: "closing",
       };
     case "ended":
       return {
@@ -527,7 +538,7 @@ export function transitionRtcSession(
 export function resolveRtcControlState(
   session: SdkworkRtcSession,
 ): SdkworkRtcControlState {
-  const isActive = session.status === "connected" || session.status === "connecting" || session.status === "ringing";
+  const isActive = session.status === "active" || session.status === "preparing";
 
   if (!isActive) {
     return {
@@ -542,8 +553,8 @@ export function resolveRtcControlState(
   return {
     canLeave: true,
     canMuteMicrophone: true,
-    canShareScreen: session.status === "connected",
-    canToggleCamera: session.callType === "video" || session.callType === "live",
+    canShareScreen: session.status === "active",
+    canToggleCamera: session.mediaMode === "video" || session.mediaMode === "live",
     reason: undefined,
   };
 }
@@ -602,13 +613,13 @@ export function createRtcSessionDigest(
 
   return {
     ...(session.activeSpeakerId ? { activeSpeakerId: session.activeSpeakerId } : {}),
-    callType: session.callType,
-    ...(session.connectedAt ? { connectedAt: session.connectedAt } : {}),
+    ...(session.activeAt ? { activeAt: session.activeAt } : {}),
     digestStatus: resolveRtcSessionDigestStatus(session, qualityBadge),
     ...(durationSeconds !== undefined ? { durationSeconds } : {}),
     ...(session.endedAt ? { endedAt: session.endedAt } : {}),
     id: session.id,
     isActive: session.id === options.activeSessionId,
+    mediaMode: session.mediaMode,
     participantCount: session.participants.length,
     ...(qualityBadge ? { qualityLabel: qualityBadge.label } : {}),
     roomId: session.roomId,
@@ -622,12 +633,13 @@ export function summarizeRtcSessionDigests(
   digests: readonly SdkworkRtcSessionDigest[],
 ): SdkworkRtcSessionDigestSummary {
   let activeSessions = 0;
-  let connectedSessions = 0;
+  let activeMediaSessions = 0;
+  let closingSessions = 0;
   let endedSessions = 0;
   let issueSessions = 0;
   let latestStartedAt = 0;
   let liveSessions = 0;
-  let ringingSessions = 0;
+  let preparingSessions = 0;
   let totalParticipants = 0;
   let videoSessions = 0;
 
@@ -637,24 +649,28 @@ export function summarizeRtcSessionDigests(
       activeSessions += 1;
     }
 
-    if (digest.callType === "video") {
+    if (digest.mediaMode === "video") {
       videoSessions += 1;
     }
 
-    if (digest.callType === "live") {
+    if (digest.mediaMode === "live") {
       liveSessions += 1;
     }
 
-    if (digest.status === "connected") {
-      connectedSessions += 1;
+    if (digest.status === "active") {
+      activeMediaSessions += 1;
+    }
+
+    if (digest.status === "closing") {
+      closingSessions += 1;
     }
 
     if (digest.status === "ended") {
       endedSessions += 1;
     }
 
-    if (digest.status === "ringing") {
-      ringingSessions += 1;
+    if (digest.status === "preparing") {
+      preparingSessions += 1;
     }
 
     if (digest.digestStatus === "issue") {
@@ -666,12 +682,13 @@ export function summarizeRtcSessionDigests(
 
   return {
     activeSessions,
-    connectedSessions,
+    activeMediaSessions,
+    closingSessions,
     endedSessions,
     issueSessions,
     ...(latestStartedAt > 0 ? { latestStartedAt: new Date(latestStartedAt).toISOString() } : {}),
     liveSessions,
-    ringingSessions,
+    preparingSessions,
     totalParticipants,
     totalSessions: digests.length,
     videoSessions,
@@ -742,6 +759,7 @@ export function evaluateRtcJoinReadiness(
 ): SdkworkRtcJoinReadiness {
   const connectionStatus = options.connectionStatus ?? "online";
   const controlState = resolveRtcControlState(session);
+  const isSessionClosing = session.status === "closing";
   const isSessionEnded = session.status === "ended";
   const isSessionFailed = session.status === "failed";
   const microphoneDenied = options.permissions?.microphone === "denied";
@@ -749,8 +767,9 @@ export function evaluateRtcJoinReadiness(
   const cameraDenied = options.permissions?.camera === "denied";
   const cameraMissing = options.devices?.camera === false;
   const cameraRequired = options.cameraRequired === true;
-  const usesVideoCapture = session.callType === "video" || session.callType === "live";
+  const usesVideoCapture = session.mediaMode === "video" || session.mediaMode === "live";
   const canUseMicrophone =
+    !isSessionClosing &&
     !isSessionEnded &&
     !isSessionFailed &&
     connectionStatus !== "offline" &&
@@ -758,6 +777,7 @@ export function evaluateRtcJoinReadiness(
     !microphoneMissing;
   const canUseCamera =
     usesVideoCapture &&
+    !isSessionClosing &&
     !isSessionEnded &&
     !isSessionFailed &&
     connectionStatus !== "offline" &&
@@ -766,6 +786,7 @@ export function evaluateRtcJoinReadiness(
   const blockedByCamera = usesVideoCapture && cameraRequired && !canUseCamera;
   const capabilities: SdkworkRtcJoinCapabilities = {
     canJoinSession:
+      !isSessionClosing &&
       !isSessionEnded &&
       !isSessionFailed &&
       connectionStatus !== "offline" &&
@@ -775,6 +796,7 @@ export function evaluateRtcJoinReadiness(
     canUseMicrophone,
   };
   const issues = toUniqueJoinIssues([
+    ...(isSessionClosing ? ["session-closing" as const] : []),
     ...(isSessionEnded ? ["session-ended" as const] : []),
     ...(isSessionFailed ? ["session-failed" as const] : []),
     ...(connectionStatus === "offline" ? ["offline" as const] : []),
@@ -801,16 +823,16 @@ export function evaluateRtcJoinReadiness(
   };
 }
 
-export function createRtcWorkspaceManifest({
-  description = "Realtime calling workspace for audio, video, live streaming, and call-window routing.",
+export function createRtcMediaWorkspaceManifest({
+  description = "Realtime media workspace for audio, video, live streaming, and media-session routing.",
   host,
   id = "sdkwork-rtc",
   launchMode = "panel",
   packageNames = ["@sdkwork/rtc-pc-react"],
-  routePath = "/calls",
+  routePath = "/rtc/media-sessions",
   theme,
-  title = "Calls",
-}: CreateRtcWorkspaceManifestOptions = {}): SdkworkRtcWorkspaceManifest {
+  title = "RTC Media",
+}: CreateRtcMediaWorkspaceManifestOptions = {}): SdkworkRtcMediaWorkspaceManifest {
   return {
     ...createSdkworkAppCapabilityManifest({
       description,
@@ -827,17 +849,17 @@ export function createRtcWorkspaceManifest({
   };
 }
 
-export function createRtcDesktopCallIntent({
-  basePath = "/calls",
+export function createRtcMediaSessionOpenIntent({
+  basePath = "/rtc/media-sessions",
   focusWindow = true,
   sessionId,
-}: CreateRtcDesktopCallIntentOptions): SdkworkRtcDesktopCallIntent {
+}: CreateRtcMediaSessionOpenIntentOptions): SdkworkRtcMediaSessionOpenIntent {
   return {
     focusWindow,
     route: `${basePath}/${sessionId}`,
     sessionId,
-    source: "call-toast",
-    type: "rtc-call-intent",
+    source: "media-session-list",
+    type: "rtc-media-session-open-intent",
   };
 }
 

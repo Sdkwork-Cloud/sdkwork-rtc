@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -22,6 +22,38 @@ function createPackageImporter() {
     return import(pathToFileURL(entrypointPath).href);
   };
 }
+
+function getProviderEntrypointPaths() {
+  const providersRoot = path.join(packageRoot, 'providers');
+
+  return readdirSync(providersRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(providersRoot, entry.name, 'index.js'));
+}
+
+test('provider package entrypoints avoid top-level await for browser production bundlers', () => {
+  const entrypointPaths = getProviderEntrypointPaths();
+  assert.ok(entrypointPaths.length > 0, 'expected provider package entrypoints');
+
+  for (const entrypointPath of entrypointPaths) {
+    const source = readFileSync(entrypointPath, 'utf8');
+    assert.doesNotMatch(
+      source,
+      /\bconst\s+rtcSdk\s*=\s*await\b/u,
+      `${path.relative(packageRoot, entrypointPath)} must not assign an awaited RTC SDK module at top level`,
+    );
+    assert.doesNotMatch(
+      source,
+      /\bawait\s+importRtcSdk\s*\(/u,
+      `${path.relative(packageRoot, entrypointPath)} must not use top-level await to import @sdkwork/rtc-sdk`,
+    );
+    assert.match(
+      source,
+      /from '@sdkwork\/rtc-sdk';/u,
+      `${path.relative(packageRoot, entrypointPath)} must statically import @sdkwork/rtc-sdk`,
+    );
+  }
+});
 
 test('loadRtcProviderModule resolves provider packages by providerKey and packageIdentity', async () => {
   const {
@@ -48,6 +80,45 @@ test('loadRtcProviderModule resolves provider packages by providerKey and packag
   assert.deepEqual(
     getRtcProviderPackageByPackageIdentity(agoraPackage.packageIdentity),
     agoraPackage,
+  );
+});
+
+test('loadRtcProviderModule rejects loader drift between requested package and returned module', async () => {
+  const {
+    RtcSdkException,
+    loadRtcProviderModule,
+    getRtcProviderPackageByProviderKey,
+  } = await loadSdk();
+
+  const tencentPackage = getRtcProviderPackageByProviderKey('tencent');
+  assert.ok(tencentPackage);
+
+  await assert.rejects(
+    async () =>
+      loadRtcProviderModule(
+        {
+          providerKey: 'agora',
+        },
+        async (_target) => {
+          const tencentManifestPath = path.join(packageRoot, tencentPackage.manifestPath);
+          const tencentManifest = readJson(tencentManifestPath);
+          const tencentEntrypointPath = path.join(
+            path.dirname(tencentManifestPath),
+            tencentManifest.exports['.'].import,
+          );
+          const tencentNamespace = await import(pathToFileURL(tencentEntrypointPath).href);
+
+          return {
+            AGORA_RTC_PROVIDER_MODULE: tencentNamespace[tencentPackage.moduleSymbol],
+          };
+        },
+      ),
+    (error) =>
+      error instanceof RtcSdkException &&
+      error.code === 'provider_module_contract_mismatch' &&
+      error.providerKey === 'agora' &&
+      error.details?.expectedProviderKey === 'agora' &&
+      error.details?.receivedProviderKey === 'tencent',
   );
 });
 

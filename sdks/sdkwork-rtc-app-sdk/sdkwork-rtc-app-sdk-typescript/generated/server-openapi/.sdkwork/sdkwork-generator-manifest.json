@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "sdk": {
+    "name": "sdkwork-rtc-app-sdk",
+    "version": "0.1.0",
+    "language": "typescript",
+    "sdkType": "app",
+    "protocol": "http",
+    "packageName": "sdkwork-rtc-app-sdk-generated-typescript"
+  },
+  "generatedFiles": [
+    {
+      "path": "bin/publish-core.mjs",
+      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+    },
+    {
+      "path": "bin/publish.ps1",
+      "sha256": "78c6419400b988409d9393c2ecd85aa02dd6760f73edb3cc84cb28fefc51b41e"
+    },
+    {
+      "path": "bin/publish.sh",
+      "sha256": "899087c23e670b6951a12a13490fd557f761c96d78fabfb7e58a37e367db889f"
+    },
+    {
+      "path": "bin/sdk-gen.bat",
+      "sha256": "2d56891dc8276339ebbffc78ada3cc1bf73e2831453da89d95fcd2277bb4a05b"
+    },
+    {
+      "path": "bin/sdk-gen.sh",
+      "sha256": "c9bab3f87d5327833ca9a392f6b8e6b6d3386a46836cc3c48ef48313b603bd90"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "fb941a0806986a54fc192f98a98f6d9c282b8d350b2b19a3e71dda404e92d545"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "7840cc7d2b36ff364ac16c2fc5ec15b861bfe96854eecf81fb59b00edb8b1447"
+    },
+    {
+      "path": "package.json",
+      "sha256": "904bed0b716c59cd01641d8101c6ba68d69f48ff05383371df680253ac5521f2"
+    },
+    {
+      "path": "README.md",
+      "sha256": "96d391b1e607adffb2dd17edcda7f8494634476070322c3cbdee7914c619380e"
+    },
+    {
+      "path": "sdkwork-sdk.json",
+      "sha256": "887ce164a49db0c794485f86aa683f8f1bad84d6056c0852e332e5370e388deb"
+    },
+    {
+      "path": "src/api/base.ts",
+      "sha256": "02ad25e6bf331ff241ba387c2947ddf1900dd849038e08c2757416a3aa788a04"
+    },
+    {
+      "path": "src/api/index.ts",
+      "sha256": "95734713ed7167add42a7818b14fee70ee2a7f668216dd2eb218979f2de5bf6d"
+    },
+    {
+      "path": "src/api/paths.ts",
+      "sha256": "4ffed7b7d576dc11081bf6b43511465d3a5db410bd25c425ef47b69b154981ad"
+    },
+    {
+      "path": "src/api/rtc-media-sessions.ts",
+      "sha256": "ff486ca62fa1642a06e74f31c27f9597b1cbda68e517cdf73b35863483192677"
+    },
+    {
+      "path": "src/api/rtc-participant-credentials.ts",
+      "sha256": "793d5bd8669b18cb05feeb99698180ade7c88ae5c55559961f86195e2e47f299"
+    },
+    {
+      "path": "src/api/rtc-provider-profiles.ts",
+      "sha256": "4f236dc2e10b36c35d5dd250645def0a50d1a1f7f88fd1567af61e9504495c4f"
+    },
+    {
+      "path": "src/api/rtc-recording-artifacts.ts",
+      "sha256": "38b8f307b85099b7e6c730bc7df6982d24fd163e645c400e62360b2343e3c3b1"
+    },
+    {
+      "path": "src/api/rtc-rooms.ts",
+      "sha256": "7cf94dc129572d25fadcbe4dd0a9717496318a444e17a694d0506033e904ce8f"
+    },
+    {
+      "path": "src/auth/index.ts",
+      "sha256": "657fc63738bdcd61d83133120732a477dd127448cf2c51229b05d21f5e1f5c04"
+    },
+    {
+      "path": "src/http/client.ts",
+      "sha256": "8200225b1363ec0ef556e9f10b7e80c3ce37c311e0641054c88615329a052eb8"
+    },
+    {
+      "path": "src/http/index.ts",
+      "sha256": "fc204fbe89750b9d25ecaffe41003e6ac243a1a895b65e65856202ab825d2dbe"
+    },
+    {
+      "path": "src/index.ts",
+      "sha256": "1b72e156546dff1aa4a094a8fb926ab543ccd7e320d3aacef790509f4df5f48b"
+    },
+    {
+      "path": "src/sdk.ts",
+      "sha256": "ab3fb5968d3b902d5ffca6a38a1a2898c5551a8cc57ddf033d592fa3429b8ea1"
+    },
+    {
+      "path": "src/types/common.ts",
+      "sha256": "d2506be8c4bdbe8e7059393467e6e71d75ef1d8c018dbf997bb0ab2a77b6c7b6"
+    },
+    {
+      "path": "src/types/field-error.ts",
+      "sha256": "44b8c95731a9dd8f7b30bb07a415b9541460964861f9ee806c31a4291953bf60"
+    },
+    {
+      "path": "src/types/index.ts",
+      "sha256": "06ecfb66ad0e04bac77c4d807ba84f6cf2c272ad29fb1f7912146e3d6fa45894"
+    },
+    {
+      "path": "src/types/media-access.ts",
+      "sha256": "b3afc5cace1e143f02be078c98cb084a6c912c805a9a8078ac853e6fa8179802"
+    },
+    {
+      "path": "src/types/media-checksum.ts",
+      "sha256": "1c04edaa628d43d17b6a3bf4039b547ec7471b00aba60de2943563c7d1ef7bbe"
+    },
+    {
+      "path": "src/types/media-kind.ts",
+      "sha256": "9ae71fdca9590315dc06ad6713f2b735a106b28f3ad0f52a43f2e57830c52630"
+    },
+    {
+      "path": "src/types/media-resource.ts",
+      "sha256": "9cbaabda394e465d51f1169a862501a2f87e3d6fa92506c19a2ba41984a83c2f"
+    },
+    {
+      "path": "src/types/media-source.ts",
+      "sha256": "ebb9a604403756a4529cb47f1700dbd9c0beb6e4145b9a51985783429e29adf3"
+    },
+    {
+      "path": "src/types/problem-detail.ts",
+      "sha256": "7801e79cab9a1ccace62b2a0ba2119f835b41e4e22f858b10490ffd638b7f3a6"
+    },
+    {
+      "path": "src/types/rtc-active-provider-profile-list-response.ts",
+      "sha256": "3bebf646b0b902de411218380e77c0d1dc764e83b6396c1a86fea86141ddbbed"
+    },
+    {
+      "path": "src/types/rtc-active-provider-profile.ts",
+      "sha256": "ddba74c6add3968357592c6e1f76ad5f960220df2b3346c5cf4a0b872ab9d152"
+    },
+    {
+      "path": "src/types/rtc-create-media-session-request.ts",
+      "sha256": "a55e9845175bebef01cd9a82ce791dbec02b4baddaeac50cfc280f94a989ee3d"
+    },
+    {
+      "path": "src/types/rtc-drive-reference.ts",
+      "sha256": "febef91326065bc6d22d0ea87550b42ff54180d3934be1b1250b802bb8a1c6b0"
+    },
+    {
+      "path": "src/types/rtc-media-artifact-list-response.ts",
+      "sha256": "aa206b01974d8533259e7b4f7254fb2bf6e27f376e023a1d7d541b1cfb6abb48"
+    },
+    {
+      "path": "src/types/rtc-media-artifact.ts",
+      "sha256": "dea50389f2fd5ffe1c380dd08dc132f91220f9ec9dcc32956ef6534fdf6a85b0"
+    },
+    {
+      "path": "src/types/rtc-media-participant.ts",
+      "sha256": "7d0bb5bccb05e74a1d44bd7a6f101fba56a1ff85a50f0de3808361ee63000649"
+    },
+    {
+      "path": "src/types/rtc-media-session-completion-artifact-summary.ts",
+      "sha256": "4e5eb2aa5c95f0c01c6c261a61a87b87c8e34bf76fd98b247ef5815da7a6baf3"
+    },
+    {
+      "path": "src/types/rtc-media-session-completion-participant-summary.ts",
+      "sha256": "09cfb954c2a49c936feff15e6b17bdf56cf783f945c05303affc127cc6cdb105"
+    },
+    {
+      "path": "src/types/rtc-media-session-completion-quality-summary.ts",
+      "sha256": "072c9755c15d7a6347c1f97379aee4d579c1e47880c5c63a7f09764a3c68df8e"
+    },
+    {
+      "path": "src/types/rtc-media-session-completion-record-response.ts",
+      "sha256": "13c8eca917c226a8e5f3899f15eee4505a7cc539c7f561616173fb8007cc0375"
+    },
+    {
+      "path": "src/types/rtc-media-session-completion-record.ts",
+      "sha256": "2903334a5345548f6fb834c4e19a09444023db196ddee106931a23941961339d"
+    },
+    {
+      "path": "src/types/rtc-media-session-completion-recording-summary.ts",
+      "sha256": "af081b9150c202aea1b373d620438ebebe84e9787bfd655b2d1e37f9c591ed6d"
+    },
+    {
+      "path": "src/types/rtc-media-session-completion-track-summary.ts",
+      "sha256": "5e53ff36e886fcab9210bef318046efdde8ae68a6900417505200e672bfd9d5c"
+    },
+    {
+      "path": "src/types/rtc-media-session-list-response.ts",
+      "sha256": "5d2f678d02cef7d5a40a9b267b8d89ec49d51a01ba7c4d7fcc531a0a2ceb05fc"
+    },
+    {
+      "path": "src/types/rtc-media-session-response.ts",
+      "sha256": "4d023bf3aec4891cd69a8088a27f75eeab0dd633ba7895c97f4b6c3b9553a9d0"
+    },
+    {
+      "path": "src/types/rtc-media-session.ts",
+      "sha256": "fb213873a563d0a09a152c889db7f15e52af7002ff3628da696579de72c4bfaa"
+    },
+    {
+      "path": "src/types/rtc-operation-command.ts",
+      "sha256": "f0aac2d59f560a7c90f7b4e105df540394e439861843e48a4d6da51454b6daea"
+    },
+    {
+      "path": "src/types/rtc-participant-credential-response.ts",
+      "sha256": "ed0077f90fbd708fb64dd9df3bb5ad545936a7e90088864d5570b8f20da65976"
+    },
+    {
+      "path": "src/types/rtc-participant-credential.ts",
+      "sha256": "68f198e881c1ce4ea341cf7520133ed44a79c0d7bda43dc2326773f6ae6d70ad"
+    },
+    {
+      "path": "src/types/rtc-provider-capability-snapshot.ts",
+      "sha256": "35e13e8caf281f84c55da6cf8103117d3be5de5b2c5b69cf43cf6c5ff551a5df"
+    },
+    {
+      "path": "src/types/rtc-room-list-response.ts",
+      "sha256": "3a3902989c4f36d078d68d9e8923facd99279ac2f9831daad332a54d6de042ea"
+    },
+    {
+      "path": "src/types/rtc-room-response.ts",
+      "sha256": "99d3d90e7dbb5e9510033d6ca4638a4562141e85c4129712e6a1c22c9618e343"
+    },
+    {
+      "path": "src/types/rtc-room.ts",
+      "sha256": "b4c1f90b8066efb211f154de0d0f6fc2aa35b2b9b7a444de57b766a5aa64817d"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "7c8a6c2b00fb208ec28e1e6045194487d1b3e563d6c44cef4783fd4fe0e8ffad"
+    }
+  ],
+  "scaffoldFiles": [
+    "custom/build-runtime.mjs",
+    "custom/README.md"
+  ],
+  "customRoots": [
+    "custom/"
+  ]
+}

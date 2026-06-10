@@ -2,26 +2,28 @@
 
 This document is the entrypoint for adopting `sdkwork-rtc-sdk`.
 
-It focuses on the standardized provider model, current runnable baselines, default `volcengine`
-selection contract, and the recommended runtime-specific guides.
+It focuses on provider-neutral RTC media runtime contracts, current runnable baselines, default
+`volcengine` selection, and runtime-specific guides. IM owns user call lifecycle,
+invite delivery, conversation discovery, and business session orchestration.
 
 ## 1. Positioning
 
 `sdkwork-rtc-sdk` is not a reimplementation of vendor media engines.
 
-Its responsibility is to provide one provider-neutral RTC standard:
+Its responsibility is to provide one provider-neutral RTC media runtime standard:
 
 - JDBC-style `DriverManager` / `DataSource` / `Client` contracts
 - standardized provider selection and default-provider resolution
 - standardized capability negotiation, error semantics, and extension metadata
 - pluggable provider integration through official catalogs and package boundaries
-- one consistent runtime surface across web, mobile, and future language workspaces
+- one consistent media runtime surface across web, mobile, and future language workspaces
 
 The standard intentionally keeps vendor SDK ownership on the application side:
 
 - official vendor SDKs remain consumer-supplied
 - `sdkwork-rtc-sdk` provides the standard contracts and adapter boundaries
 - runtime bridges map vendor behavior into the standard surface instead of hiding vendor engines
+- application and IM layers provide room/session credentials before the RTC client joins media
 
 ## 2. Official Providers
 
@@ -64,8 +66,8 @@ Current language workspace status:
 
 Current conclusion:
 
-- TypeScript is the executable web/browser baseline
-- Flutter is the executable mobile baseline
+- TypeScript remains the executable web runtime bridge baseline for provider-neutral RTC media operations
+- Flutter remains the executable mobile runtime bridge baseline for provider-neutral RTC media operations
 - current runnable baselines default to `volcengine`
 - remaining languages preserve standardized metadata, provider selection, lookup helpers, and
   package-boundary scaffolds for future runtime-bridge landings
@@ -88,55 +90,47 @@ Provider selection precedence remains:
 4. `deploymentProfileProviderKey`
 5. `defaultProvider`
 
-That means the web/browser and mobile baselines fall back to `volcengine` when the caller does not explicitly override provider selection.
+That means the TypeScript/web media runtime and Flutter/mobile media runtime baselines fall back to `volcengine` when the caller does not explicitly override provider selection.
 
 ## 5. Runnable Baselines
 
-### TypeScript / Web
+### TypeScript Volcengine Media Runtime Baseline
 
-TypeScript is the executable web/browser baseline.
+TypeScript remains the executable web runtime bridge baseline for provider-neutral RTC media operations.
 
-The current web/browser runtime path is:
+The current TypeScript/web media runtime runtime path is:
 
 - standard package: `@sdkwork/rtc-sdk`
 - default provider: `volcengine`
-- vendor SDK package: `@volcengine/rtc`
-- vendor SDK import path: `@volcengine/rtc`
-- signaling SDK package: `@sdkwork/rtc-sdk`
-- signaling SDK import path: `@sdkwork/rtc-sdk`
-- signaling live receive path: RTC transport/liveConnection over WebSocket
-- standard call/session entrypoint: `StandardRtcCallController`
-- recommended quick-start entrypoint: `createStandardRtcCallControllerStack`
-- smoke command: `node ./bin/sdk-call-smoke.mjs --json`
+- vendor SDK package: `@sdkwork/rtc-sdk-provider-volcengine`
+- vendor SDK import path: `@sdkwork/rtc-sdk-provider-volcengine`
+- recommended media runtime entrypoint: `installRtcProviderPackage`
+- smoke command: `npm run smoke`
 - smoke mode: `runtime-backed`
-- smoke variants: `default` and `reuse-live-connection`
+- smoke variants: `default`
 
 Use the detailed guide here:
 
-- [`docs/typescript-volcengine-signaling-usage.md`](./typescript-volcengine-signaling-usage.md)
+- [`docs/typescript-volcengine-runtime-usage.md`](./typescript-volcengine-runtime-usage.md)
 
-### Flutter / Mobile
+### Flutter Volcengine Media Runtime Baseline
 
-Flutter is the executable mobile baseline.
+Flutter remains the executable mobile runtime bridge baseline for provider-neutral RTC media operations.
 
-The current mobile runtime path is:
+The current Flutter/mobile media runtime runtime path is:
 
 - standard package: `rtc_sdk`
 - default provider: `volcengine`
-- vendor SDK package: `volc_engine_rtc`
-- vendor SDK import path: `package:volc_engine_rtc/volc_engine_rtc.dart`
-- signaling SDK package: `rtc_sdk`
-- signaling SDK import path: `package:rtc_sdk/rtc_sdk.dart`
-- signaling live receive path: RTC transport/liveConnection over WebSocket
-- standard call/session entrypoint: `StandardRtcCallController`
-- recommended quick-start entrypoint: `createStandardRtcCallControllerStack`
-- smoke command: `node ./bin/sdk-call-smoke.mjs --json`
+- vendor SDK package: `rtc_sdk_provider_volcengine`
+- vendor SDK import path: `package:rtc_sdk_provider_volcengine/rtc_sdk_provider_volcengine.dart`
+- recommended media runtime entrypoint: `RtcDataSource`
+- smoke command: `flutter analyze`
 - smoke mode: `analysis-backed`
-- smoke variants: `default` and `reuse-live-connection`
+- smoke variants: `default`
 
 Use the detailed guide here:
 
-- [`docs/flutter-volcengine-signaling-usage.md`](./flutter-volcengine-signaling-usage.md)
+- [`docs/flutter-volcengine-runtime-usage.md`](./flutter-volcengine-runtime-usage.md)
 
 ## 6. Standard Integration Boundary
 
@@ -145,51 +139,16 @@ The correct vendor integration boundary is still the same:
 - `sdkwork-rtc-sdk` owns the standard contracts and provider-neutral runtime surface
 - the vendor SDK owns real media behavior
 - the application wires vendor SDK instances into the standard driver/runtime-controller boundary
-- signaling adapters map application-supplied RTC transport semantics into the RTC call/session standard
-- executable baselines keep signaling WebSocket-first through RTC transport/liveConnection; the RTC standard
-  does not expose polling controls
-- executable baselines surface WebSocket auth policy through `connectOptions.webSocketAuth`
-- executable baselines can reuse one app-owned RTC live connection through `liveConnection`
-  instead of opening a second RTC-specific socket
+- IM creates or resolves business call sessions and provider credentials before media join
+- RTC runtime code accepts room, participant, and provider token inputs; it does not discover invites
+  or manage conversation delivery
 
 For the current runnable baselines, this boundary is already materialized:
 
-- TypeScript binds the standard surface to the official `@volcengine/rtc` runtime bridge
-- Flutter binds the standard surface to the official `package:volc_engine_rtc/volc_engine_rtc.dart` runtime bridge
-- executable baselines compose RTC-owned signaling through `@sdkwork/rtc-sdk`, `package:rtc_sdk/rtc_sdk.dart`
-- executable baselines publish call invites over conversation-scoped RTC signals and reconcile remote
-  accept, reject, end, SDP, and ICE events through the standard `CallController`
+- TypeScript binds the standard surface to the official `@sdkwork/rtc-sdk-provider-volcengine` runtime bridge
+- Flutter binds the standard surface to the official `package:rtc_sdk_provider_volcengine/rtc_sdk_provider_volcengine.dart` runtime bridge
 
-## 7. WebSocket Signaling And Auth Standard
-
-Executable baselines keep RTC signaling on the RTC live WebSocket path and never expose polling
-fallback controls.
-
-The assembly-driven `signalingTransportStandard` is materialized into
-`sdkwork-rtc-sdk-typescript/src/signaling-transport.ts`, the Flutter root-public module
-`sdkwork-rtc-sdk-flutter/lib/src/rtc_signaling_transport.dart`, and the root-public
-`RTC_SIGNALING_TRANSPORT_STANDARD` plus `rtcSignalingTransportStandard` contracts.
-
-Cross-language rules:
-
-- RTC `deviceId` is top-level and authoritative across the standard stack
-- `connectOptions.deviceId` stays optional and must match the top-level `deviceId` when both
-  are supplied
-- `connectOptions.webSocketAuth` is passed through the caller-supplied RTC signaling adapter;
-  RTC does not introduce provider-specific auth shims
-- standard auth modes are `automatic`, `queryBearer`, `headerBearer`, and `none`
-- `automatic` remains the recommended default; browser WebSocket paths can resolve to
-  query-bearer while native or custom-socket paths can resolve to header-bearer when headers are
-  available
-- prefer `credentialProvider` with short-lived realtime tickets instead of long-lived access
-  tokens, especially when query-parameter auth is required
-- if the application already owns one shared RTC live connection, pass `liveConnection`; RTC keeps
-  subscription sync on that same socket instead of opening a second connection
-- auth failure should fail fast on the WebSocket connect path; the RTC standard does not downgrade
-  to polling
-
-
-## 8. Non-Builtin Provider Packages
+## 7. Non-Builtin Provider Packages
 
 For providers such as `zego`, `twilio`, `jitsi`, `janus`, `mediasoup`,
 the standard path is package-boundary integration instead of deep root-entrypoint coupling.
@@ -201,7 +160,7 @@ That contract stays:
 - runtime code is loaded through the provider-package loader SPI
 - runtime bridge ownership stays with the integrating application or provider package
 
-## 9. Error Semantics
+## 8. Error Semantics
 
 Important standardized error codes include:
 
@@ -215,8 +174,6 @@ Important standardized error codes include:
 - `provider_module_contract_mismatch`
 - `provider_metadata_mismatch`
 - `native_sdk_not_available`
-- `signaling_not_available`
-- `call_state_invalid`
 - `vendor_error`
 
 The two most important runtime distinctions are:
@@ -226,7 +183,7 @@ The two most important runtime distinctions are:
 - `native_sdk_not_available`: the standard surface exists but the actual vendor runtime bridge is
   missing or misconfigured
 
-## 10. Local Verification
+## 9. Local Verification
 
 Use the following commands in the workspace root:
 
@@ -234,10 +191,8 @@ Use the following commands in the workspace root:
 node .\bin\materialize-sdk.mjs
 node .\test\verify-sdk-automation.test.mjs
 node .\bin\verify-sdk.mjs
-node .\bin\sdk-call-smoke.mjs --json
-node .\bin\sdk-call-smoke.mjs --json --reuse-live-connection
-node .\bin\sdk-call-smoke.mjs --language flutter --json
-node .\bin\sdk-call-smoke.mjs --language flutter --json --reuse-live-connection
+cd .\sdkwork-rtc-sdk-typescript && npm run smoke
+cd .\sdkwork-rtc-sdk-flutter && flutter analyze
 node .\bin\smoke-sdk.mjs
 ```
 
@@ -246,21 +201,19 @@ Verification intent:
 - `materialize-sdk.mjs` keeps generated catalogs, READMEs, matrices, and this usage guide aligned to the assembly
 - `verify-sdk-automation.test.mjs` protects standard assets and materialization behavior
 - `verify-sdk.mjs` validates assembly contracts and generated output
-- TypeScript smoke mode is `runtime-backed`: `node ./bin/sdk-call-smoke.mjs --json` exercises the public default-provider baseline without live services
-- Flutter smoke mode is `analysis-backed`: `node ./bin/sdk-call-smoke.mjs --json` currently verifies the public baseline through the Flutter CLI wrapper and `flutter analyze` because the official vendor runtime is not yet CLI-runnable through the Dart VM toolchain
-- `smoke-sdk.mjs` runs the repository regression entrypoint, including
-  the default and shared-`liveConnection` call-smoke variants for executable languages, plus
-  `flutter analyze ./bin/sdk-call-smoke.dart` and `flutter analyze` when the Flutter toolchain
-  is available
+- TypeScript smoke mode is `runtime-backed`: `npm run smoke` runs the TypeScript package public API boundary smoke without call signaling.
+- Flutter smoke mode is `analysis-backed`: `flutter analyze` uses Flutter analysis for the media runtime bridge baseline.
+- `smoke-sdk.mjs` runs the repository regression entrypoint, including TypeScript package tests
+  and optional language checks when toolchains are available
 
-## 11. Practical Adoption Guidance
+## 10. Practical Adoption Guidance
 
 Use this rule of thumb:
 
-- if you need the web/browser baseline, start from
-  [`docs/typescript-volcengine-signaling-usage.md`](./typescript-volcengine-signaling-usage.md)
-- if you need the mobile baseline, start from
-  [`docs/flutter-volcengine-signaling-usage.md`](./flutter-volcengine-signaling-usage.md)
+- if you need the TypeScript/web media runtime baseline, start from
+  [`docs/typescript-volcengine-runtime-usage.md`](./typescript-volcengine-runtime-usage.md)
+- if you need the Flutter/mobile media runtime baseline, start from
+  [`docs/flutter-volcengine-runtime-usage.md`](./flutter-volcengine-runtime-usage.md)
 - if you need to understand the cross-language standard and provider package boundary model, read
   [`docs/package-standards.md`](./package-standards.md) and
   [`docs/provider-adapter-standard.md`](./provider-adapter-standard.md)
@@ -269,7 +222,7 @@ Current reality is straightforward:
 
 - `volcengine` is the default provider
 - executable language baselines are `typescript` and `flutter`
-- the RTC signaling adapter is the standard path for invite discovery, RTC lifecycle, and WebRTC
-  signal exchange in the current end-to-end call flow
+- IM owns call session lifecycle and realtime business delivery
+- RTC owns media runtime provider selection, joining, publishing, muting, and leaving
 - the remaining language workspaces stay standardized and extensible without pretending they are
   already executable runtimes

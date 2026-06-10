@@ -59,6 +59,48 @@ function isRtcProviderModule<TNativeClient = unknown>(
   );
 }
 
+function assertRtcProviderModuleMatchesLoadTarget<TNativeClient = unknown>(
+  target: RtcResolvedProviderPackageLoadTarget,
+  providerModule: RtcProviderModule<TNativeClient>,
+): void {
+  const expectedPackage = target.packageEntry;
+  const actualMetadata = providerModule.metadata;
+  const expectedTypeScriptPackage = actualMetadata.typescriptPackage;
+
+  const matches =
+    providerModule.packageName === expectedPackage.packageIdentity &&
+    actualMetadata.providerKey === expectedPackage.providerKey &&
+    actualMetadata.pluginId === expectedPackage.pluginId &&
+    actualMetadata.driverId === expectedPackage.driverId &&
+    expectedTypeScriptPackage.packageName === expectedPackage.packageIdentity &&
+    expectedTypeScriptPackage.driverFactory === expectedPackage.driverFactory &&
+    expectedTypeScriptPackage.metadataSymbol === expectedPackage.metadataSymbol &&
+    expectedTypeScriptPackage.moduleSymbol === expectedPackage.moduleSymbol;
+
+  if (matches) {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'provider_module_contract_mismatch',
+    message: `RTC provider package load target drift detected: ${target.packageIdentity} returned a provider module for ${actualMetadata.providerKey}`,
+    providerKey: expectedPackage.providerKey,
+    pluginId: expectedPackage.pluginId,
+    details: {
+      expectedProviderKey: expectedPackage.providerKey,
+      receivedProviderKey: actualMetadata.providerKey,
+      expectedPackageIdentity: expectedPackage.packageIdentity,
+      receivedPackageName: providerModule.packageName,
+      expectedPluginId: expectedPackage.pluginId,
+      receivedPluginId: actualMetadata.pluginId,
+      expectedDriverId: expectedPackage.driverId,
+      receivedDriverId: actualMetadata.driverId,
+      expectedModuleSymbol: expectedPackage.moduleSymbol,
+      receivedModuleSymbol: expectedTypeScriptPackage.moduleSymbol,
+    },
+  });
+}
+
 export function resolveRtcProviderPackageLoadTarget(
   request: RtcProviderPackageLoadRequest,
 ): RtcResolvedProviderPackageLoadTarget {
@@ -195,6 +237,8 @@ export async function loadRtcProviderModule<TNativeClient = unknown>(
       },
     });
   }
+
+  assertRtcProviderModuleMatchesLoadTarget(target, providerModule);
 
   return providerModule;
 }

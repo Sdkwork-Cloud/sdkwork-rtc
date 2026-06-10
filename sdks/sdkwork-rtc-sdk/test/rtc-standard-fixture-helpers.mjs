@@ -124,7 +124,6 @@ export function buildRtcVerifierFixtureFileList(assembly) {
   }
 
   for (const provider of assembly.providers ?? []) {
-    filesToCopy.push(`sdkwork-rtc-sdk-typescript/src/providers/${provider.providerKey}.ts`);
     filesToCopy.push(`sdkwork-rtc-sdk-typescript/providers/rtc-sdk-provider-${provider.providerKey}/README.md`);
     filesToCopy.push(`sdkwork-rtc-sdk-typescript/providers/rtc-sdk-provider-${provider.providerKey}/index.js`);
     filesToCopy.push(`sdkwork-rtc-sdk-typescript/providers/rtc-sdk-provider-${provider.providerKey}/index.d.ts`);

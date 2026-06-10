@@ -13,6 +13,8 @@ abstract interface class RtcClient<TNativeClient> {
   Future<RtcSessionDescriptor> leave();
   Future<RtcTrackPublication> publish(RtcPublishOptions options);
   Future<void> unpublish(String trackId);
+  Future<RtcTrackPublication> startScreenShare(RtcScreenShareOptions options);
+  Future<void> stopScreenShare(String trackId);
   Future<RtcMuteState> muteAudio(bool muted);
   Future<RtcMuteState> muteVideo(bool muted);
   List<String> getProviderExtensions();
@@ -48,6 +50,17 @@ abstract interface class RtcRuntimeController<TNativeClient> {
   );
 }
 
+abstract interface class RtcScreenShareRuntimeController<TNativeClient> {
+  Future<RtcTrackPublication> startScreenShare(
+    RtcScreenShareOptions options,
+    RtcRuntimeControllerContext<TNativeClient> context,
+  );
+  Future<void> stopScreenShare(
+    String trackId,
+    RtcRuntimeControllerContext<TNativeClient> context,
+  );
+}
+
 final class RtcStandardContract {
   static const String symbol = 'RtcStandardContract';
   static const List<String> jdbcStyleResolutionTypes = <String>[
@@ -59,6 +72,8 @@ final class RtcStandardContract {
     'leave',
     'publish',
     'unpublish',
+    'startScreenShare',
+    'stopScreenShare',
     'muteAudio',
     'muteVideo',
   ];

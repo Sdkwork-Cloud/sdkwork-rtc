@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Realtime audio and video calling, room state, and call controls.",
+  "description": "Realtime audio, video, live media sessions, room state, and media controls.",
   "exports": {
     ".": {
       "types": "./src/index.ts",

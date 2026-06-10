@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const packageRoot = path.resolve('.');
+const testDir = path.dirname(fileURLToPath(import.meta.url));
+const packageRoot = path.resolve(testDir, '..');
 const providersRoot = path.join(packageRoot, 'providers');
-const assemblyPath = path.resolve('..', '.sdkwork-assembly.json');
+const assemblyPath = path.resolve(packageRoot, '..', '.sdkwork-assembly.json');
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf8'));
@@ -18,10 +19,6 @@ async function loadRootSdk() {
 
 async function loadProviderPackageCatalog() {
   return import('../dist/provider-package-catalog.js');
-}
-
-async function loadProviderModule(providerKey) {
-  return import(`../dist/providers/${providerKey}.js`);
 }
 
 async function loadProviderPackageEntrypoint(packageDir, manifest) {
@@ -45,6 +42,12 @@ function buildForbiddenAppCouplingPattern() {
 }
 
 const FORBIDDEN_APP_COUPLING_PATTERN = buildForbiddenAppCouplingPattern();
+
+function getVendorPeerDependencies(manifest) {
+  return Object.keys(manifest.peerDependencies ?? {}).filter(
+    (dependencyName) => dependencyName !== '@sdkwork/rtc-sdk',
+  );
+}
 
 test('materialized provider package catalog matches the assembly-driven package boundary snapshot', async () => {
   const assembly = readJson(assemblyPath);
@@ -95,9 +98,7 @@ test('materialized provider package catalog matches the assembly-driven package 
       moduleSymbol: provider.typescriptPackage.moduleSymbol,
       builtin: provider.builtin,
       rootPublic: provider.typescriptPackage.rootPublic,
-      status: provider.builtin
-        ? 'root_public_reference_boundary'
-        : 'package_reference_boundary',
+      status: 'package_reference_boundary',
       runtimeBridgeStatus: provider.typescriptAdapter.runtimeBridgeStatus,
       requiredCapabilities: provider.requiredCapabilities,
       optionalCapabilities: provider.optionalCapabilities,
@@ -155,9 +156,7 @@ test('provider packages expose manifest-declared entrypoints and symbols', async
     const manifestPath = path.join(packageDir, 'package.json');
     const manifest = readJson(manifestPath);
     const providerConfig = manifest.sdkworkRtcProvider;
-    const expectedStatus = provider.builtin
-      ? 'root_public_reference_boundary'
-      : 'package_reference_boundary';
+    const expectedStatus = 'package_reference_boundary';
     const entrypointPath = path.join(packageDir, 'index.js');
     const declarationPath = path.join(packageDir, 'index.d.ts');
     const readmePath = path.join(packageDir, 'README.md');
@@ -171,6 +170,24 @@ test('provider packages expose manifest-declared entrypoints and symbols', async
     assert.equal(manifest.exports['.'].default, './index.js');
     assert.equal(manifest.exports['.'].types, './index.d.ts');
     assert.equal(manifest.name, provider.typescriptPackage.packageName);
+    assert.equal(manifest.peerDependencies?.['@sdkwork/rtc-sdk'], '^0.1.1');
+    assert.equal(manifest.devDependencies?.['@sdkwork/rtc-sdk'], 'workspace:*');
+    if (provider.providerKey === 'volcengine') {
+      assert.equal(manifest.peerDependencies?.['@volcengine/rtc'], '^4.68.3');
+      assert.equal(manifest.peerDependenciesMeta?.['@volcengine/rtc']?.optional, true);
+      assert.equal(manifest.peerDependencies?.['trtc-sdk-v5'], undefined);
+      assert.equal(manifest.peerDependenciesMeta?.['trtc-sdk-v5'], undefined);
+    } else if (provider.providerKey === 'tencent') {
+      assert.equal(manifest.peerDependencies?.['trtc-sdk-v5'], '^5.18.0');
+      assert.equal(manifest.peerDependenciesMeta?.['trtc-sdk-v5']?.optional, true);
+      assert.equal(manifest.peerDependencies?.['@volcengine/rtc'], undefined);
+      assert.equal(manifest.peerDependenciesMeta?.['@volcengine/rtc'], undefined);
+    } else {
+      assert.equal(manifest.peerDependencies?.['@volcengine/rtc'], undefined);
+      assert.equal(manifest.peerDependenciesMeta?.['@volcengine/rtc'], undefined);
+      assert.equal(manifest.peerDependencies?.['trtc-sdk-v5'], undefined);
+      assert.equal(manifest.peerDependenciesMeta?.['trtc-sdk-v5'], undefined);
+    }
     assert.equal(providerConfig.registrationContract, 'RtcProviderModule');
     assert.equal(providerConfig.sourceModule, provider.typescriptPackage.sourceModule);
     assert.equal(providerConfig.driverFactory, provider.typescriptPackage.driverFactory);
@@ -199,31 +216,15 @@ test('provider packages expose manifest-declared entrypoints and symbols', async
     assert.equal(existsSync(entrypointPath), true, `expected ${entrypointPath} to exist`);
     assert.equal(existsSync(declarationPath), true, `expected ${declarationPath} to exist`);
 
-    const providerModule = await loadProviderModule(provider.providerKey);
     const providerPackage = await loadProviderPackageEntrypoint(packageDir, manifest);
 
-    assert.equal(typeof providerModule[providerConfig.driverFactory], 'function');
-    assert.equal(typeof providerModule[providerConfig.metadataSymbol], 'object');
-    assert.equal(typeof providerModule[providerConfig.moduleSymbol], 'object');
     assert.equal(typeof providerPackage[providerConfig.driverFactory], 'function');
     assert.equal(typeof providerPackage[providerConfig.metadataSymbol], 'object');
     assert.equal(typeof providerPackage[providerConfig.moduleSymbol], 'object');
+    assert.equal(providerPackage[providerConfig.moduleSymbol].packageName, manifest.name);
+    assert.equal(providerPackage[providerConfig.moduleSymbol].builtin, provider.builtin);
     assert.equal(
-      providerPackage[providerConfig.driverFactory],
-      providerModule[providerConfig.driverFactory],
-    );
-    assert.equal(
-      providerPackage[providerConfig.metadataSymbol],
-      providerModule[providerConfig.metadataSymbol],
-    );
-    assert.equal(
-      providerPackage[providerConfig.moduleSymbol],
-      providerModule[providerConfig.moduleSymbol],
-    );
-    assert.equal(providerModule[providerConfig.moduleSymbol].packageName, manifest.name);
-    assert.equal(providerModule[providerConfig.moduleSymbol].builtin, provider.builtin);
-    assert.equal(
-      providerModule[providerConfig.moduleSymbol].metadata.providerKey,
+      providerPackage[providerConfig.moduleSymbol].metadata.providerKey,
       provider.providerKey,
     );
     assert.deepEqual(
@@ -235,12 +236,23 @@ test('provider packages expose manifest-declared entrypoints and symbols', async
       provider.optionalCapabilities,
     );
     assert.deepEqual(
-      providerModule[providerConfig.moduleSymbol].typescriptAdapter,
+      providerPackage[providerConfig.moduleSymbol].typescriptAdapter,
       providerConfig.typescriptAdapter,
     );
-    assert.match(manifest.description, /^Reference TypeScript provider boundary/i);
-    assert.match(readme, /Reference TypeScript provider package boundary/i);
-    assert.doesNotMatch(readme, /Reserved TypeScript provider package boundary/i);
+    if (provider.typescriptAdapter.runtimeBridgeStatus === 'reference-baseline') {
+      assert.match(manifest.description, /^Reference TypeScript provider boundary/i);
+      assert.match(readme, /Reference TypeScript provider package boundary/i);
+      assert.doesNotMatch(readme, /Reserved TypeScript provider package boundary/i);
+      assert.match(readme, /wraps the official vendor SDK/i);
+    } else {
+      assert.equal(provider.typescriptAdapter.runtimeBridgeStatus, 'reserved');
+      assert.match(manifest.description, /^Reserved TypeScript provider boundary/i);
+      assert.match(readme, /Reserved TypeScript provider package boundary/i);
+      assert.doesNotMatch(readme, /Reference TypeScript provider package boundary/i);
+      assert.match(readme, /reserves the official provider plugin boundary/i);
+      assert.match(readme, /consumer-supplied `nativeFactory` and `runtimeController`/i);
+      assert.doesNotMatch(readme, /wraps the official vendor SDK/i);
+    }
     assert.match(readme, /vendor sdk provisioning:\s*`consumer-supplied`/i);
     assert.match(readme, /binding strategy:\s*`native-factory`/i);
     assert.match(readme, /bundle policy:\s*`must-not-bundle`/i);
@@ -251,19 +263,34 @@ test('provider packages expose manifest-declared entrypoints and symbols', async
         'i',
       ),
     );
-    assert.match(readme, /runtime bridge status:\s*`reference-baseline`/i);
-    assert.match(readme, /official vendor sdk requirement:\s*`required`/i);
+    assert.match(
+      readme,
+      new RegExp(
+        `runtime bridge status:\\s*\\\`${provider.typescriptAdapter.runtimeBridgeStatus}\\\``,
+        'i',
+      ),
+    );
+    assert.match(
+      readme,
+      new RegExp(
+        `official vendor sdk requirement:\\s*\\\`${provider.typescriptAdapter.officialVendorSdkRequirement}\\\``,
+        'i',
+      ),
+    );
     assert.match(readme, /required capabilities:/i);
-    assert.match(readme, /`call\.audio`/i);
-    assert.match(readme, /`call\.video`/i);
+    assert.match(readme, /`media\.audio`/i);
+    assert.match(readme, /`media\.video`/i);
     assert.match(readme, /`live\.broadcast`/i);
     assert.match(readme, /`live\.audience`/i);
     assert.match(readme, /optional capabilities:/i);
     assert.match(readme, /provider extension keys:/i);
 
-    assert.equal(providerConfig.rootPublic, provider.builtin);
-    assert.equal(providerConfig.rootPublic, providerConfig.driverFactory in rootSdk);
-    assert.equal(providerConfig.rootPublic, providerConfig.moduleSymbol in rootSdk);
+    assert.equal(providerConfig.rootPublic, false);
+    assert.equal(providerConfig.driverFactory in rootSdk, false);
+    assert.equal(providerConfig.metadataSymbol in rootSdk, false);
+    assert.equal(providerConfig.moduleSymbol in rootSdk, false);
+    assert.doesNotMatch(entrypointSource, /\.\.\/\.\.\/dist\/providers\//);
+    assert.doesNotMatch(declarationSource, /\.\.\/\.\.\/dist\/providers\//);
     assert.doesNotMatch(
       entrypointSource,
       FORBIDDEN_APP_COUPLING_PATTERN,
@@ -274,5 +301,46 @@ test('provider packages expose manifest-declared entrypoints and symbols', async
       FORBIDDEN_APP_COUPLING_PATTERN,
       `expected ${manifest.name} declarations to stay RTC-owned and app-independent`,
     );
+  }
+});
+
+test('reference provider packages include a real official runtime bridge and reserved packages do not over-claim one', () => {
+  const assembly = readJson(assemblyPath);
+
+  for (const provider of assembly.providers) {
+    const packageDir = path.join(providersRoot, `rtc-sdk-provider-${provider.providerKey}`);
+    const manifest = readJson(path.join(packageDir, 'package.json'));
+    const entrypointSource = readFileSync(path.join(packageDir, 'index.js'), 'utf8');
+    const vendorPeerDependencies = getVendorPeerDependencies(manifest);
+    const officialBridgeFactoryPattern = /export function createOfficial[A-Za-z0-9]*RtcDriver/;
+
+    if (provider.typescriptAdapter.runtimeBridgeStatus === 'reference-baseline') {
+      assert.match(
+        entrypointSource,
+        officialBridgeFactoryPattern,
+        `${manifest.name} is reference-baseline and must export an official vendor runtime bridge factory`,
+      );
+      assert.notDeepEqual(
+        vendorPeerDependencies,
+        [],
+        `${manifest.name} is reference-baseline and must declare the official vendor SDK as a peer dependency`,
+      );
+    } else {
+      assert.equal(
+        provider.typescriptAdapter.runtimeBridgeStatus,
+        'reserved',
+        `${manifest.name} must use an explicit provider package runtime bridge status`,
+      );
+      assert.doesNotMatch(
+        entrypointSource,
+        officialBridgeFactoryPattern,
+        `${manifest.name} is reserved and must not expose an official bridge factory until implemented`,
+      );
+      assert.deepEqual(
+        vendorPeerDependencies,
+        [],
+        `${manifest.name} is reserved and must not declare vendor SDK peers until an official bridge exists`,
+      );
+    }
   }
 });

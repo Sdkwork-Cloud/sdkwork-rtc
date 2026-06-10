@@ -19,33 +19,47 @@
     "index.d.ts",
     "README.md"
   ],
+  "peerDependencies": {
+    "@sdkwork/rtc-sdk": "^0.1.1",
+    "@volcengine/rtc": "^4.68.3"
+  },
+  "peerDependenciesMeta": {
+    "@volcengine/rtc": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@sdkwork/rtc-sdk": "workspace:*"
+  },
   "sdkworkRtcProvider": {
     "providerKey": "volcengine",
     "displayName": "Volcengine RTC",
     "tier": "tier-a",
     "builtin": true,
-    "status": "root_public_reference_boundary",
+    "status": "package_reference_boundary",
     "registrationContract": "RtcProviderModule",
-    "sourceModule": "../../src/providers/volcengine.ts",
+    "sourceModule": "./index.js",
     "driverFactory": "createVolcengineRtcDriver",
     "metadataSymbol": "VOLCENGINE_RTC_PROVIDER_METADATA",
     "moduleSymbol": "VOLCENGINE_RTC_PROVIDER_MODULE",
-    "rootPublic": true,
+    "rootPublic": false,
     "requiredCapabilities": [
       "session",
       "credential",
-      "callback",
+      "provider.webhook",
       "health",
-      "call.audio",
-      "call.video",
+      "media.audio",
+      "media.video",
       "live.broadcast",
-      "live.audience"
+      "live.audience",
+      "provider.event-normalization"
     ],
     "optionalCapabilities": [
       "screen-share",
       "recording",
       "artifact",
-      "cloud-mix"
+      "cloud-mix",
+      "provider.active-query"
     ],
     "extensionKeys": [
       "volcengine.native-client"

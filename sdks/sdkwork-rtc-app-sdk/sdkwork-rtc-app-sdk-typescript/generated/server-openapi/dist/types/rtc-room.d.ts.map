@@ -1,0 +1,1 @@
+{"version":3,"file":"rtc-room.d.ts","sourceRoot":"","sources":["../../src/types/rtc-room.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,OAAO;IACtB,EAAE,EAAE,MAAM,CAAC;IACX,QAAQ,EAAE,MAAM,CAAC;IACjB,cAAc,EAAE,MAAM,CAAC;IACvB,WAAW,EAAE,MAAM,CAAC;IACpB,KAAK,EAAE,MAAM,CAAC;IACd,MAAM,EAAE,QAAQ,GAAG,UAAU,GAAG,UAAU,CAAC;CAC5C"}

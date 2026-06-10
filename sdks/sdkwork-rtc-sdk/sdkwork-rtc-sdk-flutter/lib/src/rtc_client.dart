@@ -47,6 +47,16 @@ final class StandardRtcClient<TNativeClient> implements RtcClient<TNativeClient>
     );
   }
 
+  RtcScreenShareRuntimeController<TNativeClient>?
+      _resolveScreenShareRuntimeController() {
+    final runtimeController = _runtimeController;
+    if (runtimeController is RtcScreenShareRuntimeController<TNativeClient>) {
+      return runtimeController as RtcScreenShareRuntimeController<TNativeClient>;
+    }
+
+    return null;
+  }
+
   @override
   Future<RtcSessionDescriptor> join(RtcJoinOptions options) {
     return _requireRuntimeController('join').join(options, _runtimeContext);
@@ -68,6 +78,39 @@ final class StandardRtcClient<TNativeClient> implements RtcClient<TNativeClient>
       trackId,
       _runtimeContext,
     );
+  }
+
+  @override
+  Future<RtcTrackPublication> startScreenShare(
+    RtcScreenShareOptions options,
+  ) {
+    requireCapability('screen-share');
+    final runtimeController = _requireRuntimeController('startScreenShare');
+    final screenShareRuntimeController = _resolveScreenShareRuntimeController();
+    if (screenShareRuntimeController != null) {
+      return screenShareRuntimeController.startScreenShare(options, _runtimeContext);
+    }
+
+    return runtimeController.publish(
+      RtcPublishOptions(
+        trackId: options.trackId,
+        kind: RtcTrackKind.screenShare,
+        metadata: options.metadata,
+      ),
+      _runtimeContext,
+    );
+  }
+
+  @override
+  Future<void> stopScreenShare(String trackId) {
+    requireCapability('screen-share');
+    final runtimeController = _requireRuntimeController('stopScreenShare');
+    final screenShareRuntimeController = _resolveScreenShareRuntimeController();
+    if (screenShareRuntimeController != null) {
+      return screenShareRuntimeController.stopScreenShare(trackId, _runtimeContext);
+    }
+
+    return runtimeController.unpublish(trackId, _runtimeContext);
   }
 
   @override

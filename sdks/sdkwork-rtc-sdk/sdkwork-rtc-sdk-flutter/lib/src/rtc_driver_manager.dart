@@ -6,19 +6,13 @@ import 'rtc_provider_selection.dart';
 import 'rtc_provider_support.dart';
 import 'rtc_standard_contract.dart';
 import 'rtc_types.dart';
-import 'providers/volcengine.dart';
 
 final class RtcDriverManager {
   RtcDriverManager({
     this.defaultProviderKey = RtcProviderCatalog.DEFAULT_RTC_PROVIDER_KEY,
     Iterable<RtcProviderDriver<dynamic>> drivers =
         const <RtcProviderDriver<dynamic>>[],
-    bool registerDefaultDrivers = true,
   }) {
-    if (registerDefaultDrivers) {
-      register(createVolcengineRtcDriver());
-    }
-
     registerAll(drivers);
   }
 

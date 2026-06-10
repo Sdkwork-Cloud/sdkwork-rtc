@@ -14,7 +14,6 @@ data class RtcProviderActivationCatalogEntry(
 
 object RtcProviderActivationCatalog {
     val recognizedActivationStatuses: List<String> = listOf(
-        "root-public-builtin",
         "package-boundary",
         "control-metadata-only",
     )

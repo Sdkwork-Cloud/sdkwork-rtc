@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createManagerWithProviderPackages } from './provider-test-helpers.mjs';
 
 async function loadSdk() {
   return import('../dist/index.js');
@@ -44,18 +45,11 @@ test('built-in providers advertise the required capability baseline', async () =
 });
 
 test('built-in provider clients unwrap the exact native client instance', async () => {
-  const {
-    RtcDriverManager,
-    createTencentRtcDriver,
-  } = await loadSdk();
-
   const nativeClient = { sdk: 'tencent-web-native' };
-  const manager = new RtcDriverManager({
-    drivers: [
-      createTencentRtcDriver({
-        nativeFactory: async () => nativeClient,
-      }),
-    ],
+  const { manager } = await createManagerWithProviderPackages(['tencent'], {
+    tencent: {
+      nativeFactory: async () => nativeClient,
+    },
   });
 
   const client = await manager.connect({ providerKey: 'tencent' });

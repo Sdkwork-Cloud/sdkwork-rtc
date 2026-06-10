@@ -1,6 +1,6 @@
 # Flutter Volcengine RTC Provider Package
 
-Reserved Flutter provider package boundary for Volcengine RTC.
+Reference Flutter provider package boundary for Volcengine RTC.
 
 - provider key: `volcengine`
 - plugin id: `rtc-volcengine`
@@ -11,16 +11,16 @@ Reserved Flutter provider package boundary for Volcengine RTC.
 - readme path: `providers/rtc_sdk_provider_volcengine/README.md`
 - source path: `providers/rtc_sdk_provider_volcengine/lib/src/rtc_provider_volcengine_package_contract.dart`
 - source symbol: `RtcProviderVolcenginePackageContract`
-- builtin provider: `true`
-- status: `future-runtime-bridge-only`
-- runtime bridge status: `reserved`
+- vendor SDK package: `volc_engine_rtc@^3.60.4`
+- status: `package_reference_boundary`
+- runtime bridge status: `reference-baseline`
 - root public exposure: `false`
 
 Rules:
 
-- one provider per package boundary
-- preserve providerKey, pluginId, and driverId alignment with the official provider catalog
-- wrap the official vendor SDK instead of re-implementing media runtime
-- keep the source scaffold metadata-only until a verified runtime bridge lands
-- do not expose this package through the root public API in the current landing
-- no runtime bridge ships in the current reserved package boundary
+- this package is the executable Flutter reference bridge for the official Volcengine RTC SDK
+- the root `rtc_sdk` package remains provider-neutral and does not depend on `volc_engine_rtc`
+- install this provider package only when a Flutter application selects Volcengine as its RTC media provider
+- wrap the official vendor SDK; do not re-implement RTC media runtime, signaling, invitation, or call lifecycle behavior
+- expose only provider-neutral RTC media operations: `join`, `leave`, `publish`, `unpublish`, `muteAudio`, and `muteVideo`
+- use Craw Chat or another owning IM/signaling runtime for business messages, room invitations, and call state orchestration

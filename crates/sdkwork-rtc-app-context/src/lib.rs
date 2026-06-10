@@ -125,8 +125,8 @@ pub fn resolve_app_context_projection(headers: &HeaderMap) -> Result<AppContext,
     let environment = resolve_optional_header(headers, &["x-sdkwork-environment"]);
     let deployment_mode = resolve_optional_header(headers, &["x-sdkwork-deployment-mode"]);
     let auth_level = resolve_optional_header(headers, &["x-sdkwork-auth-level"]);
-    let actor_id =
-        resolve_optional_header(headers, &["x-sdkwork-actor-id"]).unwrap_or_else(|| user_id.clone());
+    let actor_id = resolve_optional_header(headers, &["x-sdkwork-actor-id"])
+        .unwrap_or_else(|| user_id.clone());
     let actor_kind = resolve_optional_header(headers, &["x-sdkwork-actor-kind"])
         .unwrap_or_else(|| "user".to_owned());
     let organization_id = resolve_optional_header(headers, &["x-sdkwork-organization-id"]);
@@ -222,8 +222,8 @@ fn validate_app_context_signature(
             "{APP_CONTEXT_SIGNATURE_SECRET_ENV} must be configured when {APP_CONTEXT_REQUIRE_SIGNATURE_ENV}=true"
         ))
     })?;
-    let received_signature =
-        resolve_optional_header(headers, &[APP_CONTEXT_SIGNATURE_HEADER]).ok_or_else(|| {
+    let received_signature = resolve_optional_header(headers, &[APP_CONTEXT_SIGNATURE_HEADER])
+        .ok_or_else(|| {
             AppContextError::invalid(format!(
                 "missing app context signature header: {APP_CONTEXT_SIGNATURE_HEADER}"
             ))

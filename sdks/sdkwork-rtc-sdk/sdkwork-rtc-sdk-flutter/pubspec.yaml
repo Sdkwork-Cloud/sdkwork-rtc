@@ -11,7 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  volc_engine_rtc: ^3.60.3
 
 dev_dependencies:
   flutter_test:

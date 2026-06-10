@@ -122,39 +122,69 @@ export function buildProviderPackageSourceSymbol(providerPackageScaffold, provid
   return materializeProviderPackagePattern(providerPackageScaffold.sourceSymbolPattern, providerKey);
 }
 
+export function resolveProviderPackageScaffoldStatus(providerPackageScaffold, providerKey) {
+  const isReferenceProvider =
+    providerPackageScaffold?.referenceProviderKey === providerKey &&
+    typeof providerPackageScaffold?.referenceStatus === 'string' &&
+    providerPackageScaffold.referenceStatus.length > 0;
+
+  if (isReferenceProvider) {
+    return providerPackageScaffold.referenceStatus;
+  }
+
+  return providerPackageScaffold.status;
+}
+
+export function resolveProviderPackageScaffoldRuntimeBridgeStatus(
+  providerPackageScaffold,
+  providerKey,
+) {
+  const isReferenceProvider =
+    providerPackageScaffold?.referenceProviderKey === providerKey &&
+    typeof providerPackageScaffold?.referenceRuntimeBridgeStatus === 'string' &&
+    providerPackageScaffold.referenceRuntimeBridgeStatus.length > 0;
+
+  if (isReferenceProvider) {
+    return providerPackageScaffold.referenceRuntimeBridgeStatus;
+  }
+
+  return providerPackageScaffold.runtimeBridgeStatus;
+}
+
 export function buildReservedProviderPackageCatalogEntries(languageEntry, providers) {
   const providerPackageScaffold = languageEntry.providerPackageScaffold;
   if (!providerPackageScaffold) {
     return [];
   }
 
-  return (providers ?? []).map((provider) => ({
-    providerKey: provider.providerKey,
-    pluginId: provider.pluginId,
-    driverId: provider.driverId,
-    packageIdentity: materializeProviderPackagePattern(
-      providerPackageScaffold.packagePattern,
-      provider.providerKey,
-    ),
-    manifestPath: buildProviderPackageManifestPath(providerPackageScaffold, provider.providerKey),
-    readmePath: buildProviderPackageReadmePath(providerPackageScaffold, provider.providerKey),
-    sourcePath: buildProviderPackageSourcePath(providerPackageScaffold, provider.providerKey),
-    sourceSymbol: buildProviderPackageSourceSymbol(providerPackageScaffold, provider.providerKey),
-    builtin: provider.builtin === true,
-    rootPublic: providerPackageScaffold.rootPublic,
-    status: providerPackageScaffold.status,
-    runtimeBridgeStatus: providerPackageScaffold.runtimeBridgeStatus,
-  }));
+  return (providers ?? []).map((provider) => {
+    const providerKey = provider.providerKey;
+
+    return {
+      providerKey,
+      pluginId: provider.pluginId,
+      driverId: provider.driverId,
+      packageIdentity: materializeProviderPackagePattern(
+        providerPackageScaffold.packagePattern,
+        providerKey,
+      ),
+      manifestPath: buildProviderPackageManifestPath(providerPackageScaffold, providerKey),
+      readmePath: buildProviderPackageReadmePath(providerPackageScaffold, providerKey),
+      sourcePath: buildProviderPackageSourcePath(providerPackageScaffold, providerKey),
+      sourceSymbol: buildProviderPackageSourceSymbol(providerPackageScaffold, providerKey),
+      builtin: provider.builtin === true,
+      rootPublic: providerPackageScaffold.rootPublic,
+      status: resolveProviderPackageScaffoldStatus(providerPackageScaffold, providerKey),
+      runtimeBridgeStatus: resolveProviderPackageScaffoldRuntimeBridgeStatus(
+        providerPackageScaffold,
+        providerKey,
+      ),
+    };
+  });
 }
 
 export function describeProviderActivationStatus(activationStatus) {
   switch (activationStatus) {
-    case 'root-public-builtin':
-      return {
-        runtimeBridge: true,
-        rootPublic: true,
-        packageBoundary: true,
-      };
     case 'package-boundary':
       return {
         runtimeBridge: true,
@@ -162,12 +192,13 @@ export function describeProviderActivationStatus(activationStatus) {
         packageBoundary: true,
       };
     case 'control-metadata-only':
-    default:
       return {
         runtimeBridge: false,
         rootPublic: false,
         packageBoundary: false,
       };
+    default:
+      throw new Error(`Unknown RTC provider activation status: ${activationStatus}`);
   }
 }
 

@@ -16,8 +16,6 @@ export const RTC_SDK_ERROR_CODES = freezeRtcRuntimeValue([
   'invalid_provider_url',
   'invalid_native_config',
   'native_sdk_not_available',
-  'signaling_not_available',
-  'call_state_invalid',
   'vendor_error',
 ] as const);
 

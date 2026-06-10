@@ -31,6 +31,7 @@ function run(step, args, cwd = packageRoot) {
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(scriptDir, '..');
 const workspaceRoot = path.resolve(packageRoot, '..');
+const testDir = path.join(packageRoot, 'test');
 const tscPath = resolveGeneratorModulePath(workspaceRoot, 'typescript', 'bin', 'tsc');
 const task = (process.argv[2] || '').trim();
 
@@ -41,7 +42,6 @@ function build() {
 
 function test() {
   build();
-  const testDir = path.join(packageRoot, 'test');
   const testFiles = readdirSync(testDir)
     .filter((entry) => entry.endsWith('.test.mjs'))
     .sort();
@@ -53,7 +53,7 @@ function test() {
 
 function smoke() {
   build();
-  run('typescript:call-smoke', [path.join(scriptDir, 'sdk-call-smoke.mjs')]);
+  run('typescript:smoke', [path.join(testDir, 'public-api-boundary.test.mjs')]);
 }
 
 switch (task) {

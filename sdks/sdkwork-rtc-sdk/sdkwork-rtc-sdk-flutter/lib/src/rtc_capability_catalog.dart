@@ -23,7 +23,12 @@ final class RtcCapabilityCatalog {
       surface: "control-plane",
     ),
     RtcCapabilityCatalogEntry(
-      capabilityKey: "callback",
+      capabilityKey: "provider.webhook",
+      category: "required-baseline",
+      surface: "control-plane",
+    ),
+    RtcCapabilityCatalogEntry(
+      capabilityKey: "provider.event-normalization",
       category: "required-baseline",
       surface: "control-plane",
     ),
@@ -33,12 +38,12 @@ final class RtcCapabilityCatalog {
       surface: "control-plane",
     ),
     RtcCapabilityCatalogEntry(
-      capabilityKey: "call.audio",
+      capabilityKey: "media.audio",
       category: "required-baseline",
       surface: "runtime-bridge",
     ),
     RtcCapabilityCatalogEntry(
-      capabilityKey: "call.video",
+      capabilityKey: "media.video",
       category: "required-baseline",
       surface: "runtime-bridge",
     ),
@@ -101,6 +106,11 @@ final class RtcCapabilityCatalog {
       capabilityKey: "e2ee",
       category: "optional-advanced",
       surface: "runtime-bridge",
+    ),
+    RtcCapabilityCatalogEntry(
+      capabilityKey: "provider.active-query",
+      category: "optional-advanced",
+      surface: "control-plane",
     )
   ];
 

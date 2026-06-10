@@ -18,7 +18,6 @@ public static class RtcProviderActivationCatalog
 {
     public static readonly IReadOnlyList<string> RecognizedActivationStatuses =
     [
-        "root-public-builtin",
         "package-boundary",
         "control-metadata-only",
     ];

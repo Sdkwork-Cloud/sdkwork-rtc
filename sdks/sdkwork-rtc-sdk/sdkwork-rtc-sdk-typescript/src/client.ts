@@ -22,6 +22,7 @@ import type {
   RtcProviderSelection,
   RtcRuntimeController,
   RtcRuntimeControllerContext,
+  RtcScreenShareOptions,
   RtcSessionDescriptor,
   RtcTrackPublication,
 } from './types.js';
@@ -35,6 +36,8 @@ export interface RtcClient<TNativeClient = unknown> {
   leave(): Promise<RtcSessionDescriptor>;
   publish(options: RtcPublishOptions): Promise<RtcTrackPublication>;
   unpublish(trackId: string): Promise<void>;
+  startScreenShare(options: RtcScreenShareOptions): Promise<RtcTrackPublication>;
+  stopScreenShare(trackId: string): Promise<void>;
   muteAudio(muted?: boolean): Promise<RtcMuteState>;
   muteVideo(muted?: boolean): Promise<RtcMuteState>;
   describeCapability(capability: RtcCapabilityKey): RtcCapabilitySupportState;
@@ -125,6 +128,38 @@ export class StandardRtcClient<TNativeClient = unknown> implements RtcClient<TNa
   async unpublish(trackId: string): Promise<void> {
     const unpublish = this.#requireRuntimeMethod('unpublish');
     await unpublish.call(this.#runtimeController, trackId, this.#getRuntimeContext());
+  }
+
+  async startScreenShare(options: RtcScreenShareOptions): Promise<RtcTrackPublication> {
+    this.requireCapability('screen-share');
+    const context = this.#getRuntimeContext();
+    const startScreenShare = this.#runtimeController?.startScreenShare;
+    if (typeof startScreenShare === 'function') {
+      return startScreenShare.call(this.#runtimeController, options, context);
+    }
+
+    const publish = this.#requireRuntimeMethod('publish');
+    return publish.call(
+      this.#runtimeController,
+      {
+        ...options,
+        kind: 'screen-share',
+      },
+      context,
+    );
+  }
+
+  async stopScreenShare(trackId: string): Promise<void> {
+    this.requireCapability('screen-share');
+    const context = this.#getRuntimeContext();
+    const stopScreenShare = this.#runtimeController?.stopScreenShare;
+    if (typeof stopScreenShare === 'function') {
+      await stopScreenShare.call(this.#runtimeController, trackId, context);
+      return;
+    }
+
+    const unpublish = this.#requireRuntimeMethod('unpublish');
+    await unpublish.call(this.#runtimeController, trackId, context);
   }
 
   async muteAudio(muted = true): Promise<RtcMuteState> {

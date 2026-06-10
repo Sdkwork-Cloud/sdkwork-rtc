@@ -8,10 +8,11 @@ public final class RtcCapabilityCatalog {
   public static final List<Entry> ENTRIES = List.of(
       new Entry("session", "required-baseline", "cross-surface"),
       new Entry("credential", "required-baseline", "control-plane"),
-      new Entry("callback", "required-baseline", "control-plane"),
+      new Entry("provider.webhook", "required-baseline", "control-plane"),
+      new Entry("provider.event-normalization", "required-baseline", "control-plane"),
       new Entry("health", "required-baseline", "control-plane"),
-      new Entry("call.audio", "required-baseline", "runtime-bridge"),
-      new Entry("call.video", "required-baseline", "runtime-bridge"),
+      new Entry("media.audio", "required-baseline", "runtime-bridge"),
+      new Entry("media.video", "required-baseline", "runtime-bridge"),
       new Entry("live.broadcast", "required-baseline", "cross-surface"),
       new Entry("live.audience", "required-baseline", "cross-surface"),
       new Entry("screen-share", "optional-advanced", "runtime-bridge"),
@@ -23,7 +24,8 @@ public final class RtcCapabilityCatalog {
       new Entry("transcription", "optional-advanced", "control-plane"),
       new Entry("beauty", "optional-advanced", "runtime-bridge"),
       new Entry("spatial-audio", "optional-advanced", "runtime-bridge"),
-      new Entry("e2ee", "optional-advanced", "runtime-bridge")
+      new Entry("e2ee", "optional-advanced", "runtime-bridge"),
+      new Entry("provider.active-query", "optional-advanced", "control-plane")
   );
 
 public static List<Entry> getRtcCapabilityCatalog() {

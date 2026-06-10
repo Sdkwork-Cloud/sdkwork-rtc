@@ -7,7 +7,7 @@
   "scripts": {
     "audit:migration": "node --test tests/rtc-migration-contract.test.mjs",
     "materialize:openapi": "node sdks/materialize-rtc-v3-openapi-boundaries.mjs",
-    "sdk:check": "node sdks/sdkwork-rtc-app-sdk/bin/generate-sdk.mjs --check && node sdks/sdkwork-rtc-backend-sdk/bin/generate-sdk.mjs --check",
+    "sdk:check": "node tools/rtc_sdk_generate.mjs --check",
     "test": "vitest run packages/pc-react/communication/sdkwork-rtc-pc-react/tests",
     "test:rust": "cargo test --workspace",
     "typecheck": "tsc --noEmit",

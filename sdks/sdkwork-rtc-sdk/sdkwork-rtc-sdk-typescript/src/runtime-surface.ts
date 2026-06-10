@@ -1,7 +1,7 @@
 import type { RtcSdkErrorCode } from './errors.js';
 import { freezeRtcRuntimeValue } from './runtime-freeze.js';
 
-export const RTC_RUNTIME_SURFACE_METHODS = freezeRtcRuntimeValue(['join', 'leave', 'publish', 'unpublish', 'muteAudio', 'muteVideo'] as const);
+export const RTC_RUNTIME_SURFACE_METHODS = freezeRtcRuntimeValue(['join', 'leave', 'publish', 'unpublish', 'startScreenShare', 'stopScreenShare', 'muteAudio', 'muteVideo'] as const);
 
 export type RtcRuntimeSurfaceMethodName = (typeof RTC_RUNTIME_SURFACE_METHODS)[number];
 

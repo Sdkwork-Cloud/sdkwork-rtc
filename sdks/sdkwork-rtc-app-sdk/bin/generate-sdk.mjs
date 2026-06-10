@@ -27,5 +27,21 @@ await runRtcSdkGenerator({
         go: "github.com/sdkwork/sdkwork-rtc-sdk",
       },
     },
+    {
+      workspace: "sdkwork-drive-app-sdk",
+      role: "drive-media-resource-app-capability",
+      required: true,
+      dependencyMode: "consumer-sdk",
+      apiPrefix: "/app/v3/api",
+      apiAuthority: "sdkwork-drive.app",
+      generatedTransportImportPolicy: "forbidden",
+      packageByLanguage: {
+        typescript: "@sdkwork/drive-app-sdk",
+        rust: "sdkwork-drive-app-sdk",
+        java: "com.sdkwork:sdkwork-drive-app-sdk",
+        python: "sdkwork-drive-app-sdk",
+        go: "github.com/sdkwork/sdkwork-drive-app-sdk",
+      },
+    },
   ],
 }, process.argv.slice(2));

@@ -20,6 +20,7 @@
 /sdkwork-rtc-sdk-csharp/src/**/obj/
 /sdkwork-rtc-sdk-flutter/build/
 /sdkwork-rtc-sdk-flutter/pubspec.lock
+/sdkwork-rtc-sdk-flutter/providers/*/pubspec.lock
 /sdkwork-rtc-sdk-kotlin/build/
 /sdkwork-rtc-sdk-swift/.build/
 /sdkwork-rtc-sdk-python/**/__pycache__/

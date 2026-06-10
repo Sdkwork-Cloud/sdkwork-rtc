@@ -24,7 +24,7 @@ public final class RtcProviderExtensionCatalog {
 
   public static final List<Entry> ENTRIES = List.of(
       new Entry("volcengine.native-client", "volcengine", "Volcengine Native Client", "runtime-bridge", "unwrap-only", "reference-baseline"),
-      new Entry("aliyun.native-client", "aliyun", "Aliyun Native Client", "runtime-bridge", "unwrap-only", "reference-baseline"),
+      new Entry("aliyun.native-client", "aliyun", "Aliyun Native Client", "runtime-bridge", "unwrap-only", "reserved"),
       new Entry("tencent.native-client", "tencent", "Tencent Native Client", "runtime-bridge", "unwrap-only", "reference-baseline"),
       new Entry("agora.native-client", "agora", "Agora Native Client", "runtime-bridge", "unwrap-only", "reserved"),
       new Entry("zego.native-client", "zego", "ZEGO Native Client", "runtime-bridge", "unwrap-only", "reserved"),

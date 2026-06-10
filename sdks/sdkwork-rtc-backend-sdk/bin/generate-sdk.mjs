@@ -27,5 +27,21 @@ await runRtcSdkGenerator({
         go: "github.com/sdkwork/sdkwork-rtc-sdk",
       },
     },
+    {
+      workspace: "sdkwork-drive-backend-sdk",
+      role: "drive-media-resource-backend-capability",
+      required: true,
+      dependencyMode: "consumer-sdk",
+      apiPrefix: "/backend/v3/api",
+      apiAuthority: "sdkwork-drive.backend",
+      generatedTransportImportPolicy: "forbidden",
+      packageByLanguage: {
+        typescript: "@sdkwork/drive-backend-sdk",
+        rust: "sdkwork-drive-backend-sdk",
+        java: "com.sdkwork:sdkwork-drive-backend-sdk",
+        python: "sdkwork-drive-backend-sdk",
+        go: "github.com/sdkwork/sdkwork-drive-backend-sdk",
+      },
+    },
   ],
 }, process.argv.slice(2));

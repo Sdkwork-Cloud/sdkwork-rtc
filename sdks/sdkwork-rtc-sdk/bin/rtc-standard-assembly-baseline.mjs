@@ -2,7 +2,6 @@ import {
   RTC_CAPABILITY_CATEGORIES,
   RTC_CAPABILITY_NEGOTIATION_RULES,
   RTC_CAPABILITY_NEGOTIATION_STATUSES,
-  DEFAULT_SIGNALING_TRANSPORT_STANDARD,
   DEFAULT_LOOKUP_HELPER_NAMING_STANDARD,
   DEFAULT_ROOT_PUBLIC_SURFACE_STANDARD,
   RTC_RUNTIME_IMMUTABILITY_CONTROLLER_CONTEXT_TERM,
@@ -169,6 +168,57 @@ export function assertRtcAssemblyWorkspaceBaseline(assembly) {
     );
   }
 
+  for (const provider of providers) {
+    const adapter = provider.typescriptAdapter ?? {};
+    if (!TYPESCRIPT_ADAPTER_SDK_PROVISIONING_VALUES.includes(adapter.sdkProvisioning)) {
+      throw new Error(
+        `provider ${provider.providerKey} typescriptAdapter.sdkProvisioning must be one of ${TYPESCRIPT_ADAPTER_SDK_PROVISIONING_VALUES.join(', ')}`,
+      );
+    }
+
+    if (!TYPESCRIPT_ADAPTER_BINDING_STRATEGIES.includes(adapter.bindingStrategy)) {
+      throw new Error(
+        `provider ${provider.providerKey} typescriptAdapter.bindingStrategy must be one of ${TYPESCRIPT_ADAPTER_BINDING_STRATEGIES.join(', ')}`,
+      );
+    }
+
+    if (!TYPESCRIPT_ADAPTER_BUNDLE_POLICIES.includes(adapter.bundlePolicy)) {
+      throw new Error(
+        `provider ${provider.providerKey} typescriptAdapter.bundlePolicy must be one of ${TYPESCRIPT_ADAPTER_BUNDLE_POLICIES.join(', ')}`,
+      );
+    }
+
+    if (!TYPESCRIPT_ADAPTER_RUNTIME_BRIDGE_STATUSES.includes(adapter.runtimeBridgeStatus)) {
+      throw new Error(
+        `provider ${provider.providerKey} typescriptAdapter.runtimeBridgeStatus must be one of ${TYPESCRIPT_ADAPTER_RUNTIME_BRIDGE_STATUSES.join(', ')}`,
+      );
+    }
+
+    if (
+      !TYPESCRIPT_ADAPTER_OFFICIAL_VENDOR_SDK_REQUIREMENTS.includes(
+        adapter.officialVendorSdkRequirement,
+      )
+    ) {
+      throw new Error(
+        `provider ${provider.providerKey} typescriptAdapter.officialVendorSdkRequirement must be one of ${TYPESCRIPT_ADAPTER_OFFICIAL_VENDOR_SDK_REQUIREMENTS.join(', ')}`,
+      );
+    }
+
+    const expectedVendorRequirement =
+      adapter.runtimeBridgeStatus === 'reference-baseline'
+        ? 'required'
+        : 'not-declared-until-bridge';
+    if (adapter.officialVendorSdkRequirement !== expectedVendorRequirement) {
+      throw new Error(
+        `provider ${provider.providerKey} official vendor SDK requirement must be ${expectedVendorRequirement} when runtime bridge status is ${adapter.runtimeBridgeStatus}`,
+      );
+    }
+  }
+
+  if (defaultProviderEntry.typescriptAdapter?.runtimeBridgeStatus !== 'reference-baseline') {
+    throw new Error('Default provider must point at a TypeScript reference-baseline bridge');
+  }
+
   const providerSelectionStandard = assembly.providerSelectionStandard ?? {};
   if (!hasExactArray(providerSelectionStandard.sourceTerms, RTC_PROVIDER_SELECTION_SOURCES)) {
     throw new Error(
@@ -248,16 +298,6 @@ export function assertRtcAssemblyWorkspaceBaseline(assembly) {
   if (runtimeSurfaceStandard.failureCode !== RTC_RUNTIME_SURFACE_FAILURE_CODE) {
     throw new Error(
       `runtimeSurfaceStandard.failureCode must be ${RTC_RUNTIME_SURFACE_FAILURE_CODE}, received: ${runtimeSurfaceStandard.failureCode ?? '<missing>'}`,
-    );
-  }
-
-  const signalingTransportStandard = assembly.signalingTransportStandard ?? {};
-  if (
-    JSON.stringify(signalingTransportStandard) !==
-    JSON.stringify(DEFAULT_SIGNALING_TRANSPORT_STANDARD)
-  ) {
-    throw new Error(
-      'signalingTransportStandard must exactly match the canonical WebSocket signaling transport contract',
     );
   }
 
@@ -589,8 +629,6 @@ export function assertRtcAssemblyWorkspaceBaseline(assembly) {
     for (const field of [
       'vendorSdkPackage',
       'vendorSdkImportPath',
-      'signalingSdkPackage',
-      'signalingSdkImportPath',
       'recommendedEntrypoint',
       'smokeCommand',
     ]) {
@@ -673,7 +711,6 @@ export function assertRtcAssemblyWorkspaceBaseline(assembly) {
     capabilityStandard,
     capabilityNegotiationStandard,
     runtimeSurfaceStandard,
-    signalingTransportStandard,
     runtimeImmutabilityStandard,
     rootPublicSurfaceStandard,
     lookupHelperNamingStandard,

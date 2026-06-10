@@ -6,7 +6,6 @@ import java.util.Optional;
 public final class RtcProviderActivationCatalog {
 
   public static final List<String> RECOGNIZED_ACTIVATION_STATUSES = List.of(
-      "root-public-builtin",
       "package-boundary",
       "control-metadata-only"
   );

@@ -15,10 +15,11 @@ public static class RtcCapabilityCatalog
     [
         new("session", "required-baseline", "cross-surface"),
         new("credential", "required-baseline", "control-plane"),
-        new("callback", "required-baseline", "control-plane"),
+        new("provider.webhook", "required-baseline", "control-plane"),
+        new("provider.event-normalization", "required-baseline", "control-plane"),
         new("health", "required-baseline", "control-plane"),
-        new("call.audio", "required-baseline", "runtime-bridge"),
-        new("call.video", "required-baseline", "runtime-bridge"),
+        new("media.audio", "required-baseline", "runtime-bridge"),
+        new("media.video", "required-baseline", "runtime-bridge"),
         new("live.broadcast", "required-baseline", "cross-surface"),
         new("live.audience", "required-baseline", "cross-surface"),
         new("screen-share", "optional-advanced", "runtime-bridge"),
@@ -31,6 +32,7 @@ public static class RtcCapabilityCatalog
         new("beauty", "optional-advanced", "runtime-bridge"),
         new("spatial-audio", "optional-advanced", "runtime-bridge"),
         new("e2ee", "optional-advanced", "runtime-bridge"),
+        new("provider.active-query", "optional-advanced", "control-plane"),
     ];
 
 public static IReadOnlyList<RtcCapabilityCatalogEntry> GetRtcCapabilityCatalog() =>

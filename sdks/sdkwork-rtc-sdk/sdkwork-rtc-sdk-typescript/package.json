@@ -1,7 +1,7 @@
 {
   "name": "@sdkwork/rtc-sdk",
   "version": "0.1.1",
-  "description": "JDBC-style RTC provider standard SDK with built-in driver management and provider adapters",
+  "description": "Provider-neutral RTC media SDK with JDBC-style provider package loading",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -17,14 +17,6 @@
   "files": [
     "dist"
   ],
-  "peerDependencies": {
-    "@volcengine/rtc": "^4.68.3"
-  },
-  "peerDependenciesMeta": {
-    "@volcengine/rtc": {
-      "optional": true
-    }
-  },
   "scripts": {
     "clean": "call \"%npm_node_execpath%\" ./bin/package-task.mjs clean || \"$npm_node_execpath\" ./bin/package-task.mjs clean || node ./bin/package-task.mjs clean",
     "build": "call \"%npm_node_execpath%\" ./bin/package-task.mjs build || \"$npm_node_execpath\" ./bin/package-task.mjs build || node ./bin/package-task.mjs build",

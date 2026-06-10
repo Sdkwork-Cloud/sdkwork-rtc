@@ -104,6 +104,16 @@ class RtcPublishOptions {
   final Map<String, Object?>? metadata;
 }
 
+class RtcScreenShareOptions {
+  const RtcScreenShareOptions({
+    required this.trackId,
+    this.metadata,
+  });
+
+  final String trackId;
+  final Map<String, Object?>? metadata;
+}
+
 class RtcTrackPublication {
   const RtcTrackPublication({
     required this.trackId,

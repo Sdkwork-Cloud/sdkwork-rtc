@@ -2,7 +2,7 @@
   "name": "@sdkwork/rtc-sdk-provider-jitsi",
   "version": "0.1.0",
   "private": true,
-  "description": "Reference TypeScript provider boundary for Jitsi Meet within sdkwork-rtc-sdk",
+  "description": "Reserved TypeScript provider boundary for Jitsi Meet within sdkwork-rtc-sdk",
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -19,6 +19,13 @@
     "index.d.ts",
     "README.md"
   ],
+  "peerDependencies": {
+    "@sdkwork/rtc-sdk": "^0.1.1"
+  },
+  "peerDependenciesMeta": {},
+  "devDependencies": {
+    "@sdkwork/rtc-sdk": "workspace:*"
+  },
   "sdkworkRtcProvider": {
     "providerKey": "jitsi",
     "displayName": "Jitsi Meet",
@@ -26,7 +33,7 @@
     "builtin": false,
     "status": "package_reference_boundary",
     "registrationContract": "RtcProviderModule",
-    "sourceModule": "../../src/providers/jitsi.ts",
+    "sourceModule": "./index.js",
     "driverFactory": "createJitsiRtcDriver",
     "metadataSymbol": "JITSI_RTC_PROVIDER_METADATA",
     "moduleSymbol": "JITSI_RTC_PROVIDER_MODULE",
@@ -34,18 +41,20 @@
     "requiredCapabilities": [
       "session",
       "credential",
-      "callback",
+      "provider.webhook",
       "health",
-      "call.audio",
-      "call.video",
+      "media.audio",
+      "media.video",
       "live.broadcast",
-      "live.audience"
+      "live.audience",
+      "provider.event-normalization"
     ],
     "optionalCapabilities": [
       "screen-share",
       "recording",
       "artifact",
-      "transcription"
+      "transcription",
+      "provider.active-query"
     ],
     "extensionKeys": [
       "jitsi.native-client"
@@ -54,8 +63,8 @@
       "sdkProvisioning": "consumer-supplied",
       "bindingStrategy": "native-factory",
       "bundlePolicy": "must-not-bundle",
-      "runtimeBridgeStatus": "reference-baseline",
-      "officialVendorSdkRequirement": "required"
+      "runtimeBridgeStatus": "reserved",
+      "officialVendorSdkRequirement": "not-declared-until-bridge"
     }
   }
 }

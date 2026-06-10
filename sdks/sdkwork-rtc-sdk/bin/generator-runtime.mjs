@@ -1,13 +1,15 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-function resolveWorkspaceProbe(workspaceRoot, probeSegments, errorMessage) {
+function resolveWorkspaceProbe(workspaceRoot, probeSegmentSets, errorMessage) {
   let current = path.resolve(workspaceRoot);
 
   while (true) {
-    const candidate = path.join(current, ...probeSegments);
-    if (existsSync(candidate)) {
-      return candidate;
+    for (const probeSegments of probeSegmentSets) {
+      const candidate = path.join(current, ...probeSegments);
+      if (existsSync(candidate)) {
+        return candidate;
+      }
     }
 
     const parent = path.dirname(current);
@@ -30,7 +32,10 @@ export function resolveGeneratorRoot(workspaceRoot) {
 
   return resolveWorkspaceProbe(
     workspaceRoot,
-    ['sdk', 'sdkwork-sdk-generator'],
+    [
+      ['sdk', 'sdkwork-sdk-generator'],
+      ['sdkwork-sdk-generator'],
+    ],
     (root) =>
       `Unable to locate sdkwork-sdk-generator from workspace root ${root}. ` +
       'Set SDKWORK_GENERATOR_ROOT to an explicit path.',

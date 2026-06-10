@@ -14,7 +14,7 @@ pub struct RtcProviderActivationCatalogEntry {
 
 pub struct RtcProviderActivationCatalog;
 
-pub const RTC_PROVIDER_ACTIVATION_STATUSES: [&str; 3] = ["root-public-builtin", "package-boundary", "control-metadata-only"];
+pub const RTC_PROVIDER_ACTIVATION_STATUSES: [&str; 2] = ["package-boundary", "control-metadata-only"];
 
 pub const OFFICIAL_RTC_PROVIDER_ACTIVATIONS: [RtcProviderActivationCatalogEntry; 10] = [
     RtcProviderActivationCatalogEntry { providerKey: "volcengine", pluginId: "rtc-volcengine", driverId: "sdkwork-rtc-driver-volcengine", activationStatus: "control-metadata-only", runtimeBridge: false, rootPublic: false, packageBoundary: false, builtin: true, packageIdentity: "rtc-sdk-provider-volcengine" },

@@ -12,7 +12,6 @@ public struct RtcProviderActivationCatalogEntry {
 
 public enum RtcProviderActivationCatalog {
     public static let recognizedActivationStatuses: [String] = [
-        "root-public-builtin",
         "package-boundary",
         "control-metadata-only",
     ]

@@ -1,0 +1,1 @@
+{"version":3,"file":"rtc-provider-route-command.d.ts","sourceRoot":"","sources":["../../src/types/rtc-provider-route-command.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,uBAAuB;IACtC,iBAAiB,EAAE,MAAM,CAAC;IAC1B,SAAS,EAAE,QAAQ,CAAC;IACpB,MAAM,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IACvB,QAAQ,CAAC,EAAE,MAAM,CAAC;IAClB,MAAM,CAAC,EAAE,QAAQ,GAAG,UAAU,CAAC;CAChC"}

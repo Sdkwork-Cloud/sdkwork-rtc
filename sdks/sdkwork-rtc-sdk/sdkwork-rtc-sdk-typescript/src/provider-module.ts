@@ -72,14 +72,14 @@ function assertRtcProviderModuleContract<TNativeClient = unknown>(
     });
   }
 
-  if (providerModule.builtin !== packageContract.rootPublic) {
+  if (providerModule.builtin !== providerModule.metadata.builtin) {
     throw new RtcSdkException({
       code: 'provider_module_contract_mismatch',
-      message: `RTC provider module package contract drift detected for ${providerModule.metadata.providerKey}: builtin/rootPublic must match the assembly-driven TypeScript package contract`,
+      message: `RTC provider module package contract drift detected for ${providerModule.metadata.providerKey}: builtin must match the assembly-driven provider metadata`,
       providerKey: providerModule.metadata.providerKey,
       pluginId: providerModule.metadata.pluginId,
       details: {
-        expectedRootPublic: packageContract.rootPublic,
+        expectedBuiltin: providerModule.metadata.builtin,
         receivedBuiltin: providerModule.builtin,
       },
     });

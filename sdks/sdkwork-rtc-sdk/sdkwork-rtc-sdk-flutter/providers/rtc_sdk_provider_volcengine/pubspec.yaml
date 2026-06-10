@@ -1,16 +1,23 @@
 name: rtc_sdk_provider_volcengine
 description: >
-  Reserved Flutter provider package boundary for Volcengine RTC.
+  Reference Flutter provider package boundary for Volcengine RTC.
   providerKey: volcengine
   pluginId: rtc-volcengine
   driverId: sdkwork-rtc-driver-volcengine
-  status: future-runtime-bridge-only
-  runtimeBridgeStatus: reserved
+  status: package_reference_boundary
+  runtimeBridgeStatus: reference-baseline
 publish_to: none
 version: 0.1.0
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  rtc_sdk:
+    path: ../..
+  volc_engine_rtc: ^3.60.4
 
 sdkwork_rtc_provider:
   providerKey: volcengine
@@ -20,5 +27,7 @@ sdkwork_rtc_provider:
   sourcePath: lib/src/rtc_provider_volcengine_package_contract.dart
   sourceSymbol: RtcProviderVolcenginePackageContract
   rootPublic: false
-  status: future-runtime-bridge-only
-  runtimeBridgeStatus: reserved
+  status: package_reference_boundary
+  runtimeBridgeStatus: reference-baseline
+  officialVendorSdkPackage: volc_engine_rtc
+  officialVendorSdkVersion: ^3.60.4

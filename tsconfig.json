@@ -7,5 +7,9 @@
     "tests/**/*.mjs",
     "vitest.config.ts",
     "vitest.setup.ts"
+  ],
+  "exclude": [
+    "sdks/sdkwork-rtc-app-sdk/**/generated/server-openapi/**",
+    "sdks/sdkwork-rtc-backend-sdk/**/generated/server-openapi/**"
   ]
 }

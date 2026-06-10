@@ -3,16 +3,12 @@ import { existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import {
-  assertRtcAssemblyWorkspaceBaseline,
-  getRtcExecutableLanguageEntriesBySmokeMode,
-} from './rtc-standard-assembly-baseline.mjs';
+import { assertRtcAssemblyWorkspaceBaseline } from './rtc-standard-assembly-baseline.mjs';
 import {
   readJsonFile,
   resolveRtcSdkAppRootFromWorkspaceRoot,
   resolveRtcSdkWorkspaceRoot,
 } from './rtc-standard-file-helpers.mjs';
-import { buildRtcRootCallSmokeSteps } from './rtc-call-smoke-standard.mjs';
 
 function fail(message) {
   throw new Error(message);
@@ -37,28 +33,10 @@ function resolveWindowsBatCommandPath(command) {
     return null;
   }
 
-  const resolvedPath = resolution.stdout
+  return resolution.stdout
     .split(/\r?\n/u)
     .map((entry) => entry.trim())
-    .find((entry) => {
-      if (!entry) {
-        return false;
-      }
-
-      const resolvedExtension = path.extname(entry).toLowerCase();
-      return resolvedExtension === '.cmd' || resolvedExtension === '.bat';
-    });
-
-  if (!resolvedPath) {
-    return null;
-  }
-
-  const resolvedExtension = path.extname(resolvedPath).toLowerCase();
-  if (resolvedExtension === '.cmd' || resolvedExtension === '.bat') {
-    return resolvedPath;
-  }
-
-  return null;
+    .find((entry) => ['.cmd', '.bat'].includes(path.extname(entry).toLowerCase())) ?? null;
 }
 
 function quoteWindowsCmdArgument(argument) {
@@ -80,13 +58,18 @@ function buildWindowsFlutterCommandLine(flutterBatPath, args) {
     flutterBinDirectory,
   ].join(';');
 
-  return `set CONDA_NO_PLUGINS=true&& set PATH=${bootstrapPath}&& ${['flutter', ...args.map(quoteWindowsCmdArgument)].join(' ')}`;
+  return `set CONDA_NO_PLUGINS=true&& set PATH=${bootstrapPath}&& ${[
+    'flutter',
+    ...args.map(quoteWindowsCmdArgument),
+  ].join(' ')}`;
 }
 
 function runCommand(label, command, args, cwd, options = {}) {
   const optional = options.optional === true;
   const windowsFlutterBatPath =
-    process.platform === 'win32' && command === 'flutter' ? resolveWindowsBatCommandPath(command) : null;
+    process.platform === 'win32' && command === 'flutter'
+      ? resolveWindowsBatCommandPath(command)
+      : null;
   const commandToRun = windowsFlutterBatPath ? process.env.ComSpec ?? 'cmd.exe' : command;
   const argsToRun = windowsFlutterBatPath
     ? ['/d', '/s', '/c', buildWindowsFlutterCommandLine(windowsFlutterBatPath, args)]
@@ -130,10 +113,6 @@ function runCommand(label, command, args, cwd, options = {}) {
 
 function runRequiredNodeStep(label, args, cwd) {
   return runCommand(label, process.execPath, args, cwd);
-}
-
-function runOptionalNodeStep(label, args, cwd) {
-  return runCommand(label, process.execPath, args, cwd, { optional: true });
 }
 
 function runOptionalCommand(label, command, args, cwd) {
@@ -215,7 +194,7 @@ function printSummary(requiredResults, optionalPassed, optionalSkipped) {
 
   if (optionalPassed.length > 0) {
     console.log(
-      `[sdkwork-rtc-sdk] optional smoke steps passed (${optionalPassed.length}): ${optionalPassed
+      `[sdkwork-rtc-sdk] optional steps passed (${optionalPassed.length}): ${optionalPassed
         .map((entry) => entry.label)
         .join(', ')}`,
     );
@@ -223,32 +202,20 @@ function printSummary(requiredResults, optionalPassed, optionalSkipped) {
 
   if (optionalSkipped.length > 0) {
     console.log(
-      `[sdkwork-rtc-sdk] optional smoke steps skipped (${optionalSkipped.length}): ${optionalSkipped
+      `[sdkwork-rtc-sdk] optional steps skipped (${optionalSkipped.length}): ${optionalSkipped
         .map((entry) => `${entry.label} [${entry.reason}]`)
         .join(', ')}`,
     );
   }
 }
 
-function resolveRtcExecutableCallSmokePlan(workspaceRoot) {
+function assertAssembly(workspaceRoot) {
   const assemblyPath = path.join(workspaceRoot, '.sdkwork-assembly.json');
   if (!existsSync(assemblyPath)) {
     fail(`RTC assembly descriptor is missing: ${assemblyPath}`);
   }
 
-  const assembly = readJsonFile(assemblyPath);
-  assertRtcAssemblyWorkspaceBaseline(assembly);
-
-  return {
-    requiredCallSmokeEntries: getRtcExecutableLanguageEntriesBySmokeMode(
-      assembly,
-      'runtime-backed',
-    ),
-    optionalCallSmokeEntries: getRtcExecutableLanguageEntriesBySmokeMode(
-      assembly,
-      'analysis-backed',
-    ),
-  };
+  assertRtcAssemblyWorkspaceBaseline(readJsonFile(assemblyPath));
 }
 
 export function runRtcSdkSmoke(workspaceRoot) {
@@ -256,7 +223,8 @@ export function runRtcSdkSmoke(workspaceRoot) {
   const optionalPassed = [];
   const optionalSkipped = [];
   const repoRoot = resolveRtcSdkAppRootFromWorkspaceRoot(workspaceRoot);
-  const callSmokePlan = resolveRtcExecutableCallSmokePlan(workspaceRoot);
+
+  assertAssembly(workspaceRoot);
 
   requiredResults.push(
     runRequiredNodeStep(
@@ -286,26 +254,13 @@ export function runRtcSdkSmoke(workspaceRoot) {
       repoRoot,
     ),
   );
-
-  for (const languageEntry of callSmokePlan.requiredCallSmokeEntries) {
-    const steps = buildRtcRootCallSmokeSteps(workspaceRoot, languageEntry);
-    for (const step of steps) {
-      requiredResults.push(runRequiredNodeStep(step.label, step.args, repoRoot));
-    }
-  }
-
-  for (const languageEntry of callSmokePlan.optionalCallSmokeEntries) {
-    const steps = buildRtcRootCallSmokeSteps(workspaceRoot, languageEntry);
-    for (const step of steps) {
-      const result = runOptionalNodeStep(step.label, step.args, repoRoot);
-      if (result.status === 'passed') {
-        optionalPassed.push(result);
-        continue;
-      }
-
-      optionalSkipped.push(result);
-    }
-  }
+  requiredResults.push(
+    runRequiredNodeStep(
+      'typescript:smoke',
+      [path.join(workspaceRoot, 'sdkwork-rtc-sdk-typescript', 'bin', 'package-task.mjs'), 'smoke'],
+      repoRoot,
+    ),
+  );
 
   const optionalSteps = [
     {

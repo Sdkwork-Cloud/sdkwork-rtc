@@ -42,8 +42,8 @@ final class RtcProviderPackageCatalog {
       sourceSymbol: "RtcProviderVolcenginePackageContract",
       builtin: true,
       rootPublic: false,
-      status: "future-runtime-bridge-only",
-      runtimeBridgeStatus: "reserved",
+      status: "package_reference_boundary",
+      runtimeBridgeStatus: "reference-baseline",
     ),
     RtcProviderPackageCatalogEntry(
       providerKey: "aliyun",

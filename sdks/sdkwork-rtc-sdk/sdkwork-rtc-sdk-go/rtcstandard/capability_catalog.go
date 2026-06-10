@@ -11,10 +11,11 @@ type RtcCapabilityCatalog struct{}
 var RTC_CAPABILITY_CATALOG = []RtcCapabilityCatalogEntry{
     {CapabilityKey: "session", Category: "required-baseline", Surface: "cross-surface"},
     {CapabilityKey: "credential", Category: "required-baseline", Surface: "control-plane"},
-    {CapabilityKey: "callback", Category: "required-baseline", Surface: "control-plane"},
+    {CapabilityKey: "provider.webhook", Category: "required-baseline", Surface: "control-plane"},
+    {CapabilityKey: "provider.event-normalization", Category: "required-baseline", Surface: "control-plane"},
     {CapabilityKey: "health", Category: "required-baseline", Surface: "control-plane"},
-    {CapabilityKey: "call.audio", Category: "required-baseline", Surface: "runtime-bridge"},
-    {CapabilityKey: "call.video", Category: "required-baseline", Surface: "runtime-bridge"},
+    {CapabilityKey: "media.audio", Category: "required-baseline", Surface: "runtime-bridge"},
+    {CapabilityKey: "media.video", Category: "required-baseline", Surface: "runtime-bridge"},
     {CapabilityKey: "live.broadcast", Category: "required-baseline", Surface: "cross-surface"},
     {CapabilityKey: "live.audience", Category: "required-baseline", Surface: "cross-surface"},
     {CapabilityKey: "screen-share", Category: "optional-advanced", Surface: "runtime-bridge"},
@@ -27,6 +28,7 @@ var RTC_CAPABILITY_CATALOG = []RtcCapabilityCatalogEntry{
     {CapabilityKey: "beauty", Category: "optional-advanced", Surface: "runtime-bridge"},
     {CapabilityKey: "spatial-audio", Category: "optional-advanced", Surface: "runtime-bridge"},
     {CapabilityKey: "e2ee", Category: "optional-advanced", Surface: "runtime-bridge"},
+    {CapabilityKey: "provider.active-query", Category: "optional-advanced", Surface: "control-plane"},
 }
 
 func GetRtcCapabilityCatalog() []RtcCapabilityCatalogEntry {

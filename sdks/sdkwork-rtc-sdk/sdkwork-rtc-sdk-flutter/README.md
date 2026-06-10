@@ -17,13 +17,12 @@ Current role:
 - Executable mobile runtime baseline
 - provider-neutral RTC contracts
 - JDBC-style driver manager and data source model for Flutter/mobile
-- official Volcengine Flutter runtime binding through package:volc_engine_rtc
-- RTC-owned signaling adapter integration through package:rtc_sdk/rtc_sdk.dart
+- official Volcengine Flutter runtime binding through the rtc_sdk_provider_volcengine plugin package
 - assembly-driven provider catalog, capability catalog, provider extension catalog, and provider selection helpers
 - default mobile provider remains volcengine unless the caller explicitly overrides selection
-- StandardRtcCallController quick-start stack for default Volcengine plus RTC signaling
+- mobile runtime bridge remains media/provider focused and leaves call signaling to IM
 
-This workspace is the executable Flutter/mobile runtime baseline for provider-neutral RTC contracts, Volcengine default runtime binding, RTC signaling call orchestration, and JDBC-style driver selection in sdkwork-rtc-sdk.
+This workspace is the executable Flutter/mobile runtime baseline for provider-neutral RTC contracts, Volcengine default runtime binding, and JDBC-style driver selection in sdkwork-rtc-sdk.
 
 Default provider contract:
 
@@ -56,22 +55,20 @@ Language workspace catalog:
 
 Runtime baseline contract:
 
-- vendor SDK package: `volc_engine_rtc`
-- vendor SDK import path: `package:volc_engine_rtc/volc_engine_rtc.dart`
-- signaling SDK package: `rtc_sdk`
-- signaling SDK import path: `package:rtc_sdk/rtc_sdk.dart`
-- recommended entrypoint: `createStandardRtcCallControllerStack`
-- smoke command: `node ./bin/sdk-call-smoke.mjs --json`
+- vendor SDK package: `rtc_sdk_provider_volcengine`
+- vendor SDK import path: `package:rtc_sdk_provider_volcengine/rtc_sdk_provider_volcengine.dart`
+- recommended entrypoint: `RtcDataSource`
+- smoke command: `flutter analyze`
 - smoke mode: `analysis-backed`
-- smoke variants: `default` and `reuse-live-connection`
+- smoke variants: `default`
 
 
 Provider package boundary:
 
 - mode: `scaffold-per-provider-package`
 - root public policy: `none`
-- lifecycle status terms: `future-runtime-bridge-only`
-- runtime bridge status terms: `reserved`
+- lifecycle status terms: `package_reference_boundary`, `future-runtime-bridge-only`
+- runtime bridge status terms: `reference-baseline`, `reserved`
 - these terms describe future extracted provider packages, not the runnable root workspace baseline
 
 
@@ -126,80 +123,36 @@ Provider package scaffold:
 - root public exposure: `false`
 - this scaffold remains reserved for future extracted provider packages; the current executable runtime stays in the root workspace baseline
 
-Executable baseline:
+Provider plugin boundary:
 
-- Flutter/mobile now ships a runnable default adapter for `volcengine`
-- media runtime delegates to the official `volc_engine_rtc` package
-- signaling delegates to `sdkwork-rtc-sdk` through `package:rtc_sdk/rtc_sdk.dart`
-- `RtcDriverManager` auto-registers `createVolcengineRtcDriver()`
-- `RtcDataSource()` therefore resolves to `volcengine` by default with no extra provider selection
-- `createStandardRtcCallControllerStack(...)` is the recommended quick-start entrypoint for the
-  default Volcengine plus `sdkwork-rtc-sdk` call flow
-- `StandardRtcCallController` is the default orchestration layer for invite discovery, RTC
-  lifecycle reconciliation, and typed offer/answer/ice signaling
-- `StandardRtcCallSession` remains the focused single-session executor under the controller
+- Flutter/mobile root stays provider-neutral and ships no concrete provider adapter
+- provider plugins such as `rtc_sdk_provider_volcengine` are installed only by applications that select them
+- `RtcDriverManager` does not auto-register provider drivers from the root package
+- `RtcDataSource()` resolves metadata but requires an explicitly registered provider driver before connecting
+- business invitations, lifecycle state, and conversation delivery are supplied by IM-owned SDKs
 
 Quick start:
 
 ```dart
 import 'package:rtc_sdk/rtc_sdk.dart';
-import 'package:rtc_sdk/rtc_sdk.dart';
 
-Future<void> startRtcCall({
-  required RtcSignalingClient rtcSignalingClient,
-  required String currentUserId,
-}) async {
-  final rtc =
-      await createStandardRtcCallControllerStack<RtcVolcengineFlutterNativeClient>(
-    CreateStandardRtcCallControllerStackOptions(
-      sdk: rtcSignalingClient,
-      deviceId: 'current-device-id',
-      connectOptions: const RtcSignalingConnectOptions(
-        webSocketAuth: RtcSignalingWebSocketAuthOptions.automatic(),
-      ),
-      dataSourceOptions: const RtcDataSourceOptions(
-        nativeConfig: RtcVolcengineFlutterNativeConfig(
-          appId: 'your-volcengine-app-id',
-        ),
-      ),
-    ),
+void inspectProviderPluginPackage() {
+  final target = resolveRtcProviderPackageLoadTarget(
+    const RtcProviderPackageLoadRequest(providerKey: 'volcengine'),
   );
 
-  await rtc.callController.startOutgoing(
-    RtcCallControllerOutgoingOptions(
-      rtcSessionId: 'rtc-session-001',
-      conversationId: 'conversation-001',
-      rtcMode: 'video_call',
-      participantId: currentUserId,
-      autoPublish: const RtcCallAutoPublishOptions(
-        audio: true,
-        video: true,
-      ),
-    ),
-  );
+  assert(target.packageEntry.packageIdentity == 'rtc_sdk_provider_volcengine');
 }
 ```
 
 Runtime notes:
 
-- `createStandardRtcCallControllerStack(...)` returns `driverManager`, `dataSource`,
-  `mediaClient`, `signaling`, `callSession`, `realtimeDispatcher`, and `callController`
-  so callers can keep the standard pieces explicit
-- `RtcVolcengineFlutterNativeConfig.appId` is mandatory; join will fail fast without it
-- `RtcJoinOptions.token` is filled from `sdkwork-rtc-sdk` issued participant credentials, not by
-  hardcoding vendor tokens in the caller
-- `RtcPublishOptions` supports standard audio and video publishing through the Volcengine adapter
-- signaling subscriptions are multiplexed through one shared RTC realtime dispatcher backed by
-  `rtc_sdk.connect(...)` WebSocket live receive, so multiple RTC sessions do not overwrite each
-  other at the subscription layer
-- `connectOptions.webSocketAuth` is forwarded to the shared RTC live connection when the RTC stack
-  establishes its own WebSocket
-- `liveConnection` lets the Flutter RTC standard reuse an app-owned shared RTC WebSocket live
-  connection instead of creating another one
-- `deviceId` remains the authoritative RTC realtime identity; if `connectOptions.deviceId` is
-  provided it must match the RTC stack `deviceId`
-- `reconnectInterval` is the standard RTC live signaling reconnect-backoff option for the shared
-  WebSocket live connection; the Flutter RTC standard does not expose polling controls
+- provider-specific native config types belong to the selected provider plugin package
+- `RtcJoinOptions.token` is supplied by the application or IM layer, not hardcoded in RTC callers
+- `RtcPublishOptions` remains provider-neutral and supports standard audio and video publishing
+- `RtcDataSource` keeps the provider-neutral runtime boundary stable across native SDK adapters
+- IM-owned services decide who should join, which provider room to use, and when the media runtime
+  should leave
 
 Standards references:
 

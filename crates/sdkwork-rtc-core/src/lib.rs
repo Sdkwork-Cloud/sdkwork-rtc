@@ -1,35 +1,64 @@
 use std::collections::BTreeMap;
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
+use serde_json::{Value as JsonValue, json};
+
+pub mod completion;
+pub mod persistence;
+pub mod provider_event;
+pub mod provider_profile;
+pub mod provider_route;
+pub use completion::*;
+pub use persistence::*;
+pub use provider_event::*;
+pub use provider_profile::*;
+pub use provider_route::*;
 
 pub const RTC_OWNER: &str = "sdkwork-rtc";
 pub const RTC_DOMAIN: &str = "rtc";
 pub const RTC_APP_API_AUTHORITY: &str = "sdkwork-rtc-app-api";
-pub const RTC_BACKEND_API_AUTHORITY: &str = "sdkwork-rtc-backend-api";
 pub const RTC_APP_SDK_FAMILY: &str = "sdkwork-rtc-app-sdk";
-pub const RTC_BACKEND_SDK_FAMILY: &str = "sdkwork-rtc-backend-sdk";
 pub const RTC_APP_API_PREFIX: &str = "/app/v3/api";
+pub const RTC_BACKEND_API_AUTHORITY: &str = "sdkwork-rtc-backend-api";
+pub const RTC_BACKEND_SDK_FAMILY: &str = "sdkwork-rtc-backend-sdk";
 pub const RTC_BACKEND_API_PREFIX: &str = "/backend/v3/api";
+pub const RTC_DRIVE_SPACE_TYPE: &str = "rtc";
 pub const PROVIDER_REGISTRY_INTERFACE_VERSION: &str = "provider-registry/v1";
-pub const RTC_PROVIDER_REQUIRED_CAPABILITIES: [&str; 8] = [
+pub const RTC_PROVIDER_REQUIRED_CAPABILITIES: [&str; 9] = [
     "session",
     "credential",
-    "callback",
+    "provider.webhook",
     "health",
-    "call.audio",
-    "call.video",
+    "media.audio",
+    "media.video",
     "live.broadcast",
     "live.audience",
+    "provider.event-normalization",
 ];
-pub const RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES: [&str; 4] =
-    ["recording", "artifact", "screen-share", "cloud-mix"];
-pub const RTC_PROVIDER_ALIYUN_OPTIONAL_CAPABILITIES: [&str; 4] =
-    ["recording", "artifact", "screen-share", "cloud-mix"];
-pub const RTC_PROVIDER_TENCENT_OPTIONAL_CAPABILITIES: [&str; 4] =
-    ["recording", "artifact", "screen-share", "cdn-relay"];
-pub const RTC_PROVIDER_AGORA_OPTIONAL_CAPABILITIES: [&str; 7] = [
+pub const RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES: [&str; 5] = [
+    "recording",
+    "artifact",
+    "screen-share",
+    "cloud-mix",
+    "provider.active-query",
+];
+pub const RTC_PROVIDER_ALIYUN_OPTIONAL_CAPABILITIES: [&str; 5] = [
+    "recording",
+    "artifact",
+    "screen-share",
+    "cloud-mix",
+    "provider.active-query",
+];
+pub const RTC_PROVIDER_TENCENT_OPTIONAL_CAPABILITIES: [&str; 5] = [
+    "recording",
+    "artifact",
+    "screen-share",
+    "cdn-relay",
+    "provider.active-query",
+];
+pub const RTC_PROVIDER_AGORA_OPTIONAL_CAPABILITIES: [&str; 8] = [
     "recording",
     "artifact",
     "screen-share",
@@ -37,14 +66,16 @@ pub const RTC_PROVIDER_AGORA_OPTIONAL_CAPABILITIES: [&str; 7] = [
     "data-channel",
     "spatial-audio",
     "e2ee",
+    "provider.active-query",
 ];
-pub const RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES: [&str; 6] = [
+pub const RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES: [&str; 7] = [
     "recording",
     "artifact",
     "screen-share",
     "data-channel",
     "transcription",
     "e2ee",
+    "provider.active-query",
 ];
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -64,7 +95,7 @@ pub enum RtcRoomStatus {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum RtcCallType {
+pub enum RtcMediaSessionMode {
     Audio,
     Video,
     Live,
@@ -72,13 +103,12 @@ pub enum RtcCallType {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum RtcCallSessionStatus {
-    Ringing,
-    Connecting,
-    Connected,
+pub enum RtcMediaSessionStatus {
+    Preparing,
+    Active,
+    Closing,
     Ended,
     Failed,
-    Terminated,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -92,31 +122,11 @@ pub enum RtcParticipantRole {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RtcParticipantState {
-    Invited,
+    Joining,
     Joined,
     Left,
     Kicked,
     Timeout,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum RtcSessionState {
-    Started,
-    Accepted,
-    Rejected,
-    Ended,
-}
-
-impl RtcSessionState {
-    pub fn as_wire_value(&self) -> &'static str {
-        match self {
-            Self::Started => "started",
-            Self::Accepted => "accepted",
-            Self::Rejected => "rejected",
-            Self::Ended => "ended",
-        }
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -208,13 +218,27 @@ pub struct RtcMediaAiProvenance {
 }
 
 pub type RtcMediaMetadata = BTreeMap<String, JsonValue>;
-pub type RtcSignalSenderMetadata = BTreeMap<String, String>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RtcDriveSpaceType {
+    Rtc,
+}
+
+impl RtcDriveSpaceType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Rtc => RTC_DRIVE_SPACE_TYPE,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RtcDriveReference {
     pub drive_uri: String,
     pub space_id: String,
+    pub space_type: RtcDriveSpaceType,
     pub node_id: String,
     pub node_version: Option<String>,
 }
@@ -226,6 +250,26 @@ impl RtcDriveReference {
 
     pub fn is_canonical(&self) -> bool {
         self.drive_uri == Self::canonical_uri(self.space_id.as_str(), self.node_id.as_str())
+    }
+
+    pub fn is_rtc_space(&self) -> bool {
+        self.space_type == RtcDriveSpaceType::Rtc
+    }
+
+    pub fn rtc(
+        space_id: impl Into<String>,
+        node_id: impl Into<String>,
+        node_version: Option<String>,
+    ) -> Self {
+        let space_id = space_id.into();
+        let node_id = node_id.into();
+        Self {
+            drive_uri: Self::canonical_uri(space_id.as_str(), node_id.as_str()),
+            space_id,
+            space_type: RtcDriveSpaceType::Rtc,
+            node_id,
+            node_version,
+        }
     }
 }
 
@@ -256,124 +300,18 @@ pub struct RtcMediaResource {
     pub metadata: Option<RtcMediaMetadata>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcSignalSender {
-    pub id: String,
-    pub kind: String,
-    pub member_id: Option<String>,
-    pub device_id: Option<String>,
-    pub session_id: Option<String>,
-    pub metadata: RtcSignalSenderMetadata,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcSession {
-    pub tenant_id: String,
-    pub rtc_session_id: String,
-    pub conversation_id: Option<String>,
-    pub rtc_mode: String,
-    pub initiator_id: String,
-    pub initiator_kind: String,
-    pub provider_plugin_id: Option<String>,
-    pub provider_session_id: Option<String>,
-    pub access_endpoint: Option<String>,
-    pub provider_region: Option<String>,
-    pub state: RtcSessionState,
-    pub signaling_stream_id: Option<String>,
-    pub artifact_message_id: Option<String>,
-    pub started_at: String,
-    pub ended_at: Option<String>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcSignalEvent {
-    pub tenant_id: String,
-    pub rtc_session_id: String,
-    pub signal_seq: u64,
-    pub conversation_id: Option<String>,
-    pub rtc_mode: String,
-    pub signal_type: String,
-    pub schema_ref: Option<String>,
-    pub payload: String,
-    pub sender: RtcSignalSender,
-    pub signaling_stream_id: Option<String>,
-    pub occurred_at: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcStateRecord {
-    pub tenant_id: String,
-    pub rtc_session_id: String,
-    pub session: RtcSession,
-    pub signals: Vec<RtcSignalEvent>,
-    pub updated_at: String,
-}
-
-impl RtcStateRecord {
-    pub fn merge_monotonic(self, next: Self) -> Self {
-        let session = if rtc_session_state_rank(&next.session.state)
-            >= rtc_session_state_rank(&self.session.state)
-        {
-            next.session
-        } else {
-            self.session
-        };
-        let mut signals_by_seq = BTreeMap::new();
-        for signal in self.signals.into_iter().chain(next.signals) {
-            signals_by_seq.insert(signal.signal_seq, signal);
-        }
-        Self {
-            tenant_id: next.tenant_id,
-            rtc_session_id: next.rtc_session_id,
-            session,
-            signals: signals_by_seq.into_values().collect(),
-            updated_at: max_rfc3339_string(self.updated_at, next.updated_at),
-        }
-    }
-}
-
-pub trait RtcStateStore: Send + Sync {
-    fn load_state(
-        &self,
-        tenant_id: &str,
-        rtc_session_id: &str,
-    ) -> Result<Option<RtcStateRecord>, RtcContractError>;
-
-    fn save_state(&self, record: RtcStateRecord) -> Result<(), RtcContractError>;
-
-    fn clear_state(&self, tenant_id: &str, rtc_session_id: &str) -> Result<bool, RtcContractError>;
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum ProviderDomain {
     Rtc,
-    ObjectStorage,
-    PrincipalProfile,
-    IotAccess,
-    IotProtocol,
 }
 
 impl ProviderDomain {
-    pub const ALL: [Self; 5] = [
-        Self::Rtc,
-        Self::ObjectStorage,
-        Self::PrincipalProfile,
-        Self::IotAccess,
-        Self::IotProtocol,
-    ];
+    pub const ALL: [Self; 1] = [Self::Rtc];
 
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Rtc => "rtc",
-            Self::ObjectStorage => "object-storage",
-            Self::PrincipalProfile => "principal-profile",
-            Self::IotAccess => "iot-access",
-            Self::IotProtocol => "iot-protocol",
         }
     }
 }
@@ -555,81 +493,6 @@ impl StaticProviderRegistry {
             )
             .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
             .with_optional_capabilities(RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES),
-            ProviderPluginDescriptor::new(
-                "object-storage-aliyun",
-                ProviderDomain::ObjectStorage,
-                "aliyun",
-                "Aliyun Object Storage",
-            )
-            .with_required_capabilities(["s3", "presign", "multipart"]),
-            ProviderPluginDescriptor::new(
-                "object-storage-tencent",
-                ProviderDomain::ObjectStorage,
-                "tencent",
-                "Tencent Object Storage",
-            )
-            .with_required_capabilities(["s3", "presign", "multipart"]),
-            ProviderPluginDescriptor::new(
-                "object-storage-volcengine",
-                ProviderDomain::ObjectStorage,
-                "volcengine",
-                "Volcengine Object Storage",
-            )
-            .with_required_capabilities(["s3", "presign", "multipart"]),
-            ProviderPluginDescriptor::new(
-                "object-storage-aws",
-                ProviderDomain::ObjectStorage,
-                "aws",
-                "Amazon Web Services",
-            )
-            .with_required_capabilities(["s3", "presign", "multipart"]),
-            ProviderPluginDescriptor::new(
-                "object-storage-google",
-                ProviderDomain::ObjectStorage,
-                "google",
-                "Google",
-            )
-            .with_required_capabilities(["s3-gateway", "presign"]),
-            ProviderPluginDescriptor::new(
-                "object-storage-microsoft",
-                ProviderDomain::ObjectStorage,
-                "microsoft",
-                "Microsoft",
-            )
-            .with_required_capabilities(["s3-gateway", "presign"]),
-            ProviderPluginDescriptor::new(
-                "principal-profile-upstream-context",
-                ProviderDomain::PrincipalProfile,
-                "upstream-context",
-                "Local principal profile",
-            )
-            .with_default_selected(true)
-            .with_required_capabilities(["read", "profile"]),
-            ProviderPluginDescriptor::new(
-                "principal-profile-external-catalog",
-                ProviderDomain::PrincipalProfile,
-                "external-catalog",
-                "External principal catalog",
-            )
-            .with_required_capabilities(["read", "profile", "external-mapping"]),
-            ProviderPluginDescriptor::new(
-                "iot-access-local",
-                ProviderDomain::IotAccess,
-                "local",
-                "Local device access",
-            )
-            .with_default_selected(true)
-            .with_required_capabilities(["registry", "credential", "binding", "twin"]),
-            ProviderPluginDescriptor::new("iot-mqtt", ProviderDomain::IotProtocol, "mqtt", "MQTT")
-                .with_default_selected(true)
-                .with_required_capabilities(["uplink", "downlink", "telemetry"]),
-            ProviderPluginDescriptor::new(
-                "iot-xiaozhi",
-                ProviderDomain::IotProtocol,
-                "xiaozhi",
-                "Xiaozhi protocol",
-            )
-            .with_required_capabilities(["uplink", "downlink", "semantic-mapping"]),
         ])
     }
 
@@ -760,12 +623,12 @@ impl ProviderRegistry for StaticProviderRegistry {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RtcCreateSessionRequest {
+pub struct RtcCreateMediaSessionRequest {
     pub tenant_id: String,
     pub rtc_session_id: String,
-    pub conversation_id: Option<String>,
-    pub rtc_mode: String,
-    pub initiator_id: String,
+    pub media_mode: RtcMediaSessionMode,
+    pub room_id: Option<String>,
+    pub region: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -789,36 +652,18 @@ pub struct RtcParticipantCredential {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcCallbackRequest {
-    pub rtc_session_id: String,
-    pub callback_type: String,
-    pub payload_json: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcCallbackEvent {
-    pub rtc_session_id: String,
-    pub event_type: String,
-    pub participant_id: Option<String>,
-    pub payload_json: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum RtcCallRecordKind {
+pub enum RtcRecordingArtifactKind {
     Recording,
     Transcript,
     ScreenShare,
     Snapshot,
-    ChatLog,
     Other,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum RtcCallRecordStatus {
+pub enum RtcRecordingArtifactStatus {
     Pending,
     Processing,
     Ready,
@@ -828,36 +673,51 @@ pub enum RtcCallRecordStatus {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RtcCallRecordArtifact {
+pub struct RtcMediaArtifact {
     pub id: String,
     pub tenant_id: String,
     pub rtc_session_id: String,
     pub owner_user_id: String,
-    pub record_kind: RtcCallRecordKind,
-    pub record_status: RtcCallRecordStatus,
+    pub artifact_kind: RtcRecordingArtifactKind,
+    pub artifact_status: RtcRecordingArtifactStatus,
     pub media_role: String,
     pub provider_profile_id: Option<String>,
-    pub provider_record_id: Option<String>,
+    pub provider_artifact_id: Option<String>,
     pub drive: RtcDriveReference,
     pub resource: RtcMediaResource,
     pub resource_hash: Option<String>,
     pub started_at: Option<String>,
     pub ended_at: Option<String>,
+    pub duration_ms: Option<u64>,
+    pub failure_reason: Option<String>,
+    pub source_provider_webhook_event_id: Option<String>,
+    pub source_provider_query_job_id: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RtcMediaArtifactDescriptor {
+    pub id: String,
+    pub owner_user_id: String,
+    pub artifact_kind: RtcRecordingArtifactKind,
+    pub artifact_status: RtcRecordingArtifactStatus,
+    pub media_role: String,
+    pub started_at: String,
+    pub ended_at: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RtcCallRecordList {
+pub struct RtcMediaArtifactList {
     pub tenant_id: String,
     pub rtc_session_id: String,
-    pub items: Vec<RtcCallRecordArtifact>,
+    pub items: Vec<RtcMediaArtifact>,
 }
 
-impl RtcCallRecordList {
+impl RtcMediaArtifactList {
     pub fn new(
         tenant_id: impl Into<String>,
         rtc_session_id: impl Into<String>,
-        items: Vec<RtcCallRecordArtifact>,
+        items: Vec<RtcMediaArtifact>,
     ) -> Self {
         Self {
             tenant_id: tenant_id.into(),
@@ -889,20 +749,25 @@ impl RtcRecordingArtifact {
     ) -> Self {
         let tenant_id = tenant_id.into();
         let rtc_session_id = rtc_session_id.into();
-        let space_id = space_id.into();
-        let node_id = node_id.into();
-        let drive_uri = RtcDriveReference::canonical_uri(space_id.as_str(), node_id.as_str());
+        let drive = RtcDriveReference::rtc(space_id, node_id, node_version);
+        let drive_uri = drive.drive_uri.clone();
+        let drive_space_id = drive.space_id.clone();
+        let drive_node_id = drive.node_id.clone();
+        let resource_id = drive_node_id.clone();
+        let drive_node_version = drive.node_version.clone();
+        let mut drive_metadata = BTreeMap::new();
+        drive_metadata.insert("spaceId".to_string(), json!(drive_space_id));
+        drive_metadata.insert("nodeId".to_string(), json!(drive_node_id));
+        drive_metadata.insert("spaceType".to_string(), json!(RTC_DRIVE_SPACE_TYPE));
+        drive_metadata.insert("nodeVersion".to_string(), json!(drive_node_version));
+        let mut metadata = BTreeMap::new();
+        metadata.insert("drive".to_string(), json!(drive_metadata));
         Self {
             tenant_id,
             rtc_session_id: rtc_session_id.clone(),
-            drive: RtcDriveReference {
-                drive_uri: drive_uri.clone(),
-                space_id,
-                node_id: node_id.clone(),
-                node_version,
-            },
+            drive,
             resource: RtcMediaResource {
-                id: Some(node_id),
+                id: Some(resource_id),
                 kind: RtcMediaKind::Video,
                 source: RtcMediaSource::Drive,
                 url: None,
@@ -923,46 +788,135 @@ impl RtcRecordingArtifact {
                 variants: None,
                 access: None,
                 ai: None,
-                metadata: None,
+                metadata: Some(metadata),
             },
             media_role: "rtc_recording".into(),
         }
     }
 
-    pub fn into_call_record_artifact(
-        self,
-        id: impl Into<String>,
-        owner_user_id: impl Into<String>,
-        record_kind: RtcCallRecordKind,
-        record_status: RtcCallRecordStatus,
-        media_role: impl Into<String>,
-        started_at: impl Into<String>,
-        ended_at: impl Into<String>,
-    ) -> RtcCallRecordArtifact {
-        RtcCallRecordArtifact {
-            id: id.into(),
+    pub fn into_media_artifact(self, descriptor: RtcMediaArtifactDescriptor) -> RtcMediaArtifact {
+        RtcMediaArtifact {
+            id: descriptor.id,
             tenant_id: self.tenant_id,
             rtc_session_id: self.rtc_session_id,
-            owner_user_id: owner_user_id.into(),
-            record_kind,
-            record_status,
-            media_role: media_role.into(),
+            owner_user_id: descriptor.owner_user_id,
+            artifact_kind: descriptor.artifact_kind,
+            artifact_status: descriptor.artifact_status,
+            media_role: descriptor.media_role,
             provider_profile_id: None,
-            provider_record_id: None,
+            provider_artifact_id: None,
             drive: self.drive,
             resource: self.resource,
             resource_hash: None,
-            started_at: Some(started_at.into()),
-            ended_at: Some(ended_at.into()),
+            started_at: Some(descriptor.started_at),
+            ended_at: Some(descriptor.ended_at),
+            duration_ms: None,
+            failure_reason: None,
+            source_provider_webhook_event_id: None,
+            source_provider_query_job_id: None,
         }
     }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RtcProviderEventKind {
+    RoomStarted,
+    RoomEnded,
+    ParticipantJoined,
+    ParticipantLeft,
+    RecordingStarted,
+    RecordingCompleted,
+    RecordingFailed,
+    MediaTrackStarted,
+    MediaTrackStopped,
+    QualitySample,
+    Unknown,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcProviderWebhookParseRequest {
+    pub provider: String,
+    pub provider_profile_id: Option<String>,
+    pub received_at: String,
+    pub headers: Vec<(String, String)>,
+    pub raw_payload: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcProviderWebhookEvent {
+    pub provider: String,
+    pub provider_profile_id: Option<String>,
+    pub external_event_id: Option<String>,
+    pub event_type: String,
+    pub event_kind: RtcProviderEventKind,
+    pub room_id: Option<String>,
+    pub rtc_session_id: Option<String>,
+    pub provider_session_id: Option<String>,
+    pub participant_id: Option<String>,
+    pub recording_id: Option<String>,
+    pub occurred_at: Option<String>,
+    pub received_at: String,
+    pub payload_hash: String,
+    pub signature_header: Option<String>,
+    pub raw_payload: String,
+    pub normalized_event_json: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RtcProviderQueryKind {
+    RoomOnlineUsers,
+    RoomState,
+    MediaSessionState,
+    RecordingArtifacts,
+    QualitySamples,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcProviderQueryRequest {
+    pub provider: String,
+    pub provider_profile_id: Option<String>,
+    pub query_kind: RtcProviderQueryKind,
+    pub room_id: Option<String>,
+    pub rtc_session_id: Option<String>,
+    pub provider_session_id: Option<String>,
+    pub cursor: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcProviderQueryResult {
+    pub provider: String,
+    pub provider_profile_id: Option<String>,
+    pub query_kind: RtcProviderQueryKind,
+    pub room_id: Option<String>,
+    pub rtc_session_id: Option<String>,
+    pub provider_session_id: Option<String>,
+    pub status: String,
+    pub raw_provider_action: String,
+    pub result_snapshot_json: String,
+    pub next_cursor: Option<String>,
+    pub queried_at: String,
+}
+
+pub fn rtc_provider_payload_hash(payload: &str) -> String {
+    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
+    for byte in payload.as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    format!("fnv64:{hash:016x}")
 }
 
 pub trait RtcProviderPort: Send + Sync {
     fn descriptor(&self) -> ProviderPluginDescriptor;
     fn create_session(
         &self,
-        request: RtcCreateSessionRequest,
+        request: RtcCreateMediaSessionRequest,
     ) -> Result<RtcSessionHandle, RtcContractError>;
     fn close_session(
         &self,
@@ -981,10 +935,24 @@ pub trait RtcProviderPort: Send + Sync {
         rtc_session_id: &str,
         participant_id: &str,
     ) -> Result<RtcParticipantCredential, RtcContractError>;
-    fn map_provider_callback(
+    fn parse_provider_webhook(
         &self,
-        request: RtcCallbackRequest,
-    ) -> Result<RtcCallbackEvent, RtcContractError>;
+        request: RtcProviderWebhookParseRequest,
+    ) -> Result<RtcProviderWebhookEvent, RtcContractError> {
+        Err(RtcContractError::UnsupportedCapability(format!(
+            "{} provider webhook parsing is not implemented",
+            request.provider
+        )))
+    }
+    fn query_provider_state(
+        &self,
+        request: RtcProviderQueryRequest,
+    ) -> Result<RtcProviderQueryResult, RtcContractError> {
+        Err(RtcContractError::UnsupportedCapability(format!(
+            "{} provider active query is not implemented",
+            request.provider
+        )))
+    }
     fn export_recording_artifact(
         &self,
         tenant_id: &str,
@@ -1003,6 +971,11 @@ pub trait RtcProviderPort: Send + Sync {
     fn provider_health_snapshot(&self) -> ProviderHealthSnapshot;
 }
 
+pub trait RtcProviderPluginFactory: Send + Sync {
+    fn descriptor(&self) -> ProviderPluginDescriptor;
+    fn create_provider(&self) -> Arc<dyn RtcProviderPort>;
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RtcRoom {
@@ -1016,7 +989,7 @@ pub struct RtcRoom {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RtcCallParticipant {
+pub struct RtcMediaParticipant {
     pub id: String,
     pub session_id: String,
     pub user_id: String,
@@ -1025,22 +998,41 @@ pub struct RtcCallParticipant {
     pub state: RtcParticipantState,
     pub audio_muted: bool,
     pub video_muted: bool,
+    pub screen_share_active: bool,
+    pub provider_participant_id: Option<String>,
+    pub joined_at: Option<String>,
+    pub left_at: Option<String>,
+    pub duration_ms: Option<u64>,
+    pub leave_reason: Option<String>,
+    pub last_seen_at: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RtcCallSession {
+pub struct RtcMediaSession {
     pub id: String,
     pub room_id: String,
     pub tenant_id: String,
     pub organization_id: String,
     pub owner_user_id: String,
-    pub call_type: RtcCallType,
-    pub status: RtcCallSessionStatus,
+    pub media_mode: RtcMediaSessionMode,
+    pub status: RtcMediaSessionStatus,
     pub provider_profile_id: Option<String>,
+    pub provider_session_id: Option<String>,
     pub started_at: Option<String>,
+    pub connected_at: Option<String>,
     pub ended_at: Option<String>,
-    pub participants: Vec<RtcCallParticipant>,
+    pub duration_ms: Option<u64>,
+    pub end_reason: Option<String>,
+    pub end_source: Option<RtcMediaSessionEndSource>,
+    pub participant_count: u32,
+    pub max_concurrent_participants: u32,
+    pub quality_summary: Option<RtcMediaSessionCompletionQualitySummary>,
+    pub recording_summary: Option<RtcMediaSessionCompletionRecordingSummary>,
+    pub completion_recorded_at: Option<String>,
+    pub last_provider_webhook_event_id: Option<String>,
+    pub last_provider_query_job_id: Option<String>,
+    pub participants: Vec<RtcMediaParticipant>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -1058,38 +1050,29 @@ pub struct RtcWorkspaceDigest {
 
 pub fn summarize_rtc_workspace(
     rooms: &[RtcRoom],
-    sessions: &[RtcCallSession],
+    sessions: &[RtcMediaSession],
 ) -> RtcWorkspaceDigest {
     RtcWorkspaceDigest {
         active_sessions: sessions
             .iter()
-            .filter(|session| {
-                matches!(
-                    session.status,
-                    RtcCallSessionStatus::Ringing
-                        | RtcCallSessionStatus::Connecting
-                        | RtcCallSessionStatus::Connected
-                )
-            })
+            .filter(|session| matches!(session.status, RtcMediaSessionStatus::Active))
             .count(),
         connected_sessions: sessions
             .iter()
-            .filter(|session| session.status == RtcCallSessionStatus::Connected)
+            .filter(|session| session.status == RtcMediaSessionStatus::Active)
             .count(),
         ended_sessions: sessions
             .iter()
             .filter(|session| {
                 matches!(
                     session.status,
-                    RtcCallSessionStatus::Ended
-                        | RtcCallSessionStatus::Failed
-                        | RtcCallSessionStatus::Terminated
+                    RtcMediaSessionStatus::Ended | RtcMediaSessionStatus::Failed
                 )
             })
             .count(),
         live_sessions: sessions
             .iter()
-            .filter(|session| session.call_type == RtcCallType::Live)
+            .filter(|session| session.media_mode == RtcMediaSessionMode::Live)
             .count(),
         total_participants: sessions
             .iter()
@@ -1099,17 +1082,9 @@ pub fn summarize_rtc_workspace(
         total_sessions: sessions.len(),
         video_sessions: sessions
             .iter()
-            .filter(|session| session.call_type == RtcCallType::Video)
+            .filter(|session| session.media_mode == RtcMediaSessionMode::Video)
             .count(),
     }
-}
-
-pub fn encode_rtc_key_segments<const N: usize>(parts: [&str; N]) -> String {
-    parts
-        .iter()
-        .map(|part| format!("{}:{part}", part.len()))
-        .collect::<Vec<_>>()
-        .join("|")
 }
 
 pub fn utc_now_rfc3339_millis() -> String {
@@ -1117,71 +1092,6 @@ pub fn utc_now_rfc3339_millis() -> String {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default();
     format_unix_millis(now.as_millis() as i128)
-}
-
-pub fn max_rfc3339_string(left: String, right: String) -> String {
-    match rfc3339_cmp(left.as_str(), right.as_str()) {
-        std::cmp::Ordering::Less | std::cmp::Ordering::Equal => right,
-        std::cmp::Ordering::Greater => left,
-    }
-}
-
-fn rtc_session_state_rank(state: &RtcSessionState) -> u8 {
-    match state {
-        RtcSessionState::Started => 0,
-        RtcSessionState::Rejected => 1,
-        RtcSessionState::Accepted => 2,
-        RtcSessionState::Ended => 3,
-    }
-}
-
-fn rfc3339_cmp(left: &str, right: &str) -> std::cmp::Ordering {
-    parse_rfc3339_to_millis(left)
-        .unwrap_or_default()
-        .cmp(&parse_rfc3339_to_millis(right).unwrap_or_default())
-}
-
-fn parse_rfc3339_to_millis(value: &str) -> Option<i128> {
-    let value = value.trim();
-    let date_time = value.strip_suffix('Z')?;
-    let (date, time) = date_time.split_once('T')?;
-    let mut date_parts = date.split('-');
-    let year = date_parts.next()?.parse::<i32>().ok()?;
-    let month = date_parts.next()?.parse::<u32>().ok()?;
-    let day = date_parts.next()?.parse::<u32>().ok()?;
-    if date_parts.next().is_some() {
-        return None;
-    }
-
-    let mut time_parts = time.split(':');
-    let hour = time_parts.next()?.parse::<u32>().ok()?;
-    let minute = time_parts.next()?.parse::<u32>().ok()?;
-    let second_part = time_parts.next()?;
-    if time_parts.next().is_some() {
-        return None;
-    }
-
-    let (second_text, millis_text) = second_part
-        .split_once('.')
-        .map_or((second_part, "0"), |(second, fraction)| (second, fraction));
-    let second = second_text.parse::<u32>().ok()?;
-    let millis = fraction_to_millis(millis_text)?;
-    let days = days_from_civil(year, month, day)? as i128;
-    Some(
-        (((days * 24 + hour as i128) * 60 + minute as i128) * 60 + second as i128) * 1000
-            + millis as i128,
-    )
-}
-
-fn fraction_to_millis(value: &str) -> Option<u32> {
-    if value.is_empty() || !value.bytes().all(|byte| byte.is_ascii_digit()) {
-        return Some(0);
-    }
-    let mut normalized = value.chars().take(3).collect::<String>();
-    while normalized.len() < 3 {
-        normalized.push('0');
-    }
-    normalized.parse::<u32>().ok()
 }
 
 fn format_unix_millis(millis: i128) -> String {
@@ -1194,19 +1104,6 @@ fn format_unix_millis(millis: i128) -> String {
     let minute = (seconds_of_day % 3_600) / 60;
     let second = seconds_of_day % 60;
     format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millisecond:03}Z")
-}
-
-fn days_from_civil(year: i32, month: u32, day: u32) -> Option<i64> {
-    if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
-        return None;
-    }
-    let year = year - i32::from(month <= 2);
-    let era = if year >= 0 { year } else { year - 399 } / 400;
-    let yoe = year - era * 400;
-    let month_adjusted = month as i32 + if month > 2 { -3 } else { 9 };
-    let doy = (153 * month_adjusted + 2) / 5 + day as i32 - 1;
-    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    Some((era * 146_097 + doe - 719_468) as i64)
 }
 
 fn civil_from_days(days: i128) -> (i128, i128, i128) {
@@ -1246,12 +1143,13 @@ mod tests {
             for capability in [
                 "session",
                 "credential",
-                "callback",
+                "provider.webhook",
                 "health",
-                "call.audio",
-                "call.video",
+                "media.audio",
+                "media.video",
                 "live.broadcast",
                 "live.audience",
+                "provider.event-normalization",
             ] {
                 assert!(
                     plugin
@@ -1262,7 +1160,12 @@ mod tests {
                     plugin.plugin_id
                 );
             }
-            for capability in ["recording", "artifact", "screen-share"] {
+            for capability in [
+                "recording",
+                "artifact",
+                "screen-share",
+                "provider.active-query",
+            ] {
                 assert!(
                     plugin
                         .optional_capabilities
@@ -1286,6 +1189,8 @@ mod tests {
         );
 
         assert_eq!(artifact.resource.source, RtcMediaSource::Drive);
+        assert_eq!(artifact.drive.space_type, RtcDriveSpaceType::Rtc);
+        assert!(artifact.drive.is_rtc_space());
         assert_eq!(
             artifact.resource.uri.as_deref(),
             Some("drive://spaces/space-rtc-user-1/nodes/node-recording-1")
@@ -1295,6 +1200,19 @@ mod tests {
 
         let artifact_json =
             serde_json::to_value(&artifact).expect("RTC recording artifact should serialize");
+        assert_eq!(artifact_json["drive"]["spaceType"], "rtc");
+        assert_eq!(
+            artifact_json["resource"]["metadata"]["drive"]["spaceType"],
+            "rtc"
+        );
+        assert_eq!(
+            artifact_json["resource"]["metadata"]["drive"]["spaceId"],
+            "space-rtc-user-1"
+        );
+        assert_eq!(
+            artifact_json["resource"]["metadata"]["drive"]["nodeId"],
+            "node-recording-1"
+        );
         for forbidden in ["bucket", "objectKey", "storageProvider", "signedUrl"] {
             assert!(
                 artifact_json.get(forbidden).is_none(),
@@ -1304,7 +1222,7 @@ mod tests {
     }
 
     #[test]
-    fn rtc_call_record_list_models_multiple_drive_backed_records_for_one_session() {
+    fn rtc_media_artifact_list_models_multiple_drive_backed_records_for_one_session() {
         let recording = RtcRecordingArtifact::drive_backed_recording(
             "tenant-1",
             "rtc-session-1",
@@ -1319,26 +1237,26 @@ mod tests {
             "node-transcript-1",
             Some("1".to_string()),
         )
-        .into_call_record_artifact(
-            "record-transcript-1",
-            "user-1",
-            RtcCallRecordKind::Transcript,
-            RtcCallRecordStatus::Ready,
-            "rtc_transcript",
-            "2026-06-06T00:00:00.000Z",
-            "2026-06-06T00:10:00.000Z",
-        );
-        let recording = recording.into_call_record_artifact(
-            "record-recording-1",
-            "user-1",
-            RtcCallRecordKind::Recording,
-            RtcCallRecordStatus::Ready,
-            "rtc_recording",
-            "2026-06-06T00:00:00.000Z",
-            "2026-06-06T00:10:00.000Z",
-        );
+        .into_media_artifact(RtcMediaArtifactDescriptor {
+            id: "record-transcript-1".into(),
+            owner_user_id: "user-1".into(),
+            artifact_kind: RtcRecordingArtifactKind::Transcript,
+            artifact_status: RtcRecordingArtifactStatus::Ready,
+            media_role: "rtc_transcript".into(),
+            started_at: "2026-06-06T00:00:00.000Z".into(),
+            ended_at: "2026-06-06T00:10:00.000Z".into(),
+        });
+        let recording = recording.into_media_artifact(RtcMediaArtifactDescriptor {
+            id: "record-recording-1".into(),
+            owner_user_id: "user-1".into(),
+            artifact_kind: RtcRecordingArtifactKind::Recording,
+            artifact_status: RtcRecordingArtifactStatus::Ready,
+            media_role: "rtc_recording".into(),
+            started_at: "2026-06-06T00:00:00.000Z".into(),
+            ended_at: "2026-06-06T00:10:00.000Z".into(),
+        });
         let records =
-            RtcCallRecordList::new("tenant-1", "rtc-session-1", vec![recording, transcript]);
+            RtcMediaArtifactList::new("tenant-1", "rtc-session-1", vec![recording, transcript]);
 
         assert_eq!(records.items.len(), 2);
         assert!(
@@ -1354,9 +1272,12 @@ mod tests {
             records
                 .items
                 .iter()
-                .map(|record| record.record_kind.clone())
+                .map(|record| record.artifact_kind.clone())
                 .collect::<Vec<_>>(),
-            vec![RtcCallRecordKind::Recording, RtcCallRecordKind::Transcript]
+            vec![
+                RtcRecordingArtifactKind::Recording,
+                RtcRecordingArtifactKind::Transcript
+            ]
         );
     }
 
@@ -1371,19 +1292,31 @@ mod tests {
             status: RtcRoomStatus::Active,
         }];
         let sessions = vec![
-            RtcCallSession {
+            RtcMediaSession {
                 id: "session-1".to_string(),
                 room_id: "room-1".to_string(),
                 tenant_id: "tenant-1".to_string(),
                 organization_id: "org-1".to_string(),
                 owner_user_id: "user-1".to_string(),
-                call_type: RtcCallType::Video,
-                status: RtcCallSessionStatus::Connected,
-                provider_profile_id: Some("provider-livekit".to_string()),
+                media_mode: RtcMediaSessionMode::Video,
+                status: RtcMediaSessionStatus::Active,
+                provider_profile_id: Some("provider-volcengine".to_string()),
+                provider_session_id: Some("volcengine:session-1".to_string()),
                 started_at: Some("2026-06-06T00:00:00Z".to_string()),
+                connected_at: Some("2026-06-06T00:00:01Z".to_string()),
                 ended_at: None,
+                duration_ms: None,
+                end_reason: None,
+                end_source: None,
+                participant_count: 2,
+                max_concurrent_participants: 2,
+                quality_summary: None,
+                recording_summary: None,
+                completion_recorded_at: None,
+                last_provider_webhook_event_id: None,
+                last_provider_query_job_id: None,
                 participants: vec![
-                    RtcCallParticipant {
+                    RtcMediaParticipant {
                         id: "participant-1".to_string(),
                         session_id: "session-1".to_string(),
                         user_id: "user-1".to_string(),
@@ -1392,8 +1325,15 @@ mod tests {
                         state: RtcParticipantState::Joined,
                         audio_muted: false,
                         video_muted: false,
+                        screen_share_active: false,
+                        provider_participant_id: None,
+                        joined_at: Some("2026-06-06T00:00:01Z".to_string()),
+                        left_at: None,
+                        duration_ms: None,
+                        leave_reason: None,
+                        last_seen_at: Some("2026-06-06T00:00:01Z".to_string()),
                     },
-                    RtcCallParticipant {
+                    RtcMediaParticipant {
                         id: "participant-2".to_string(),
                         session_id: "session-1".to_string(),
                         user_id: "user-2".to_string(),
@@ -1402,20 +1342,39 @@ mod tests {
                         state: RtcParticipantState::Joined,
                         audio_muted: true,
                         video_muted: false,
+                        screen_share_active: false,
+                        provider_participant_id: None,
+                        joined_at: Some("2026-06-06T00:00:02Z".to_string()),
+                        left_at: None,
+                        duration_ms: None,
+                        leave_reason: None,
+                        last_seen_at: Some("2026-06-06T00:00:02Z".to_string()),
                     },
                 ],
             },
-            RtcCallSession {
+            RtcMediaSession {
                 id: "session-2".to_string(),
                 room_id: "room-1".to_string(),
                 tenant_id: "tenant-1".to_string(),
                 organization_id: "org-1".to_string(),
                 owner_user_id: "user-1".to_string(),
-                call_type: RtcCallType::Audio,
-                status: RtcCallSessionStatus::Ended,
+                media_mode: RtcMediaSessionMode::Audio,
+                status: RtcMediaSessionStatus::Ended,
                 provider_profile_id: None,
+                provider_session_id: None,
                 started_at: Some("2026-06-06T01:00:00Z".to_string()),
+                connected_at: Some("2026-06-06T01:00:00Z".to_string()),
                 ended_at: Some("2026-06-06T01:05:00Z".to_string()),
+                duration_ms: Some(300_000),
+                end_reason: Some("manual_close".to_string()),
+                end_source: Some(RtcMediaSessionEndSource::ManualClose),
+                participant_count: 0,
+                max_concurrent_participants: 0,
+                quality_summary: None,
+                recording_summary: None,
+                completion_recorded_at: Some("2026-06-06T01:05:01Z".to_string()),
+                last_provider_webhook_event_id: None,
+                last_provider_query_job_id: None,
                 participants: Vec::new(),
             },
         ];
@@ -1436,120 +1395,7 @@ mod tests {
     }
 
     #[test]
-    fn state_record_merge_preserves_accepted_session_over_stale_reject() {
-        let accepted = rtc_state_record(
-            RtcSessionState::Accepted,
-            "2026-05-06T00:00:03.000Z",
-            vec![rtc_signal_event(1), rtc_signal_event(2)],
-        );
-        let stale_reject = rtc_state_record(
-            RtcSessionState::Rejected,
-            "2026-05-06T00:00:02.000Z",
-            vec![rtc_signal_event(1)],
-        );
-
-        let merged = accepted.merge_monotonic(stale_reject);
-
-        assert_eq!(merged.session.state, RtcSessionState::Accepted);
-        assert_eq!(merged.updated_at, "2026-05-06T00:00:03.000Z");
-        assert_eq!(
-            merged
-                .signals
-                .iter()
-                .map(|signal| signal.signal_seq)
-                .collect::<Vec<_>>(),
-            vec![1, 2]
-        );
-    }
-
-    #[test]
-    fn state_record_merge_compares_updated_at_by_rfc3339_instant() {
-        let whole_second = rtc_state_record(
-            RtcSessionState::Accepted,
-            "2026-05-06T00:00:00Z",
-            vec![rtc_signal_event(1)],
-        );
-        let later_fraction = rtc_state_record(
-            RtcSessionState::Accepted,
-            "2026-05-06T00:00:00.100Z",
-            vec![rtc_signal_event(2)],
-        );
-
-        let merged = whole_second.merge_monotonic(later_fraction);
-
-        assert_eq!(merged.updated_at, "2026-05-06T00:00:00.100Z");
-        assert_eq!(
-            merged
-                .signals
-                .iter()
-                .map(|signal| signal.signal_seq)
-                .collect::<Vec<_>>(),
-            vec![1, 2]
-        );
-    }
-
-    #[test]
-    fn utc_time_helpers_parse_and_format_fractional_rfc3339() {
-        assert_eq!(
-            max_rfc3339_string(
-                "2026-05-06T00:00:00Z".into(),
-                "2026-05-06T00:00:00.100Z".into()
-            ),
-            "2026-05-06T00:00:00.100Z"
-        );
+    fn utc_time_helpers_format_unix_millis() {
         assert_eq!(format_unix_millis(0), "1970-01-01T00:00:00.000Z");
-    }
-
-    fn rtc_state_record(
-        state: RtcSessionState,
-        updated_at: &str,
-        signals: Vec<RtcSignalEvent>,
-    ) -> RtcStateRecord {
-        RtcStateRecord {
-            tenant_id: "t_demo".into(),
-            rtc_session_id: "rtc_demo".into(),
-            session: RtcSession {
-                tenant_id: "t_demo".into(),
-                rtc_session_id: "rtc_demo".into(),
-                conversation_id: Some("c_demo".into()),
-                rtc_mode: "voice".into(),
-                initiator_id: "u_demo".into(),
-                initiator_kind: "user".into(),
-                provider_plugin_id: Some("webrtc".into()),
-                provider_session_id: Some("ps_demo".into()),
-                access_endpoint: Some("wss://rtc.example.test/session/ps_demo".into()),
-                provider_region: Some("cn-shanghai".into()),
-                state,
-                signaling_stream_id: Some("st_demo".into()),
-                artifact_message_id: None,
-                started_at: "2026-05-06T00:00:00.000Z".into(),
-                ended_at: None,
-            },
-            signals,
-            updated_at: updated_at.into(),
-        }
-    }
-
-    fn rtc_signal_event(signal_seq: u64) -> RtcSignalEvent {
-        RtcSignalEvent {
-            tenant_id: "t_demo".into(),
-            rtc_session_id: "rtc_demo".into(),
-            signal_seq,
-            conversation_id: Some("c_demo".into()),
-            rtc_mode: "voice".into(),
-            signal_type: format!("rtc.signal.{signal_seq}"),
-            schema_ref: Some("webrtc.signal.v1".into()),
-            payload: format!("{{\"seq\":{signal_seq}}}"),
-            sender: RtcSignalSender {
-                id: "u_demo".into(),
-                kind: "user".into(),
-                member_id: None,
-                device_id: Some("d_demo".into()),
-                session_id: Some("s_demo".into()),
-                metadata: Default::default(),
-            },
-            signaling_stream_id: Some("st_demo".into()),
-            occurred_at: format!("2026-05-06T00:00:0{signal_seq}.000Z"),
-        }
     }
 }

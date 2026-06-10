@@ -28,7 +28,7 @@ object RtcProviderExtensionCatalog {
 
     val entries: List<RtcProviderExtensionCatalogEntry> = listOf(
         RtcProviderExtensionCatalogEntry("volcengine.native-client", "volcengine", "Volcengine Native Client", "runtime-bridge", "unwrap-only", "reference-baseline"),
-        RtcProviderExtensionCatalogEntry("aliyun.native-client", "aliyun", "Aliyun Native Client", "runtime-bridge", "unwrap-only", "reference-baseline"),
+        RtcProviderExtensionCatalogEntry("aliyun.native-client", "aliyun", "Aliyun Native Client", "runtime-bridge", "unwrap-only", "reserved"),
         RtcProviderExtensionCatalogEntry("tencent.native-client", "tencent", "Tencent Native Client", "runtime-bridge", "unwrap-only", "reference-baseline"),
         RtcProviderExtensionCatalogEntry("agora.native-client", "agora", "Agora Native Client", "runtime-bridge", "unwrap-only", "reserved"),
         RtcProviderExtensionCatalogEntry("zego.native-client", "zego", "ZEGO Native Client", "runtime-bridge", "unwrap-only", "reserved"),

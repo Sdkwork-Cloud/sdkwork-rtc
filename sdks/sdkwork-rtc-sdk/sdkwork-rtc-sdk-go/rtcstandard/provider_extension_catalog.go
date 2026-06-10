@@ -29,7 +29,7 @@ var RTC_PROVIDER_EXTENSION_STATUSES = []string{
 
 var RTC_PROVIDER_EXTENSION_CATALOG = []RtcProviderExtensionCatalogEntry{
     {ExtensionKey: "volcengine.native-client", ProviderKey: "volcengine", DisplayName: "Volcengine Native Client", Surface: "runtime-bridge", Access: "unwrap-only", Status: "reference-baseline"},
-    {ExtensionKey: "aliyun.native-client", ProviderKey: "aliyun", DisplayName: "Aliyun Native Client", Surface: "runtime-bridge", Access: "unwrap-only", Status: "reference-baseline"},
+    {ExtensionKey: "aliyun.native-client", ProviderKey: "aliyun", DisplayName: "Aliyun Native Client", Surface: "runtime-bridge", Access: "unwrap-only", Status: "reserved"},
     {ExtensionKey: "tencent.native-client", ProviderKey: "tencent", DisplayName: "Tencent Native Client", Surface: "runtime-bridge", Access: "unwrap-only", Status: "reference-baseline"},
     {ExtensionKey: "agora.native-client", ProviderKey: "agora", DisplayName: "Agora Native Client", Surface: "runtime-bridge", Access: "unwrap-only", Status: "reserved"},
     {ExtensionKey: "zego.native-client", ProviderKey: "zego", DisplayName: "ZEGO Native Client", Surface: "runtime-bridge", Access: "unwrap-only", Status: "reserved"},

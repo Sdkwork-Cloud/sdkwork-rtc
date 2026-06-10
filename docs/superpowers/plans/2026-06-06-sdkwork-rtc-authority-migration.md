@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. The user explicitly forbids subagent execution for this task.
 
-**Goal:** Move all RTC-owned source, SDK, API, Rust storage/route, and UI capability code into `sdkwork-rtc`, then remove RTC authority from `sdkwork-appbase` and `craw-chat`.
+**Goal:** Move RTC provider/media runtime SDK, backend provider management API, Rust provider/storage contracts, and UI capability code into `sdkwork-rtc`, then remove RTC authority from `sdkwork-appbase` and duplicate RTC SDK authority from `craw-chat`. IM/call signaling remains owned by Craw Chat IM.
 
-**Architecture:** `sdkwork-rtc` becomes the RTC authority. The provider/runtime RTC SDK from `craw-chat/sdks/sdkwork-rtc-sdk` is copied to `sdks/sdkwork-rtc-sdk`, app/backend HTTP SDK families are generated from RTC route/OpenAPI authorities, and Rust crates own RTC storage/API contracts. `sdkwork-appbase` keeps no RTC package, catalog item, or direct workspace alias.
+**Architecture:** `sdkwork-rtc` becomes the RTC provider/media runtime authority. The provider/runtime RTC SDK from `craw-chat/sdks/sdkwork-rtc-sdk` is copied to `sdks/sdkwork-rtc-sdk`; backend/admin HTTP SDK families are generated from RTC backend route/OpenAPI authorities; Rust crates own RTC provider, storage, and backend API contracts. User-facing call signaling, invite/accept/reject/end, participant call lifecycle, WebSocket business protocol, and `/im/v3/api/calls/*` remain in Craw Chat IM. `sdkwork-appbase` keeps no RTC package, catalog item, or direct workspace alias.
 
 **Tech Stack:** Node test runner, Vitest, TypeScript, Rust 2024, SQLx-style schema crates, OpenAPI 3.1.2, SDKWork `sdkgen`.
 
@@ -42,17 +42,16 @@
 - [ ] Replace the `@sdkwork/appbase-pc-react` manifest dependency with local RTC manifest primitives so RTC UI no longer depends on appbase.
 - [ ] Update package metadata to `sdkwork-rtc`.
 
-### Task 4: Add Rust RTC Storage And Route Authorities
+### Task 4: Add Rust RTC Storage And Backend Route Authorities
 
 **Files:**
 - Create: `Cargo.toml`
 - Create: `rust-toolchain.toml`
 - Create: `crates/sdkwork-rtc-core/*`
 - Create: `crates/sdkwork-rtc-storage-sqlx/*`
-- Create: `services/sdkwork-routes-rtc-app-api/*`
 - Create: `services/sdkwork-routes-rtc-backend-api/*`
 
-- [ ] Add focused Rust crates for core contract metadata, storage schema contracts, and app/backend route catalogs.
+- [ ] Add focused Rust crates for core contract metadata, storage schema contracts, and backend route catalogs.
 - [ ] Add SQL schema files for Postgres and SQLite.
 - [ ] Add Rust tests proving table contracts and route metadata.
 
@@ -60,12 +59,11 @@
 
 **Files:**
 - Create: `sdks/materialize-rtc-v3-openapi-boundaries.mjs`
-- Create: `sdks/sdkwork-rtc-app-sdk/*`
 - Create: `sdks/sdkwork-rtc-backend-sdk/*`
 - Create: `sdks/_route-manifests/*`
 
-- [ ] Materialize app/backend OpenAPI from Rust route catalogs.
-- [ ] Add SDK family manifests and standard generator wrappers.
+- [ ] Materialize backend OpenAPI from Rust route catalogs.
+- [ ] Add backend SDK family manifests and standard generator wrappers.
 - [ ] Generate or check TypeScript SDK output with the canonical SDKWork generator.
 
 ### Task 6: Remove Appbase RTC Debt

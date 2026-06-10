@@ -24,7 +24,6 @@ final class RtcProviderActivationCatalogEntry {
 
 final class RtcProviderActivationCatalog {
   static const List<String> recognizedActivationStatuses = <String>[
-    "root-public-builtin",
     "package-boundary",
     "control-metadata-only",
   ];
@@ -35,9 +34,9 @@ final class RtcProviderActivationCatalog {
       providerKey: "volcengine",
       pluginId: "rtc-volcengine",
       driverId: "sdkwork-rtc-driver-volcengine",
-      activationStatus: "root-public-builtin",
+      activationStatus: "package-boundary",
       runtimeBridge: true,
-      rootPublic: true,
+      rootPublic: false,
       packageBoundary: true,
       builtin: true,
       packageIdentity: "rtc_sdk_provider_volcengine",

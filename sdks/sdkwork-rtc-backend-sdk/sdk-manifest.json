@@ -22,10 +22,26 @@
         "python": "sdkwork-rtc-sdk",
         "go": "github.com/sdkwork/sdkwork-rtc-sdk"
       }
+    },
+    {
+      "workspace": "sdkwork-drive-backend-sdk",
+      "role": "drive-media-resource-backend-capability",
+      "required": true,
+      "dependencyMode": "consumer-sdk",
+      "apiPrefix": "/backend/v3/api",
+      "apiAuthority": "sdkwork-drive.backend",
+      "generatedTransportImportPolicy": "forbidden",
+      "packageByLanguage": {
+        "typescript": "@sdkwork/drive-backend-sdk",
+        "rust": "sdkwork-drive-backend-sdk",
+        "java": "com.sdkwork:sdkwork-drive-backend-sdk",
+        "python": "sdkwork-drive-backend-sdk",
+        "go": "github.com/sdkwork/sdkwork-drive-backend-sdk"
+      }
     }
   ],
   "generatorName": "@sdkwork/sdk-generator",
-  "generatorEntryPoint": "../sdkwork-sdk-generator/bin/sdkgen.js",
+  "generatorEntryPoint": "E:\\sdkwork-space\\sdkwork-sdk-generator\\bin\\sdkgen.js",
   "standardProfile": "sdkwork-v3",
-  "ownerOnlyOperationCount": 10
+  "ownerOnlyOperationCount": 22
 }

@@ -1,20 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use sdkwork_rtc_api_registry::{HttpMethod, RouteProtocol};
+use sdkwork_rtc_api_registry::HttpMethod;
 use serde_json::{Map, Value, json};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RouteEntry {
     pub path: String,
     pub methods: Vec<HttpMethod>,
-    pub protocol: RouteProtocol,
-    pub websocket_subprotocols: Vec<String>,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct WebsocketRouteMetadata {
-    pub path: String,
-    pub subprotocols: Vec<String>,
 }
 
 pub struct OpenApiServiceSpec<'a> {
@@ -28,7 +20,6 @@ pub struct OpenApiServiceSpec<'a> {
 pub fn extract_routes_from_function(
     source: &str,
     fn_name: &str,
-    websocket_routes: &[WebsocketRouteMetadata],
     excluded_paths: &[&str],
 ) -> Result<Vec<RouteEntry>, String> {
     let signature = format!("fn {fn_name}");
@@ -44,10 +35,6 @@ pub fn extract_routes_from_function(
         .ok_or_else(|| format!("could not find body end for `{fn_name}`"))?;
     let body = &source[open_brace + 1..close_brace];
 
-    let websocket_lookup = websocket_routes
-        .iter()
-        .map(|route| (route.path.as_str(), route))
-        .collect::<BTreeMap<_, _>>();
     let mut routes: BTreeMap<String, BTreeSet<HttpMethod>> = BTreeMap::new();
     let mut search_from = 0usize;
 
@@ -73,20 +60,9 @@ pub fn extract_routes_from_function(
 
     Ok(routes
         .into_iter()
-        .map(|(path, methods)| {
-            let websocket_metadata = websocket_lookup.get(path.as_str());
-            RouteEntry {
-                protocol: if websocket_metadata.is_some() {
-                    RouteProtocol::Websocket
-                } else {
-                    RouteProtocol::Http
-                },
-                websocket_subprotocols: websocket_metadata
-                    .map(|route| route.subprotocols.clone())
-                    .unwrap_or_default(),
-                path,
-                methods: methods.into_iter().collect(),
-            }
+        .map(|(path, methods)| RouteEntry {
+            path,
+            methods: methods.into_iter().collect(),
         })
         .collect())
 }
@@ -126,11 +102,7 @@ where
             operation.insert("tags".to_owned(), json!([tag]));
             operation.insert(
                 "responses".to_owned(),
-                if route.protocol == RouteProtocol::Websocket {
-                    json!({ "101": { "description": "WebSocket upgrade successful" } })
-                } else {
-                    json!({ "200": { "description": "Successful response" } })
-                },
+                json!({ "200": { "description": "Successful response" } }),
             );
 
             operation.insert(
@@ -141,26 +113,6 @@ where
                     json!([])
                 },
             );
-
-            if route.protocol == RouteProtocol::Websocket {
-                operation.insert(
-                    "x-sdkwork-rtc-protocol".to_owned(),
-                    Value::String("websocket".to_owned()),
-                );
-                if !route.websocket_subprotocols.is_empty() {
-                    operation.insert(
-                        "x-sdkwork-rtc-websocket-subprotocols".to_owned(),
-                        Value::Array(
-                            route
-                                .websocket_subprotocols
-                                .iter()
-                                .cloned()
-                                .map(Value::String)
-                                .collect(),
-                        ),
-                    );
-                }
-            }
 
             operations.insert(method_name(*method).to_owned(), Value::Object(operation));
         }
@@ -511,8 +463,19 @@ fn operation_action(
     ends_with_parameter: bool,
 ) -> String {
     let command_suffixes = [
-        "accept", "activate", "apply", "cancel", "close", "connect", "decline", "disconnect",
-        "end", "invite", "publish", "refresh", "reject", "resume", "start", "stop", "sync",
+        "activate",
+        "apply",
+        "cancel",
+        "close",
+        "connect",
+        "disconnect",
+        "end",
+        "publish",
+        "refresh",
+        "resume",
+        "start",
+        "stop",
+        "sync",
         "unpublish",
     ];
 

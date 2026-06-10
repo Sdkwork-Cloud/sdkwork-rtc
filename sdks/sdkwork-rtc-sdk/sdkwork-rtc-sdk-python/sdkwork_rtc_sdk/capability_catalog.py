@@ -13,10 +13,11 @@ class RtcCapabilityCatalog:
     entries = [
         RtcCapabilityCatalogEntry("session", "required-baseline", "cross-surface"),
         RtcCapabilityCatalogEntry("credential", "required-baseline", "control-plane"),
-        RtcCapabilityCatalogEntry("callback", "required-baseline", "control-plane"),
+        RtcCapabilityCatalogEntry("provider.webhook", "required-baseline", "control-plane"),
+        RtcCapabilityCatalogEntry("provider.event-normalization", "required-baseline", "control-plane"),
         RtcCapabilityCatalogEntry("health", "required-baseline", "control-plane"),
-        RtcCapabilityCatalogEntry("call.audio", "required-baseline", "runtime-bridge"),
-        RtcCapabilityCatalogEntry("call.video", "required-baseline", "runtime-bridge"),
+        RtcCapabilityCatalogEntry("media.audio", "required-baseline", "runtime-bridge"),
+        RtcCapabilityCatalogEntry("media.video", "required-baseline", "runtime-bridge"),
         RtcCapabilityCatalogEntry("live.broadcast", "required-baseline", "cross-surface"),
         RtcCapabilityCatalogEntry("live.audience", "required-baseline", "cross-surface"),
         RtcCapabilityCatalogEntry("screen-share", "optional-advanced", "runtime-bridge"),
@@ -29,6 +30,7 @@ class RtcCapabilityCatalog:
         RtcCapabilityCatalogEntry("beauty", "optional-advanced", "runtime-bridge"),
         RtcCapabilityCatalogEntry("spatial-audio", "optional-advanced", "runtime-bridge"),
         RtcCapabilityCatalogEntry("e2ee", "optional-advanced", "runtime-bridge"),
+        RtcCapabilityCatalogEntry("provider.active-query", "optional-advanced", "control-plane"),
     ]
 
 

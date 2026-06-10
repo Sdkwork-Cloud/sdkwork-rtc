@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { createManagerWithProviderPackages } from './provider-test-helpers.mjs';
 
 async function loadSdk() {
   return import('../dist/index.js');
@@ -41,10 +42,10 @@ test('materialized provider extension catalog matches the assembly extension reg
 });
 
 test('data source and client expose provider extension descriptors through standard metadata helpers', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine']);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerKey: 'volcengine',
   });
 

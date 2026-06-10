@@ -1,0 +1,1 @@
+{"version":3,"file":"rtc-provider-query-job-response.d.ts","sourceRoot":"","sources":["../../src/types/rtc-provider-query-job-response.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,mBAAmB,EAAE,MAAM,0BAA0B,CAAC;AAEpE,MAAM,WAAW,2BAA2B;IAC1C,IAAI,EAAE,MAAM,CAAC;IACb,OAAO,EAAE,MAAM,CAAC;IAChB,2CAA2C;IAC3C,SAAS,EAAE,MAAM,CAAC;IAClB,IAAI,EAAE,mBAAmB,CAAC;CAC3B"}

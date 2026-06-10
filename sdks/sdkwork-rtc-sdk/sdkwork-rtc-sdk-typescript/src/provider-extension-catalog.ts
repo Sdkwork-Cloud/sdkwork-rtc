@@ -19,7 +19,7 @@ export const ALIYUN_NATIVE_CLIENT_RTC_PROVIDER_EXTENSION_DESCRIPTOR: RtcProvider
   displayName: 'Aliyun Native Client',
   surface: 'runtime-bridge',
   access: 'unwrap-only',
-  status: 'reference-baseline',
+  status: 'reserved',
 });
 
 export const TENCENT_NATIVE_CLIENT_RTC_PROVIDER_EXTENSION_DESCRIPTOR: RtcProviderExtensionDescriptor<RtcKnownProviderExtensionKey> = freezeRtcRuntimeValue({

@@ -1,8 +1,8 @@
 import { freezeRtcRuntimeValue } from './runtime-freeze.js';
 import type { RtcCapabilityDescriptor } from './types.js';
 
-export const REQUIRED_RTC_CAPABILITIES = freezeRtcRuntimeValue(['session', 'credential', 'callback', 'health', 'call.audio', 'call.video', 'live.broadcast', 'live.audience'] as const);
-export const OPTIONAL_RTC_CAPABILITIES = freezeRtcRuntimeValue(['screen-share', 'recording', 'artifact', 'cloud-mix', 'cdn-relay', 'data-channel', 'transcription', 'beauty', 'spatial-audio', 'e2ee'] as const);
+export const REQUIRED_RTC_CAPABILITIES = freezeRtcRuntimeValue(['session', 'credential', 'provider.webhook', 'provider.event-normalization', 'health', 'media.audio', 'media.video', 'live.broadcast', 'live.audience'] as const);
+export const OPTIONAL_RTC_CAPABILITIES = freezeRtcRuntimeValue(['screen-share', 'recording', 'artifact', 'cloud-mix', 'cdn-relay', 'data-channel', 'transcription', 'beauty', 'spatial-audio', 'e2ee', 'provider.active-query'] as const);
 
 export type RtcRequiredCapability = (typeof REQUIRED_RTC_CAPABILITIES)[number];
 export type RtcOptionalCapability = (typeof OPTIONAL_RTC_CAPABILITIES)[number];
@@ -20,8 +20,14 @@ export const CREDENTIAL_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCa
   surface: 'control-plane',
 });
 
-export const CALLBACK_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
-  capabilityKey: 'callback',
+export const PROVIDER_WEBHOOK_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
+  capabilityKey: 'provider.webhook',
+  category: 'required-baseline',
+  surface: 'control-plane',
+});
+
+export const PROVIDER_EVENT_NORMALIZATION_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
+  capabilityKey: 'provider.event-normalization',
   category: 'required-baseline',
   surface: 'control-plane',
 });
@@ -32,14 +38,14 @@ export const HEALTH_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabi
   surface: 'control-plane',
 });
 
-export const CALL_AUDIO_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
-  capabilityKey: 'call.audio',
+export const MEDIA_AUDIO_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
+  capabilityKey: 'media.audio',
   category: 'required-baseline',
   surface: 'runtime-bridge',
 });
 
-export const CALL_VIDEO_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
-  capabilityKey: 'call.video',
+export const MEDIA_VIDEO_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
+  capabilityKey: 'media.video',
   category: 'required-baseline',
   surface: 'runtime-bridge',
 });
@@ -116,13 +122,20 @@ export const E2EE_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabili
   surface: 'runtime-bridge',
 });
 
+export const PROVIDER_ACTIVE_QUERY_RTC_CAPABILITY_DESCRIPTOR: RtcCapabilityDescriptor<RtcCapabilityKey> = freezeRtcRuntimeValue({
+  capabilityKey: 'provider.active-query',
+  category: 'optional-advanced',
+  surface: 'control-plane',
+});
+
 export const RTC_CAPABILITY_CATALOG: readonly RtcCapabilityDescriptor<RtcCapabilityKey>[] = freezeRtcRuntimeValue([
   SESSION_RTC_CAPABILITY_DESCRIPTOR,
   CREDENTIAL_RTC_CAPABILITY_DESCRIPTOR,
-  CALLBACK_RTC_CAPABILITY_DESCRIPTOR,
+  PROVIDER_WEBHOOK_RTC_CAPABILITY_DESCRIPTOR,
+  PROVIDER_EVENT_NORMALIZATION_RTC_CAPABILITY_DESCRIPTOR,
   HEALTH_RTC_CAPABILITY_DESCRIPTOR,
-  CALL_AUDIO_RTC_CAPABILITY_DESCRIPTOR,
-  CALL_VIDEO_RTC_CAPABILITY_DESCRIPTOR,
+  MEDIA_AUDIO_RTC_CAPABILITY_DESCRIPTOR,
+  MEDIA_VIDEO_RTC_CAPABILITY_DESCRIPTOR,
   LIVE_BROADCAST_RTC_CAPABILITY_DESCRIPTOR,
   LIVE_AUDIENCE_RTC_CAPABILITY_DESCRIPTOR,
   SCREEN_SHARE_RTC_CAPABILITY_DESCRIPTOR,
@@ -134,7 +147,8 @@ export const RTC_CAPABILITY_CATALOG: readonly RtcCapabilityDescriptor<RtcCapabil
   TRANSCRIPTION_RTC_CAPABILITY_DESCRIPTOR,
   BEAUTY_RTC_CAPABILITY_DESCRIPTOR,
   SPATIAL_AUDIO_RTC_CAPABILITY_DESCRIPTOR,
-  E2EE_RTC_CAPABILITY_DESCRIPTOR
+  E2EE_RTC_CAPABILITY_DESCRIPTOR,
+  PROVIDER_ACTIVE_QUERY_RTC_CAPABILITY_DESCRIPTOR
 ]);
 
 const RTC_CAPABILITY_DESCRIPTOR_BY_KEY = new Map<

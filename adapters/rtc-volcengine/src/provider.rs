@@ -1,0 +1,182 @@
+use std::collections::BTreeMap;
+use std::sync::Arc;
+
+use sdkwork_rtc_core::{
+    ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor,
+    RTC_PROVIDER_REQUIRED_CAPABILITIES, RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES,
+    RtcContractError, RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcProviderPort,
+    RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
+    RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcSessionHandle, utc_now_rfc3339_millis,
+};
+
+use crate::config::VolcengineRtcProviderConfig;
+use crate::credential::{
+    format_unix_seconds_rfc3339, generate_volcengine_rtc_token, issued_at_unix_seconds,
+};
+use crate::open_api::VolcengineRtcOpenApiExecutor;
+use crate::{query, recording, webhook};
+
+pub const VOLCENGINE_RTC_PLUGIN_ID: &str = "rtc-volcengine";
+
+#[derive(Clone, Default)]
+pub struct VolcengineRtcProvider {
+    config: VolcengineRtcProviderConfig,
+    open_api_executor: Option<Arc<dyn VolcengineRtcOpenApiExecutor>>,
+}
+
+impl VolcengineRtcProvider {
+    pub fn new(config: VolcengineRtcProviderConfig) -> Self {
+        Self {
+            config,
+            open_api_executor: None,
+        }
+    }
+
+    pub fn with_open_api_executor(
+        mut self,
+        executor: Arc<dyn VolcengineRtcOpenApiExecutor>,
+    ) -> Self {
+        self.open_api_executor = Some(executor);
+        self
+    }
+
+    fn descriptor_with_defaults(&self) -> ProviderPluginDescriptor {
+        ProviderPluginDescriptor::new(
+            VOLCENGINE_RTC_PLUGIN_ID,
+            ProviderDomain::Rtc,
+            "volcengine",
+            "Volcengine RTC",
+        )
+        .with_default_selected(true)
+        .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
+        .with_optional_capabilities(RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES)
+    }
+}
+
+impl RtcProviderPort for VolcengineRtcProvider {
+    fn descriptor(&self) -> ProviderPluginDescriptor {
+        self.descriptor_with_defaults()
+    }
+
+    fn create_session(
+        &self,
+        request: RtcCreateMediaSessionRequest,
+    ) -> Result<RtcSessionHandle, RtcContractError> {
+        let region = request
+            .region
+            .filter(|region| !region.trim().is_empty())
+            .unwrap_or_else(|| self.config.region.clone());
+        Ok(RtcSessionHandle {
+            tenant_id: request.tenant_id,
+            rtc_session_id: request.rtc_session_id.clone(),
+            provider_session_id: format!("volcengine:{}", request.rtc_session_id),
+            access_endpoint: Some(self.config.access_endpoint.clone()),
+            region: Some(region),
+        })
+    }
+
+    fn close_session(
+        &self,
+        _tenant_id: &str,
+        _rtc_session_id: &str,
+    ) -> Result<bool, RtcContractError> {
+        Ok(true)
+    }
+
+    fn issue_participant_credential(
+        &self,
+        tenant_id: &str,
+        rtc_session_id: &str,
+        participant_id: &str,
+    ) -> Result<RtcParticipantCredential, RtcContractError> {
+        if self.config.app_id.is_some() && self.config.app_key.is_some() {
+            let issued_at = issued_at_unix_seconds();
+            let (credential, expire_at) = generate_volcengine_rtc_token(
+                &self.config,
+                rtc_session_id,
+                participant_id,
+                issued_at,
+            )?;
+            return Ok(RtcParticipantCredential {
+                tenant_id: tenant_id.into(),
+                rtc_session_id: rtc_session_id.into(),
+                participant_id: participant_id.into(),
+                credential,
+                expires_at: format_unix_seconds_rfc3339(expire_at),
+            });
+        }
+
+        Ok(RtcParticipantCredential {
+            tenant_id: tenant_id.into(),
+            rtc_session_id: rtc_session_id.into(),
+            participant_id: participant_id.into(),
+            credential: format!("volcengine-token:{tenant_id}:{rtc_session_id}:{participant_id}"),
+            expires_at: utc_now_rfc3339_millis(),
+        })
+    }
+
+    fn refresh_participant_credential(
+        &self,
+        tenant_id: &str,
+        rtc_session_id: &str,
+        participant_id: &str,
+    ) -> Result<RtcParticipantCredential, RtcContractError> {
+        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id)
+    }
+
+    fn parse_provider_webhook(
+        &self,
+        request: RtcProviderWebhookParseRequest,
+    ) -> Result<RtcProviderWebhookEvent, RtcContractError> {
+        webhook::parse_provider_webhook(request)
+    }
+
+    fn query_provider_state(
+        &self,
+        request: RtcProviderQueryRequest,
+    ) -> Result<RtcProviderQueryResult, RtcContractError> {
+        query::query_provider_state(&self.config, self.open_api_executor.as_deref(), request)
+    }
+
+    fn export_recording_artifact(
+        &self,
+        tenant_id: &str,
+        rtc_session_id: &str,
+    ) -> Result<Option<RtcRecordingArtifact>, RtcContractError> {
+        recording::export_recording_artifact(tenant_id, rtc_session_id)
+    }
+
+    fn provider_health_snapshot(&self) -> ProviderHealthSnapshot {
+        let mut details = BTreeMap::new();
+        details.insert("providerKind".into(), "volcengine".into());
+        details.insert("accessEndpoint".into(), self.config.access_endpoint.clone());
+        details.insert("region".into(), self.config.region.clone());
+        details.insert(
+            "credentialMode".into(),
+            if self.config.app_id.is_some() && self.config.app_key.is_some() {
+                "signed-token"
+            } else {
+                "development-placeholder"
+            }
+            .into(),
+        );
+        details.insert(
+            "activeQueryMode".into(),
+            if self.open_api_executor.is_some()
+                && self.config.access_key_id.is_some()
+                && self.config.secret_access_key.is_some()
+            {
+                "signed-open-api"
+            } else {
+                "request-snapshot"
+            }
+            .into(),
+        );
+        ProviderHealthSnapshot {
+            plugin_id: VOLCENGINE_RTC_PLUGIN_ID.into(),
+            status: "healthy".into(),
+            checked_at: utc_now_rfc3339_millis(),
+            details,
+        }
+    }
+}

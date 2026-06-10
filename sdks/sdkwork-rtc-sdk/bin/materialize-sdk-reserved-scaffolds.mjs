@@ -8,6 +8,8 @@ import {
   buildProviderPackageSourceSymbol,
   buildReservedProviderPackageCatalogEntries,
   materializeProviderPackagePattern,
+  resolveProviderPackageScaffoldRuntimeBridgeStatus,
+  resolveProviderPackageScaffoldStatus,
   toPascalCase,
 } from './rtc-standard-shared-helpers.mjs';
 import {
@@ -19,6 +21,485 @@ function q(value) {
   return JSON.stringify(String(value));
 }
 
+function qNullable(value) {
+  return typeof value === 'string' ? q(value) : 'null';
+}
+
+function qRustOption(value) {
+  return typeof value === 'string' ? `Some(${q(value)})` : 'None';
+}
+
+function qSwiftOption(value) {
+  return typeof value === 'string' ? q(value) : 'nil';
+}
+
+function qPythonOption(value) {
+  return typeof value === 'string' ? q(value) : 'None';
+}
+
+function qGoStringPointer(value) {
+  return typeof value === 'string' ? `rtcStringPtr(${q(value)})` : 'nil';
+}
+
+function renderFlutterRuntimeSurfaceMethodEntries(assembly, indent = '  ') {
+  return (assembly.runtimeSurfaceStandard?.methodTerms ?? [])
+    .map((methodName) => `${indent}'${String(methodName).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}',`)
+    .join('\n');
+}
+
+function renderFlutterTypesModule() {
+  return lines(`
+import 'rtc_provider_selection.dart';
+
+enum RtcTrackKind {
+  audio,
+  video,
+  screenShare,
+  data,
+}
+
+String rtcTrackKindWireName(RtcTrackKind kind) {
+  switch (kind) {
+    case RtcTrackKind.audio:
+      return 'audio';
+    case RtcTrackKind.video:
+      return 'video';
+    case RtcTrackKind.screenShare:
+      return 'screen-share';
+    case RtcTrackKind.data:
+      return 'data';
+  }
+}
+
+enum RtcSessionConnectionState {
+  joined,
+  left,
+}
+
+class RtcProviderMetadata {
+  const RtcProviderMetadata({
+    required this.providerKey,
+    required this.pluginId,
+    required this.driverId,
+    required this.displayName,
+    required this.defaultSelected,
+    this.requiredCapabilities = const <String>[],
+    this.optionalCapabilities = const <String>[],
+    this.extensionKeys = const <String>[],
+  });
+
+  final String providerKey;
+  final String pluginId;
+  final String driverId;
+  final String displayName;
+  final bool defaultSelected;
+  final List<String> requiredCapabilities;
+  final List<String> optionalCapabilities;
+  final List<String> extensionKeys;
+
+  Map<String, Object?> toDebugMap() {
+    return <String, Object?>{
+      'providerKey': providerKey,
+      'pluginId': pluginId,
+      'driverId': driverId,
+      'displayName': displayName,
+      'defaultSelected': defaultSelected,
+      'requiredCapabilities': requiredCapabilities,
+      'optionalCapabilities': optionalCapabilities,
+      'extensionKeys': extensionKeys,
+    };
+  }
+}
+
+class RtcJoinOptions {
+  const RtcJoinOptions({
+    required this.sessionId,
+    required this.roomId,
+    required this.participantId,
+    this.token,
+    this.metadata,
+  });
+
+  final String sessionId;
+  final String roomId;
+  final String participantId;
+  final String? token;
+  final Map<String, Object?>? metadata;
+}
+
+class RtcSessionDescriptor {
+  const RtcSessionDescriptor({
+    required this.sessionId,
+    required this.roomId,
+    required this.participantId,
+    required this.providerKey,
+    required this.connectionState,
+  });
+
+  final String sessionId;
+  final String roomId;
+  final String participantId;
+  final String providerKey;
+  final RtcSessionConnectionState connectionState;
+}
+
+class RtcPublishOptions {
+  const RtcPublishOptions({
+    required this.trackId,
+    required this.kind,
+    this.metadata,
+  });
+
+  final String trackId;
+  final RtcTrackKind kind;
+  final Map<String, Object?>? metadata;
+}
+
+class RtcScreenShareOptions {
+  const RtcScreenShareOptions({
+    required this.trackId,
+    this.metadata,
+  });
+
+  final String trackId;
+  final Map<String, Object?>? metadata;
+}
+
+class RtcTrackPublication {
+  const RtcTrackPublication({
+    required this.trackId,
+    required this.kind,
+    required this.muted,
+  });
+
+  final String trackId;
+  final RtcTrackKind kind;
+  final bool muted;
+}
+
+class RtcMuteState {
+  const RtcMuteState({
+    required this.kind,
+    required this.muted,
+  });
+
+  final RtcTrackKind kind;
+  final bool muted;
+}
+
+class RtcClientConfig {
+  const RtcClientConfig({
+    this.providerUrl,
+    this.providerKey,
+    this.tenantOverrideProviderKey,
+    this.deploymentProfileProviderKey,
+    this.defaultProviderKey,
+    this.nativeConfig,
+  });
+
+  final String? providerUrl;
+  final String? providerKey;
+  final String? tenantOverrideProviderKey;
+  final String? deploymentProfileProviderKey;
+  final String? defaultProviderKey;
+  final Object? nativeConfig;
+}
+
+class RtcResolvedClientConfig extends RtcClientConfig {
+  const RtcResolvedClientConfig({
+    super.providerUrl,
+    required super.providerKey,
+    super.tenantOverrideProviderKey,
+    super.deploymentProfileProviderKey,
+    super.defaultProviderKey,
+    super.nativeConfig,
+    required this.selectionSource,
+  });
+
+  final RtcProviderSelectionSource selectionSource;
+}
+
+class RtcRuntimeControllerContext<TNativeClient> {
+  const RtcRuntimeControllerContext({
+    required this.metadata,
+    required this.selection,
+    required this.nativeClient,
+  });
+
+  final RtcProviderMetadata metadata;
+  final RtcProviderSelection selection;
+  final TNativeClient nativeClient;
+}
+`);
+}
+
+function renderFlutterClientModule() {
+  return lines(`
+import 'rtc_errors.dart';
+import 'rtc_provider_selection.dart';
+import 'rtc_standard_contract.dart';
+import 'rtc_types.dart';
+
+final class StandardRtcClient<TNativeClient> implements RtcClient<TNativeClient> {
+  StandardRtcClient({
+    required this.metadata,
+    required this.selection,
+    required TNativeClient nativeClient,
+    RtcRuntimeController<TNativeClient>? runtimeController,
+  })  : _nativeClient = nativeClient,
+        _runtimeController = runtimeController;
+
+  @override
+  final RtcProviderMetadata metadata;
+
+  @override
+  final RtcProviderSelection selection;
+
+  final TNativeClient _nativeClient;
+  final RtcRuntimeController<TNativeClient>? _runtimeController;
+
+  RtcRuntimeControllerContext<TNativeClient> get _runtimeContext {
+    return RtcRuntimeControllerContext<TNativeClient>(
+      metadata: metadata,
+      selection: selection,
+      nativeClient: _nativeClient,
+    );
+  }
+
+  RtcRuntimeController<TNativeClient> _requireRuntimeController(
+    String methodName,
+  ) {
+    if (_runtimeController != null) {
+      return _runtimeController;
+    }
+
+    throw RtcSdkException(
+      code: RtcStandardContract.runtimeSurfaceFailureCode,
+      message: 'RTC runtime bridge method not available: $methodName',
+      providerKey: metadata.providerKey,
+      pluginId: metadata.pluginId,
+      details: <String, Object?>{
+        'methodName': methodName,
+      },
+    );
+  }
+
+  RtcScreenShareRuntimeController<TNativeClient>?
+      _resolveScreenShareRuntimeController() {
+    final runtimeController = _runtimeController;
+    if (runtimeController is RtcScreenShareRuntimeController<TNativeClient>) {
+      return runtimeController as RtcScreenShareRuntimeController<TNativeClient>;
+    }
+
+    return null;
+  }
+
+  @override
+  Future<RtcSessionDescriptor> join(RtcJoinOptions options) {
+    return _requireRuntimeController('join').join(options, _runtimeContext);
+  }
+
+  @override
+  Future<RtcSessionDescriptor> leave() {
+    return _requireRuntimeController('leave').leave(_runtimeContext);
+  }
+
+  @override
+  Future<RtcTrackPublication> publish(RtcPublishOptions options) {
+    return _requireRuntimeController('publish').publish(options, _runtimeContext);
+  }
+
+  @override
+  Future<void> unpublish(String trackId) {
+    return _requireRuntimeController('unpublish').unpublish(
+      trackId,
+      _runtimeContext,
+    );
+  }
+
+  @override
+  Future<RtcTrackPublication> startScreenShare(
+    RtcScreenShareOptions options,
+  ) {
+    requireCapability('screen-share');
+    final runtimeController = _requireRuntimeController('startScreenShare');
+    final screenShareRuntimeController = _resolveScreenShareRuntimeController();
+    if (screenShareRuntimeController != null) {
+      return screenShareRuntimeController.startScreenShare(options, _runtimeContext);
+    }
+
+    return runtimeController.publish(
+      RtcPublishOptions(
+        trackId: options.trackId,
+        kind: RtcTrackKind.screenShare,
+        metadata: options.metadata,
+      ),
+      _runtimeContext,
+    );
+  }
+
+  @override
+  Future<void> stopScreenShare(String trackId) {
+    requireCapability('screen-share');
+    final runtimeController = _requireRuntimeController('stopScreenShare');
+    final screenShareRuntimeController = _resolveScreenShareRuntimeController();
+    if (screenShareRuntimeController != null) {
+      return screenShareRuntimeController.stopScreenShare(trackId, _runtimeContext);
+    }
+
+    return runtimeController.unpublish(trackId, _runtimeContext);
+  }
+
+  @override
+  Future<RtcMuteState> muteAudio(bool muted) {
+    return _requireRuntimeController('muteAudio').muteAudio(
+      muted,
+      _runtimeContext,
+    );
+  }
+
+  @override
+  Future<RtcMuteState> muteVideo(bool muted) {
+    return _requireRuntimeController('muteVideo').muteVideo(
+      muted,
+      _runtimeContext,
+    );
+  }
+
+  @override
+  List<String> getProviderExtensions() {
+    return List<String>.unmodifiable(metadata.extensionKeys);
+  }
+
+  @override
+  bool supportsProviderExtension(String extensionKey) {
+    return metadata.extensionKeys.contains(extensionKey);
+  }
+
+  @override
+  bool supportsCapability(String capability) {
+    return metadata.requiredCapabilities.contains(capability) ||
+        metadata.optionalCapabilities.contains(capability);
+  }
+
+  @override
+  void requireCapability(String capability) {
+    if (supportsCapability(capability)) {
+      return;
+    }
+
+    throw RtcSdkException(
+      code: 'capability_not_supported',
+      message: 'RTC capability not supported: $capability',
+      providerKey: metadata.providerKey,
+      pluginId: metadata.pluginId,
+      details: <String, Object?>{
+        'capability': capability,
+      },
+    );
+  }
+
+  @override
+  TNativeClient unwrap() => _nativeClient;
+}
+`);
+}
+
+function renderFlutterRuntimeSurfaceModule(assembly) {
+  return lines(`
+const List<String> rtcRuntimeSurfaceMethods = <String>[
+${renderFlutterRuntimeSurfaceMethodEntries(assembly)}
+];
+
+const String rtcRuntimeSurfaceFailureCode = 'native_sdk_not_available';
+
+const Map<String, Object> rtcRuntimeSurfaceStandard = <String, Object>{
+  'methodTerms': rtcRuntimeSurfaceMethods,
+  'failureCode': rtcRuntimeSurfaceFailureCode,
+};
+`);
+}
+
+function renderProviderPackageScaffoldInitializer(language, providerPackageScaffold) {
+  if (!providerPackageScaffold) {
+    switch (language) {
+      case 'go':
+      case 'swift':
+        return 'nil';
+      case 'python':
+        return 'None';
+      default:
+        return 'null';
+    }
+  }
+
+  const baseArguments = [
+    q(providerPackageScaffold.relativePath),
+    q(providerPackageScaffold.directoryPattern),
+    q(providerPackageScaffold.packagePattern),
+    q(providerPackageScaffold.manifestFileName),
+    q(providerPackageScaffold.readmeFileName),
+    q(providerPackageScaffold.sourceFilePattern),
+    q(providerPackageScaffold.sourceSymbolPattern),
+  ];
+  const referenceArguments = [
+    providerPackageScaffold.referenceProviderKey,
+    providerPackageScaffold.referenceStatus,
+    providerPackageScaffold.referenceRuntimeBridgeStatus,
+    providerPackageScaffold.referenceVendorSdkPackage,
+    providerPackageScaffold.referenceVendorSdkVersion,
+  ];
+
+  switch (language) {
+    case 'java':
+      return `new RtcLanguageWorkspaceProviderPackageScaffold(${[
+        ...baseArguments,
+        `List.of(${providerPackageScaffold.templateTokens.map(q).join(', ')})`,
+        `List.of(${providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')})`,
+        ...referenceArguments.map(qNullable),
+        q(providerPackageScaffold.runtimeBridgeStatus),
+        providerPackageScaffold.rootPublic ? 'true' : 'false',
+        q(providerPackageScaffold.status),
+      ].join(', ')})`;
+    case 'csharp':
+      return `new(${[
+        ...baseArguments,
+        `new List<string> { ${providerPackageScaffold.templateTokens.map(q).join(', ')} }`,
+        `new List<string> { ${providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')} }`,
+        ...referenceArguments.map(qNullable),
+        q(providerPackageScaffold.runtimeBridgeStatus),
+        providerPackageScaffold.rootPublic ? 'true' : 'false',
+        q(providerPackageScaffold.status),
+      ].join(', ')})`;
+    case 'swift':
+      return `.init(relativePath: ${q(providerPackageScaffold.relativePath)}, directoryPattern: ${q(providerPackageScaffold.directoryPattern)}, packagePattern: ${q(providerPackageScaffold.packagePattern)}, manifestFileName: ${q(providerPackageScaffold.manifestFileName)}, readmeFileName: ${q(providerPackageScaffold.readmeFileName)}, sourceFilePattern: ${q(providerPackageScaffold.sourceFilePattern)}, sourceSymbolPattern: ${q(providerPackageScaffold.sourceSymbolPattern)}, templateTokens: [${providerPackageScaffold.templateTokens.map(q).join(', ')}], sourceTemplateTokens: [${providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}], referenceProviderKey: ${qSwiftOption(providerPackageScaffold.referenceProviderKey)}, referenceStatus: ${qSwiftOption(providerPackageScaffold.referenceStatus)}, referenceRuntimeBridgeStatus: ${qSwiftOption(providerPackageScaffold.referenceRuntimeBridgeStatus)}, referenceVendorSdkPackage: ${qSwiftOption(providerPackageScaffold.referenceVendorSdkPackage)}, referenceVendorSdkVersion: ${qSwiftOption(providerPackageScaffold.referenceVendorSdkVersion)}, runtimeBridgeStatus: ${q(providerPackageScaffold.runtimeBridgeStatus)}, rootPublic: ${providerPackageScaffold.rootPublic ? 'true' : 'false'}, status: ${q(providerPackageScaffold.status)})`;
+    case 'kotlin':
+      return `RtcLanguageWorkspaceProviderPackageScaffold(${[
+        ...baseArguments,
+        `listOf(${providerPackageScaffold.templateTokens.map(q).join(', ')})`,
+        `listOf(${providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')})`,
+        ...referenceArguments.map(qNullable),
+        q(providerPackageScaffold.runtimeBridgeStatus),
+        providerPackageScaffold.rootPublic ? 'true' : 'false',
+        q(providerPackageScaffold.status),
+      ].join(', ')})`;
+    case 'go':
+      return `&RtcLanguageWorkspaceProviderPackageScaffold{RelativePath: ${q(providerPackageScaffold.relativePath)}, DirectoryPattern: ${q(providerPackageScaffold.directoryPattern)}, PackagePattern: ${q(providerPackageScaffold.packagePattern)}, ManifestFileName: ${q(providerPackageScaffold.manifestFileName)}, ReadmeFileName: ${q(providerPackageScaffold.readmeFileName)}, SourceFilePattern: ${q(providerPackageScaffold.sourceFilePattern)}, SourceSymbolPattern: ${q(providerPackageScaffold.sourceSymbolPattern)}, TemplateTokens: []string{${providerPackageScaffold.templateTokens.map(q).join(', ')}}, SourceTemplateTokens: []string{${providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}}, ReferenceProviderKey: ${qGoStringPointer(providerPackageScaffold.referenceProviderKey)}, ReferenceStatus: ${qGoStringPointer(providerPackageScaffold.referenceStatus)}, ReferenceRuntimeBridgeStatus: ${qGoStringPointer(providerPackageScaffold.referenceRuntimeBridgeStatus)}, ReferenceVendorSdkPackage: ${qGoStringPointer(providerPackageScaffold.referenceVendorSdkPackage)}, ReferenceVendorSdkVersion: ${qGoStringPointer(providerPackageScaffold.referenceVendorSdkVersion)}, RuntimeBridgeStatus: ${q(providerPackageScaffold.runtimeBridgeStatus)}, RootPublic: ${providerPackageScaffold.rootPublic ? 'true' : 'false'}, Status: ${q(providerPackageScaffold.status)}}`;
+    case 'python':
+      return `RtcLanguageWorkspaceProviderPackageScaffold(${[
+        ...baseArguments,
+        `[${providerPackageScaffold.templateTokens.map(q).join(', ')}]`,
+        `[${providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}]`,
+        ...referenceArguments.map(qPythonOption),
+        q(providerPackageScaffold.runtimeBridgeStatus),
+        providerPackageScaffold.rootPublic ? 'True' : 'False',
+        q(providerPackageScaffold.status),
+      ].join(', ')})`;
+    default:
+      throw new Error(`Unsupported provider package scaffold language: ${language}`);
+  }
+}
+
 function lines(value) {
   return `${value.trim()}\n`;
 }
@@ -28,16 +509,8 @@ function renderTemplateTokenList(tokens) {
 }
 
 export function resolveFlutterRuntimeBaselineDependencyLines(packageName) {
-  switch (packageName) {
-    case 'rtc_sdk':
-      return [];
-    case 'volc_engine_rtc':
-      return ['  volc_engine_rtc: ^3.60.3'];
-    default:
-      throw new Error(
-        `Unsupported Flutter runtime baseline dependency. Extend the reserved scaffold renderer for ${packageName}.`,
-      );
-  }
+  void packageName;
+  return [];
 }
 
 function renderFlutterRuntimeBaselineDependencies(languageEntry) {
@@ -48,8 +521,15 @@ function renderFlutterRuntimeBaselineDependencies(languageEntry) {
   return [
     '  flutter:',
     '    sdk: flutter',
-    ...resolveFlutterRuntimeBaselineDependencyLines(languageEntry.runtimeBaseline.vendorSdkPackage),
   ].join('\n');
+}
+
+function renderFlutterRootAnalysisOptions() {
+  return lines(`
+analyzer:
+  exclude:
+    - providers/**
+`);
 }
 
 function renderReservedLanguageProviderCatalogLookupHelper(language) {
@@ -2216,7 +2696,12 @@ function renderReservedLanguageProviderPackageLoaderModule(language) {
   switch (language) {
     case 'flutter':
       return lines(`
+import 'dart:async';
+
+import 'rtc_driver_manager.dart';
 import 'rtc_provider_package_catalog.dart';
+import 'rtc_standard_contract.dart';
+import 'rtc_types.dart';
 
 final class RtcProviderPackageLoaderException implements Exception {
   const RtcProviderPackageLoaderException(this.code, this.message);
@@ -2226,6 +2711,37 @@ final class RtcProviderPackageLoaderException implements Exception {
 
   @override
   String toString() => 'RtcProviderPackageLoaderException($code): $message';
+}
+
+typedef RtcProviderModuleDriverOptions<TNativeClient> = ({
+  FutureOr<TNativeClient> Function(RtcResolvedClientConfig config)? nativeFactory,
+  RtcRuntimeController<TNativeClient>? runtimeController,
+});
+
+final class RtcProviderModule<TNativeClient> {
+  const RtcProviderModule({
+    required this.packageName,
+    required this.metadata,
+    required this.builtin,
+    required this.createDriver,
+  });
+
+  final String packageName;
+  final RtcProviderMetadata metadata;
+  final bool builtin;
+  final RtcProviderDriver<TNativeClient> Function([
+    RtcProviderModuleDriverOptions<TNativeClient>? options,
+  ]) createDriver;
+}
+
+final class RtcProviderModuleRegistration<TNativeClient> {
+  const RtcProviderModuleRegistration({
+    required this.providerModule,
+    this.options,
+  });
+
+  final RtcProviderModule<TNativeClient> providerModule;
+  final RtcProviderModuleDriverOptions<TNativeClient>? options;
 }
 
 final class RtcProviderPackageLoadRequest {
@@ -2247,21 +2763,23 @@ final class RtcResolvedProviderPackageLoadTarget {
 }
 
 typedef RtcProviderModuleNamespace = Object?;
-typedef RtcProviderPackageImportFn = RtcProviderModuleNamespace Function(
+typedef RtcProviderPackageImportFn = Future<RtcProviderModuleNamespace> Function(
   RtcResolvedProviderPackageLoadTarget target,
 );
-typedef RtcProviderPackageLoader = RtcProviderModuleNamespace Function(
+typedef RtcProviderPackageLoader = Future<RtcProviderModuleNamespace> Function(
   RtcProviderPackageLoadRequest request,
 );
 
-final class RtcProviderPackageInstallRequest {
+final class RtcProviderPackageInstallRequest<TNativeClient> {
   const RtcProviderPackageInstallRequest({
     required this.driverManager,
     required this.loadRequest,
+    this.options,
   });
 
-  final Object driverManager;
+  final RtcDriverManager driverManager;
   final RtcProviderPackageLoadRequest loadRequest;
+  final RtcProviderModuleDriverOptions<TNativeClient>? options;
 }
 
 RtcResolvedProviderPackageLoadTarget resolveRtcProviderPackageLoadTarget(
@@ -2297,24 +2815,24 @@ RtcResolvedProviderPackageLoadTarget resolveRtcProviderPackageLoadTarget(
 RtcProviderPackageLoader createRtcProviderPackageLoader({
   required RtcProviderPackageImportFn importPackage,
 }) {
-  return (request) => loadRtcProviderModule(
+  return (request) async => loadRtcProviderModuleNamespace(
         request,
         importPackage: importPackage,
       );
 }
 
-RtcProviderModuleNamespace loadRtcProviderModule(
+Future<RtcProviderModuleNamespace> loadRtcProviderModuleNamespace(
   RtcProviderPackageLoadRequest request, {
   required RtcProviderPackageImportFn importPackage,
-}) {
+}) async {
   final target = resolveRtcProviderPackageLoadTarget(request);
 
   try {
-    final namespace = importPackage(target);
+    final namespace = await importPackage(target);
     if (namespace == null) {
       throw const RtcProviderPackageLoaderException(
         'provider_module_export_missing',
-        'Reserved provider package loader scaffold requires an executable provider module namespace.',
+        'Provider package loader requires an executable provider module namespace.',
       );
     }
 
@@ -2329,37 +2847,100 @@ RtcProviderModuleNamespace loadRtcProviderModule(
   }
 }
 
-void installRtcProviderPackage(
-  RtcProviderPackageInstallRequest request, {
+Future<RtcProviderModule<TNativeClient>> loadRtcProviderModule<TNativeClient>(
+  RtcProviderPackageLoadRequest request, {
   required RtcProviderPackageImportFn importPackage,
-}) {
-  loadRtcProviderModule(
+}) async {
+  final target = resolveRtcProviderPackageLoadTarget(request);
+  final namespace = await loadRtcProviderModuleNamespace(
+    request,
+    importPackage: importPackage,
+  );
+  final providerModule = _extractProviderModule<TNativeClient>(namespace, target.packageEntry);
+  _assertRtcProviderModuleContract(providerModule, target.packageEntry);
+
+  return providerModule;
+}
+
+Future<void> installRtcProviderPackage<TNativeClient>(
+  RtcProviderPackageInstallRequest<TNativeClient> request, {
+  required RtcProviderPackageImportFn importPackage,
+}) async {
+  final providerModule = await loadRtcProviderModule<TNativeClient>(
     request.loadRequest,
     importPackage: importPackage,
   );
-
-  throw const RtcProviderPackageLoaderException(
-    'provider_package_load_failed',
-    'Reserved provider package installer scaffold cannot register provider modules until a verified runtime bridge lands.',
-  );
+  request.driverManager.register(providerModule.createDriver(request.options));
 }
 
-void installRtcProviderPackages(
-  Iterable<RtcProviderPackageInstallRequest> requests, {
+Future<void> installRtcProviderPackages<TNativeClient>(
+  Iterable<RtcProviderPackageInstallRequest<TNativeClient>> requests, {
   required RtcProviderPackageImportFn importPackage,
-}) {
+}) async {
   final materializedRequests = requests.toList(growable: false);
+  if (materializedRequests.isEmpty) {
+    return;
+  }
+
+  final manager = materializedRequests.first.driverManager;
+  final drivers = <RtcProviderDriver<TNativeClient>>[];
+
   for (final request in materializedRequests) {
-    loadRtcProviderModule(
+    if (!identical(request.driverManager, manager)) {
+      throw const RtcProviderPackageLoaderException(
+        'provider_module_contract_mismatch',
+        'Batch RTC provider package installation requires one shared RtcDriverManager.',
+      );
+    }
+
+    final providerModule = await loadRtcProviderModule<TNativeClient>(
       request.loadRequest,
       importPackage: importPackage,
     );
+    drivers.add(providerModule.createDriver(request.options));
   }
 
-  if (materializedRequests.isNotEmpty) {
+  manager.registerAll(drivers);
+}
+
+RtcProviderModule<TNativeClient> _extractProviderModule<TNativeClient>(
+  Object? namespace,
+  RtcProviderPackageCatalogEntry packageEntry,
+) {
+  if (namespace is RtcProviderModule) {
+    return namespace as RtcProviderModule<TNativeClient>;
+  }
+
+  if (namespace is Map<String, Object?>) {
+    final value = namespace[packageEntry.sourceSymbol];
+    if (value is RtcProviderModule) {
+      return value as RtcProviderModule<TNativeClient>;
+    }
+  }
+
+  throw RtcProviderPackageLoaderException(
+    'provider_module_export_missing',
+    'RTC provider package is missing the required provider module export: ${'$'}{packageEntry.sourceSymbol}.',
+  );
+}
+
+void _assertRtcProviderModuleContract<TNativeClient>(
+  RtcProviderModule<TNativeClient> providerModule,
+  RtcProviderPackageCatalogEntry packageEntry,
+) {
+  if (providerModule.packageName != packageEntry.packageIdentity) {
     throw const RtcProviderPackageLoaderException(
-      'provider_package_load_failed',
-      'Reserved provider package installer scaffold cannot register provider modules until a verified runtime bridge lands.',
+      'provider_module_contract_mismatch',
+      'RTC provider module packageName must match the provider package catalog identity.',
+    );
+  }
+
+  if (providerModule.metadata.providerKey != packageEntry.providerKey ||
+      providerModule.metadata.pluginId != packageEntry.pluginId ||
+      providerModule.metadata.driverId != packageEntry.driverId) {
+    throw const RtcProviderPackageLoaderException(
+      'provider_module_contract_mismatch',
+      'RTC provider module metadata must match the provider package catalog entry.',
     );
   }
 }
@@ -3345,19 +3926,13 @@ import 'rtc_provider_selection.dart';
 import 'rtc_provider_support.dart';
 import 'rtc_standard_contract.dart';
 import 'rtc_types.dart';
-import 'providers/volcengine.dart';
 
 final class RtcDriverManager {
   RtcDriverManager({
     this.defaultProviderKey = RtcProviderCatalog.DEFAULT_RTC_PROVIDER_KEY,
     Iterable<RtcProviderDriver<dynamic>> drivers =
         const <RtcProviderDriver<dynamic>>[],
-    bool registerDefaultDrivers = true,
   }) {
-    if (registerDefaultDrivers) {
-      register(createVolcengineRtcDriver());
-    }
-
     registerAll(drivers);
   }
 
@@ -4414,6 +4989,767 @@ function escapeXml(value) {
     .replace(/'/g, '&apos;');
 }
 
+function isReferenceProviderPackage(providerPackageScaffold, provider) {
+  return (
+    providerPackageScaffold?.referenceProviderKey === provider.providerKey &&
+    resolveProviderPackageScaffoldRuntimeBridgeStatus(
+      providerPackageScaffold,
+      provider.providerKey,
+    ) === 'reference-baseline'
+  );
+}
+
+function resolveProviderPackageStatus(providerPackageScaffold, provider) {
+  return resolveProviderPackageScaffoldStatus(
+    providerPackageScaffold,
+    provider.providerKey,
+  );
+}
+
+function resolveProviderPackageRuntimeBridgeStatus(providerPackageScaffold, provider) {
+  return resolveProviderPackageScaffoldRuntimeBridgeStatus(
+    providerPackageScaffold,
+    provider.providerKey,
+  );
+}
+
+function renderFlutterReferenceProviderPackageReadme(
+  languageEntry,
+  provider,
+  providerPackageScaffold,
+) {
+  const packageIdentity = materializeProviderPackagePattern(
+    providerPackageScaffold.packagePattern,
+    provider.providerKey,
+  );
+  const directoryPath = materializeProviderPackagePattern(
+    providerPackageScaffold.directoryPattern,
+    provider.providerKey,
+  );
+  const manifestPath = buildProviderPackageManifestPath(providerPackageScaffold, provider.providerKey);
+  const readmePath = buildProviderPackageReadmePath(providerPackageScaffold, provider.providerKey);
+  const sourcePath = buildProviderPackageSourcePath(providerPackageScaffold, provider.providerKey);
+  const sourceSymbol = buildProviderPackageSourceSymbol(
+    providerPackageScaffold,
+    provider.providerKey,
+  );
+  const vendorSdkPackage = providerPackageScaffold.referenceVendorSdkPackage;
+  const vendorSdkVersion = providerPackageScaffold.referenceVendorSdkVersion;
+  const status = resolveProviderPackageStatus(providerPackageScaffold, provider);
+  const runtimeBridgeStatus = resolveProviderPackageRuntimeBridgeStatus(
+    providerPackageScaffold,
+    provider,
+  );
+
+  return lines(`
+# ${languageEntry.displayName} ${provider.displayName} Provider Package
+
+Reference ${languageEntry.displayName} provider package boundary for ${provider.displayName}.
+
+- provider key: \`${provider.providerKey}\`
+- plugin id: \`${provider.pluginId}\`
+- driver id: \`${provider.driverId}\`
+- package identity: \`${packageIdentity}\`
+- directory path: \`${directoryPath}\`
+- manifest path: \`${manifestPath}\`
+- readme path: \`${readmePath}\`
+- source path: \`${sourcePath}\`
+- source symbol: \`${sourceSymbol}\`
+- vendor SDK package: \`${vendorSdkPackage}@${vendorSdkVersion}\`
+- status: \`${status}\`
+- runtime bridge status: \`${runtimeBridgeStatus}\`
+- root public exposure: \`${providerPackageScaffold.rootPublic}\`
+
+Rules:
+
+- this package is the executable Flutter reference bridge for the official Volcengine RTC SDK
+- the root \`rtc_sdk\` package remains provider-neutral and does not depend on \`${vendorSdkPackage}\`
+- install this provider package only when a Flutter application selects Volcengine as its RTC media provider
+- wrap the official vendor SDK; do not re-implement RTC media runtime, signaling, invitation, or call lifecycle behavior
+- expose only provider-neutral RTC media operations: \`join\`, \`leave\`, \`publish\`, \`unpublish\`, \`muteAudio\`, and \`muteVideo\`
+- use Craw Chat or another owning IM/signaling runtime for business messages, room invitations, and call state orchestration
+`);
+}
+
+function renderFlutterReferenceProviderPackageManifest(
+  languageEntry,
+  provider,
+  providerPackageScaffold,
+) {
+  void languageEntry;
+  const packageIdentity = materializeProviderPackagePattern(
+    providerPackageScaffold.packagePattern,
+    provider.providerKey,
+  );
+  const sourcePath = buildProviderPackageSourceRelativePath(
+    providerPackageScaffold,
+    provider.providerKey,
+  );
+  const sourceSymbol = buildProviderPackageSourceSymbol(
+    providerPackageScaffold,
+    provider.providerKey,
+  );
+  const vendorSdkPackage = providerPackageScaffold.referenceVendorSdkPackage;
+  const vendorSdkVersion = providerPackageScaffold.referenceVendorSdkVersion;
+  const status = resolveProviderPackageStatus(providerPackageScaffold, provider);
+  const runtimeBridgeStatus = resolveProviderPackageRuntimeBridgeStatus(
+    providerPackageScaffold,
+    provider,
+  );
+
+  return lines(`
+name: ${packageIdentity}
+description: >
+  Reference Flutter provider package boundary for ${provider.displayName}.
+  providerKey: ${provider.providerKey}
+  pluginId: ${provider.pluginId}
+  driverId: ${provider.driverId}
+  status: ${status}
+  runtimeBridgeStatus: ${runtimeBridgeStatus}
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  rtc_sdk:
+    path: ../..
+  ${vendorSdkPackage}: ${vendorSdkVersion}
+
+sdkwork_rtc_provider:
+  providerKey: ${provider.providerKey}
+  pluginId: ${provider.pluginId}
+  driverId: ${provider.driverId}
+  packageIdentity: ${packageIdentity}
+  sourcePath: ${sourcePath}
+  sourceSymbol: ${sourceSymbol}
+  rootPublic: ${providerPackageScaffold.rootPublic}
+  status: ${status}
+  runtimeBridgeStatus: ${runtimeBridgeStatus}
+  officialVendorSdkPackage: ${vendorSdkPackage}
+  officialVendorSdkVersion: ${vendorSdkVersion}
+`);
+}
+
+function renderFlutterReferenceProviderPackageEntrypoint(provider, providerPackageScaffold) {
+  const packageIdentity = materializeProviderPackagePattern(
+    providerPackageScaffold.packagePattern,
+    provider.providerKey,
+  );
+
+  return lines(`
+library ${packageIdentity};
+
+export 'src/rtc_provider_${provider.providerKey}_package_contract.dart';
+`);
+}
+
+function renderFlutterReferenceProviderPackageSource(
+  languageEntry,
+  provider,
+  providerPackageScaffold,
+) {
+  void languageEntry;
+  const packageIdentity = materializeProviderPackagePattern(
+    providerPackageScaffold.packagePattern,
+    provider.providerKey,
+  );
+  const sourceSymbol = buildProviderPackageSourceSymbol(
+    providerPackageScaffold,
+    provider.providerKey,
+  );
+  const status = resolveProviderPackageStatus(providerPackageScaffold, provider);
+  const runtimeBridgeStatus = resolveProviderPackageRuntimeBridgeStatus(
+    providerPackageScaffold,
+    provider,
+  );
+
+  return lines(`
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:rtc_sdk/rtc_sdk.dart';
+import 'package:volc_engine_rtc/volc_engine_rtc.dart' as volc;
+
+final RtcProviderMetadata VOLCENGINE_RTC_PROVIDER_METADATA =
+    _requireVolcengineProviderMetadata();
+
+final class RtcVolcengineFlutterNativeConfig {
+  const RtcVolcengineFlutterNativeConfig({
+    this.appId,
+    this.engineParameters,
+    this.userExtraInfo,
+    this.userVisibility = true,
+    this.isPublishAudio = false,
+    this.isPublishVideo = false,
+    this.isAutoSubscribeAudio = true,
+    this.isAutoSubscribeVideo = true,
+    this.destroyEngineOnLeave = true,
+  });
+
+  final String? appId;
+  final Map<String, Object?>? engineParameters;
+  final Map<String, Object?>? userExtraInfo;
+  final bool userVisibility;
+  final bool isPublishAudio;
+  final bool isPublishVideo;
+  final bool isAutoSubscribeAudio;
+  final bool isAutoSubscribeVideo;
+  final bool destroyEngineOnLeave;
+
+  static RtcVolcengineFlutterNativeConfig from(Object? value) {
+    if (value is RtcVolcengineFlutterNativeConfig) {
+      return value;
+    }
+
+    if (value == null) {
+      return const RtcVolcengineFlutterNativeConfig();
+    }
+
+    if (value is! Map) {
+      throw _invalidNativeConfig(
+        'RTC nativeConfig must be an object for the official Volcengine Flutter bridge.',
+        details: <String, Object?>{
+          'receivedType': value.runtimeType.toString(),
+        },
+      );
+    }
+
+    return RtcVolcengineFlutterNativeConfig(
+      appId: _readString(value, 'appId'),
+      engineParameters: _readStringObjectMap(value['engineParameters'], 'engineParameters') ??
+          _readStringObjectMap(value['parameters'], 'parameters'),
+      userExtraInfo: _readStringObjectMap(value['userExtraInfo'], 'userExtraInfo'),
+      userVisibility: _readBool(value, 'userVisibility', true),
+      isPublishAudio: _readBool(value, 'isPublishAudio', false),
+      isPublishVideo: _readBool(value, 'isPublishVideo', false),
+      isAutoSubscribeAudio: _readBool(value, 'isAutoSubscribeAudio', true),
+      isAutoSubscribeVideo: _readBool(value, 'isAutoSubscribeVideo', true),
+      destroyEngineOnLeave: _readBool(value, 'destroyEngineOnLeave', true),
+    );
+  }
+}
+
+typedef RtcVolcengineFlutterEngineFactory = FutureOr<dynamic> Function(
+  RtcVolcengineFlutterNativeConfig nativeConfig,
+);
+
+final class CreateOfficialVolcengineFlutterRtcDriverOptions {
+  const CreateOfficialVolcengineFlutterRtcDriverOptions({
+    this.engineFactory,
+  });
+
+  final RtcVolcengineFlutterEngineFactory? engineFactory;
+}
+
+final class RtcVolcengineOfficialFlutterNativeClient {
+  RtcVolcengineOfficialFlutterNativeClient({
+    required this.resolvedConfig,
+    required this.nativeConfig,
+    required this.engineFactory,
+  });
+
+  final RtcResolvedClientConfig resolvedConfig;
+  final RtcVolcengineFlutterNativeConfig nativeConfig;
+  final RtcVolcengineFlutterEngineFactory engineFactory;
+  final Map<String, RtcTrackKind> publishedTracks = <String, RtcTrackKind>{};
+
+  dynamic engine;
+  dynamic room;
+  RtcSessionDescriptor? joinedSession;
+}
+
+final class VolcengineRtcRuntimeController
+    implements
+        RtcRuntimeController<RtcVolcengineOfficialFlutterNativeClient>,
+        RtcScreenShareRuntimeController<RtcVolcengineOfficialFlutterNativeClient> {
+  const VolcengineRtcRuntimeController();
+
+  @override
+  Future<RtcSessionDescriptor> join(
+    RtcJoinOptions options,
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final runtime = await _ensureVolcengineRuntime(context, options.roomId);
+    final userInfo = _buildUserInfo(options, runtime.nativeConfig);
+    final roomConfig = volc.RoomConfig(
+      isPublishAudio: runtime.nativeConfig.isPublishAudio,
+      isPublishVideo: runtime.nativeConfig.isPublishVideo,
+      isAutoSubscribeAudio: runtime.nativeConfig.isAutoSubscribeAudio,
+      isAutoSubscribeVideo: runtime.nativeConfig.isAutoSubscribeVideo,
+    );
+
+    await Future<Object?>.value(
+      runtime.room.joinRoom(
+        token: options.token ?? '',
+        userInfo: userInfo,
+        roomConfig: roomConfig,
+        userVisibility: runtime.nativeConfig.userVisibility,
+      ),
+    );
+
+    final sessionDescriptor = RtcSessionDescriptor(
+      sessionId: options.sessionId,
+      roomId: options.roomId,
+      participantId: options.participantId,
+      providerKey: VOLCENGINE_RTC_PROVIDER_METADATA.providerKey,
+      connectionState: RtcSessionConnectionState.joined,
+    );
+    context.nativeClient.joinedSession = sessionDescriptor;
+
+    return sessionDescriptor;
+  }
+
+  @override
+  Future<RtcSessionDescriptor> leave(
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final nativeClient = context.nativeClient;
+    final joinedSession = nativeClient.joinedSession;
+
+    if (nativeClient.room != null) {
+      await Future<Object?>.value(nativeClient.room.leaveRoom());
+      nativeClient.room = null;
+    }
+
+    if (nativeClient.engine != null && nativeClient.nativeConfig.destroyEngineOnLeave) {
+      nativeClient.engine.destroy();
+      nativeClient.engine = null;
+    }
+
+    nativeClient.joinedSession = null;
+    nativeClient.publishedTracks.clear();
+
+    return RtcSessionDescriptor(
+      sessionId: joinedSession?.sessionId ?? '',
+      roomId: joinedSession?.roomId ?? '',
+      participantId: joinedSession?.participantId ?? '',
+      providerKey: VOLCENGINE_RTC_PROVIDER_METADATA.providerKey,
+      connectionState: RtcSessionConnectionState.left,
+    );
+  }
+
+  @override
+  Future<RtcTrackPublication> publish(
+    RtcPublishOptions options,
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final mediaKind = _resolvePublishedMediaKind(options);
+    final roomId = _requireJoinedRoomId(context.nativeClient);
+    final runtime = await _ensureVolcengineRuntime(context, roomId);
+    await _publishMediaKind(runtime, mediaKind, publish: true);
+    context.nativeClient.publishedTracks[options.trackId] = mediaKind;
+
+    return RtcTrackPublication(
+      trackId: options.trackId,
+      kind: options.kind,
+      muted: false,
+    );
+  }
+
+  @override
+  Future<void> unpublish(
+    String trackId,
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final mediaKind = context.nativeClient.publishedTracks[trackId];
+    if (mediaKind == null) {
+      return;
+    }
+
+    final roomId = _requireJoinedRoomId(context.nativeClient);
+    final runtime = await _ensureVolcengineRuntime(context, roomId);
+    await _publishMediaKind(runtime, mediaKind, publish: false);
+    context.nativeClient.publishedTracks.remove(trackId);
+  }
+
+  @override
+  Future<RtcTrackPublication> startScreenShare(
+    RtcScreenShareOptions options,
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final roomId = _requireJoinedRoomId(context.nativeClient);
+    final runtime = await _ensureVolcengineRuntime(context, roomId);
+    await _publishMediaKind(runtime, RtcTrackKind.screenShare, publish: true);
+    context.nativeClient.publishedTracks[options.trackId] = RtcTrackKind.screenShare;
+
+    return RtcTrackPublication(
+      trackId: options.trackId,
+      kind: RtcTrackKind.screenShare,
+      muted: false,
+    );
+  }
+
+  @override
+  Future<void> stopScreenShare(
+    String trackId,
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final mediaKind = context.nativeClient.publishedTracks[trackId];
+    if (mediaKind != RtcTrackKind.screenShare) {
+      return;
+    }
+
+    final roomId = _requireJoinedRoomId(context.nativeClient);
+    final runtime = await _ensureVolcengineRuntime(context, roomId);
+    await _publishMediaKind(runtime, RtcTrackKind.screenShare, publish: false);
+    context.nativeClient.publishedTracks.remove(trackId);
+  }
+
+  @override
+  Future<RtcMuteState> muteAudio(
+    bool muted,
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final roomId = _requireJoinedRoomId(context.nativeClient);
+    final runtime = await _ensureVolcengineRuntime(context, roomId);
+    await _publishMediaKind(runtime, RtcTrackKind.audio, publish: !muted);
+
+    return RtcMuteState(kind: RtcTrackKind.audio, muted: muted);
+  }
+
+  @override
+  Future<RtcMuteState> muteVideo(
+    bool muted,
+    RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  ) async {
+    final roomId = _requireJoinedRoomId(context.nativeClient);
+    final runtime = await _ensureVolcengineRuntime(context, roomId);
+    await _publishMediaKind(runtime, RtcTrackKind.video, publish: !muted);
+
+    if (muted) {
+      await Future<Object?>.value(runtime.engine.stopVideoCapture());
+    }
+
+    return RtcMuteState(kind: RtcTrackKind.video, muted: muted);
+  }
+}
+
+final class ${sourceSymbol} {
+  static const String providerKey = ${q(provider.providerKey)};
+  static const String pluginId = ${q(provider.pluginId)};
+  static const String driverId = ${q(provider.driverId)};
+  static const String packageIdentity = ${q(packageIdentity)};
+  static const String status = ${q(status)};
+  static const String runtimeBridgeStatus = ${q(runtimeBridgeStatus)};
+  static const bool rootPublic = ${providerPackageScaffold.rootPublic ? 'true' : 'false'};
+  static final RtcProviderModule<RtcVolcengineOfficialFlutterNativeClient>
+      providerModule = VOLCENGINE_RTC_PROVIDER_MODULE;
+
+  const ${sourceSymbol}._();
+}
+
+RtcProviderDriver<RtcVolcengineOfficialFlutterNativeClient>
+    createOfficialVolcengineFlutterRtcDriver([
+  CreateOfficialVolcengineFlutterRtcDriverOptions? options,
+]) {
+  final engineFactory = options?.engineFactory ?? _createDefaultVolcengineEngine;
+
+  return createRtcProviderDriver<RtcVolcengineOfficialFlutterNativeClient>(
+    metadata: VOLCENGINE_RTC_PROVIDER_METADATA,
+    nativeFactory: (config) async {
+      return RtcVolcengineOfficialFlutterNativeClient(
+        resolvedConfig: config,
+        nativeConfig: RtcVolcengineFlutterNativeConfig.from(config.nativeConfig),
+        engineFactory: engineFactory,
+      );
+    },
+    runtimeController: const VolcengineRtcRuntimeController(),
+  );
+}
+
+RtcProviderDriver<TNativeClient> createVolcengineRtcDriver<TNativeClient>([
+  RtcProviderModuleDriverOptions<TNativeClient>? options,
+]) {
+  if (options == null) {
+    return createOfficialVolcengineFlutterRtcDriver()
+        as RtcProviderDriver<TNativeClient>;
+  }
+
+  return createRtcProviderDriver<TNativeClient>(
+    metadata: VOLCENGINE_RTC_PROVIDER_METADATA,
+    nativeFactory: options.nativeFactory,
+    runtimeController: options.runtimeController,
+  );
+}
+
+final RtcProviderModule<RtcVolcengineOfficialFlutterNativeClient>
+    VOLCENGINE_RTC_PROVIDER_MODULE =
+        RtcProviderModule<RtcVolcengineOfficialFlutterNativeClient>(
+  packageName: ${q(packageIdentity)},
+  metadata: VOLCENGINE_RTC_PROVIDER_METADATA,
+  builtin: getRtcProviderPackageByProviderKey(${q(provider.providerKey)})?.builtin ?? false,
+  createDriver: createVolcengineRtcDriver<RtcVolcengineOfficialFlutterNativeClient>,
+);
+
+RtcProviderMetadata _requireVolcengineProviderMetadata() {
+  final metadata = getOfficialRtcProviderMetadataByKey(${q(provider.providerKey)});
+  if (metadata == null) {
+    throw const RtcSdkException(
+      code: 'provider_not_official',
+      message: 'Volcengine RTC provider metadata is missing from the root RTC provider catalog.',
+      providerKey: ${q(provider.providerKey)},
+      pluginId: ${q(provider.pluginId)},
+    );
+  }
+
+  return metadata;
+}
+
+Future<dynamic> _createDefaultVolcengineEngine(
+  RtcVolcengineFlutterNativeConfig nativeConfig,
+) async {
+  _assertRequiredVolcengineConfig(nativeConfig);
+
+  return volc.RTCEngine.createRTCEngine(
+    volc.RTCVideoContext(
+      appId: nativeConfig.appId!,
+      parameters: nativeConfig.engineParameters == null
+          ? null
+          : Map<String, dynamic>.from(nativeConfig.engineParameters!),
+    ),
+  );
+}
+
+void _assertRequiredVolcengineConfig(
+  RtcVolcengineFlutterNativeConfig nativeConfig,
+) {
+  if ((nativeConfig.appId ?? '').trim().isNotEmpty) {
+    return;
+  }
+
+  throw RtcSdkException(
+    code: 'invalid_native_config',
+    message: 'Official Volcengine Flutter RTC runtime requires nativeConfig.appId.',
+    providerKey: VOLCENGINE_RTC_PROVIDER_METADATA.providerKey,
+    pluginId: VOLCENGINE_RTC_PROVIDER_METADATA.pluginId,
+    details: <String, Object?>{
+      'missingConfigKeys': <String>['appId'],
+    },
+  );
+}
+
+volc.UserInfo _buildUserInfo(
+  RtcJoinOptions options,
+  RtcVolcengineFlutterNativeConfig nativeConfig,
+) {
+  final extraInfo = <String, Object?>{
+    ...?nativeConfig.userExtraInfo,
+    ...?options.metadata,
+  };
+
+  return volc.UserInfo(
+    userId: options.participantId,
+    extraInfo: extraInfo.isEmpty ? '' : jsonEncode(extraInfo),
+  );
+}
+
+Future<_ResolvedVolcengineRuntime> _ensureVolcengineRuntime(
+  RtcRuntimeControllerContext<RtcVolcengineOfficialFlutterNativeClient> context,
+  String roomId,
+) async {
+  final nativeClient = context.nativeClient;
+  final nativeConfig = nativeClient.nativeConfig;
+  _assertRequiredVolcengineConfig(nativeConfig);
+
+  if (nativeClient.engine == null) {
+    nativeClient.engine = await Future<dynamic>.value(
+      nativeClient.engineFactory(nativeConfig),
+    );
+  }
+
+  if (nativeClient.room != null && nativeClient.joinedSession?.roomId != roomId) {
+    await Future<Object?>.value(nativeClient.room.leaveRoom());
+    nativeClient.room = null;
+    nativeClient.publishedTracks.clear();
+  }
+
+  if (nativeClient.room == null) {
+    nativeClient.room = await Future<dynamic>.value(
+      nativeClient.engine.createRTCRoom(roomId),
+    );
+  }
+
+  if (nativeClient.room == null) {
+    throw RtcSdkException(
+      code: RtcStandardContract.runtimeSurfaceFailureCode,
+      message: 'Official Volcengine Flutter RTC SDK could not create a room.',
+      providerKey: VOLCENGINE_RTC_PROVIDER_METADATA.providerKey,
+      pluginId: VOLCENGINE_RTC_PROVIDER_METADATA.pluginId,
+      details: <String, Object?>{
+        'roomId': roomId,
+      },
+    );
+  }
+
+  return _ResolvedVolcengineRuntime(
+    nativeConfig: nativeConfig,
+    engine: nativeClient.engine,
+    room: nativeClient.room,
+  );
+}
+
+String _requireJoinedRoomId(
+  RtcVolcengineOfficialFlutterNativeClient nativeClient,
+) {
+  final roomId = nativeClient.joinedSession?.roomId;
+  if (roomId != null && roomId.isNotEmpty) {
+    return roomId;
+  }
+
+  throw RtcSdkException(
+    code: 'room_not_joined',
+    message: 'RTC runtime media operation requires a joined room.',
+    providerKey: VOLCENGINE_RTC_PROVIDER_METADATA.providerKey,
+    pluginId: VOLCENGINE_RTC_PROVIDER_METADATA.pluginId,
+  );
+}
+
+RtcTrackKind _resolvePublishedMediaKind(RtcPublishOptions options) {
+  if (options.kind == RtcTrackKind.audio ||
+      options.kind == RtcTrackKind.video ||
+      options.kind == RtcTrackKind.screenShare) {
+    return options.kind;
+  }
+
+  throw RtcSdkException(
+    code: 'capability_not_supported',
+    message: 'Official Volcengine Flutter bridge only supports audio and video through the standard publish surface.',
+    providerKey: VOLCENGINE_RTC_PROVIDER_METADATA.providerKey,
+    pluginId: VOLCENGINE_RTC_PROVIDER_METADATA.pluginId,
+    details: <String, Object?>{
+      'kind': rtcTrackKindWireName(options.kind),
+    },
+  );
+}
+
+Future<void> _publishMediaKind(
+  _ResolvedVolcengineRuntime runtime,
+  RtcTrackKind kind, {
+  required bool publish,
+}) async {
+  if (kind == RtcTrackKind.audio) {
+    if (publish) {
+      await Future<Object?>.value(runtime.engine.startAudioCapture());
+    }
+
+    await Future<Object?>.value(runtime.room.publishStreamAudio(publish));
+    return;
+  }
+
+  if (kind == RtcTrackKind.screenShare) {
+    await Future<Object?>.value(runtime.room.publishScreen(publish));
+    return;
+  }
+
+  if (publish) {
+    await Future<Object?>.value(runtime.engine.startVideoCapture());
+  }
+
+  await Future<Object?>.value(runtime.room.publishStreamVideo(publish));
+}
+
+String? _readString(Map<dynamic, dynamic> map, String key) {
+  final value = map[key];
+  if (value == null) {
+    return null;
+  }
+
+  if (value is String) {
+    return value;
+  }
+
+  throw _invalidNativeConfig(
+    'RTC nativeConfig.' + key + ' must be a string.',
+    details: <String, Object?>{
+      'key': key,
+      'receivedType': value.runtimeType.toString(),
+    },
+  );
+}
+
+bool _readBool(Map<dynamic, dynamic> map, String key, bool defaultValue) {
+  final value = map[key];
+  if (value == null) {
+    return defaultValue;
+  }
+
+  if (value is bool) {
+    return value;
+  }
+
+  throw _invalidNativeConfig(
+    'RTC nativeConfig.' + key + ' must be a boolean.',
+    details: <String, Object?>{
+      'key': key,
+      'receivedType': value.runtimeType.toString(),
+    },
+  );
+}
+
+Map<String, Object?>? _readStringObjectMap(Object? value, String key) {
+  if (value == null) {
+    return null;
+  }
+
+  if (value is! Map) {
+    throw _invalidNativeConfig(
+      'RTC nativeConfig.' + key + ' must be an object.',
+      details: <String, Object?>{
+        'key': key,
+        'receivedType': value.runtimeType.toString(),
+      },
+    );
+  }
+
+  final result = <String, Object?>{};
+  for (final entry in value.entries) {
+    if (entry.key is! String) {
+      throw _invalidNativeConfig(
+        'RTC nativeConfig.' + key + ' must contain string keys only.',
+        details: <String, Object?>{
+          'key': key,
+          'receivedKeyType': entry.key.runtimeType.toString(),
+        },
+      );
+    }
+
+    result[entry.key as String] = entry.value;
+  }
+
+  return result;
+}
+
+RtcSdkException _invalidNativeConfig(
+  String message, {
+  Map<String, Object?>? details,
+}) {
+  return RtcSdkException(
+    code: 'invalid_native_config',
+    message: message,
+    providerKey: VOLCENGINE_RTC_PROVIDER_METADATA.providerKey,
+    pluginId: VOLCENGINE_RTC_PROVIDER_METADATA.pluginId,
+    details: details,
+  );
+}
+
+final class _ResolvedVolcengineRuntime {
+  const _ResolvedVolcengineRuntime({
+    required this.nativeConfig,
+    required this.engine,
+    required this.room,
+  });
+
+  final RtcVolcengineFlutterNativeConfig nativeConfig;
+  final dynamic engine;
+  final dynamic room;
+}
+`);
+}
+
 function renderReservedLanguageProviderPackageScaffoldPlan(languageEntry, assembly) {
   if (!languageEntry.providerPackageScaffold) {
     return [];
@@ -4496,6 +5832,17 @@ ${packageRows}
 }
 
 function renderReservedProviderPackageReadme(languageEntry, provider, providerPackageScaffold) {
+  if (
+    languageEntry.language === 'flutter' &&
+    isReferenceProviderPackage(providerPackageScaffold, provider)
+  ) {
+    return renderFlutterReferenceProviderPackageReadme(
+      languageEntry,
+      provider,
+      providerPackageScaffold,
+    );
+  }
+
   const packageIdentity = materializeProviderPackagePattern(
     providerPackageScaffold.packagePattern,
     provider.providerKey,
@@ -4543,6 +5890,17 @@ Rules:
 }
 
 function renderReservedProviderPackageManifest(languageEntry, provider, providerPackageScaffold) {
+  if (
+    languageEntry.language === 'flutter' &&
+    isReferenceProviderPackage(providerPackageScaffold, provider)
+  ) {
+    return renderFlutterReferenceProviderPackageManifest(
+      languageEntry,
+      provider,
+      providerPackageScaffold,
+    );
+  }
+
   const packageIdentity = materializeProviderPackagePattern(
     providerPackageScaffold.packagePattern,
     provider.providerKey,
@@ -4756,6 +6114,17 @@ runtimeBridgeStatus = ${q(providerPackageScaffold.runtimeBridgeStatus)}
 }
 
 function renderReservedProviderPackageSource(languageEntry, provider, providerPackageScaffold) {
+  if (
+    languageEntry.language === 'flutter' &&
+    isReferenceProviderPackage(providerPackageScaffold, provider)
+  ) {
+    return renderFlutterReferenceProviderPackageSource(
+      languageEntry,
+      provider,
+      providerPackageScaffold,
+    );
+  }
+
   const packageIdentity = materializeProviderPackagePattern(
     providerPackageScaffold.packagePattern,
     provider.providerKey,
@@ -4910,22 +6279,26 @@ function renderReservedLanguageProviderPackageBoundaryPlan(languageEntry, assemb
   }
 
   return (assembly.providers ?? []).flatMap((provider) => {
+    const providerPackageScaffold = languageEntry.providerPackageScaffold;
     const directoryPath = materializeProviderPackagePattern(
-      languageEntry.providerPackageScaffold.directoryPattern,
+      providerPackageScaffold.directoryPattern,
       provider.providerKey,
     );
     const manifestFileName = materializeProviderPackagePattern(
-      languageEntry.providerPackageScaffold.manifestFileName,
+      providerPackageScaffold.manifestFileName,
       provider.providerKey,
     );
-
-    return [
+    const packageIdentity = materializeProviderPackagePattern(
+      providerPackageScaffold.packagePattern,
+      provider.providerKey,
+    );
+    const entries = [
       {
-        relativePath: `${languageEntry.workspace}/${directoryPath}/${languageEntry.providerPackageScaffold.readmeFileName}`,
+        relativePath: `${languageEntry.workspace}/${directoryPath}/${providerPackageScaffold.readmeFileName}`,
         content: renderReservedProviderPackageReadme(
           languageEntry,
           provider,
-          languageEntry.providerPackageScaffold,
+          providerPackageScaffold,
         ),
       },
       {
@@ -4933,21 +6306,36 @@ function renderReservedLanguageProviderPackageBoundaryPlan(languageEntry, assemb
         content: renderReservedProviderPackageManifest(
           languageEntry,
           provider,
-          languageEntry.providerPackageScaffold,
+          providerPackageScaffold,
         ),
       },
       {
         relativePath: `${languageEntry.workspace}/${buildProviderPackageSourcePath(
-          languageEntry.providerPackageScaffold,
+          providerPackageScaffold,
           provider.providerKey,
         )}`,
         content: renderReservedProviderPackageSource(
           languageEntry,
           provider,
-          languageEntry.providerPackageScaffold,
+          providerPackageScaffold,
         ),
       },
     ];
+
+    if (
+      languageEntry.language === 'flutter' &&
+      isReferenceProviderPackage(providerPackageScaffold, provider)
+    ) {
+      entries.push({
+        relativePath: `${languageEntry.workspace}/${directoryPath}/lib/${packageIdentity}.dart`,
+        content: renderFlutterReferenceProviderPackageEntrypoint(
+          provider,
+          providerPackageScaffold,
+        ),
+      });
+    }
+
+    return entries;
   });
 }
 
@@ -5039,6 +6427,10 @@ flutter:
 `),
     },
     {
+      relativePath: `${languageEntry.workspace}/analysis_options.yaml`,
+      content: renderFlutterRootAnalysisOptions(),
+    },
+    {
       relativePath: `${languageEntry.workspace}/${languageEntry.contractScaffold.relativePath}`,
       content: lines(`
 import 'rtc_provider_selection.dart';
@@ -5056,6 +6448,8 @@ abstract interface class RtcClient<TNativeClient> {
   Future<RtcSessionDescriptor> leave();
   Future<RtcTrackPublication> publish(RtcPublishOptions options);
   Future<void> unpublish(String trackId);
+  Future<RtcTrackPublication> startScreenShare(RtcScreenShareOptions options);
+  Future<void> stopScreenShare(String trackId);
   Future<RtcMuteState> muteAudio(bool muted);
   Future<RtcMuteState> muteVideo(bool muted);
   List<String> getProviderExtensions();
@@ -5091,6 +6485,17 @@ abstract interface class RtcRuntimeController<TNativeClient> {
   );
 }
 
+abstract interface class RtcScreenShareRuntimeController<TNativeClient> {
+  Future<RtcTrackPublication> startScreenShare(
+    RtcScreenShareOptions options,
+    RtcRuntimeControllerContext<TNativeClient> context,
+  );
+  Future<void> stopScreenShare(
+    String trackId,
+    RtcRuntimeControllerContext<TNativeClient> context,
+  );
+}
+
 final class RtcStandardContract {
   static const String symbol = 'RtcStandardContract';
   static const List<String> jdbcStyleResolutionTypes = <String>[
@@ -5098,12 +6503,7 @@ final class RtcStandardContract {
     'RtcDataSource',
   ];
   static const List<String> runtimeSurfaceMethods = <String>[
-    'join',
-    'leave',
-    'publish',
-    'unpublish',
-    'muteAudio',
-    'muteVideo',
+${renderFlutterRuntimeSurfaceMethodEntries(assembly, '    ')}
   ];
   static const String runtimeSurfaceFailureCode = 'native_sdk_not_available';
 
@@ -5112,163 +6512,16 @@ final class RtcStandardContract {
 `),
     },
     {
-      relativePath: `${languageEntry.workspace}/lib/src/rtc_signaling_transport.dart`,
-      content: lines(`
-import 'rtc_signaling_adapter.dart';
-
-const String rtcSignalingTransportTerm = 'websocket-only';
-const String rtcSignalingTransportAuthConfigPath =
-    'connectOptions.webSocketAuth';
-const String rtcSignalingTransportAuthPassThroughTerm =
-    'signaling-adapter-pass-through';
-const List<String> rtcSignalingTransportAuthModeTerms = <String>[
-  'automatic',
-  'headerBearer',
-  'queryBearer',
-  'none',
-];
-const String rtcSignalingTransportRecommendedAuthMode = 'automatic';
-const String rtcSignalingTransportDeviceIdAuthorityTerm =
-    'top-level-device-id';
-const String rtcSignalingTransportConnectOptionsDeviceIdRuleTerm =
-    'must-match-top-level-device-id';
-const String rtcSignalingTransportLiveConnectionTerm =
-    'shared-rtc-live-connection';
-const String rtcSignalingTransportPollingFallbackTerm = 'not-supported';
-const String rtcSignalingTransportAuthFailureTerm = 'fail-fast';
-
-const Map<String, Object> rtcSignalingTransportStandard = <String, Object>{
-  'transportTerm': rtcSignalingTransportTerm,
-  'authConfigPath': rtcSignalingTransportAuthConfigPath,
-  'authPassThroughTerm': rtcSignalingTransportAuthPassThroughTerm,
-  'authModeTerms': rtcSignalingTransportAuthModeTerms,
-  'recommendedAuthMode': rtcSignalingTransportRecommendedAuthMode,
-  'deviceIdAuthorityTerm': rtcSignalingTransportDeviceIdAuthorityTerm,
-  'connectOptionsDeviceIdRuleTerm':
-      rtcSignalingTransportConnectOptionsDeviceIdRuleTerm,
-  'liveConnectionTerm': rtcSignalingTransportLiveConnectionTerm,
-  'pollingFallbackTerm': rtcSignalingTransportPollingFallbackTerm,
-  'authFailureTerm': rtcSignalingTransportAuthFailureTerm,
-};
-
-class RtcSignalingTransportDescriptor {
-  const RtcSignalingTransportDescriptor({
-    required this.deviceId,
-    required this.connectOptionsDeviceId,
-    required this.authMode,
-    required this.usesSharedLiveConnection,
-    required this.transportTerm,
-    required this.authConfigPath,
-    required this.authPassThroughTerm,
-    required this.recommendedAuthMode,
-    required this.deviceIdAuthorityTerm,
-    required this.connectOptionsDeviceIdRuleTerm,
-    required this.liveConnectionTerm,
-    required this.pollingFallbackTerm,
-    required this.authFailureTerm,
-  });
-
-  final String deviceId;
-  final String? connectOptionsDeviceId;
-  final String authMode;
-  final bool usesSharedLiveConnection;
-  final String transportTerm;
-  final String authConfigPath;
-  final String authPassThroughTerm;
-  final String recommendedAuthMode;
-  final String deviceIdAuthorityTerm;
-  final String connectOptionsDeviceIdRuleTerm;
-  final String liveConnectionTerm;
-  final String pollingFallbackTerm;
-  final String authFailureTerm;
-
-  Map<String, Object?> toJson() {
-    return <String, Object?>{
-      'deviceId': deviceId,
-      'connectOptionsDeviceId': connectOptionsDeviceId,
-      'authMode': authMode,
-      'usesSharedLiveConnection': usesSharedLiveConnection,
-      'transportTerm': transportTerm,
-      'authConfigPath': authConfigPath,
-      'authPassThroughTerm': authPassThroughTerm,
-      'recommendedAuthMode': recommendedAuthMode,
-      'deviceIdAuthorityTerm': deviceIdAuthorityTerm,
-      'connectOptionsDeviceIdRuleTerm': connectOptionsDeviceIdRuleTerm,
-      'liveConnectionTerm': liveConnectionTerm,
-      'pollingFallbackTerm': pollingFallbackTerm,
-      'authFailureTerm': authFailureTerm,
-    };
-  }
-}
-
-String _normalizeRtcSignalingTransportDeviceId(String deviceId) {
-  final normalized = deviceId.trim();
-  if (normalized.isEmpty) {
-    throw ArgumentError.value(
-      deviceId,
-      'deviceId',
-      'RTC signaling deviceId must not be empty.',
-    );
-  }
-  return normalized;
-}
-
-String _resolveRtcSignalingTransportAuthMode(
-  RtcSignalingConnectOptions? connectOptions,
-) {
-  final authMode = connectOptions?.webSocketAuth?.mode.name;
-  if (authMode == null) {
-    return rtcSignalingTransportRecommendedAuthMode;
-  }
-
-  if (!rtcSignalingTransportAuthModeTerms.contains(authMode)) {
-    throw ArgumentError.value(
-      authMode,
-      'connectOptions.webSocketAuth.mode',
-      'Unsupported RTC signaling auth mode.',
-    );
-  }
-
-  return authMode;
-}
-
-RtcSignalingTransportDescriptor describeRtcSignalingTransport({
-  required String deviceId,
-  RtcSignalingConnectOptions? connectOptions,
-  RtcSignalingLiveConnection? liveConnection,
-}) {
-  final normalizedDeviceId = _normalizeRtcSignalingTransportDeviceId(deviceId);
-  final connectOptionsDeviceId = connectOptions?.deviceId == null
-      ? null
-      : _normalizeRtcSignalingTransportDeviceId(connectOptions!.deviceId!);
-
-  if (connectOptionsDeviceId != null &&
-      connectOptionsDeviceId != normalizedDeviceId) {
-    throw ArgumentError.value(
-      connectOptionsDeviceId,
-      'connectOptions.deviceId',
-      'RTC signaling deviceId must match connectOptions.deviceId when both are provided.',
-    );
-  }
-
-  return RtcSignalingTransportDescriptor(
-    deviceId: normalizedDeviceId,
-    connectOptionsDeviceId: connectOptionsDeviceId,
-    authMode: _resolveRtcSignalingTransportAuthMode(connectOptions),
-    usesSharedLiveConnection: liveConnection != null,
-    transportTerm: rtcSignalingTransportTerm,
-    authConfigPath: rtcSignalingTransportAuthConfigPath,
-    authPassThroughTerm: rtcSignalingTransportAuthPassThroughTerm,
-    recommendedAuthMode: rtcSignalingTransportRecommendedAuthMode,
-    deviceIdAuthorityTerm: rtcSignalingTransportDeviceIdAuthorityTerm,
-    connectOptionsDeviceIdRuleTerm:
-        rtcSignalingTransportConnectOptionsDeviceIdRuleTerm,
-    liveConnectionTerm: rtcSignalingTransportLiveConnectionTerm,
-    pollingFallbackTerm: rtcSignalingTransportPollingFallbackTerm,
-    authFailureTerm: rtcSignalingTransportAuthFailureTerm,
-  );
-}
-`),
+      relativePath: `${languageEntry.workspace}/lib/src/rtc_types.dart`,
+      content: renderFlutterTypesModule(),
+    },
+    {
+      relativePath: `${languageEntry.workspace}/lib/src/rtc_client.dart`,
+      content: renderFlutterClientModule(),
+    },
+    {
+      relativePath: `${languageEntry.workspace}/lib/src/rtc_runtime_surface.dart`,
+      content: renderFlutterRuntimeSurfaceModule(assembly),
     },
     {
       relativePath: `${languageEntry.workspace}/${languageEntry.metadataScaffold.providerCatalogRelativePath}`,
@@ -9221,8 +10474,6 @@ function buildLanguageWorkspaceCatalogEntries(assembly) {
       ? {
           vendorSdkPackage: languageEntry.runtimeBaseline.vendorSdkPackage,
           vendorSdkImportPath: languageEntry.runtimeBaseline.vendorSdkImportPath,
-          signalingSdkPackage: languageEntry.runtimeBaseline.signalingSdkPackage,
-          signalingSdkImportPath: languageEntry.runtimeBaseline.signalingSdkImportPath,
           recommendedEntrypoint: languageEntry.runtimeBaseline.recommendedEntrypoint,
           smokeCommand: languageEntry.runtimeBaseline.smokeCommand,
           smokeMode: languageEntry.runtimeBaseline.smokeMode,
@@ -9276,6 +10527,14 @@ function buildLanguageWorkspaceCatalogEntries(assembly) {
           sourceTemplateTokens: [
             ...(languageEntry.providerPackageScaffold.sourceTemplateTokens ?? []),
           ],
+          referenceProviderKey: languageEntry.providerPackageScaffold.referenceProviderKey,
+          referenceStatus: languageEntry.providerPackageScaffold.referenceStatus,
+          referenceRuntimeBridgeStatus:
+            languageEntry.providerPackageScaffold.referenceRuntimeBridgeStatus,
+          referenceVendorSdkPackage:
+            languageEntry.providerPackageScaffold.referenceVendorSdkPackage,
+          referenceVendorSdkVersion:
+            languageEntry.providerPackageScaffold.referenceVendorSdkVersion,
           runtimeBridgeStatus: languageEntry.providerPackageScaffold.runtimeBridgeStatus,
           rootPublic: languageEntry.providerPackageScaffold.rootPublic === true,
           status: languageEntry.providerPackageScaffold.status,
@@ -9329,8 +10588,6 @@ ${entry.roleHighlights.map((roleHighlight) => `        ${q(roleHighlight)},`).jo
         ? `RtcLanguageWorkspaceRuntimeBaseline(
         vendorSdkPackage: ${q(entry.runtimeBaseline.vendorSdkPackage)},
         vendorSdkImportPath: ${q(entry.runtimeBaseline.vendorSdkImportPath)},
-        signalingSdkPackage: ${q(entry.runtimeBaseline.signalingSdkPackage)},
-        signalingSdkImportPath: ${q(entry.runtimeBaseline.signalingSdkImportPath)},
         recommendedEntrypoint: ${q(entry.runtimeBaseline.recommendedEntrypoint)},
         smokeCommand: ${q(entry.runtimeBaseline.smokeCommand)},
         smokeMode: ${q(entry.runtimeBaseline.smokeMode)},
@@ -9374,6 +10631,11 @@ ${entry.roleHighlights.map((roleHighlight) => `        ${q(roleHighlight)},`).jo
         sourceSymbolPattern: ${q(entry.providerPackageScaffold.sourceSymbolPattern)},
         templateTokens: <String>[${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}],
         sourceTemplateTokens: <String>[${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}],
+        referenceProviderKey: ${qNullable(entry.providerPackageScaffold.referenceProviderKey)},
+        referenceStatus: ${qNullable(entry.providerPackageScaffold.referenceStatus)},
+        referenceRuntimeBridgeStatus: ${qNullable(entry.providerPackageScaffold.referenceRuntimeBridgeStatus)},
+        referenceVendorSdkPackage: ${qNullable(entry.providerPackageScaffold.referenceVendorSdkPackage)},
+        referenceVendorSdkVersion: ${qNullable(entry.providerPackageScaffold.referenceVendorSdkVersion)},
         runtimeBridgeStatus: ${q(entry.providerPackageScaffold.runtimeBridgeStatus)},
         rootPublic: ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'},
         status: ${q(entry.providerPackageScaffold.status)},
@@ -9479,8 +10741,6 @@ final class RtcLanguageWorkspaceRuntimeBaseline {
   const RtcLanguageWorkspaceRuntimeBaseline({
     required this.vendorSdkPackage,
     required this.vendorSdkImportPath,
-    required this.signalingSdkPackage,
-    required this.signalingSdkImportPath,
     required this.recommendedEntrypoint,
     required this.smokeCommand,
     required this.smokeMode,
@@ -9489,8 +10749,6 @@ final class RtcLanguageWorkspaceRuntimeBaseline {
 
   final String vendorSdkPackage;
   final String vendorSdkImportPath;
-  final String signalingSdkPackage;
-  final String signalingSdkImportPath;
   final String recommendedEntrypoint;
   final String smokeCommand;
   final String smokeMode;
@@ -9568,6 +10826,11 @@ final class RtcLanguageWorkspaceProviderPackageScaffold {
     required this.sourceSymbolPattern,
     required this.templateTokens,
     required this.sourceTemplateTokens,
+    required this.referenceProviderKey,
+    required this.referenceStatus,
+    required this.referenceRuntimeBridgeStatus,
+    required this.referenceVendorSdkPackage,
+    required this.referenceVendorSdkVersion,
     required this.runtimeBridgeStatus,
     required this.rootPublic,
     required this.status,
@@ -9582,6 +10845,11 @@ final class RtcLanguageWorkspaceProviderPackageScaffold {
   final String sourceSymbolPattern;
   final List<String> templateTokens;
   final List<String> sourceTemplateTokens;
+  final String? referenceProviderKey;
+  final String? referenceStatus;
+  final String? referenceRuntimeBridgeStatus;
+  final String? referenceVendorSdkPackage;
+  final String? referenceVendorSdkVersion;
   final String runtimeBridgeStatus;
   final bool rootPublic;
   final String status;
@@ -9605,7 +10873,7 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       const workspaceEntries = entries
         .map(
           (entry) =>
-            `    RtcLanguageWorkspaceCatalogEntry { language: ${q(entry.language)}, workspace: ${q(entry.workspace)}, workspaceCatalogRelativePath: ${q(entry.workspaceCatalogRelativePath)}, displayName: ${q(entry.displayName)}, publicPackage: ${q(entry.publicPackage)}, maturityTier: ${q(entry.maturityTier)}, controlSdk: ${entry.controlSdk ? 'true' : 'false'}, runtimeBridge: ${entry.runtimeBridge ? 'true' : 'false'}, currentRole: ${q(entry.currentRole)}, workspaceSummary: ${q(entry.workspaceSummary)}, roleHighlights: &[${entry.roleHighlights.map(q).join(', ')}], defaultProviderContract: RtcLanguageWorkspaceDefaultProviderContract { providerKey: ${q(entry.defaultProviderContract?.providerKey ?? '')}, pluginId: ${q(entry.defaultProviderContract?.pluginId ?? '')}, driverId: ${q(entry.defaultProviderContract?.driverId ?? '')} }, providerSelectionContract: RtcLanguageWorkspaceProviderSelectionContract { sourceTerms: &[${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}], precedence: &[${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}], defaultSource: ${q(entry.providerSelectionContract?.defaultSource ?? '')} }, providerSupportContract: RtcLanguageWorkspaceProviderSupportContract { statusTerms: &[${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}] }, providerActivationContract: RtcLanguageWorkspaceProviderActivationContract { statusTerms: &[${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}] }, runtimeBaseline: ${entry.runtimeBaseline ? `Some(RtcLanguageWorkspaceRuntimeBaseline { vendorSdkPackage: ${q(entry.runtimeBaseline.vendorSdkPackage)}, vendorSdkImportPath: ${q(entry.runtimeBaseline.vendorSdkImportPath)}, signalingSdkPackage: ${q(entry.runtimeBaseline.signalingSdkPackage)}, signalingSdkImportPath: ${q(entry.runtimeBaseline.signalingSdkImportPath)}, recommendedEntrypoint: ${q(entry.runtimeBaseline.recommendedEntrypoint)}, smokeCommand: ${q(entry.runtimeBaseline.smokeCommand)}, smokeMode: ${q(entry.runtimeBaseline.smokeMode)}, smokeVariants: &[${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}] })` : 'None'}, metadataScaffold: RtcLanguageWorkspaceMetadataScaffold { providerCatalogRelativePath: ${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, capabilityCatalogRelativePath: ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, providerExtensionCatalogRelativePath: ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, providerPackageCatalogRelativePath: ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, providerActivationCatalogRelativePath: ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, providerSelectionRelativePath: ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')} }, resolutionScaffold: RtcLanguageWorkspaceResolutionScaffold { driverManagerRelativePath: ${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, dataSourceRelativePath: ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, providerSupportRelativePath: ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, providerPackageLoaderRelativePath: ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')} }, providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract { modeTerms: &[${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}], rootPublicPolicyTerms: &[${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}], lifecycleStatusTerms: &[${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: &[${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}] }, providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary { mode: ${q(entry.providerPackageBoundary?.mode ?? '')}, rootPublicPolicy: ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, lifecycleStatusTerms: &[${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: &[${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}] }, providerPackageScaffold: ${entry.providerPackageScaffold ? `Some(RtcLanguageWorkspaceProviderPackageScaffold { relativePath: ${q(entry.providerPackageScaffold.relativePath)}, directoryPattern: ${q(entry.providerPackageScaffold.directoryPattern)}, packagePattern: ${q(entry.providerPackageScaffold.packagePattern)}, manifestFileName: ${q(entry.providerPackageScaffold.manifestFileName)}, readmeFileName: ${q(entry.providerPackageScaffold.readmeFileName)}, sourceFilePattern: ${q(entry.providerPackageScaffold.sourceFilePattern)}, sourceSymbolPattern: ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, templateTokens: &[${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}], sourceTemplateTokens: &[${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}], runtimeBridgeStatus: ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, rootPublic: ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'}, status: ${q(entry.providerPackageScaffold.status)} })` : 'None'} },`,
+            `    RtcLanguageWorkspaceCatalogEntry { language: ${q(entry.language)}, workspace: ${q(entry.workspace)}, workspaceCatalogRelativePath: ${q(entry.workspaceCatalogRelativePath)}, displayName: ${q(entry.displayName)}, publicPackage: ${q(entry.publicPackage)}, maturityTier: ${q(entry.maturityTier)}, controlSdk: ${entry.controlSdk ? 'true' : 'false'}, runtimeBridge: ${entry.runtimeBridge ? 'true' : 'false'}, currentRole: ${q(entry.currentRole)}, workspaceSummary: ${q(entry.workspaceSummary)}, roleHighlights: &[${entry.roleHighlights.map(q).join(', ')}], defaultProviderContract: RtcLanguageWorkspaceDefaultProviderContract { providerKey: ${q(entry.defaultProviderContract?.providerKey ?? '')}, pluginId: ${q(entry.defaultProviderContract?.pluginId ?? '')}, driverId: ${q(entry.defaultProviderContract?.driverId ?? '')} }, providerSelectionContract: RtcLanguageWorkspaceProviderSelectionContract { sourceTerms: &[${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}], precedence: &[${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}], defaultSource: ${q(entry.providerSelectionContract?.defaultSource ?? '')} }, providerSupportContract: RtcLanguageWorkspaceProviderSupportContract { statusTerms: &[${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}] }, providerActivationContract: RtcLanguageWorkspaceProviderActivationContract { statusTerms: &[${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}] }, runtimeBaseline: ${entry.runtimeBaseline ? `Some(RtcLanguageWorkspaceRuntimeBaseline { vendorSdkPackage: ${q(entry.runtimeBaseline.vendorSdkPackage)}, vendorSdkImportPath: ${q(entry.runtimeBaseline.vendorSdkImportPath)}, recommendedEntrypoint: ${q(entry.runtimeBaseline.recommendedEntrypoint)}, smokeCommand: ${q(entry.runtimeBaseline.smokeCommand)}, smokeMode: ${q(entry.runtimeBaseline.smokeMode)}, smokeVariants: &[${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}] })` : 'None'}, metadataScaffold: RtcLanguageWorkspaceMetadataScaffold { providerCatalogRelativePath: ${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, capabilityCatalogRelativePath: ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, providerExtensionCatalogRelativePath: ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, providerPackageCatalogRelativePath: ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, providerActivationCatalogRelativePath: ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, providerSelectionRelativePath: ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')} }, resolutionScaffold: RtcLanguageWorkspaceResolutionScaffold { driverManagerRelativePath: ${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, dataSourceRelativePath: ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, providerSupportRelativePath: ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, providerPackageLoaderRelativePath: ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')} }, providerPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract { modeTerms: &[${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}], rootPublicPolicyTerms: &[${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}], lifecycleStatusTerms: &[${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: &[${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}] }, providerPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary { mode: ${q(entry.providerPackageBoundary?.mode ?? '')}, rootPublicPolicy: ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, lifecycleStatusTerms: &[${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: &[${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}] }, providerPackageScaffold: ${entry.providerPackageScaffold ? `Some(RtcLanguageWorkspaceProviderPackageScaffold { relativePath: ${q(entry.providerPackageScaffold.relativePath)}, directoryPattern: ${q(entry.providerPackageScaffold.directoryPattern)}, packagePattern: ${q(entry.providerPackageScaffold.packagePattern)}, manifestFileName: ${q(entry.providerPackageScaffold.manifestFileName)}, readmeFileName: ${q(entry.providerPackageScaffold.readmeFileName)}, sourceFilePattern: ${q(entry.providerPackageScaffold.sourceFilePattern)}, sourceSymbolPattern: ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, templateTokens: &[${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}], sourceTemplateTokens: &[${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}], referenceProviderKey: ${qRustOption(entry.providerPackageScaffold.referenceProviderKey)}, referenceStatus: ${qRustOption(entry.providerPackageScaffold.referenceStatus)}, referenceRuntimeBridgeStatus: ${qRustOption(entry.providerPackageScaffold.referenceRuntimeBridgeStatus)}, referenceVendorSdkPackage: ${qRustOption(entry.providerPackageScaffold.referenceVendorSdkPackage)}, referenceVendorSdkVersion: ${qRustOption(entry.providerPackageScaffold.referenceVendorSdkVersion)}, runtimeBridgeStatus: ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, rootPublic: ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'}, status: ${q(entry.providerPackageScaffold.status)} })` : 'None'} },`,
         )
         .join('\n');
 
@@ -9646,8 +10914,6 @@ pub struct RtcLanguageWorkspaceProviderActivationContract {
 pub struct RtcLanguageWorkspaceRuntimeBaseline {
     pub vendorSdkPackage: &'static str,
     pub vendorSdkImportPath: &'static str,
-    pub signalingSdkPackage: &'static str,
-    pub signalingSdkImportPath: &'static str,
     pub recommendedEntrypoint: &'static str,
     pub smokeCommand: &'static str,
     pub smokeMode: &'static str,
@@ -9704,6 +10970,11 @@ pub struct RtcLanguageWorkspaceProviderPackageScaffold {
     pub sourceSymbolPattern: &'static str,
     pub templateTokens: &'static [&'static str],
     pub sourceTemplateTokens: &'static [&'static str],
+    pub referenceProviderKey: Option<&'static str>,
+    pub referenceStatus: Option<&'static str>,
+    pub referenceRuntimeBridgeStatus: Option<&'static str>,
+    pub referenceVendorSdkPackage: Option<&'static str>,
+    pub referenceVendorSdkVersion: Option<&'static str>,
     pub runtimeBridgeStatus: &'static str,
     pub rootPublic: bool,
     pub status: &'static str,
@@ -9750,7 +11021,7 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       const workspaceEntries = entries
         .map(
           (entry) =>
-            `      new RtcLanguageWorkspaceCatalogEntry(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'true' : 'false'}, ${entry.runtimeBridge ? 'true' : 'false'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, List.of(${entry.roleHighlights.map(q).join(', ')}), new RtcLanguageWorkspaceDefaultProviderContract(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), new RtcLanguageWorkspaceProviderSelectionContract(List.of(${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}), ${q(entry.providerSelectionContract?.defaultSource ?? '')}), new RtcLanguageWorkspaceProviderSupportContract(List.of(${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')})), new RtcLanguageWorkspaceProviderActivationContract(List.of(${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')})), ${entry.runtimeBaseline ? `new RtcLanguageWorkspaceRuntimeBaseline(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.signalingSdkPackage)}, ${q(entry.runtimeBaseline.signalingSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, List.of(${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}))` : 'null'}, new RtcLanguageWorkspaceMetadataScaffold(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), new RtcLanguageWorkspaceResolutionScaffold(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), new RtcLanguageWorkspaceProviderPackageBoundaryContract(List.of(${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), new RtcLanguageWorkspaceProviderPackageBoundary(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, List.of(${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), ${entry.providerPackageScaffold ? `new RtcLanguageWorkspaceProviderPackageScaffold(${q(entry.providerPackageScaffold.relativePath)}, ${q(entry.providerPackageScaffold.directoryPattern)}, ${q(entry.providerPackageScaffold.packagePattern)}, ${q(entry.providerPackageScaffold.manifestFileName)}, ${q(entry.providerPackageScaffold.readmeFileName)}, ${q(entry.providerPackageScaffold.sourceFilePattern)}, ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, List.of(${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}), List.of(${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}), ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'}, ${q(entry.providerPackageScaffold.status)})` : 'null'})`,
+            `      new RtcLanguageWorkspaceCatalogEntry(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'true' : 'false'}, ${entry.runtimeBridge ? 'true' : 'false'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, List.of(${entry.roleHighlights.map(q).join(', ')}), new RtcLanguageWorkspaceDefaultProviderContract(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), new RtcLanguageWorkspaceProviderSelectionContract(List.of(${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}), ${q(entry.providerSelectionContract?.defaultSource ?? '')}), new RtcLanguageWorkspaceProviderSupportContract(List.of(${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')})), new RtcLanguageWorkspaceProviderActivationContract(List.of(${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')})), ${entry.runtimeBaseline ? `new RtcLanguageWorkspaceRuntimeBaseline(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, List.of(${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}))` : 'null'}, new RtcLanguageWorkspaceMetadataScaffold(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), new RtcLanguageWorkspaceResolutionScaffold(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), new RtcLanguageWorkspaceProviderPackageBoundaryContract(List.of(${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), new RtcLanguageWorkspaceProviderPackageBoundary(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, List.of(${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}), List.of(${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), ${renderProviderPackageScaffoldInitializer('java', entry.providerPackageScaffold)})`,
         )
         .join(',\n');
 
@@ -9826,8 +11097,6 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
   public record RtcLanguageWorkspaceRuntimeBaseline(
       String vendorSdkPackage,
       String vendorSdkImportPath,
-      String signalingSdkPackage,
-      String signalingSdkImportPath,
       String recommendedEntrypoint,
       String smokeCommand,
       String smokeMode,
@@ -9879,6 +11148,11 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       String sourceSymbolPattern,
       List<String> templateTokens,
       List<String> sourceTemplateTokens,
+      String referenceProviderKey,
+      String referenceStatus,
+      String referenceRuntimeBridgeStatus,
+      String referenceVendorSdkPackage,
+      String referenceVendorSdkVersion,
       String runtimeBridgeStatus,
       boolean rootPublic,
       String status
@@ -9893,7 +11167,7 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       const workspaceEntries = entries
         .map(
           (entry) =>
-            `        new(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'true' : 'false'}, ${entry.runtimeBridge ? 'true' : 'false'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, new List<string> { ${entry.roleHighlights.map(q).join(', ')} }, new(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), new(new List<string> { ${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')} }, ${q(entry.providerSelectionContract?.defaultSource ?? '')}), new(new List<string> { ${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')} }), new(new List<string> { ${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')} }), ${entry.runtimeBaseline ? `new(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.signalingSdkPackage)}, ${q(entry.runtimeBaseline.signalingSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, new List<string> { ${entry.runtimeBaseline.smokeVariants.map(q).join(', ')} })` : 'null'}, new(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), new(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), new(new List<string> { ${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')} }), new(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, new List<string> { ${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')} }), ${entry.providerPackageScaffold ? `new(${q(entry.providerPackageScaffold.relativePath)}, ${q(entry.providerPackageScaffold.directoryPattern)}, ${q(entry.providerPackageScaffold.packagePattern)}, ${q(entry.providerPackageScaffold.manifestFileName)}, ${q(entry.providerPackageScaffold.readmeFileName)}, ${q(entry.providerPackageScaffold.sourceFilePattern)}, ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, new List<string> { ${entry.providerPackageScaffold.templateTokens.map(q).join(', ')} }, new List<string> { ${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')} }, ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'}, ${q(entry.providerPackageScaffold.status)})` : 'null'}),`,
+            `        new(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'true' : 'false'}, ${entry.runtimeBridge ? 'true' : 'false'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, new List<string> { ${entry.roleHighlights.map(q).join(', ')} }, new(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), new(new List<string> { ${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')} }, ${q(entry.providerSelectionContract?.defaultSource ?? '')}), new(new List<string> { ${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')} }), new(new List<string> { ${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')} }), ${entry.runtimeBaseline ? `new(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, new List<string> { ${entry.runtimeBaseline.smokeVariants.map(q).join(', ')} })` : 'null'}, new(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), new(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), new(new List<string> { ${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')} }), new(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, new List<string> { ${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')} }, new List<string> { ${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')} }), ${renderProviderPackageScaffoldInitializer('csharp', entry.providerPackageScaffold)}),`,
         )
         .join('\n');
 
@@ -9953,8 +11227,6 @@ public sealed record RtcLanguageWorkspaceProviderActivationContract(
 public sealed record RtcLanguageWorkspaceRuntimeBaseline(
     string vendorSdkPackage,
     string vendorSdkImportPath,
-    string signalingSdkPackage,
-    string signalingSdkImportPath,
     string recommendedEntrypoint,
     string smokeCommand,
     string smokeMode,
@@ -10001,6 +11273,11 @@ public sealed record RtcLanguageWorkspaceProviderPackageScaffold(
     string sourceSymbolPattern,
     IReadOnlyList<string> templateTokens,
     IReadOnlyList<string> sourceTemplateTokens,
+    string? referenceProviderKey,
+    string? referenceStatus,
+    string? referenceRuntimeBridgeStatus,
+    string? referenceVendorSdkPackage,
+    string? referenceVendorSdkVersion,
     string runtimeBridgeStatus,
     bool rootPublic,
     string status
@@ -10023,7 +11300,7 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       const workspaceEntries = entries
         .map(
           (entry) =>
-            `        .init(language: ${q(entry.language)}, workspace: ${q(entry.workspace)}, workspaceCatalogRelativePath: ${q(entry.workspaceCatalogRelativePath)}, displayName: ${q(entry.displayName)}, publicPackage: ${q(entry.publicPackage)}, maturityTier: ${q(entry.maturityTier)}, controlSdk: ${entry.controlSdk ? 'true' : 'false'}, runtimeBridge: ${entry.runtimeBridge ? 'true' : 'false'}, currentRole: ${q(entry.currentRole)}, workspaceSummary: ${q(entry.workspaceSummary)}, roleHighlights: [${entry.roleHighlights.map(q).join(', ')}], defaultProviderContract: .init(providerKey: ${q(entry.defaultProviderContract?.providerKey ?? '')}, pluginId: ${q(entry.defaultProviderContract?.pluginId ?? '')}, driverId: ${q(entry.defaultProviderContract?.driverId ?? '')}), providerSelectionContract: .init(sourceTerms: [${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}], precedence: [${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}], defaultSource: ${q(entry.providerSelectionContract?.defaultSource ?? '')}), providerSupportContract: .init(statusTerms: [${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}]), providerActivationContract: .init(statusTerms: [${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}]), runtimeBaseline: ${entry.runtimeBaseline ? `.init(vendorSdkPackage: ${q(entry.runtimeBaseline.vendorSdkPackage)}, vendorSdkImportPath: ${q(entry.runtimeBaseline.vendorSdkImportPath)}, signalingSdkPackage: ${q(entry.runtimeBaseline.signalingSdkPackage)}, signalingSdkImportPath: ${q(entry.runtimeBaseline.signalingSdkImportPath)}, recommendedEntrypoint: ${q(entry.runtimeBaseline.recommendedEntrypoint)}, smokeCommand: ${q(entry.runtimeBaseline.smokeCommand)}, smokeMode: ${q(entry.runtimeBaseline.smokeMode)}, smokeVariants: [${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}])` : 'nil'}, metadataScaffold: .init(providerCatalogRelativePath: ${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, capabilityCatalogRelativePath: ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, providerExtensionCatalogRelativePath: ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, providerPackageCatalogRelativePath: ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, providerActivationCatalogRelativePath: ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, providerSelectionRelativePath: ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), resolutionScaffold: .init(driverManagerRelativePath: ${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, dataSourceRelativePath: ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, providerSupportRelativePath: ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, providerPackageLoaderRelativePath: ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), providerPackageBoundaryContract: .init(modeTerms: [${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}], rootPublicPolicyTerms: [${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}], lifecycleStatusTerms: [${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: [${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), providerPackageBoundary: .init(mode: ${q(entry.providerPackageBoundary?.mode ?? '')}, rootPublicPolicy: ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, lifecycleStatusTerms: [${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: [${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), providerPackageScaffold: ${entry.providerPackageScaffold ? `.init(relativePath: ${q(entry.providerPackageScaffold.relativePath)}, directoryPattern: ${q(entry.providerPackageScaffold.directoryPattern)}, packagePattern: ${q(entry.providerPackageScaffold.packagePattern)}, manifestFileName: ${q(entry.providerPackageScaffold.manifestFileName)}, readmeFileName: ${q(entry.providerPackageScaffold.readmeFileName)}, sourceFilePattern: ${q(entry.providerPackageScaffold.sourceFilePattern)}, sourceSymbolPattern: ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, templateTokens: [${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}], sourceTemplateTokens: [${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}], runtimeBridgeStatus: ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, rootPublic: ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'}, status: ${q(entry.providerPackageScaffold.status)})` : 'nil'}),`,
+            `        .init(language: ${q(entry.language)}, workspace: ${q(entry.workspace)}, workspaceCatalogRelativePath: ${q(entry.workspaceCatalogRelativePath)}, displayName: ${q(entry.displayName)}, publicPackage: ${q(entry.publicPackage)}, maturityTier: ${q(entry.maturityTier)}, controlSdk: ${entry.controlSdk ? 'true' : 'false'}, runtimeBridge: ${entry.runtimeBridge ? 'true' : 'false'}, currentRole: ${q(entry.currentRole)}, workspaceSummary: ${q(entry.workspaceSummary)}, roleHighlights: [${entry.roleHighlights.map(q).join(', ')}], defaultProviderContract: .init(providerKey: ${q(entry.defaultProviderContract?.providerKey ?? '')}, pluginId: ${q(entry.defaultProviderContract?.pluginId ?? '')}, driverId: ${q(entry.defaultProviderContract?.driverId ?? '')}), providerSelectionContract: .init(sourceTerms: [${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}], precedence: [${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}], defaultSource: ${q(entry.providerSelectionContract?.defaultSource ?? '')}), providerSupportContract: .init(statusTerms: [${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}]), providerActivationContract: .init(statusTerms: [${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}]), runtimeBaseline: ${entry.runtimeBaseline ? `.init(vendorSdkPackage: ${q(entry.runtimeBaseline.vendorSdkPackage)}, vendorSdkImportPath: ${q(entry.runtimeBaseline.vendorSdkImportPath)}, recommendedEntrypoint: ${q(entry.runtimeBaseline.recommendedEntrypoint)}, smokeCommand: ${q(entry.runtimeBaseline.smokeCommand)}, smokeMode: ${q(entry.runtimeBaseline.smokeMode)}, smokeVariants: [${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}])` : 'nil'}, metadataScaffold: .init(providerCatalogRelativePath: ${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, capabilityCatalogRelativePath: ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, providerExtensionCatalogRelativePath: ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, providerPackageCatalogRelativePath: ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, providerActivationCatalogRelativePath: ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, providerSelectionRelativePath: ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), resolutionScaffold: .init(driverManagerRelativePath: ${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, dataSourceRelativePath: ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, providerSupportRelativePath: ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, providerPackageLoaderRelativePath: ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), providerPackageBoundaryContract: .init(modeTerms: [${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}], rootPublicPolicyTerms: [${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}], lifecycleStatusTerms: [${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: [${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), providerPackageBoundary: .init(mode: ${q(entry.providerPackageBoundary?.mode ?? '')}, rootPublicPolicy: ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, lifecycleStatusTerms: [${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}], runtimeBridgeStatusTerms: [${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), providerPackageScaffold: ${renderProviderPackageScaffoldInitializer('swift', entry.providerPackageScaffold)}),`,
         )
         .join('\n');
 
@@ -10078,8 +11355,6 @@ public struct RtcLanguageWorkspaceProviderActivationContract {
 public struct RtcLanguageWorkspaceRuntimeBaseline {
     public let vendorSdkPackage: String
     public let vendorSdkImportPath: String
-    public let signalingSdkPackage: String
-    public let signalingSdkImportPath: String
     public let recommendedEntrypoint: String
     public let smokeCommand: String
     public let smokeMode: String
@@ -10126,6 +11401,11 @@ public struct RtcLanguageWorkspaceProviderPackageScaffold {
     public let sourceSymbolPattern: String
     public let templateTokens: [String]
     public let sourceTemplateTokens: [String]
+    public let referenceProviderKey: String?
+    public let referenceStatus: String?
+    public let referenceRuntimeBridgeStatus: String?
+    public let referenceVendorSdkPackage: String?
+    public let referenceVendorSdkVersion: String?
     public let runtimeBridgeStatus: String
     public let rootPublic: Bool
     public let status: String
@@ -10146,7 +11426,7 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       const workspaceEntries = entries
         .map(
           (entry) =>
-            `        RtcLanguageWorkspaceCatalogEntry(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'true' : 'false'}, ${entry.runtimeBridge ? 'true' : 'false'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, listOf(${entry.roleHighlights.map(q).join(', ')}), RtcLanguageWorkspaceDefaultProviderContract(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), RtcLanguageWorkspaceProviderSelectionContract(listOf(${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}), ${q(entry.providerSelectionContract?.defaultSource ?? '')}), RtcLanguageWorkspaceProviderSupportContract(listOf(${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')})), RtcLanguageWorkspaceProviderActivationContract(listOf(${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')})), ${entry.runtimeBaseline ? `RtcLanguageWorkspaceRuntimeBaseline(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.signalingSdkPackage)}, ${q(entry.runtimeBaseline.signalingSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, listOf(${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}))` : 'null'}, RtcLanguageWorkspaceMetadataScaffold(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), RtcLanguageWorkspaceResolutionScaffold(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), RtcLanguageWorkspaceProviderPackageBoundaryContract(listOf(${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), RtcLanguageWorkspaceProviderPackageBoundary(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, listOf(${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), ${entry.providerPackageScaffold ? `RtcLanguageWorkspaceProviderPackageScaffold(${q(entry.providerPackageScaffold.relativePath)}, ${q(entry.providerPackageScaffold.directoryPattern)}, ${q(entry.providerPackageScaffold.packagePattern)}, ${q(entry.providerPackageScaffold.manifestFileName)}, ${q(entry.providerPackageScaffold.readmeFileName)}, ${q(entry.providerPackageScaffold.sourceFilePattern)}, ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, listOf(${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}), listOf(${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}), ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'}, ${q(entry.providerPackageScaffold.status)})` : 'null'}),`,
+            `        RtcLanguageWorkspaceCatalogEntry(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'true' : 'false'}, ${entry.runtimeBridge ? 'true' : 'false'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, listOf(${entry.roleHighlights.map(q).join(', ')}), RtcLanguageWorkspaceDefaultProviderContract(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), RtcLanguageWorkspaceProviderSelectionContract(listOf(${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}), ${q(entry.providerSelectionContract?.defaultSource ?? '')}), RtcLanguageWorkspaceProviderSupportContract(listOf(${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')})), RtcLanguageWorkspaceProviderActivationContract(listOf(${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')})), ${entry.runtimeBaseline ? `RtcLanguageWorkspaceRuntimeBaseline(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, listOf(${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}))` : 'null'}, RtcLanguageWorkspaceMetadataScaffold(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), RtcLanguageWorkspaceResolutionScaffold(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), RtcLanguageWorkspaceProviderPackageBoundaryContract(listOf(${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), RtcLanguageWorkspaceProviderPackageBoundary(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, listOf(${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}), listOf(${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')})), ${renderProviderPackageScaffoldInitializer('kotlin', entry.providerPackageScaffold)}),`,
         )
         .join('\n');
 
@@ -10203,8 +11483,6 @@ data class RtcLanguageWorkspaceProviderActivationContract(
 data class RtcLanguageWorkspaceRuntimeBaseline(
     val vendorSdkPackage: String,
     val vendorSdkImportPath: String,
-    val signalingSdkPackage: String,
-    val signalingSdkImportPath: String,
     val recommendedEntrypoint: String,
     val smokeCommand: String,
     val smokeMode: String,
@@ -10251,6 +11529,11 @@ data class RtcLanguageWorkspaceProviderPackageScaffold(
     val sourceSymbolPattern: String,
     val templateTokens: List<String>,
     val sourceTemplateTokens: List<String>,
+    val referenceProviderKey: String?,
+    val referenceStatus: String?,
+    val referenceRuntimeBridgeStatus: String?,
+    val referenceVendorSdkPackage: String?,
+    val referenceVendorSdkVersion: String?,
     val runtimeBridgeStatus: String,
     val rootPublic: Boolean,
     val status: String,
@@ -10271,7 +11554,7 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       const workspaceEntries = entries
         .map(
           (entry) =>
-            `    {Language: ${q(entry.language)}, Workspace: ${q(entry.workspace)}, WorkspaceCatalogRelativePath: ${q(entry.workspaceCatalogRelativePath)}, DisplayName: ${q(entry.displayName)}, PublicPackage: ${q(entry.publicPackage)}, MaturityTier: ${q(entry.maturityTier)}, ControlSdk: ${entry.controlSdk ? 'true' : 'false'}, RuntimeBridge: ${entry.runtimeBridge ? 'true' : 'false'}, CurrentRole: ${q(entry.currentRole)}, WorkspaceSummary: ${q(entry.workspaceSummary)}, RoleHighlights: []string{${entry.roleHighlights.map(q).join(', ')}}, DefaultProviderContract: RtcLanguageWorkspaceDefaultProviderContract{ProviderKey: ${q(entry.defaultProviderContract?.providerKey ?? '')}, PluginId: ${q(entry.defaultProviderContract?.pluginId ?? '')}, DriverId: ${q(entry.defaultProviderContract?.driverId ?? '')}}, ProviderSelectionContract: RtcLanguageWorkspaceProviderSelectionContract{SourceTerms: []string{${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}}, Precedence: []string{${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}}, DefaultSource: ${q(entry.providerSelectionContract?.defaultSource ?? '')}}, ProviderSupportContract: RtcLanguageWorkspaceProviderSupportContract{StatusTerms: []string{${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}}}, ProviderActivationContract: RtcLanguageWorkspaceProviderActivationContract{StatusTerms: []string{${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}}}, RuntimeBaseline: ${entry.runtimeBaseline ? `&RtcLanguageWorkspaceRuntimeBaseline{VendorSdkPackage: ${q(entry.runtimeBaseline.vendorSdkPackage)}, VendorSdkImportPath: ${q(entry.runtimeBaseline.vendorSdkImportPath)}, SignalingSdkPackage: ${q(entry.runtimeBaseline.signalingSdkPackage)}, SignalingSdkImportPath: ${q(entry.runtimeBaseline.signalingSdkImportPath)}, RecommendedEntrypoint: ${q(entry.runtimeBaseline.recommendedEntrypoint)}, SmokeCommand: ${q(entry.runtimeBaseline.smokeCommand)}, SmokeMode: ${q(entry.runtimeBaseline.smokeMode)}, SmokeVariants: []string{${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}}}` : 'nil'}, MetadataScaffold: RtcLanguageWorkspaceMetadataScaffold{ProviderCatalogRelativePath: ${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, CapabilityCatalogRelativePath: ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ProviderExtensionCatalogRelativePath: ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ProviderPackageCatalogRelativePath: ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ProviderActivationCatalogRelativePath: ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ProviderSelectionRelativePath: ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}}, ResolutionScaffold: RtcLanguageWorkspaceResolutionScaffold{DriverManagerRelativePath: ${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, DataSourceRelativePath: ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ProviderSupportRelativePath: ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ProviderPackageLoaderRelativePath: ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}}, ProviderPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract{ModeTerms: []string{${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}}, RootPublicPolicyTerms: []string{${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}}, LifecycleStatusTerms: []string{${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}}, RuntimeBridgeStatusTerms: []string{${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}}}, ProviderPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary{Mode: ${q(entry.providerPackageBoundary?.mode ?? '')}, RootPublicPolicy: ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, LifecycleStatusTerms: []string{${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}}, RuntimeBridgeStatusTerms: []string{${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}}}, ProviderPackageScaffold: ${entry.providerPackageScaffold ? `&RtcLanguageWorkspaceProviderPackageScaffold{RelativePath: ${q(entry.providerPackageScaffold.relativePath)}, DirectoryPattern: ${q(entry.providerPackageScaffold.directoryPattern)}, PackagePattern: ${q(entry.providerPackageScaffold.packagePattern)}, ManifestFileName: ${q(entry.providerPackageScaffold.manifestFileName)}, ReadmeFileName: ${q(entry.providerPackageScaffold.readmeFileName)}, SourceFilePattern: ${q(entry.providerPackageScaffold.sourceFilePattern)}, SourceSymbolPattern: ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, TemplateTokens: []string{${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}}, SourceTemplateTokens: []string{${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}}, RuntimeBridgeStatus: ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, RootPublic: ${entry.providerPackageScaffold.rootPublic ? 'true' : 'false'}, Status: ${q(entry.providerPackageScaffold.status)}}` : 'nil'}},`,
+            `    {Language: ${q(entry.language)}, Workspace: ${q(entry.workspace)}, WorkspaceCatalogRelativePath: ${q(entry.workspaceCatalogRelativePath)}, DisplayName: ${q(entry.displayName)}, PublicPackage: ${q(entry.publicPackage)}, MaturityTier: ${q(entry.maturityTier)}, ControlSdk: ${entry.controlSdk ? 'true' : 'false'}, RuntimeBridge: ${entry.runtimeBridge ? 'true' : 'false'}, CurrentRole: ${q(entry.currentRole)}, WorkspaceSummary: ${q(entry.workspaceSummary)}, RoleHighlights: []string{${entry.roleHighlights.map(q).join(', ')}}, DefaultProviderContract: RtcLanguageWorkspaceDefaultProviderContract{ProviderKey: ${q(entry.defaultProviderContract?.providerKey ?? '')}, PluginId: ${q(entry.defaultProviderContract?.pluginId ?? '')}, DriverId: ${q(entry.defaultProviderContract?.driverId ?? '')}}, ProviderSelectionContract: RtcLanguageWorkspaceProviderSelectionContract{SourceTerms: []string{${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}}, Precedence: []string{${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}}, DefaultSource: ${q(entry.providerSelectionContract?.defaultSource ?? '')}}, ProviderSupportContract: RtcLanguageWorkspaceProviderSupportContract{StatusTerms: []string{${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}}}, ProviderActivationContract: RtcLanguageWorkspaceProviderActivationContract{StatusTerms: []string{${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}}}, RuntimeBaseline: ${entry.runtimeBaseline ? `&RtcLanguageWorkspaceRuntimeBaseline{VendorSdkPackage: ${q(entry.runtimeBaseline.vendorSdkPackage)}, VendorSdkImportPath: ${q(entry.runtimeBaseline.vendorSdkImportPath)}, RecommendedEntrypoint: ${q(entry.runtimeBaseline.recommendedEntrypoint)}, SmokeCommand: ${q(entry.runtimeBaseline.smokeCommand)}, SmokeMode: ${q(entry.runtimeBaseline.smokeMode)}, SmokeVariants: []string{${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}}}` : 'nil'}, MetadataScaffold: RtcLanguageWorkspaceMetadataScaffold{ProviderCatalogRelativePath: ${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, CapabilityCatalogRelativePath: ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ProviderExtensionCatalogRelativePath: ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ProviderPackageCatalogRelativePath: ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ProviderActivationCatalogRelativePath: ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ProviderSelectionRelativePath: ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}}, ResolutionScaffold: RtcLanguageWorkspaceResolutionScaffold{DriverManagerRelativePath: ${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, DataSourceRelativePath: ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ProviderSupportRelativePath: ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ProviderPackageLoaderRelativePath: ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}}, ProviderPackageBoundaryContract: RtcLanguageWorkspaceProviderPackageBoundaryContract{ModeTerms: []string{${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}}, RootPublicPolicyTerms: []string{${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}}, LifecycleStatusTerms: []string{${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}}, RuntimeBridgeStatusTerms: []string{${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}}}, ProviderPackageBoundary: RtcLanguageWorkspaceProviderPackageBoundary{Mode: ${q(entry.providerPackageBoundary?.mode ?? '')}, RootPublicPolicy: ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, LifecycleStatusTerms: []string{${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}}, RuntimeBridgeStatusTerms: []string{${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}}}, ProviderPackageScaffold: ${renderProviderPackageScaffoldInitializer('go', entry.providerPackageScaffold)}},`,
         )
         .join('\n');
 
@@ -10280,6 +11563,10 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
           relativePath: `${languageEntry.workspace}/${languageEntry.workspaceCatalogRelativePath}`,
           content: lines(`
 package rtcstandard
+
+func rtcStringPtr(value string) *string {
+    return &value
+}
 
 type RtcLanguageWorkspaceCatalogEntry struct {
     Language                     string
@@ -10328,8 +11615,6 @@ type RtcLanguageWorkspaceProviderActivationContract struct {
 type RtcLanguageWorkspaceRuntimeBaseline struct {
     VendorSdkPackage        string
     VendorSdkImportPath     string
-    SignalingSdkPackage     string
-    SignalingSdkImportPath  string
     RecommendedEntrypoint   string
     SmokeCommand            string
     SmokeMode               string
@@ -10376,6 +11661,11 @@ type RtcLanguageWorkspaceProviderPackageScaffold struct {
     SourceSymbolPattern string
     TemplateTokens      []string
     SourceTemplateTokens []string
+    ReferenceProviderKey *string
+    ReferenceStatus *string
+    ReferenceRuntimeBridgeStatus *string
+    ReferenceVendorSdkPackage *string
+    ReferenceVendorSdkVersion *string
     RuntimeBridgeStatus string
     RootPublic          bool
     Status              string
@@ -10396,7 +11686,7 @@ ${renderReservedLanguageWorkspaceLookupHelper(languageEntry.language)}
       const workspaceEntries = entries
         .map(
           (entry) =>
-            `        RtcLanguageWorkspaceCatalogEntry(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'True' : 'False'}, ${entry.runtimeBridge ? 'True' : 'False'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, [${entry.roleHighlights.map(q).join(', ')}], RtcLanguageWorkspaceDefaultProviderContract(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), RtcLanguageWorkspaceProviderSelectionContract([${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}], [${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}], ${q(entry.providerSelectionContract?.defaultSource ?? '')}), RtcLanguageWorkspaceProviderSupportContract([${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}]), RtcLanguageWorkspaceProviderActivationContract([${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}]), ${entry.runtimeBaseline ? `RtcLanguageWorkspaceRuntimeBaseline(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.signalingSdkPackage)}, ${q(entry.runtimeBaseline.signalingSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, [${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}])` : 'None'}, RtcLanguageWorkspaceMetadataScaffold(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), RtcLanguageWorkspaceResolutionScaffold(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), RtcLanguageWorkspaceProviderPackageBoundaryContract([${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), RtcLanguageWorkspaceProviderPackageBoundary(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, [${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), ${entry.providerPackageScaffold ? `RtcLanguageWorkspaceProviderPackageScaffold(${q(entry.providerPackageScaffold.relativePath)}, ${q(entry.providerPackageScaffold.directoryPattern)}, ${q(entry.providerPackageScaffold.packagePattern)}, ${q(entry.providerPackageScaffold.manifestFileName)}, ${q(entry.providerPackageScaffold.readmeFileName)}, ${q(entry.providerPackageScaffold.sourceFilePattern)}, ${q(entry.providerPackageScaffold.sourceSymbolPattern)}, [${entry.providerPackageScaffold.templateTokens.map(q).join(', ')}], [${entry.providerPackageScaffold.sourceTemplateTokens.map(q).join(', ')}], ${q(entry.providerPackageScaffold.runtimeBridgeStatus)}, ${entry.providerPackageScaffold.rootPublic ? 'True' : 'False'}, ${q(entry.providerPackageScaffold.status)})` : 'None'}),`,
+            `        RtcLanguageWorkspaceCatalogEntry(${q(entry.language)}, ${q(entry.workspace)}, ${q(entry.workspaceCatalogRelativePath)}, ${q(entry.displayName)}, ${q(entry.publicPackage)}, ${q(entry.maturityTier)}, ${entry.controlSdk ? 'True' : 'False'}, ${entry.runtimeBridge ? 'True' : 'False'}, ${q(entry.currentRole)}, ${q(entry.workspaceSummary)}, [${entry.roleHighlights.map(q).join(', ')}], RtcLanguageWorkspaceDefaultProviderContract(${q(entry.defaultProviderContract?.providerKey ?? '')}, ${q(entry.defaultProviderContract?.pluginId ?? '')}, ${q(entry.defaultProviderContract?.driverId ?? '')}), RtcLanguageWorkspaceProviderSelectionContract([${(entry.providerSelectionContract?.sourceTerms ?? []).map(q).join(', ')}], [${(entry.providerSelectionContract?.precedence ?? []).map(q).join(', ')}], ${q(entry.providerSelectionContract?.defaultSource ?? '')}), RtcLanguageWorkspaceProviderSupportContract([${(entry.providerSupportContract?.statusTerms ?? []).map(q).join(', ')}]), RtcLanguageWorkspaceProviderActivationContract([${(entry.providerActivationContract?.statusTerms ?? []).map(q).join(', ')}]), ${entry.runtimeBaseline ? `RtcLanguageWorkspaceRuntimeBaseline(${q(entry.runtimeBaseline.vendorSdkPackage)}, ${q(entry.runtimeBaseline.vendorSdkImportPath)}, ${q(entry.runtimeBaseline.recommendedEntrypoint)}, ${q(entry.runtimeBaseline.smokeCommand)}, ${q(entry.runtimeBaseline.smokeMode)}, [${entry.runtimeBaseline.smokeVariants.map(q).join(', ')}])` : 'None'}, RtcLanguageWorkspaceMetadataScaffold(${q(entry.metadataScaffold?.providerCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.capabilityCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerExtensionCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerPackageCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerActivationCatalogRelativePath ?? '')}, ${q(entry.metadataScaffold?.providerSelectionRelativePath ?? '')}), RtcLanguageWorkspaceResolutionScaffold(${q(entry.resolutionScaffold?.driverManagerRelativePath ?? '')}, ${q(entry.resolutionScaffold?.dataSourceRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerSupportRelativePath ?? '')}, ${q(entry.resolutionScaffold?.providerPackageLoaderRelativePath ?? '')}), RtcLanguageWorkspaceProviderPackageBoundaryContract([${(entry.providerPackageBoundaryContract?.modeTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundaryContract?.rootPublicPolicyTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundaryContract?.lifecycleStatusTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundaryContract?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), RtcLanguageWorkspaceProviderPackageBoundary(${q(entry.providerPackageBoundary?.mode ?? '')}, ${q(entry.providerPackageBoundary?.rootPublicPolicy ?? '')}, [${(entry.providerPackageBoundary?.lifecycleStatusTerms ?? []).map(q).join(', ')}], [${(entry.providerPackageBoundary?.runtimeBridgeStatusTerms ?? []).map(q).join(', ')}]), ${renderProviderPackageScaffoldInitializer('python', entry.providerPackageScaffold)}),`,
         )
         .join('\n');
 
@@ -10461,8 +11751,6 @@ class RtcLanguageWorkspaceProviderActivationContract:
 class RtcLanguageWorkspaceRuntimeBaseline:
     vendorSdkPackage: str
     vendorSdkImportPath: str
-    signalingSdkPackage: str
-    signalingSdkImportPath: str
     recommendedEntrypoint: str
     smokeCommand: str
     smokeMode: str
@@ -10514,6 +11802,11 @@ class RtcLanguageWorkspaceProviderPackageScaffold:
     sourceSymbolPattern: str
     templateTokens: list[str]
     sourceTemplateTokens: list[str]
+    referenceProviderKey: Optional[str]
+    referenceStatus: Optional[str]
+    referenceRuntimeBridgeStatus: Optional[str]
+    referenceVendorSdkPackage: Optional[str]
+    referenceVendorSdkVersion: Optional[str]
     runtimeBridgeStatus: str
     rootPublic: bool
     status: str
@@ -10550,14 +11843,8 @@ export 'src/rtc_types.dart';
 export 'src/rtc_provider_metadata.dart';
 export 'src/rtc_client.dart';
 export 'src/rtc_driver.dart';
-export 'src/rtc_call_types.dart';
-export 'src/rtc_call_controller.dart';
-export 'src/rtc_call_session.dart';
-export 'src/rtc_signaling_adapter.dart';
-export 'src/rtc_signaling_protocol.dart';
-export 'src/rtc_signaling_transport.dart';
-export 'src/rtc_standard_call_stack.dart';
-export 'src/volcengine_official_flutter.dart';
+export 'src/rtc_runtime_surface.dart';
+export 'src/rtc_runtime_immutability.dart';
 export 'src/rtc_provider_catalog.dart';
 export 'src/rtc_provider_package_catalog.dart';
 export 'src/rtc_provider_activation_catalog.dart';
@@ -10569,7 +11856,6 @@ export 'src/rtc_provider_package_loader.dart';
 export 'src/rtc_provider_support.dart';
 export 'src/rtc_driver_manager.dart';
 export 'src/rtc_data_source.dart';
-export 'src/providers/volcengine.dart';
 `),
         },
       ];

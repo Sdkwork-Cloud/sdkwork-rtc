@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-
-async function loadSdk() {
-  return import('../dist/index.js');
-}
+import { createManagerWithProviderPackages, loadSdk } from './provider-test-helpers.mjs';
 
 test('capability negotiation standard exports stable statuses, rules, and resolver semantics', async () => {
   const sdk = await loadSdk();
@@ -26,21 +23,21 @@ test('capability negotiation standard exports stable statuses, rules, and resolv
 });
 
 test('data source negotiates optional capability degradation with surface-aware missing sets', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages(['aliyun']);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerKey: 'aliyun',
   });
 
   assert.deepEqual(
     dataSource.negotiateCapabilities({
-      required: ['session', 'call.audio'],
+      required: ['session', 'media.audio'],
       optional: ['recording', 'data-channel'],
     }),
     {
       status: 'degraded',
-      supportedRequired: ['session', 'call.audio'],
+      supportedRequired: ['session', 'media.audio'],
       missingRequired: [],
       supportedOptional: ['recording'],
       missingOptional: ['data-channel'],
@@ -54,10 +51,10 @@ test('data source negotiates optional capability degradation with surface-aware 
 });
 
 test('client describes capability support with category and surface metadata', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages(['aliyun']);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerKey: 'aliyun',
   });
   const client = await dataSource.createClient();
@@ -77,10 +74,10 @@ test('client describes capability support with category and surface metadata', a
 });
 
 test('client negotiation reports unsupported when required capabilities are missing', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages(['aliyun']);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerKey: 'aliyun',
   });
   const client = await dataSource.createClient();

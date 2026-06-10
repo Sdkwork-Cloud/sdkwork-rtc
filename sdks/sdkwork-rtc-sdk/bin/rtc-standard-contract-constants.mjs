@@ -32,7 +32,6 @@ export const OFFICIAL_RTC_LANGUAGE_WORKSPACE_KEYS = Object.freeze([
 
 export const RTC_LANGUAGE_RUNTIME_BASELINE_SMOKE_VARIANTS = Object.freeze([
   'default',
-  'reuse-live-connection',
 ]);
 
 export const RTC_PROVIDER_SUPPORT_STATUSES = Object.freeze([
@@ -43,7 +42,6 @@ export const RTC_PROVIDER_SUPPORT_STATUSES = Object.freeze([
 ]);
 
 export const RTC_PROVIDER_ACTIVATION_STATUSES = Object.freeze([
-  'root-public-builtin',
   'package-boundary',
   'control-metadata-only',
 ]);
@@ -66,12 +64,10 @@ export const RTC_PROVIDER_PACKAGE_BOUNDARY_MODES = Object.freeze([
 ]);
 
 export const RTC_PROVIDER_PACKAGE_BOUNDARY_ROOT_PUBLIC_POLICIES = Object.freeze([
-  'builtin-only',
   'none',
 ]);
 
 export const RTC_PROVIDER_PACKAGE_BOUNDARY_LIFECYCLE_STATUS_TERMS = Object.freeze([
-  'root_public_reference_boundary',
   'package_reference_boundary',
   'future-runtime-bridge-only',
 ]);
@@ -84,11 +80,8 @@ export const RTC_PROVIDER_PACKAGE_BOUNDARY_RUNTIME_BRIDGE_STATUS_TERMS = Object.
 export const RTC_PROVIDER_PACKAGE_BOUNDARY_PROFILES = Object.freeze({
   reference: Object.freeze({
     mode: 'catalog-governed-mixed',
-    rootPublicPolicy: 'builtin-only',
-    lifecycleStatusTerms: Object.freeze([
-      'root_public_reference_boundary',
-      'package_reference_boundary',
-    ]),
+    rootPublicPolicy: 'none',
+    lifecycleStatusTerms: Object.freeze(['package_reference_boundary']),
     runtimeBridgeStatusTerms: Object.freeze(['reference-baseline']),
   }),
   reserved: Object.freeze({
@@ -102,12 +95,13 @@ export const RTC_PROVIDER_PACKAGE_BOUNDARY_PROFILES = Object.freeze({
 export const REQUIRED_RTC_CAPABILITIES = Object.freeze([
   'session',
   'credential',
-  'callback',
+  'provider.webhook',
   'health',
-  'call.audio',
-  'call.video',
+  'media.audio',
+  'media.video',
   'live.broadcast',
   'live.audience',
+  'provider.event-normalization',
 ]);
 
 export const OPTIONAL_RTC_CAPABILITIES = Object.freeze([
@@ -121,6 +115,7 @@ export const OPTIONAL_RTC_CAPABILITIES = Object.freeze([
   'beauty',
   'spatial-audio',
   'e2ee',
+  'provider.active-query',
 ]);
 
 export const RTC_CAPABILITY_CATEGORIES = Object.freeze([
@@ -151,40 +146,13 @@ export const RTC_RUNTIME_SURFACE_METHODS = Object.freeze([
   'leave',
   'publish',
   'unpublish',
+  'startScreenShare',
+  'stopScreenShare',
   'muteAudio',
   'muteVideo',
 ]);
 
 export const RTC_RUNTIME_SURFACE_FAILURE_CODE = 'native_sdk_not_available';
-
-export const RTC_SIGNALING_TRANSPORT_TERM = 'websocket-only';
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH = 'connectOptions.webSocketAuth';
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM =
-  'signaling-adapter-pass-through';
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS = Object.freeze([
-  'automatic',
-  'headerBearer',
-  'queryBearer',
-  'none',
-]);
-
-export const RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE = 'automatic';
-
-export const RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM =
-  'top-level-device-id';
-
-export const RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM =
-  'must-match-top-level-device-id';
-
-export const RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM =
-  'shared-rtc-live-connection';
-
-export const RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM = 'not-supported';
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM = 'fail-fast';
 
 export const RTC_RUNTIME_IMMUTABILITY_FROZEN_TERM = 'runtime-frozen';
 
@@ -197,18 +165,12 @@ export const RTC_RUNTIME_IMMUTABILITY_NATIVE_CLIENT_TERM = 'mutable-native-clien
 export const RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_PROVIDER_NEUTRAL_EXPORT_PATHS = Object.freeze([
   './errors.js',
   './runtime-surface.js',
-  './signaling-transport.js',
   './runtime-immutability.js',
   './root-public-surface.js',
   './types.js',
-  './call-types.js',
-  './call-controller.js',
-  './call-session.js',
-  './signaling-adapter.js',
-  './standard-call-stack.js',
-  './app-http-client.js',
   './capability-catalog.js',
   './capability-negotiation.js',
+  './provider-catalog.js',
   './language-workspace-catalog.js',
   './provider-selection.js',
   './provider-support.js',
@@ -222,20 +184,11 @@ export const RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_PROVIDER_NEUTRAL_EXPORT_PATHS = 
   './driver-manager.js',
   './data-source.js',
   './provider-module.js',
-  './providers/index.js',
 ]);
 
-export const RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_BUILTIN_PROVIDER_EXPORT_PATHS = Object.freeze([
-  './providers/volcengine.js',
-  './providers/aliyun.js',
-  './providers/tencent.js',
-  './providers/agora.js',
-  './providers/livekit.js',
-]);
+export const RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_BUILTIN_PROVIDER_EXPORT_PATHS = Object.freeze([]);
 
-export const RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_INLINE_HELPER_NAMES = Object.freeze([
-  'createBuiltinRtcDriverManager',
-]);
+export const RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_INLINE_HELPER_NAMES = Object.freeze([]);
 
 export const RTC_ROOT_PUBLIC_SURFACE_RESERVED_SURFACE_FAMILIES = Object.freeze([
   'standard-contract',
@@ -258,7 +211,7 @@ export const RTC_ROOT_PUBLIC_SURFACE_RESERVED_ENTRYPOINT_KINDS = Object.freeze({
 });
 
 export const RTC_ROOT_PUBLIC_SURFACE_BUILTIN_PROVIDER_EXPOSURE_TERM =
-  'root-public-builtin-only';
+  'provider-plugin-package-only';
 
 export const RTC_ROOT_PUBLIC_SURFACE_NON_BUILTIN_PROVIDER_EXPOSURE_TERM =
   'package-boundary-only';
@@ -390,8 +343,6 @@ export const RTC_SDK_ERROR_CODES = Object.freeze([
   'invalid_provider_url',
   'invalid_native_config',
   'native_sdk_not_available',
-  'signaling_not_available',
-  'call_state_invalid',
   'vendor_error',
 ]);
 
@@ -431,10 +382,12 @@ export const TYPESCRIPT_ADAPTER_BUNDLE_POLICIES = Object.freeze([
 
 export const TYPESCRIPT_ADAPTER_RUNTIME_BRIDGE_STATUSES = Object.freeze([
   'reference-baseline',
+  'reserved',
 ]);
 
 export const TYPESCRIPT_ADAPTER_OFFICIAL_VENDOR_SDK_REQUIREMENTS = Object.freeze([
   'required',
+  'not-declared-until-bridge',
 ]);
 
 export const DEFAULT_TYPESCRIPT_ADAPTER_CONTRACT = Object.freeze({
@@ -447,11 +400,11 @@ export const DEFAULT_TYPESCRIPT_ADAPTER_CONTRACT = Object.freeze({
 
 export const DEFAULT_TYPESCRIPT_PACKAGE_STANDARD = Object.freeze({
   packageNamePattern: '@sdkwork/rtc-sdk-provider-{providerKey}',
-  sourceModulePattern: '../../src/providers/{providerKey}.ts',
+  sourceModulePattern: './index.js',
   driverFactoryPattern: 'create{providerPascal}RtcDriver',
   metadataSymbolPattern: '{providerUpperSnake}_RTC_PROVIDER_METADATA',
   moduleSymbolPattern: '{providerUpperSnake}_RTC_PROVIDER_MODULE',
-  rootPublicRule: 'builtin-aligned',
+  rootPublicRule: 'plugin-package-only',
 });
 
 export const DEFAULT_ROOT_PUBLIC_SURFACE_STANDARD = Object.freeze({
@@ -464,20 +417,6 @@ export const DEFAULT_ROOT_PUBLIC_SURFACE_STANDARD = Object.freeze({
   reservedEntryPointKinds: RTC_ROOT_PUBLIC_SURFACE_RESERVED_ENTRYPOINT_KINDS,
   builtinProviderExposureTerm: RTC_ROOT_PUBLIC_SURFACE_BUILTIN_PROVIDER_EXPOSURE_TERM,
   nonBuiltinProviderExposureTerm: RTC_ROOT_PUBLIC_SURFACE_NON_BUILTIN_PROVIDER_EXPOSURE_TERM,
-});
-
-export const DEFAULT_SIGNALING_TRANSPORT_STANDARD = Object.freeze({
-  transportTerm: RTC_SIGNALING_TRANSPORT_TERM,
-  authConfigPath: RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH,
-  authPassThroughTerm: RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM,
-  authModeTerms: RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS,
-  recommendedAuthMode: RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE,
-  deviceIdAuthorityTerm: RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM,
-  connectOptionsDeviceIdRuleTerm:
-    RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM,
-  liveConnectionTerm: RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM,
-  pollingFallbackTerm: RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM,
-  authFailureTerm: RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM,
 });
 
 export const DEFAULT_LOOKUP_HELPER_NAMING_STANDARD = Object.freeze({

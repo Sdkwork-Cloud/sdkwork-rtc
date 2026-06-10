@@ -26,7 +26,7 @@ public enum RtcProviderExtensionCatalog {
 
     public static let entries: [RtcProviderExtensionCatalogEntry] = [
         .init(extensionKey: "volcengine.native-client", providerKey: "volcengine", displayName: "Volcengine Native Client", surface: "runtime-bridge", access: "unwrap-only", status: "reference-baseline"),
-        .init(extensionKey: "aliyun.native-client", providerKey: "aliyun", displayName: "Aliyun Native Client", surface: "runtime-bridge", access: "unwrap-only", status: "reference-baseline"),
+        .init(extensionKey: "aliyun.native-client", providerKey: "aliyun", displayName: "Aliyun Native Client", surface: "runtime-bridge", access: "unwrap-only", status: "reserved"),
         .init(extensionKey: "tencent.native-client", providerKey: "tencent", displayName: "Tencent Native Client", surface: "runtime-bridge", access: "unwrap-only", status: "reference-baseline"),
         .init(extensionKey: "agora.native-client", providerKey: "agora", displayName: "Agora Native Client", surface: "runtime-bridge", access: "unwrap-only", status: "reserved"),
         .init(extensionKey: "zego.native-client", providerKey: "zego", displayName: "ZEGO Native Client", surface: "runtime-bridge", access: "unwrap-only", status: "reserved"),

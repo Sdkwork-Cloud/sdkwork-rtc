@@ -8,13 +8,14 @@ pub struct RtcCapabilityCatalogEntry {
 
 pub struct RtcCapabilityCatalog;
 
-pub const RTC_CAPABILITY_CATALOG: [RtcCapabilityCatalogEntry; 18] = [
+pub const RTC_CAPABILITY_CATALOG: [RtcCapabilityCatalogEntry; 20] = [
     RtcCapabilityCatalogEntry { capabilityKey: "session", category: "required-baseline", surface: "cross-surface" },
     RtcCapabilityCatalogEntry { capabilityKey: "credential", category: "required-baseline", surface: "control-plane" },
-    RtcCapabilityCatalogEntry { capabilityKey: "callback", category: "required-baseline", surface: "control-plane" },
+    RtcCapabilityCatalogEntry { capabilityKey: "provider.webhook", category: "required-baseline", surface: "control-plane" },
+    RtcCapabilityCatalogEntry { capabilityKey: "provider.event-normalization", category: "required-baseline", surface: "control-plane" },
     RtcCapabilityCatalogEntry { capabilityKey: "health", category: "required-baseline", surface: "control-plane" },
-    RtcCapabilityCatalogEntry { capabilityKey: "call.audio", category: "required-baseline", surface: "runtime-bridge" },
-    RtcCapabilityCatalogEntry { capabilityKey: "call.video", category: "required-baseline", surface: "runtime-bridge" },
+    RtcCapabilityCatalogEntry { capabilityKey: "media.audio", category: "required-baseline", surface: "runtime-bridge" },
+    RtcCapabilityCatalogEntry { capabilityKey: "media.video", category: "required-baseline", surface: "runtime-bridge" },
     RtcCapabilityCatalogEntry { capabilityKey: "live.broadcast", category: "required-baseline", surface: "cross-surface" },
     RtcCapabilityCatalogEntry { capabilityKey: "live.audience", category: "required-baseline", surface: "cross-surface" },
     RtcCapabilityCatalogEntry { capabilityKey: "screen-share", category: "optional-advanced", surface: "runtime-bridge" },
@@ -27,6 +28,7 @@ pub const RTC_CAPABILITY_CATALOG: [RtcCapabilityCatalogEntry; 18] = [
     RtcCapabilityCatalogEntry { capabilityKey: "beauty", category: "optional-advanced", surface: "runtime-bridge" },
     RtcCapabilityCatalogEntry { capabilityKey: "spatial-audio", category: "optional-advanced", surface: "runtime-bridge" },
     RtcCapabilityCatalogEntry { capabilityKey: "e2ee", category: "optional-advanced", surface: "runtime-bridge" },
+    RtcCapabilityCatalogEntry { capabilityKey: "provider.active-query", category: "optional-advanced", surface: "control-plane" },
 ];
 
 pub fn get_rtc_capability_catalog() -> &'static [RtcCapabilityCatalogEntry] {

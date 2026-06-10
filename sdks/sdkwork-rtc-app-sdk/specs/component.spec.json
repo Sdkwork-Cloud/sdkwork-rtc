@@ -45,24 +45,36 @@
           "python": "sdkwork-rtc-sdk",
           "go": "github.com/sdkwork/sdkwork-rtc-sdk"
         }
+      },
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "role": "drive-media-resource-app-capability",
+        "required": true,
+        "dependencyMode": "consumer-sdk",
+        "apiPrefix": "/app/v3/api",
+        "apiAuthority": "sdkwork-drive.app",
+        "generatedTransportImportPolicy": "forbidden",
+        "packageByLanguage": {
+          "typescript": "@sdkwork/drive-app-sdk",
+          "rust": "sdkwork-drive-app-sdk",
+          "java": "com.sdkwork:sdkwork-drive-app-sdk",
+          "python": "sdkwork-drive-app-sdk",
+          "go": "github.com/sdkwork/sdkwork-drive-app-sdk"
+        }
       }
     ],
     "events": [],
     "configKeys": [],
     "ownedOperations": [
-      "rtc.providerCallbacks.create",
-      "rtc.providerHealth.retrieve",
-      "rtc.sessions.create",
-      "rtc.sessions.retrieve",
-      "rtc.sessions.accept",
-      "rtc.artifacts.recording.retrieve",
-      "rtc.credentials.issue",
-      "rtc.sessions.end",
-      "rtc.sessions.invite",
-      "rtc.records.list",
-      "rtc.sessions.reject",
-      "rtc.signals.list",
-      "rtc.signals.create"
+      "rtc.mediaSessions.list",
+      "rtc.mediaSessions.create",
+      "rtc.mediaSessions.retrieve",
+      "rtc.mediaSessions.completionRecord.retrieve",
+      "rtc.mediaSessions.participantCredentials.issue",
+      "rtc.mediaSessions.recordingArtifacts.list",
+      "rtc.providerProfiles.active.list",
+      "rtc.rooms.list",
+      "rtc.rooms.retrieve"
     ]
   },
   "verification": {

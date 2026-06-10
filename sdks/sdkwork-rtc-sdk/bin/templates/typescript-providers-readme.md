@@ -17,12 +17,17 @@ Rules:
 - every package manifest must declare the provider extension keys bound to that provider package
 - the assembly-driven machine-readable package boundary catalog lives at
   `../src/provider-package-catalog.ts`
-- package boundary statuses are standardized as `root_public_reference_boundary` for builtin root-public
-  packages and `package_reference_boundary` for non-builtin executable package boundaries
+- package boundary statuses are standardized as `package_reference_boundary` for executable
+  provider plugin package boundaries
 - every package manifest must declare the TypeScript vendor SDK contract:
   `consumer-supplied` provisioning, `native-factory` binding, `must-not-bundle`
-  bundle policy, `reference-baseline` runtime bridge status, and official vendor SDK requirement of `required`
-- built-in providers are the only provider packages whose driver factory and module symbol may be
-  re-exported from the root `@sdkwork/rtc-sdk` entrypoint
-- the root `@sdkwork/rtc-sdk` package does not re-export future non-builtin provider packages
-- each provider package wraps the official vendor SDK instead of re-implementing media runtime
+  bundle policy, the provider-specific runtime bridge status, and the matching official vendor SDK
+  requirement
+- provider driver factories and module symbols must not be re-exported from the root
+  `@sdkwork/rtc-sdk` entrypoint
+- the root `@sdkwork/rtc-sdk` package exposes provider-neutral SPI, catalogs, loaders, manager,
+  and data-source contracts only
+- `reference-baseline` provider packages wrap verified official vendor SDK bridges
+- `reserved` provider packages keep the official plugin boundary and accept consumer-supplied
+  `nativeFactory` / `runtimeController` hooks, but do not declare vendor SDK peers until a verified
+  official bridge is implemented

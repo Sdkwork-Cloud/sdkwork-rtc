@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   createRtcParticipantDigest,
-  createRtcDesktopCallIntent,
+  createRtcMediaSessionOpenIntent,
   createRtcSessionDigest,
-  createRtcWorkspaceManifest,
+  createRtcMediaWorkspaceManifest,
   evaluateRtcJoinReadiness,
   resolveRtcControlState,
   resolveRtcQualityBadge,
@@ -41,10 +41,10 @@ const participants: SdkworkRtcParticipant[] = [
 
 const session: SdkworkRtcSession = {
   activeSpeakerId: "guest-zara",
-  callType: "video",
-  connectedAt: "2026-04-02T09:00:20.000Z",
-  id: "call-1",
+  activeAt: "2026-04-02T09:00:20.000Z",
+  id: "media-1",
   localParticipantId: "local-me",
+  mediaMode: "video",
   participants: [
     {
       id: "local-me",
@@ -64,7 +64,7 @@ const session: SdkworkRtcSession = {
   ],
   roomId: "room-1",
   startedAt: "2026-04-02T09:00:00.000Z",
-  status: "connected",
+  status: "active",
 };
 
 function requireParticipant(
@@ -77,12 +77,12 @@ function requireParticipant(
 }
 
 describe("sdkwork-rtc-pc-react", () => {
-  it("transitions session state across ringing, join, connect, and active speaker updates", () => {
-    const ringingSession = transitionRtcSession(session, {
+  it("transitions media session state across preparing, join, active, and active speaker updates", () => {
+    const preparingSession = transitionRtcSession(session, {
       startedAt: "2026-04-02T09:00:00.000Z",
-      type: "ringing",
+      type: "preparing",
     });
-    const joinedSession = transitionRtcSession(ringingSession, {
+    const joinedSession = transitionRtcSession(preparingSession, {
       participant: {
         id: "guest-zara",
         isLocal: false,
@@ -92,21 +92,21 @@ describe("sdkwork-rtc-pc-react", () => {
       },
       type: "participant-joined",
     });
-    const connectedSession = transitionRtcSession(joinedSession, {
-      connectedAt: "2026-04-02T09:00:20.000Z",
-      type: "connected",
+    const activeSession = transitionRtcSession(joinedSession, {
+      activeAt: "2026-04-02T09:00:20.000Z",
+      type: "active",
     });
-    const activeSpeakerSession = transitionRtcSession(connectedSession, {
+    const activeSpeakerSession = transitionRtcSession(activeSession, {
       participantId: "guest-zara",
       type: "active-speaker",
     });
 
     expect(activeSpeakerSession).toMatchObject({
       activeSpeakerId: "guest-zara",
-      connectedAt: "2026-04-02T09:00:20.000Z",
+      activeAt: "2026-04-02T09:00:20.000Z",
       participants: [expect.objectContaining({ id: "local-me" }), expect.objectContaining({ id: "guest-zara" })],
       startedAt: "2026-04-02T09:00:00.000Z",
-      status: "connected",
+      status: "active",
     });
   });
 
@@ -118,11 +118,11 @@ describe("sdkwork-rtc-pc-react", () => {
     ]);
   });
 
-  it("resolves control availability from session state and call type", () => {
+  it("resolves control availability from session state and media mode", () => {
     expect(
       resolveRtcControlState({
         ...session,
-        status: "connected",
+        status: "active",
       }),
     ).toEqual({
       canLeave: true,
@@ -135,7 +135,7 @@ describe("sdkwork-rtc-pc-react", () => {
     expect(
       resolveRtcControlState({
         ...session,
-        callType: "audio",
+        mediaMode: "audio",
         status: "ended",
       }),
     ).toEqual({
@@ -170,38 +170,38 @@ describe("sdkwork-rtc-pc-react", () => {
     });
   });
 
-  it("creates session digests and summarizes queue-friendly rtc call collections", () => {
-    const connectedDigest = createRtcSessionDigest(session, {
-      activeSessionId: "call-1",
+  it("creates session digests and summarizes queue-friendly RTC media collections", () => {
+    const activeDigest = createRtcSessionDigest(session, {
+      activeSessionId: "media-1",
       latencyMs: 72,
       now: "2026-04-02T09:05:20.000Z",
       packetLossRate: 0.01,
     });
 
-    expect(connectedDigest).toEqual({
+    expect(activeDigest).toEqual({
       activeSpeakerId: "guest-zara",
-      callType: "video",
-      connectedAt: "2026-04-02T09:00:20.000Z",
+      activeAt: "2026-04-02T09:00:20.000Z",
       digestStatus: "live",
       durationSeconds: 300,
-      id: "call-1",
+      id: "media-1",
       isActive: true,
+      mediaMode: "video",
       participantCount: 2,
       qualityLabel: "Excellent",
       roomId: "room-1",
       startedAt: "2026-04-02T09:00:00.000Z",
-      status: "connected",
+      status: "active",
       title: "Zara",
     });
 
-    const ringingDigest = createRtcSessionDigest(
+    const preparingDigest = createRtcSessionDigest(
       {
         ...session,
-        connectedAt: undefined,
-        id: "call-2",
+        activeAt: undefined,
+        id: "media-2",
         roomId: "room-2",
         startedAt: "2026-04-02T09:07:00.000Z",
-        status: "ringing",
+        status: "preparing",
       },
       {
         latencyMs: 180,
@@ -214,10 +214,10 @@ describe("sdkwork-rtc-pc-react", () => {
       {
         ...session,
         activeSpeakerId: undefined,
-        callType: "audio",
+        mediaMode: "audio",
         endedAt: "2026-04-02T09:09:00.000Z",
         failureReason: "ice-timeout",
-        id: "call-3",
+        id: "media-3",
         roomId: "room-3",
         status: "failed",
       },
@@ -227,14 +227,15 @@ describe("sdkwork-rtc-pc-react", () => {
     );
 
     expect(
-      summarizeRtcSessionDigests([connectedDigest, ringingDigest, failedDigest]),
+      summarizeRtcSessionDigests([activeDigest, preparingDigest, failedDigest]),
     ).toEqual({
       activeSessions: 1,
-      connectedSessions: 1,
+      activeMediaSessions: 1,
+      closingSessions: 0,
       endedSessions: 0,
       issueSessions: 1,
       latestStartedAt: "2026-04-02T09:07:00.000Z",
-      ringingSessions: 1,
+      preparingSessions: 1,
       totalParticipants: 6,
       totalSessions: 3,
       liveSessions: 0,
@@ -245,9 +246,9 @@ describe("sdkwork-rtc-pc-react", () => {
   it("treats live sessions as first-class RTC sessions with camera and summary support", () => {
     const liveSession: SdkworkRtcSession = {
       ...session,
-      callType: "live",
+      mediaMode: "live",
       id: "live-1",
-      status: "connected",
+      status: "active",
     };
     const liveDigest = createRtcSessionDigest(liveSession, {
       activeSessionId: "live-1",
@@ -282,7 +283,7 @@ describe("sdkwork-rtc-pc-react", () => {
     });
   });
 
-  it("creates participant digests and summarizes roster state for floating call surfaces", () => {
+  it("creates participant digests and summarizes roster state for floating media surfaces", () => {
     const localParticipant = requireParticipant(session.participants[0]);
     const remoteParticipant = requireParticipant(session.participants[1]);
 
@@ -335,8 +336,8 @@ describe("sdkwork-rtc-pc-react", () => {
       evaluateRtcJoinReadiness(
         {
           ...session,
-          connectedAt: undefined,
-          status: "ringing",
+          activeAt: undefined,
+          status: "preparing",
         },
         {
           connectionStatus: "online",
@@ -451,19 +452,19 @@ describe("sdkwork-rtc-pc-react", () => {
     });
   });
 
-  it("creates an RTC workspace manifest and call intent for desktop shells", () => {
-    const manifest = createRtcWorkspaceManifest({
+  it("creates an RTC media workspace manifest and media session open intent for desktop shells", () => {
+    const manifest = createRtcMediaWorkspaceManifest({
       launchMode: "floating-window",
       packageNames: ["@sdkwork/rtc-pc-react", "@sdkwork/notification-pc-react"],
-      title: "Calls",
+      title: "RTC Media",
     });
 
     expect(manifest).toMatchObject({
       capability: "rtc",
       launchMode: "floating-window",
-      routePath: "/calls",
-      sessionRoutePattern: "/calls/:sessionId",
-      title: "Calls",
+      routePath: "/rtc/media-sessions",
+      sessionRoutePattern: "/rtc/media-sessions/:sessionId",
+      title: "RTC Media",
     });
     expect(manifest.packageNames).toEqual([
       "@sdkwork/rtc-pc-react",
@@ -471,15 +472,15 @@ describe("sdkwork-rtc-pc-react", () => {
     ]);
 
     expect(
-      createRtcDesktopCallIntent({
-        sessionId: "call-1",
+      createRtcMediaSessionOpenIntent({
+        sessionId: "media-1",
       }),
     ).toEqual({
       focusWindow: true,
-      route: "/calls/call-1",
-      sessionId: "call-1",
-      source: "call-toast",
-      type: "rtc-call-intent",
+      route: "/rtc/media-sessions/media-1",
+      sessionId: "media-1",
+      source: "media-session-list",
+      type: "rtc-media-session-open-intent",
     });
   });
 });

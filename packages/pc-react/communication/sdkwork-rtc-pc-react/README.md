@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Realtime audio and video calling, room state, and call controls.
+Realtime audio, video, live media sessions, room state, and media controls.
 
 ## Placement
 

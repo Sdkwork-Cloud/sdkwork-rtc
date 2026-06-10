@@ -41,70 +41,136 @@ CREATE TABLE rtc_room_participant (
 CREATE INDEX idx_rtc_room_participant_room_state
     ON rtc_room_participant (tenant_id, organization_id, room_id, state);
 
-CREATE TABLE rtc_call_session (
+CREATE TABLE rtc_media_session (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
     organization_id BIGINT NOT NULL DEFAULT 0,
     room_id VARCHAR(64) NOT NULL,
     owner_user_id BIGINT NOT NULL,
-    call_type INTEGER NOT NULL,
+    media_mode INTEGER NOT NULL,
     status INTEGER NOT NULL,
     provider_profile_id VARCHAR(64),
     provider_session_id VARCHAR(256),
     started_at TIMESTAMP,
     connected_at TIMESTAMP,
     ended_at TIMESTAMP,
+    duration_ms BIGINT,
+    end_reason VARCHAR(500),
+    end_source VARCHAR(64),
     failure_reason VARCHAR(500),
+    participant_count INTEGER NOT NULL DEFAULT 0,
+    max_concurrent_participants INTEGER NOT NULL DEFAULT 0,
+    quality_summary_snapshot JSONB,
+    recording_summary_snapshot JSONB,
+    completion_recorded_at TIMESTAMP,
+    last_provider_webhook_event_id VARCHAR(64),
+    last_provider_query_job_id VARCHAR(64),
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL DEFAULT 0,
     deleted_at TIMESTAMP,
     PRIMARY KEY (id),
-    CONSTRAINT uk_rtc_call_session_uuid UNIQUE (uuid)
+    CONSTRAINT uk_rtc_media_session_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_call_session_tenant_room_status_updated
-    ON rtc_call_session (tenant_id, organization_id, room_id, status, updated_at);
+CREATE INDEX idx_rtc_media_session_tenant_room_status_updated
+    ON rtc_media_session (tenant_id, organization_id, room_id, status, updated_at);
 
-CREATE INDEX idx_rtc_call_session_provider_status
-    ON rtc_call_session (provider_profile_id, status, updated_at);
+CREATE INDEX idx_rtc_media_session_provider_status
+    ON rtc_media_session (provider_profile_id, status, updated_at);
 
-CREATE TABLE rtc_call_record (
+CREATE INDEX idx_rtc_media_session_completion_recorded
+    ON rtc_media_session (tenant_id, organization_id, completion_recorded_at);
+
+CREATE TABLE rtc_media_session_completion_record (
+    id BIGINT NOT NULL,
+    uuid VARCHAR(64) NOT NULL,
+    tenant_id BIGINT NOT NULL,
+    organization_id BIGINT NOT NULL DEFAULT 0,
+    session_id VARCHAR(64) NOT NULL,
+    room_id VARCHAR(64) NOT NULL,
+    owner_user_id BIGINT NOT NULL,
+    provider_profile_id VARCHAR(64),
+    provider_session_id VARCHAR(256),
+    media_mode INTEGER NOT NULL,
+    session_status INTEGER NOT NULL,
+    started_at TIMESTAMP,
+    connected_at TIMESTAMP,
+    ended_at TIMESTAMP,
+    duration_ms BIGINT,
+    end_reason VARCHAR(500),
+    end_source VARCHAR(64),
+    participant_count INTEGER NOT NULL DEFAULT 0,
+    max_concurrent_participants INTEGER NOT NULL DEFAULT 0,
+    artifact_count INTEGER NOT NULL DEFAULT 0,
+    recording_artifact_count INTEGER NOT NULL DEFAULT 0,
+    failed_artifact_count INTEGER NOT NULL DEFAULT 0,
+    quality_summary_snapshot JSONB NOT NULL,
+    recording_summary_snapshot JSONB NOT NULL,
+    participant_summary_snapshot JSONB NOT NULL,
+    track_summary_snapshot JSONB NOT NULL,
+    artifact_summary_snapshot JSONB NOT NULL,
+    provider_webhook_event_id VARCHAR(64),
+    provider_query_job_id VARCHAR(64),
+    completion_snapshot JSONB NOT NULL,
+    completion_snapshot_hash VARCHAR(128) NOT NULL,
+    recorded_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    version BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_rtc_media_session_completion_record_uuid UNIQUE (uuid),
+    CONSTRAINT uk_rtc_media_session_completion_record_session UNIQUE (session_id)
+);
+
+CREATE INDEX idx_rtc_media_session_completion_record_tenant_recorded
+    ON rtc_media_session_completion_record (tenant_id, organization_id, recorded_at);
+
+CREATE INDEX idx_rtc_media_session_completion_record_provider_recorded
+    ON rtc_media_session_completion_record (provider_profile_id, recorded_at);
+
+CREATE TABLE rtc_media_artifact (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
     organization_id BIGINT NOT NULL DEFAULT 0,
     session_id VARCHAR(64) NOT NULL,
     owner_user_id BIGINT NOT NULL,
-    record_kind INTEGER NOT NULL,
-    record_status INTEGER NOT NULL,
+    artifact_kind INTEGER NOT NULL,
+    artifact_status INTEGER NOT NULL,
     media_role VARCHAR(64) NOT NULL,
     provider_profile_id VARCHAR(64),
-    provider_record_id VARCHAR(256),
+    provider_artifact_id VARCHAR(256),
     drive_space_id VARCHAR(64) NOT NULL,
+    drive_space_type VARCHAR(32) NOT NULL DEFAULT 'rtc',
     drive_node_id VARCHAR(64) NOT NULL,
     drive_uri VARCHAR(512) NOT NULL,
     media_resource_snapshot JSONB NOT NULL,
     resource_hash VARCHAR(128) NOT NULL,
     started_at TIMESTAMP,
     ended_at TIMESTAMP,
+    duration_ms BIGINT,
+    failure_reason VARCHAR(500),
+    source_provider_webhook_event_id VARCHAR(64),
+    source_provider_query_job_id VARCHAR(64),
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
-    CONSTRAINT uk_rtc_call_record_uuid UNIQUE (uuid),
-    CONSTRAINT uk_rtc_call_record_drive_uri UNIQUE (drive_uri),
-    CONSTRAINT ck_rtc_call_record_drive_uri CHECK (drive_uri LIKE 'drive://spaces/%/nodes/%')
+    CONSTRAINT uk_rtc_media_artifact_uuid UNIQUE (uuid),
+    CONSTRAINT uk_rtc_media_artifact_drive_uri UNIQUE (drive_uri),
+    CONSTRAINT ck_rtc_media_artifact_drive_uri CHECK (drive_uri LIKE 'drive://spaces/%/nodes/%'),
+    CONSTRAINT ck_rtc_media_artifact_drive_space_type CHECK (drive_space_type = 'rtc')
 );
 
-CREATE INDEX idx_rtc_call_record_session_created
-    ON rtc_call_record (tenant_id, organization_id, session_id, created_at);
+CREATE INDEX idx_rtc_media_artifact_session_created
+    ON rtc_media_artifact (tenant_id, organization_id, session_id, created_at);
 
-CREATE INDEX idx_rtc_call_record_owner_created
-    ON rtc_call_record (tenant_id, organization_id, owner_user_id, created_at);
+CREATE INDEX idx_rtc_media_artifact_owner_created
+    ON rtc_media_artifact (tenant_id, organization_id, owner_user_id, created_at);
 
-CREATE TABLE rtc_call_participant (
+CREATE TABLE rtc_media_participant (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -120,64 +186,19 @@ CREATE TABLE rtc_call_participant (
     provider_participant_id VARCHAR(256),
     joined_at TIMESTAMP,
     left_at TIMESTAMP,
+    duration_ms BIGINT,
+    leave_reason VARCHAR(500),
+    last_seen_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
-    CONSTRAINT uk_rtc_call_participant_uuid UNIQUE (uuid),
-    CONSTRAINT uk_rtc_call_participant_session_user UNIQUE (session_id, user_id)
+    CONSTRAINT uk_rtc_media_participant_uuid UNIQUE (uuid),
+    CONSTRAINT uk_rtc_media_participant_session_user UNIQUE (session_id, user_id)
 );
 
-CREATE INDEX idx_rtc_call_participant_session_state
-    ON rtc_call_participant (tenant_id, organization_id, session_id, state);
-
-CREATE TABLE rtc_call_invitation (
-    id BIGINT NOT NULL,
-    uuid VARCHAR(64) NOT NULL,
-    tenant_id BIGINT NOT NULL,
-    organization_id BIGINT NOT NULL DEFAULT 0,
-    session_id VARCHAR(64) NOT NULL,
-    inviter_user_id BIGINT NOT NULL,
-    invitee_user_id BIGINT NOT NULL,
-    status INTEGER NOT NULL,
-    expire_at TIMESTAMP NOT NULL,
-    accepted_at TIMESTAMP,
-    declined_at TIMESTAMP,
-    idempotency_key VARCHAR(128),
-    request_id UUID,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    version BIGINT NOT NULL DEFAULT 0,
-    PRIMARY KEY (id),
-    CONSTRAINT uk_rtc_call_invitation_uuid UNIQUE (uuid),
-    CONSTRAINT uk_rtc_call_invitation_tenant_idempotency UNIQUE (tenant_id, idempotency_key)
-);
-
-CREATE INDEX idx_rtc_call_invitation_invitee_status_created
-    ON rtc_call_invitation (tenant_id, organization_id, invitee_user_id, status, created_at);
-
-CREATE TABLE rtc_signaling_event (
-    id BIGINT NOT NULL,
-    uuid VARCHAR(64) NOT NULL,
-    tenant_id BIGINT NOT NULL,
-    organization_id BIGINT NOT NULL DEFAULT 0,
-    session_id VARCHAR(64) NOT NULL,
-    sender_user_id BIGINT,
-    event_type VARCHAR(64) NOT NULL,
-    payload JSONB NOT NULL,
-    sequence_no BIGINT NOT NULL,
-    idempotency_key VARCHAR(128),
-    payload_hash VARCHAR(128),
-    created_at TIMESTAMP NOT NULL,
-    status INTEGER NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT uk_rtc_signaling_event_uuid UNIQUE (uuid),
-    CONSTRAINT uk_rtc_signaling_event_session_sequence UNIQUE (session_id, sequence_no),
-    CONSTRAINT uk_rtc_signaling_event_tenant_idempotency UNIQUE (tenant_id, idempotency_key)
-);
-
-CREATE INDEX idx_rtc_signaling_event_session_created
-    ON rtc_signaling_event (tenant_id, organization_id, session_id, created_at);
+CREATE INDEX idx_rtc_media_participant_session_state
+    ON rtc_media_participant (tenant_id, organization_id, session_id, state);
 
 CREATE TABLE rtc_media_track (
     id BIGINT NOT NULL,
@@ -192,6 +213,9 @@ CREATE TABLE rtc_media_track (
     status INTEGER NOT NULL,
     started_at TIMESTAMP,
     ended_at TIMESTAMP,
+    duration_ms BIGINT,
+    muted_duration_ms BIGINT,
+    end_reason VARCHAR(500),
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL DEFAULT 0,
@@ -231,18 +255,42 @@ CREATE TABLE rtc_provider_profile (
     code VARCHAR(128) NOT NULL,
     name VARCHAR(200) NOT NULL,
     status INTEGER NOT NULL,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    priority INTEGER NOT NULL DEFAULT 100,
+    environment VARCHAR(64) NOT NULL DEFAULT 'production',
+    region VARCHAR(64),
+    provider_app_id VARCHAR(256),
+    endpoint VARCHAR(512),
+    credential_ref VARCHAR(512),
+    credential_fingerprint VARCHAR(128),
+    webhook_secret_ref VARCHAR(512),
+    webhook_secret_fingerprint VARCHAR(128),
+    capability_snapshot JSONB NOT NULL,
     config_snapshot JSONB NOT NULL,
+    health_status INTEGER NOT NULL DEFAULT 0,
+    last_verified_at TIMESTAMP,
+    last_verification_latency_ms INTEGER,
+    last_verification_error VARCHAR(1000),
+    created_by BIGINT,
+    updated_by BIGINT,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL DEFAULT 0,
     deleted_at TIMESTAMP,
+    deleted_by BIGINT,
     PRIMARY KEY (id),
     CONSTRAINT uk_rtc_provider_profile_uuid UNIQUE (uuid),
-    CONSTRAINT uk_rtc_provider_profile_tenant_code UNIQUE (tenant_id, code)
+    CONSTRAINT uk_rtc_provider_profile_tenant_org_provider_code UNIQUE (tenant_id, organization_id, provider, code)
 );
 
 CREATE INDEX idx_rtc_provider_profile_tenant_status
     ON rtc_provider_profile (tenant_id, organization_id, status);
+
+CREATE INDEX idx_rtc_provider_profile_tenant_provider_status_priority
+    ON rtc_provider_profile (tenant_id, organization_id, provider, status, priority);
+
+CREATE INDEX idx_rtc_provider_profile_tenant_default
+    ON rtc_provider_profile (tenant_id, organization_id, is_default, status, priority);
 
 CREATE TABLE rtc_provider_route (
     id BIGINT NOT NULL,
@@ -251,18 +299,28 @@ CREATE TABLE rtc_provider_route (
     organization_id BIGINT NOT NULL DEFAULT 0,
     provider_profile_id VARCHAR(64) NOT NULL,
     route_type VARCHAR(64) NOT NULL,
-    region VARCHAR(64),
+    region VARCHAR(64) NOT NULL DEFAULT '',
     priority INTEGER NOT NULL DEFAULT 100,
     status INTEGER NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
-    CONSTRAINT uk_rtc_provider_route_uuid UNIQUE (uuid)
+    CONSTRAINT uk_rtc_provider_route_uuid UNIQUE (uuid),
+    CONSTRAINT uk_rtc_provider_route_tenant_org_route_region_profile UNIQUE (
+        tenant_id,
+        organization_id,
+        route_type,
+        region,
+        provider_profile_id
+    )
 );
 
 CREATE INDEX idx_rtc_provider_route_profile_type_status_priority
     ON rtc_provider_route (tenant_id, organization_id, provider_profile_id, route_type, status, priority);
+
+CREATE INDEX idx_rtc_provider_route_scope_status_priority
+    ON rtc_provider_route (tenant_id, organization_id, route_type, region, status, priority);
 
 CREATE TABLE rtc_session_token_grant (
     id BIGINT NOT NULL,
@@ -287,3 +345,109 @@ CREATE INDEX idx_rtc_session_token_grant_session_participant_status
 
 CREATE INDEX idx_rtc_session_token_grant_expire_status
     ON rtc_session_token_grant (expire_at, status);
+
+CREATE TABLE rtc_provider_webhook_event (
+    id BIGINT NOT NULL,
+    uuid VARCHAR(64) NOT NULL,
+    tenant_id BIGINT NOT NULL,
+    organization_id BIGINT NOT NULL DEFAULT 0,
+    provider VARCHAR(64) NOT NULL,
+    provider_profile_id VARCHAR(64),
+    provider_profile_dedupe_key VARCHAR(64) NOT NULL,
+    external_event_id VARCHAR(256),
+    external_event_dedupe_key VARCHAR(256) NOT NULL,
+    event_type VARCHAR(128) NOT NULL,
+    event_kind VARCHAR(64) NOT NULL,
+    room_id VARCHAR(64),
+    session_id VARCHAR(64),
+    participant_id VARCHAR(64),
+    recording_id VARCHAR(256),
+    payload_hash VARCHAR(128) NOT NULL,
+    raw_payload JSONB NOT NULL,
+    normalized_event JSONB NOT NULL,
+    signature_header VARCHAR(512),
+    received_at TIMESTAMP NOT NULL,
+    processed_at TIMESTAMP,
+    status INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    version BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_rtc_provider_webhook_event_uuid UNIQUE (uuid),
+    CONSTRAINT uk_rtc_provider_webhook_event_dedupe UNIQUE (
+        tenant_id,
+        organization_id,
+        provider,
+        provider_profile_dedupe_key,
+        external_event_dedupe_key,
+        payload_hash
+    )
+);
+
+CREATE INDEX idx_rtc_provider_webhook_event_status_received
+    ON rtc_provider_webhook_event (tenant_id, organization_id, status, received_at);
+
+CREATE INDEX idx_rtc_provider_webhook_event_room_received
+    ON rtc_provider_webhook_event (tenant_id, organization_id, provider, room_id, received_at);
+
+CREATE TABLE rtc_provider_query_job (
+    id BIGINT NOT NULL,
+    uuid VARCHAR(64) NOT NULL,
+    tenant_id BIGINT NOT NULL,
+    organization_id BIGINT NOT NULL DEFAULT 0,
+    provider VARCHAR(64) NOT NULL,
+    provider_profile_id VARCHAR(64),
+    query_kind VARCHAR(64) NOT NULL,
+    target_kind VARCHAR(64) NOT NULL,
+    target_id VARCHAR(128) NOT NULL,
+    room_id VARCHAR(64),
+    session_id VARCHAR(64),
+    provider_session_id VARCHAR(256),
+    provider_request_id VARCHAR(256),
+    status INTEGER NOT NULL,
+    requested_at TIMESTAMP NOT NULL,
+    completed_at TIMESTAMP,
+    result_snapshot JSONB,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    version BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_rtc_provider_query_job_uuid UNIQUE (uuid)
+);
+
+CREATE INDEX idx_rtc_provider_query_job_provider_status
+    ON rtc_provider_query_job (tenant_id, organization_id, provider, status, requested_at);
+
+CREATE INDEX idx_rtc_provider_query_job_target_status
+    ON rtc_provider_query_job (tenant_id, organization_id, target_kind, target_id, status, requested_at);
+
+CREATE INDEX idx_rtc_provider_query_job_provider_session_status
+    ON rtc_provider_query_job (tenant_id, organization_id, provider, provider_session_id, status, requested_at);
+
+CREATE TABLE rtc_provider_query_snapshot (
+    id BIGINT NOT NULL,
+    uuid VARCHAR(64) NOT NULL,
+    tenant_id BIGINT NOT NULL,
+    organization_id BIGINT NOT NULL DEFAULT 0,
+    provider_query_job_id VARCHAR(64) NOT NULL,
+    provider VARCHAR(64) NOT NULL,
+    query_kind VARCHAR(64) NOT NULL,
+    target_kind VARCHAR(64) NOT NULL,
+    target_id VARCHAR(128) NOT NULL,
+    provider_session_id VARCHAR(256),
+    snapshot_kind VARCHAR(64) NOT NULL,
+    snapshot_payload JSONB NOT NULL,
+    captured_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_rtc_provider_query_snapshot_uuid UNIQUE (uuid)
+);
+
+CREATE INDEX idx_rtc_provider_query_snapshot_job_captured
+    ON rtc_provider_query_snapshot (tenant_id, organization_id, provider_query_job_id, captured_at);
+
+CREATE INDEX idx_rtc_provider_query_snapshot_target_captured
+    ON rtc_provider_query_snapshot (tenant_id, organization_id, target_kind, target_id, captured_at);
+
+CREATE INDEX idx_rtc_provider_query_snapshot_provider_session_captured
+    ON rtc_provider_query_snapshot (tenant_id, organization_id, provider, provider_session_id, captured_at);

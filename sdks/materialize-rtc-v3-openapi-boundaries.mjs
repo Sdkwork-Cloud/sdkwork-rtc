@@ -18,12 +18,12 @@ const routeSources = [
     authorityName: "sdkwork-rtc-app-api",
     title: "SDKWork RTC App API",
     description:
-      "App/client contract for SDKWork RTC session lifecycle, signaling, credential issue, callback mapping, recording artifacts, and provider health flows.",
+      "App/client contract for RTC rooms, media sessions, participant credentials, and recording artifacts.",
     prefix: "/app/v3/api",
     apiContext: "AppRequestContext",
     sdkType: "app",
     authMode: "dual-token",
-    path: resolve(rtcRoot, "services/sdkwork-routes-rtc-app-api/src/lib.rs"),
+    path: resolve(rtcRoot, "services/sdkwork-routes-rtc-app-api/src/paths.rs"),
     arrayName: "RTC_APP_ROUTES",
     routeType: "RtcAppRoute",
     manifestPath:
@@ -40,12 +40,12 @@ const routeSources = [
     authorityName: "sdkwork-rtc-backend-api",
     title: "SDKWork RTC Backend API",
     description:
-      "Backend/admin contract for SDKWork RTC provider profiles, provider routes, sessions, signaling audits, and quality samples.",
+      "Backend/admin contract for SDKWork RTC rooms, provider profiles, provider routes, media sessions, media artifacts, provider webhooks, active provider query jobs, and quality samples.",
     prefix: "/backend/v3/api",
     apiContext: "BackendRequestContext",
     sdkType: "backend",
     authMode: "dual-token",
-    path: resolve(rtcRoot, "services/sdkwork-routes-rtc-backend-api/src/lib.rs"),
+    path: resolve(rtcRoot, "services/sdkwork-routes-rtc-backend-api/src/paths.rs"),
     arrayName: "RTC_BACKEND_ROUTES",
     routeType: "RtcBackendRoute",
     manifestPath:
@@ -54,6 +54,25 @@ const routeSources = [
 ];
 
 const HTTP_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
+const PROVIDER_WEBHOOK_RECEIVE_OPERATION_ID = "rtc.providerWebhooks.events.receive";
+const PROVIDER_WEBHOOK_SIGNATURE_HEADERS = [
+  "X-Volc-Signature",
+  "X-VolcEngine-Signature",
+  "X-Volc-Sign",
+  "X-TC-Signature",
+  "X-Tencent-Signature",
+  "Sign",
+  "Agora-Signature-V2",
+  "Agora-Signature",
+  "X-Agora-Signature",
+  "X-Acs-Signature",
+  "X-Aliyun-Signature",
+  "X-Acs-Content-Sha256",
+  "Authorization",
+  "LiveKit-Signature",
+  "X-LiveKit-Signature",
+  "X-LK-Signature",
+];
 
 async function main() {
   for (const source of routeSources) {
@@ -72,6 +91,7 @@ async function main() {
 
 async function collectRoutes(source) {
   const content = await readFile(source.path, "utf8");
+  const stringConstants = collectStringConstants(content);
   const arrayPattern = new RegExp(
     `pub\\s+const\\s+${escapeRegExp(source.arrayName)}\\s*:\\s*&\\[${escapeRegExp(source.routeType)}\\]\\s*=\\s*&\\[(?<body>[\\s\\S]*?)\\];`,
     "m",
@@ -82,14 +102,15 @@ async function collectRoutes(source) {
   }
 
   const routePattern = new RegExp(
-    `${escapeRegExp(source.routeType)}\\s*\\{\\s*method:\\s*"(?<method>[^"]+)",\\s*path:\\s*"(?<path>[^"]+)",\\s*tag:\\s*"(?<tag>[^"]+)",\\s*operation_id:\\s*"(?<operationId>[^"]+)",\\s*owner:\\s*RTC_OWNER,\\s*permission:\\s*"(?<permission>[^"]+)",\\s*\\}`,
+    `${escapeRegExp(source.routeType)}\\s*\\{\\s*method:\\s*"(?<method>[^"]+)",\\s*path:\\s*(?<pathToken>"[^"]+"|[A-Z][A-Z0-9_]*),\\s*tag:\\s*"(?<tag>[^"]+)",\\s*operation_id:\\s*"(?<operationId>[^"]+)",\\s*owner:\\s*RTC_OWNER,\\s*permission:\\s*"(?<permission>[^"]+)",\\s*\\}`,
     "g",
   );
   const routes = [];
   for (const match of arrayMatch.groups.body.matchAll(routePattern)) {
+    const path = resolveRustStringValue(match.groups.pathToken, stringConstants);
     routes.push({
       method: match.groups.method.toUpperCase(),
-      path: match.groups.path,
+      path,
       tag: match.groups.tag,
       operationId: match.groups.operationId,
       permission: match.groups.permission,
@@ -112,6 +133,26 @@ async function collectRoutes(source) {
   }
 
   return Array.from(byKey.values()).sort(compareRoutes);
+}
+
+function collectStringConstants(content) {
+  const constants = new Map();
+  const pattern = /pub\s+const\s+(?<name>[A-Z][A-Z0-9_]*)\s*:\s*&str\s*=\s*"(?<value>[^"]*)";/g;
+  for (const match of content.matchAll(pattern)) {
+    constants.set(match.groups.name, match.groups.value);
+  }
+  return constants;
+}
+
+function resolveRustStringValue(token, constants) {
+  if (token.startsWith('"') && token.endsWith('"')) {
+    return token.slice(1, -1);
+  }
+  const value = constants.get(token);
+  if (!value) {
+    throw new Error(`Unable to resolve Rust string constant ${token}.`);
+  }
+  return value;
 }
 
 function validateRoutes(source, routes) {
@@ -165,10 +206,11 @@ function buildRouteManifest(source, routes) {
         name: toHandlerName(route.operationId),
       },
       schemas: {
-        request: usesJsonBody(route.method.toLowerCase()) ? "RtcOperationCommand" : null,
-        response: "RtcApiResult",
+        request: operationRequestSchemaName(route),
+        response: operationResponseSchemaName(route),
         problem: "ProblemDetail",
       },
+      ...routeAuthManifest(route),
       ownership: {
         owner: source.owner,
         apiAuthority: source.authorityName,
@@ -217,7 +259,7 @@ function buildOpenApi(source, routes) {
       "x-sdk-nested-resource-surface": true,
     }));
 
-  return {
+  return pruneUnusedSchemas({
     openapi: "3.1.2",
     info: {
       title: source.title,
@@ -257,18 +299,62 @@ function buildOpenApi(source, routes) {
       organizationSource: "AuthToken + AccessToken",
       userSource: "AuthToken + AccessToken",
     },
+  });
+}
+
+function pruneUnusedSchemas(openapi) {
+  const allSchemas = openapi.components?.schemas ?? {};
+  const usedSchemas = new Set();
+
+  const visit = (value) => {
+    if (!value || typeof value !== "object") {
+      return;
+    }
+    if (typeof value.$ref === "string") {
+      const schemaName = schemaNameFromRef(value.$ref);
+      if (schemaName && allSchemas[schemaName] && !usedSchemas.has(schemaName)) {
+        usedSchemas.add(schemaName);
+        visit(allSchemas[schemaName]);
+      }
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        visit(item);
+      }
+      return;
+    }
+    for (const child of Object.values(value)) {
+      visit(child);
+    }
   };
+
+  visit(openapi.paths);
+
+  const prunedSchemas = {};
+  for (const [schemaName, schema] of Object.entries(allSchemas)) {
+    if (usedSchemas.has(schemaName)) {
+      prunedSchemas[schemaName] = schema;
+    }
+  }
+  openapi.components.schemas = prunedSchemas;
+  return openapi;
+}
+
+function schemaNameFromRef(ref) {
+  const prefix = "#/components/schemas/";
+  return ref.startsWith(prefix) ? ref.slice(prefix.length) : null;
 }
 
 function buildOperation(source, route) {
   const method = route.method.toLowerCase();
+  const operationAuth = operationAuthMetadata(source, route);
   const operation = {
     tags: [route.tag],
     summary: `${toTitle(route.operationId)}.`,
     operationId: route.operationId,
     parameters: extractPathParameters(route.path),
     responses: {
-      200: jsonResponse("Success", "#/components/schemas/RtcApiResult"),
+      200: jsonResponse("Success", `#/components/schemas/${operationResponseSchemaName(route)}`),
       400: problemResponse("Bad request"),
       401: problemResponse("Unauthorized"),
       403: problemResponse("Forbidden"),
@@ -276,7 +362,7 @@ function buildOperation(source, route) {
       409: problemResponse("Conflict"),
       500: problemResponse("Internal server error"),
     },
-    security: securityRequirement(source),
+    security: operationAuth.security,
     "x-sdkwork-owner": source.sdkOwner,
     "x-sdkwork-api-authority": source.authorityName,
     "x-sdkwork-source-route-crate": source.packageName,
@@ -285,14 +371,23 @@ function buildOperation(source, route) {
     "x-sdkwork-request-context": source.apiContext,
     "x-sdkwork-server-request-id": true,
     "x-sdkwork-permission": route.permission,
+    "x-sdkwork-auth-mode": operationAuth.authMode,
   };
+
+  if (operationAuth.providerWebhookSignature) {
+    operation["x-sdkwork-provider-webhook-signature"] = true;
+    operation["x-sdkwork-provider-webhook-signature-headers"] =
+      PROVIDER_WEBHOOK_SIGNATURE_HEADERS;
+    operation["x-sdkwork-request-context"] = "ProviderWebhookRequestContext";
+    operation["x-sdkwork-forbid-credential-headers"] = true;
+  }
 
   if (usesJsonBody(method)) {
     operation.requestBody = {
       required: method !== "patch",
       content: {
         "application/json": {
-          schema: { $ref: "#/components/schemas/RtcOperationCommand" },
+          schema: { $ref: `#/components/schemas/${operationRequestSchemaName(route)}` },
         },
       },
     };
@@ -313,6 +408,47 @@ function buildOperation(source, route) {
 
 function securityRequirement() {
   return [{ AuthToken: [], AccessToken: [] }];
+}
+
+function operationAuthMetadata(source, route) {
+  if (route.operationId === PROVIDER_WEBHOOK_RECEIVE_OPERATION_ID) {
+    return {
+      authMode: "anonymous",
+      providerWebhookSignature: true,
+      security: [],
+    };
+  }
+
+  return {
+    authMode: source.authMode,
+    providerWebhookSignature: false,
+    security: securityRequirement(source),
+  };
+}
+
+function routeAuthManifest(route) {
+  if (route.operationId === PROVIDER_WEBHOOK_RECEIVE_OPERATION_ID) {
+    return {
+      auth: {
+        mode: "public",
+        required: true,
+        permission: route.permission,
+        tenantScope: "tenant",
+        dataScope: "organization",
+        providerWebhookSignature: true,
+      },
+    };
+  }
+
+  return {
+    auth: {
+      mode: "dual-token",
+      required: true,
+      permission: route.permission,
+      tenantScope: "tenant",
+      dataScope: "organization",
+    },
+  };
 }
 
 function securitySchemes() {
@@ -358,6 +494,89 @@ function buildSchemas() {
       description:
         "Operation-specific RTC command payload defined by the owning sdkwork-rtc Rust route/service module.",
     },
+    MediaKind: {
+      type: "string",
+      enum: ["image", "video", "audio", "voice", "document", "archive", "model", "other"],
+    },
+    MediaSource: {
+      type: "string",
+      enum: ["drive", "external_url", "data_url", "provider_asset", "generated"],
+    },
+    MediaChecksum: {
+      type: "object",
+      additionalProperties: false,
+      required: ["algorithm", "value"],
+      properties: {
+        algorithm: { type: "string", enum: ["sha256", "md5", "etag"] },
+        value: { type: "string" },
+      },
+    },
+    MediaAccess: {
+      type: "object",
+      additionalProperties: false,
+      required: ["visibility"],
+      properties: {
+        visibility: {
+          type: "string",
+          enum: ["private", "tenant", "organization", "public", "signed"],
+        },
+        expiresAt: { type: ["string", "null"], format: "date-time" },
+      },
+    },
+    MediaResource: {
+      type: "object",
+      additionalProperties: false,
+      required: ["kind", "source"],
+      properties: {
+        id: { type: ["string", "null"] },
+        kind: { $ref: "#/components/schemas/MediaKind" },
+        source: { $ref: "#/components/schemas/MediaSource" },
+        url: {
+          type: ["string", "null"],
+          format: "uri",
+          description: "Delivery URL. It is optional and may be temporary.",
+        },
+        publicUrl: { type: ["string", "null"], format: "uri" },
+        uri: { type: ["string", "null"] },
+        objectBlobId: { type: ["string", "null"] },
+        fileName: { type: ["string", "null"], maxLength: 512 },
+        mimeType: { type: ["string", "null"], maxLength: 256 },
+        sizeBytes: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        checksum: { $ref: "#/components/schemas/MediaChecksum" },
+        width: { type: ["integer", "null"], minimum: 0 },
+        height: { type: ["integer", "null"], minimum: 0 },
+        durationSeconds: { type: ["number", "null"], minimum: 0 },
+        altText: { type: ["string", "null"], maxLength: 512 },
+        title: { type: ["string", "null"], maxLength: 255 },
+        access: { $ref: "#/components/schemas/MediaAccess" },
+        metadata: {
+          type: "object",
+          additionalProperties: true,
+          description:
+            "Extension metadata. Drive-backed RTC recordings include metadata.drive.spaceType = rtc.",
+        },
+      },
+    },
+    RtcDriveReference: {
+      type: "object",
+      additionalProperties: false,
+      required: ["driveUri", "spaceId", "spaceType", "nodeId"],
+      properties: {
+        driveUri: {
+          type: "string",
+          pattern: "^drive://spaces/.+/nodes/.+$",
+        },
+        spaceId: { type: "string" },
+        spaceType: {
+          type: "string",
+          enum: ["rtc"],
+          description:
+            "Dedicated Drive space type for SDKWork RTC recording and artifact archives.",
+        },
+        nodeId: { type: "string" },
+        nodeVersion: { type: ["string", "null"] },
+      },
+    },
     RtcRoom: {
       type: "object",
       additionalProperties: false,
@@ -371,42 +590,930 @@ function buildSchemas() {
         status: { type: "string", enum: ["active", "archived", "disabled"] },
       },
     },
-    RtcCallSession: {
+    RtcRoomListResponse: envelope({
       type: "object",
       additionalProperties: false,
-      required: ["id", "roomId", "callType", "status", "participants"],
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcRoom" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcRoomResponse: envelope({ $ref: "#/components/schemas/RtcRoom" }),
+    RtcCreateMediaSessionRequest: {
+      type: "object",
+      additionalProperties: false,
+      required: ["roomId", "mediaMode"],
+      properties: {
+        roomId: { type: "string" },
+        mediaMode: { type: "string", enum: ["audio", "video", "live"] },
+        providerProfileId: { type: ["string", "null"] },
+        provider: { type: ["string", "null"] },
+        region: { type: ["string", "null"] },
+        recordingRequested: { type: "boolean", default: false },
+        metadata: { type: "object", additionalProperties: true },
+      },
+    },
+    RtcCloseMediaSessionRequest: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        reason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcMediaSession: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "roomId",
+        "tenantId",
+        "organizationId",
+        "ownerUserId",
+        "mediaMode",
+        "status",
+        "participants",
+      ],
       properties: {
         id: { type: "string" },
         roomId: { type: "string" },
-        callType: { type: "string", enum: ["audio", "video"] },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        ownerUserId: { type: "string" },
+        mediaMode: { type: "string", enum: ["audio", "video", "live"] },
         status: {
           type: "string",
-          enum: ["ringing", "connecting", "connected", "ended", "failed", "terminated"],
+          enum: ["preparing", "active", "closing", "ended", "failed"],
         },
-        providerProfileId: { type: "string" },
-        startedAt: { type: "string", format: "date-time" },
-        endedAt: { type: "string", format: "date-time" },
+        providerProfileId: { type: ["string", "null"] },
+        providerSessionId: { type: ["string", "null"] },
+        startedAt: { type: ["string", "null"], format: "date-time" },
+        connectedAt: { type: ["string", "null"], format: "date-time" },
+        endedAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        endReason: { type: ["string", "null"], maxLength: 500 },
+        endSource: {
+          type: ["string", "null"],
+          enum: [
+            "manual_close",
+            "provider_webhook",
+            "active_provider_query",
+            "provider_state_sync",
+            "timeout",
+            "system_reconcile",
+            "unknown",
+            null,
+          ],
+        },
+        participantCount: { type: "integer", minimum: 0 },
+        maxConcurrentParticipants: { type: "integer", minimum: 0 },
+        qualitySummary: {
+          anyOf: [
+            { $ref: "#/components/schemas/RtcMediaSessionCompletionQualitySummary" },
+            { type: "null" },
+          ],
+        },
+        recordingSummary: {
+          anyOf: [
+            { $ref: "#/components/schemas/RtcMediaSessionCompletionRecordingSummary" },
+            { type: "null" },
+          ],
+        },
+        completionRecordedAt: { type: ["string", "null"], format: "date-time" },
+        lastProviderWebhookEventId: { type: ["string", "null"] },
+        lastProviderQueryJobId: { type: ["string", "null"] },
         participants: {
           type: "array",
-          items: { $ref: "#/components/schemas/RtcCallParticipant" },
+          items: { $ref: "#/components/schemas/RtcMediaParticipant" },
         },
       },
     },
-    RtcCallParticipant: {
+    RtcMediaSessionListResponse: envelope({
       type: "object",
       additionalProperties: false,
-      required: ["id", "sessionId", "userId", "displayName", "role", "state"],
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcMediaSession" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcMediaSessionResponse: envelope({ $ref: "#/components/schemas/RtcMediaSession" }),
+    RtcMediaParticipant: {
+      type: "object",
+      additionalProperties: false,
+      required: ["id", "mediaSessionId", "userId", "displayName", "role", "state"],
       properties: {
         id: { type: "string" },
-        sessionId: { type: "string" },
+        mediaSessionId: { type: "string" },
         userId: { type: "string" },
         displayName: { type: "string" },
         role: { type: "string", enum: ["host", "guest", "listener"] },
-        state: { type: "string", enum: ["invited", "joined", "left", "kicked", "timeout"] },
+        state: { type: "string", enum: ["joining", "joined", "left", "kicked", "timeout"] },
         audioMuted: { type: "boolean" },
         videoMuted: { type: "boolean" },
+        screenShareActive: { type: "boolean" },
+        providerParticipantId: { type: ["string", "null"] },
+        joinedAt: { type: ["string", "null"], format: "date-time" },
+        leftAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        leaveReason: { type: ["string", "null"], maxLength: 500 },
+        lastSeenAt: { type: ["string", "null"], format: "date-time" },
       },
     },
+    RtcParticipantCredential: {
+      type: "object",
+      additionalProperties: false,
+      required: ["tenantId", "mediaSessionId", "participantId", "credential", "expiresAt"],
+      properties: {
+        tenantId: { type: "string" },
+        mediaSessionId: { type: "string" },
+        participantId: { type: "string" },
+        credential: { type: "string" },
+        expiresAt: { type: "string", format: "date-time" },
+      },
+    },
+    RtcParticipantCredentialResponse: envelope({
+      $ref: "#/components/schemas/RtcParticipantCredential",
+    }),
+    RtcMediaArtifact: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "tenantId",
+        "mediaSessionId",
+        "ownerUserId",
+        "artifactKind",
+        "artifactStatus",
+        "mediaRole",
+        "drive",
+        "resource",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: ["string", "null"] },
+        mediaSessionId: { type: "string" },
+        ownerUserId: { type: "string" },
+        artifactKind: {
+          type: "string",
+          enum: ["recording", "transcript", "screen_share", "snapshot", "other"],
+        },
+        artifactStatus: {
+          type: "string",
+          enum: ["pending", "processing", "ready", "failed", "deleted"],
+        },
+        mediaRole: { type: "string" },
+        providerProfileId: { type: ["string", "null"] },
+        providerArtifactId: { type: ["string", "null"] },
+        drive: { $ref: "#/components/schemas/RtcDriveReference" },
+        resource: { $ref: "#/components/schemas/MediaResource" },
+        resourceHash: { type: ["string", "null"] },
+        startedAt: { type: ["string", "null"], format: "date-time" },
+        endedAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        failureReason: { type: ["string", "null"], maxLength: 500 },
+        sourceProviderWebhookEventId: { type: ["string", "null"] },
+        sourceProviderQueryJobId: { type: ["string", "null"] },
+      },
+    },
+    RtcMediaArtifactListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcMediaArtifact" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcMediaArtifactResponse: envelope({ $ref: "#/components/schemas/RtcMediaArtifact" }),
+    RtcMediaTrack: {
+      type: "object",
+      additionalProperties: false,
+      required: ["id", "mediaSessionId", "participantId", "trackKind", "trackSource", "status"],
+      properties: {
+        id: { type: "string" },
+        mediaSessionId: { type: "string" },
+        participantId: { type: "string" },
+        trackKind: { type: "string", enum: ["audio", "video", "screen_share", "data"] },
+        trackSource: {
+          type: "string",
+          enum: ["microphone", "camera", "screen", "system", "custom"],
+        },
+        providerTrackId: { type: ["string", "null"] },
+        status: { type: "string", enum: ["publishing", "muted", "stopped", "failed"] },
+        startedAt: { type: ["string", "null"], format: "date-time" },
+        endedAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        mutedDurationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        endReason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcMediaSessionCompletionQualitySummary: {
+      type: "object",
+      additionalProperties: false,
+      required: ["sampleCount", "participantSampleCount"],
+      properties: {
+        sampleCount: { type: "integer", minimum: 0 },
+        participantSampleCount: { type: "integer", minimum: 0 },
+        avgLatencyMs: { type: ["integer", "null"], minimum: 0 },
+        maxLatencyMs: { type: ["integer", "null"], minimum: 0 },
+        avgJitterMs: { type: ["integer", "null"], minimum: 0 },
+        maxJitterMs: { type: ["integer", "null"], minimum: 0 },
+        maxPacketLossRate: { type: ["string", "null"] },
+        minBitrateKbps: { type: ["integer", "null"], minimum: 0 },
+        avgBitrateKbps: { type: ["integer", "null"], minimum: 0 },
+        firstSampledAt: { type: ["string", "null"], format: "date-time" },
+        lastSampledAt: { type: ["string", "null"], format: "date-time" },
+      },
+    },
+    RtcMediaSessionCompletionRecordingSummary: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "artifactCount",
+        "recordingArtifactCount",
+        "readyArtifactCount",
+        "failedArtifactCount",
+        "processingArtifactCount",
+        "driveResourceCount",
+      ],
+      properties: {
+        artifactCount: { type: "integer", minimum: 0 },
+        recordingArtifactCount: { type: "integer", minimum: 0 },
+        readyArtifactCount: { type: "integer", minimum: 0 },
+        failedArtifactCount: { type: "integer", minimum: 0 },
+        processingArtifactCount: { type: "integer", minimum: 0 },
+        totalDurationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        driveResourceCount: { type: "integer", minimum: 0 },
+      },
+    },
+    RtcMediaSessionCompletionParticipantSummary: {
+      type: "object",
+      additionalProperties: false,
+      required: ["participantId", "userId", "displayName", "role", "state"],
+      properties: {
+        participantId: { type: "string" },
+        userId: { type: "string" },
+        displayName: { type: "string" },
+        role: { type: "string", enum: ["host", "guest", "listener"] },
+        state: { type: "string", enum: ["joining", "joined", "left", "kicked", "timeout"] },
+        joinedAt: { type: ["string", "null"], format: "date-time" },
+        leftAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        leaveReason: { type: ["string", "null"], maxLength: 500 },
+        providerParticipantId: { type: ["string", "null"] },
+      },
+    },
+    RtcMediaSessionCompletionTrackSummary: {
+      type: "object",
+      additionalProperties: false,
+      required: ["trackId", "participantId", "trackKind", "trackSource", "status"],
+      properties: {
+        trackId: { type: "string" },
+        participantId: { type: "string" },
+        trackKind: { type: "string", enum: ["audio", "video", "screen_share", "data"] },
+        trackSource: {
+          type: "string",
+          enum: ["microphone", "camera", "screen", "system", "custom"],
+        },
+        status: { type: "string", enum: ["publishing", "muted", "stopped", "failed"] },
+        startedAt: { type: ["string", "null"], format: "date-time" },
+        endedAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        mutedDurationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        endReason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcMediaSessionCompletionArtifactSummary: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "artifactId",
+        "artifactKind",
+        "artifactStatus",
+        "mediaRole",
+        "driveUri",
+        "driveSpaceId",
+        "driveSpaceType",
+        "driveNodeId",
+      ],
+      properties: {
+        artifactId: { type: "string" },
+        artifactKind: {
+          type: "string",
+          enum: ["recording", "transcript", "screen_share", "snapshot", "other"],
+        },
+        artifactStatus: {
+          type: "string",
+          enum: ["pending", "processing", "ready", "failed", "deleted"],
+        },
+        mediaRole: { type: "string" },
+        driveUri: { type: "string", pattern: "^drive://spaces/.+/nodes/.+$" },
+        driveSpaceId: { type: "string" },
+        driveSpaceType: {
+          type: "string",
+          enum: ["rtc"],
+          description:
+            "Dedicated Drive space type used by SDKWork RTC post-session recording and artifact archives.",
+        },
+        driveNodeId: { type: "string" },
+        driveNodeVersion: { type: ["string", "null"] },
+        providerArtifactId: { type: ["string", "null"] },
+        startedAt: { type: ["string", "null"], format: "date-time" },
+        endedAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        failureReason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcMediaSessionCompletionRecord: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "tenantId",
+        "organizationId",
+        "mediaSessionId",
+        "roomId",
+        "ownerUserId",
+        "mediaMode",
+        "sessionStatus",
+        "participantCount",
+        "maxConcurrentParticipants",
+        "qualitySummary",
+        "recordingSummary",
+        "participants",
+        "tracks",
+        "artifacts",
+        "completionSnapshotHash",
+        "recordedAt",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        mediaSessionId: { type: "string" },
+        roomId: { type: "string" },
+        ownerUserId: { type: "string" },
+        providerProfileId: { type: ["string", "null"] },
+        providerSessionId: { type: ["string", "null"] },
+        mediaMode: { type: "string", enum: ["audio", "video", "live"] },
+        sessionStatus: {
+          type: "string",
+          enum: ["preparing", "active", "closing", "ended", "failed"],
+        },
+        startedAt: { type: ["string", "null"], format: "date-time" },
+        connectedAt: { type: ["string", "null"], format: "date-time" },
+        endedAt: { type: ["string", "null"], format: "date-time" },
+        durationMs: { type: ["string", "null"], pattern: "^[0-9]+$" },
+        endReason: { type: ["string", "null"], maxLength: 500 },
+        endSource: {
+          type: ["string", "null"],
+          enum: [
+            "manual_close",
+            "provider_webhook",
+            "active_provider_query",
+            "provider_state_sync",
+            "timeout",
+            "system_reconcile",
+            "unknown",
+            null,
+          ],
+        },
+        participantCount: { type: "integer", minimum: 0 },
+        maxConcurrentParticipants: { type: "integer", minimum: 0 },
+        qualitySummary: { $ref: "#/components/schemas/RtcMediaSessionCompletionQualitySummary" },
+        recordingSummary: {
+          $ref: "#/components/schemas/RtcMediaSessionCompletionRecordingSummary",
+        },
+        participants: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcMediaSessionCompletionParticipantSummary" },
+        },
+        tracks: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcMediaSessionCompletionTrackSummary" },
+        },
+        artifacts: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcMediaSessionCompletionArtifactSummary" },
+        },
+        sourceWebhookEventId: { type: ["string", "null"] },
+        sourceProviderQueryJobId: { type: ["string", "null"] },
+        completionSnapshot: { type: "object", additionalProperties: true },
+        completionSnapshotHash: { type: "string" },
+        recordedAt: { type: "string", format: "date-time" },
+      },
+    },
+    RtcMediaSessionCompletionRecordResponse: envelope({
+      $ref: "#/components/schemas/RtcMediaSessionCompletionRecord",
+    }),
+    RtcProviderProfile: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "provider",
+        "code",
+        "name",
+        "status",
+        "isDefault",
+        "priority",
+        "environment",
+        "capabilities",
+        "healthStatus",
+        "version",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        provider: { type: "string" },
+        code: { type: "string" },
+        name: { type: "string" },
+        status: { type: "string", enum: ["active", "disabled", "archived"] },
+        isDefault: { type: "boolean" },
+        priority: { type: "integer", minimum: 0 },
+        environment: {
+          type: "string",
+          enum: ["production", "staging", "development", "test", "sandbox"],
+        },
+        region: { type: ["string", "null"] },
+        providerAppId: { type: ["string", "null"] },
+        endpoint: { type: ["string", "null"], format: "uri" },
+        credentialRef: {
+          type: ["string", "null"],
+          description:
+            "Reference to secret-managed provider credentials. Raw provider secrets are never returned by the RTC API.",
+        },
+        credentialFingerprint: { type: ["string", "null"] },
+        webhookSecretRef: {
+          type: ["string", "null"],
+          description:
+            "Reference to secret-managed webhook verification material. Raw webhook secrets are never returned by the RTC API.",
+        },
+        webhookSecretFingerprint: { type: ["string", "null"] },
+        capabilities: { $ref: "#/components/schemas/RtcProviderCapabilitySnapshot" },
+        configSnapshot: { type: "object", additionalProperties: true },
+        healthStatus: {
+          type: "string",
+          enum: ["unknown", "healthy", "degraded", "unhealthy"],
+        },
+        lastVerifiedAt: { type: ["string", "null"], format: "date-time" },
+        lastVerificationLatencyMs: { type: ["integer", "null"], minimum: 0 },
+        lastVerificationError: { type: ["string", "null"], maxLength: 1000 },
+        createdAt: { type: ["string", "null"], format: "date-time" },
+        updatedAt: { type: ["string", "null"], format: "date-time" },
+        version: { type: "string", pattern: "^[0-9]+$" },
+      },
+    },
+    RtcActiveProviderProfile: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "provider",
+        "code",
+        "name",
+        "isDefault",
+        "priority",
+        "environment",
+        "capabilities",
+        "healthStatus",
+      ],
+      properties: {
+        id: { type: "string" },
+        provider: { type: "string" },
+        code: { type: "string" },
+        name: { type: "string" },
+        isDefault: { type: "boolean" },
+        priority: { type: "integer", minimum: 0 },
+        environment: {
+          type: "string",
+          enum: ["production", "staging", "development", "test", "sandbox"],
+        },
+        region: { type: ["string", "null"] },
+        providerAppId: { type: ["string", "null"] },
+        endpoint: { type: ["string", "null"], format: "uri" },
+        capabilities: { $ref: "#/components/schemas/RtcProviderCapabilitySnapshot" },
+        healthStatus: {
+          type: "string",
+          enum: ["unknown", "healthy", "degraded", "unhealthy"],
+        },
+      },
+    },
+    RtcProviderCapabilitySnapshot: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "audio",
+        "video",
+        "live",
+        "screenShare",
+        "recording",
+        "webhook",
+        "activeQuery",
+      ],
+      properties: {
+        audio: { type: "boolean" },
+        video: { type: "boolean" },
+        live: { type: "boolean" },
+        screenShare: { type: "boolean" },
+        recording: { type: "boolean" },
+        webhook: { type: "boolean" },
+        activeQuery: { type: "boolean" },
+        maxParticipants: { type: ["integer", "null"], minimum: 0 },
+        supportedRegions: {
+          type: "array",
+          items: { type: "string" },
+        },
+        providerFeatures: { type: "object", additionalProperties: true },
+      },
+    },
+    RtcProviderProfileCommand: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "provider",
+        "code",
+        "name",
+        "environment",
+        "capabilities",
+        "configSnapshot",
+      ],
+      properties: {
+        provider: { type: "string" },
+        code: { type: "string" },
+        name: { type: "string" },
+        status: { type: "string", enum: ["active", "disabled", "archived"] },
+        isDefault: { type: "boolean", default: false },
+        priority: { type: "integer", minimum: 0, default: 100 },
+        environment: {
+          type: "string",
+          enum: ["production", "staging", "development", "test", "sandbox"],
+        },
+        region: { type: ["string", "null"] },
+        providerAppId: { type: ["string", "null"] },
+        endpoint: { type: ["string", "null"], format: "uri" },
+        credentialRef: { type: ["string", "null"] },
+        webhookSecretRef: { type: ["string", "null"] },
+        capabilities: { $ref: "#/components/schemas/RtcProviderCapabilitySnapshot" },
+        configSnapshot: { type: "object", additionalProperties: true },
+      },
+    },
+    RtcProviderProfileDisableRequest: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        reason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcProviderProfileVerifyRequest: {
+      type: "object",
+      additionalProperties: false,
+      required: ["queryKind"],
+      properties: {
+        queryKind: {
+          type: "string",
+          enum: ["credential", "webhook", "active_query", "recording", "full"],
+        },
+        timeoutMs: { type: ["integer", "null"], minimum: 1000, maximum: 60000 },
+      },
+    },
+    RtcProviderProfileVerifyResult: {
+      type: "object",
+      additionalProperties: false,
+      required: ["providerProfileId", "provider", "status", "verifiedAt"],
+      properties: {
+        providerProfileId: { type: "string" },
+        provider: { type: "string" },
+        status: {
+          type: "string",
+          enum: ["healthy", "degraded", "unhealthy"],
+        },
+        verifiedAt: { type: "string", format: "date-time" },
+        latencyMs: { type: ["integer", "null"], minimum: 0 },
+        checks: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderProfileVerifyCheck" },
+        },
+      },
+    },
+    RtcProviderProfileVerifyCheck: {
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "status"],
+      properties: {
+        name: { type: "string" },
+        status: { type: "string", enum: ["passed", "warning", "failed", "skipped"] },
+        detail: { type: ["string", "null"] },
+      },
+    },
+    RtcProviderProfileListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderProfile" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcActiveProviderProfileListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcActiveProviderProfile" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderProfileResponse: envelope({ $ref: "#/components/schemas/RtcProviderProfile" }),
+    RtcProviderProfileVerifyResultResponse: envelope({
+      $ref: "#/components/schemas/RtcProviderProfileVerifyResult",
+    }),
+    RtcProviderRoute: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "tenantId",
+        "organizationId",
+        "providerProfileId",
+        "routeType",
+        "priority",
+        "status",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        providerProfileId: { type: "string" },
+        routeType: { type: "string", enum: ["region"] },
+        region: { type: ["string", "null"] },
+        priority: { type: "integer" },
+        status: { type: "string", enum: ["active", "disabled"] },
+      },
+    },
+    RtcProviderRouteCommand: {
+      type: "object",
+      additionalProperties: false,
+      required: ["providerProfileId", "routeType"],
+      properties: {
+        providerProfileId: { type: "string" },
+        routeType: { type: "string", enum: ["region"] },
+        region: { type: ["string", "null"] },
+        priority: { type: "integer", default: 100 },
+        status: { type: "string", enum: ["active", "disabled"] },
+      },
+    },
+    RtcProviderRouteListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderRoute" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderRouteResponse: envelope({ $ref: "#/components/schemas/RtcProviderRoute" }),
+    RtcQualitySample: {
+      type: "object",
+      additionalProperties: false,
+      required: ["id", "mediaSessionId", "sampledAt"],
+      properties: {
+        id: { type: "string" },
+        mediaSessionId: { type: "string" },
+        participantId: { type: ["string", "null"] },
+        latencyMs: { type: ["integer", "null"] },
+        packetLossRate: { type: ["string", "null"] },
+        jitterMs: { type: ["integer", "null"] },
+        bitrateKbps: { type: ["integer", "null"] },
+        sampledAt: { type: "string", format: "date-time" },
+      },
+    },
+    RtcQualitySampleListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcQualitySample" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderWebhookEvent: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "provider",
+        "eventType",
+        "eventKind",
+        "payloadHash",
+        "receivedAt",
+        "status",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        provider: { type: "string" },
+        providerProfileId: { type: ["string", "null"] },
+        externalEventId: { type: ["string", "null"] },
+        eventType: { type: "string" },
+        eventKind: {
+          type: "string",
+          enum: [
+            "room_started",
+            "room_ended",
+            "participant_joined",
+            "participant_left",
+            "recording_started",
+            "recording_completed",
+            "recording_failed",
+            "media_track_started",
+            "media_track_stopped",
+            "quality_sample",
+            "unknown",
+          ],
+        },
+        roomId: { type: ["string", "null"] },
+        mediaSessionId: { type: ["string", "null"] },
+        participantId: { type: ["string", "null"] },
+        recordingId: { type: ["string", "null"] },
+        payloadHash: { type: "string" },
+        rawPayload: { type: "object", additionalProperties: true },
+        normalizedEvent: { type: "object", additionalProperties: true },
+        signatureHeader: { type: ["string", "null"] },
+        receivedAt: { type: "string", format: "date-time" },
+        processedAt: { type: ["string", "null"], format: "date-time" },
+        status: { type: "string", enum: ["received", "processed", "duplicate", "failed"] },
+      },
+    },
+    RtcProviderWebhookReceiveRequest: {
+      type: "object",
+      additionalProperties: true,
+      properties: {
+        providerProfileId: { type: ["string", "null"] },
+        externalEventId: { type: ["string", "null"] },
+        signatureHeader: { type: ["string", "null"] },
+        headers: {
+          type: "object",
+          additionalProperties: { type: "string" },
+        },
+        rawPayload: { type: "object", additionalProperties: true },
+        receivedAt: {
+          type: ["string", "null"],
+          format: "date-time",
+          description:
+            "Optional gateway receive timestamp. The RTC runtime records the authoritative receive time when this field is absent.",
+        },
+      },
+      description:
+        "RTC provider webhook body. Provider gateways may wrap the provider payload in rawPayload, while direct Volcengine/Tencent callbacks may send provider-native JSON at the top level; the RTC provider plugin normalizes either shape and verifies provider-native signatures.",
+    },
+    RtcProviderWebhookEventListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderWebhookEvent" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderWebhookEventResponse: envelope({
+      $ref: "#/components/schemas/RtcProviderWebhookEvent",
+    }),
+    RtcProviderQueryJob: {
+      type: "object",
+      additionalProperties: false,
+      required: ["id", "provider", "queryKind", "targetKind", "targetId", "status", "requestedAt"],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        provider: { type: "string" },
+        providerProfileId: { type: ["string", "null"] },
+        queryKind: {
+          type: "string",
+          enum: [
+            "room_online_users",
+            "room_state",
+            "media_session_state",
+            "recording_artifacts",
+            "quality_samples",
+          ],
+        },
+        targetKind: { type: "string", enum: ["room", "media_session", "recording", "quality"] },
+        targetId: { type: "string" },
+        roomId: { type: ["string", "null"] },
+        mediaSessionId: { type: ["string", "null"] },
+        providerSessionId: { type: ["string", "null"] },
+        providerRequestId: { type: ["string", "null"] },
+        status: { type: "string", enum: ["requested", "running", "completed", "failed"] },
+        requestedAt: { type: "string", format: "date-time" },
+        completedAt: { type: ["string", "null"], format: "date-time" },
+        resultSnapshot: { type: "object", additionalProperties: true },
+      },
+    },
+    RtcProviderQueryJobCreateRequest: {
+      type: "object",
+      additionalProperties: false,
+      required: ["provider", "queryKind"],
+      properties: {
+        provider: { type: "string" },
+        providerProfileId: { type: ["string", "null"] },
+        queryKind: {
+          type: "string",
+          enum: [
+            "room_online_users",
+            "room_state",
+            "media_session_state",
+            "recording_artifacts",
+            "quality_samples",
+          ],
+        },
+        roomId: { type: ["string", "null"] },
+        mediaSessionId: { type: ["string", "null"] },
+        providerSessionId: { type: ["string", "null"] },
+        cursor: { type: ["string", "null"] },
+      },
+    },
+    RtcProviderQueryJobListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderQueryJob" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderQueryJobResponse: envelope({ $ref: "#/components/schemas/RtcProviderQueryJob" }),
+    RtcProviderQuerySnapshot: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "providerQueryJobId",
+        "provider",
+        "queryKind",
+        "targetKind",
+        "targetId",
+        "snapshotKind",
+        "snapshotPayload",
+        "capturedAt",
+      ],
+      properties: {
+        id: { type: "string" },
+        providerQueryJobId: { type: "string" },
+        provider: { type: "string" },
+        queryKind: { type: "string" },
+        targetKind: { type: "string" },
+        targetId: { type: "string" },
+        providerSessionId: { type: ["string", "null"] },
+        snapshotKind: { type: "string" },
+        snapshotPayload: { type: "object", additionalProperties: true },
+        capturedAt: { type: "string", format: "date-time" },
+      },
+    },
+    RtcProviderQuerySnapshotListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderQuerySnapshot" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
     ProblemDetail: {
       type: "object",
       additionalProperties: true,
@@ -441,6 +1548,100 @@ function buildSchemas() {
       },
     },
   };
+}
+
+function envelope(dataSchema) {
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["code", "message", "requestId", "data"],
+    properties: {
+      code: { type: "string" },
+      message: { type: "string" },
+      requestId: {
+        type: "string",
+        format: "uuid",
+        description: "Server-owned request correlation id.",
+      },
+      data: dataSchema,
+    },
+  };
+}
+
+function operationRequestSchemaName(route) {
+  switch (route.operationId) {
+    case "rtc.mediaSessions.create":
+      return "RtcCreateMediaSessionRequest";
+    case "rtc.mediaSessions.close":
+      return "RtcCloseMediaSessionRequest";
+    case "rtc.providerProfiles.create":
+    case "rtc.providerProfiles.update":
+      return "RtcProviderProfileCommand";
+    case "rtc.providerProfiles.disable":
+      return "RtcProviderProfileDisableRequest";
+    case "rtc.providerProfiles.verify":
+      return "RtcProviderProfileVerifyRequest";
+    case "rtc.providerRoutes.create":
+      return "RtcProviderRouteCommand";
+    case "rtc.providerWebhooks.events.receive":
+      return "RtcProviderWebhookReceiveRequest";
+    case "rtc.providerQueryJobs.create":
+      return "RtcProviderQueryJobCreateRequest";
+    default:
+      return usesJsonBody(route.method.toLowerCase()) ? "RtcOperationCommand" : null;
+  }
+}
+
+function operationResponseSchemaName(route) {
+  switch (route.operationId) {
+    case "rtc.rooms.list":
+      return "RtcRoomListResponse";
+    case "rtc.rooms.retrieve":
+      return "RtcRoomResponse";
+    case "rtc.mediaSessions.list":
+      return "RtcMediaSessionListResponse";
+    case "rtc.mediaSessions.create":
+    case "rtc.mediaSessions.retrieve":
+    case "rtc.mediaSessions.close":
+      return "RtcMediaSessionResponse";
+    case "rtc.mediaSessions.completionRecord.retrieve":
+      return "RtcMediaSessionCompletionRecordResponse";
+    case "rtc.mediaSessions.participantCredentials.issue":
+      return "RtcParticipantCredentialResponse";
+    case "rtc.mediaSessions.recordingArtifacts.list":
+    case "rtc.mediaArtifacts.list":
+      return "RtcMediaArtifactListResponse";
+    case "rtc.mediaArtifacts.retrieve":
+      return "RtcMediaArtifactResponse";
+    case "rtc.providerProfiles.active.list":
+      return "RtcActiveProviderProfileListResponse";
+    case "rtc.providerProfiles.list":
+      return "RtcProviderProfileListResponse";
+    case "rtc.providerProfiles.create":
+    case "rtc.providerProfiles.retrieve":
+    case "rtc.providerProfiles.update":
+    case "rtc.providerProfiles.disable":
+      return "RtcProviderProfileResponse";
+    case "rtc.providerProfiles.verify":
+      return "RtcProviderProfileVerifyResultResponse";
+    case "rtc.providerRoutes.list":
+      return "RtcProviderRouteListResponse";
+    case "rtc.providerRoutes.create":
+      return "RtcProviderRouteResponse";
+    case "rtc.qualitySamples.list":
+      return "RtcQualitySampleListResponse";
+    case "rtc.providerWebhooks.events.list":
+      return "RtcProviderWebhookEventListResponse";
+    case "rtc.providerWebhooks.events.receive":
+      return "RtcProviderWebhookEventResponse";
+    case "rtc.providerQueryJobs.create":
+    case "rtc.providerQueryJobs.retrieve":
+      return "RtcProviderQueryJobResponse";
+    case "rtc.providerQueryJobs.snapshots.list":
+      return "RtcProviderQuerySnapshotListResponse";
+    default:
+      return "RtcApiResult";
+  }
 }
 
 function jsonResponse(description, schemaRef) {

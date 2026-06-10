@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-
-async function loadSdk() {
-  return import('../dist/index.js');
-}
+import {
+  createManagerWithProviderPackages,
+  loadSdk,
+} from './provider-test-helpers.mjs';
 
 test('capability sets are immutable runtime snapshots', async () => {
   const { createCapabilitySet } = await loadSdk();
@@ -39,7 +39,7 @@ test('provider drivers snapshot metadata and expose immutable contracts', async 
     displayName: 'Agora RTC',
     defaultSelected: false,
     urlSchemes: ['rtc:agora'],
-    requiredCapabilities: ['session', 'join', 'publish', 'subscribe', 'mute', 'basic-events', 'health', 'unwrap'],
+    requiredCapabilities: ['session', 'credential', 'provider.webhook', 'health', 'media.audio', 'media.video', 'live.broadcast', 'live.audience', 'provider.event-normalization'],
     optionalCapabilities: ['screen-share', 'recording'],
     extensionKeys: ['agora.native-client'],
   };
@@ -59,13 +59,14 @@ test('provider drivers snapshot metadata and expose immutable contracts', async 
   assert.deepEqual(driver.metadata.urlSchemes, ['rtc:agora']);
   assert.deepEqual(driver.metadata.requiredCapabilities, [
     'session',
-    'join',
-    'publish',
-    'subscribe',
-    'mute',
-    'basic-events',
+    'credential',
+    'provider.webhook',
     'health',
-    'unwrap',
+    'media.audio',
+    'media.video',
+    'live.broadcast',
+    'live.audience',
+    'provider.event-normalization',
   ]);
   assert.deepEqual(driver.metadata.extensionKeys, ['agora.native-client']);
   assert.throws(() => driver.metadata.urlSchemes.push('rtc:agora-bad'), TypeError);
@@ -75,18 +76,12 @@ test('provider drivers snapshot metadata and expose immutable contracts', async 
 });
 
 test('driver-manager runtime descriptors are immutable snapshots', async () => {
-  const {
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-    createTencentRtcDriver,
-    parseRtcProviderUrl,
-  } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages([
+    'volcengine',
+    'tencent',
+  ]);
 
-  const manager = new RtcDriverManager({
-    drivers: [createVolcengineRtcDriver(), createTencentRtcDriver()],
-  });
-
-  const parsedUrl = parseRtcProviderUrl('rtc:tencent://app/default');
+  const parsedUrl = sdk.parseRtcProviderUrl('rtc:tencent://app/default');
   const selection = manager.resolveSelection({
     providerUrl: 'rtc:tencent://app/default',
   });
@@ -108,38 +103,30 @@ test('driver-manager runtime descriptors are immutable snapshots', async () => {
 });
 
 test('client runtime surfaces are immutable while native sdk instances stay mutable', async () => {
-  const {
-    RtcDataSource,
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-  } = await loadSdk();
-
   const nativeClient = {
     sdk: 'volcengine-web-native',
     mutableFlag: false,
   };
   let observedContext;
-  const manager = new RtcDriverManager({
-    drivers: [
-      createVolcengineRtcDriver({
-        nativeFactory: async () => nativeClient,
-        runtimeController: {
-          async join(options, context) {
-            observedContext = context;
-            context.nativeClient.mutableFlag = true;
-            return {
-              sessionId: options.sessionId,
-              roomId: options.roomId,
-              participantId: options.participantId,
-              providerKey: context.metadata.providerKey,
-              connectionState: 'joined',
-            };
-          },
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine'], {
+    volcengine: {
+      nativeFactory: async () => nativeClient,
+      runtimeController: {
+        async join(options, context) {
+          observedContext = context;
+          context.nativeClient.mutableFlag = true;
+          return {
+            sessionId: options.sessionId,
+            roomId: options.roomId,
+            participantId: options.participantId,
+            providerKey: context.metadata.providerKey,
+            connectionState: 'joined',
+          };
         },
-      }),
-    ],
+      },
+    },
   });
-  const dataSource = new RtcDataSource({
+  const dataSource = new sdk.RtcDataSource({
     driverManager: manager,
   });
 

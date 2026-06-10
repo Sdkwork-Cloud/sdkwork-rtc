@@ -3,7 +3,7 @@
   "info": {
     "title": "SDKWork RTC App API",
     "version": "1.0.0",
-    "description": "App/client contract for SDKWork RTC session lifecycle, signaling, credential issue, callback mapping, recording artifacts, and provider health flows.",
+    "description": "App/client contract for RTC rooms, media sessions, participant credentials, and recording artifacts.",
     "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
     "x-sdkwork-sdk-family": "sdkwork-rtc-app-sdk",
     "x-sdkwork-owner": "sdkwork-rtc",
@@ -17,38 +17,28 @@
   ],
   "tags": [
     {
-      "name": "rtcArtifacts",
-      "description": "Rtc Artifacts API resources.",
+      "name": "rtcMediaSessions",
+      "description": "Rtc Media Sessions API resources.",
       "x-sdk-nested-resource-surface": true
     },
     {
-      "name": "rtcCredentials",
-      "description": "Rtc Credentials API resources.",
+      "name": "rtcParticipantCredentials",
+      "description": "Rtc Participant Credentials API resources.",
       "x-sdk-nested-resource-surface": true
     },
     {
-      "name": "rtcProviderCallbacks",
-      "description": "Rtc Provider Callbacks API resources.",
+      "name": "rtcProviderProfiles",
+      "description": "Rtc Provider Profiles API resources.",
       "x-sdk-nested-resource-surface": true
     },
     {
-      "name": "rtcProviderHealth",
-      "description": "Rtc Provider Health API resources.",
+      "name": "rtcRecordingArtifacts",
+      "description": "Rtc Recording Artifacts API resources.",
       "x-sdk-nested-resource-surface": true
     },
     {
-      "name": "rtcRecords",
-      "description": "Rtc Records API resources.",
-      "x-sdk-nested-resource-surface": true
-    },
-    {
-      "name": "rtcSessions",
-      "description": "Rtc Sessions API resources.",
-      "x-sdk-nested-resource-surface": true
-    },
-    {
-      "name": "rtcSignals",
-      "description": "Rtc Signals API resources.",
+      "name": "rtcRooms",
+      "description": "Rtc Rooms API resources.",
       "x-sdk-nested-resource-surface": true
     }
   ],
@@ -59,1000 +49,14 @@
     }
   ],
   "paths": {
-    "/app/v3/api/rtc/provider_callbacks": {
-      "post": {
-        "tags": [
-          "rtcProviderCallbacks"
-        ],
-        "summary": "Rtc provider Callbacks create.",
-        "operationId": "rtc.providerCallbacks.create",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.providerCallbacks",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.provider_callbacks.write",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcOperationCommand"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/v3/api/rtc/provider_health": {
+    "/app/v3/api/rtc/media_sessions": {
       "get": {
         "tags": [
-          "rtcProviderHealth"
+          "rtcMediaSessions"
         ],
-        "summary": "Rtc provider Health retrieve.",
-        "operationId": "rtc.providerHealth.retrieve",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.providerHealth",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.provider_health.read"
-      }
-    },
-    "/app/v3/api/rtc/sessions": {
-      "post": {
-        "tags": [
-          "rtcSessions"
-        ],
-        "summary": "Rtc sessions create.",
-        "operationId": "rtc.sessions.create",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.sessions",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.sessions.write",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcOperationCommand"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}": {
-      "get": {
-        "tags": [
-          "rtcSessions"
-        ],
-        "summary": "Rtc sessions retrieve.",
-        "operationId": "rtc.sessions.retrieve",
+        "summary": "Rtc media Sessions list.",
+        "operationId": "rtc.mediaSessions.list",
         "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.sessions",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.sessions.read"
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/accept": {
-      "post": {
-        "tags": [
-          "rtcSessions"
-        ],
-        "summary": "Rtc sessions accept.",
-        "operationId": "rtc.sessions.accept",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.sessions",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.accept",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcOperationCommand"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/artifacts/recording": {
-      "get": {
-        "tags": [
-          "rtcArtifacts"
-        ],
-        "summary": "Rtc artifacts recording retrieve.",
-        "operationId": "rtc.artifacts.recording.retrieve",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.artifacts.recording",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.artifact"
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/credentials": {
-      "post": {
-        "tags": [
-          "rtcCredentials"
-        ],
-        "summary": "Rtc credentials issue.",
-        "operationId": "rtc.credentials.issue",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.credentials",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.issue_credential",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcOperationCommand"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/end": {
-      "post": {
-        "tags": [
-          "rtcSessions"
-        ],
-        "summary": "Rtc sessions end.",
-        "operationId": "rtc.sessions.end",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.sessions",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.end",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcOperationCommand"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/invite": {
-      "post": {
-        "tags": [
-          "rtcSessions"
-        ],
-        "summary": "Rtc sessions invite.",
-        "operationId": "rtc.sessions.invite",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.sessions",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.invite",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcOperationCommand"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/records": {
-      "get": {
-        "tags": [
-          "rtcRecords"
-        ],
-        "summary": "Rtc records list.",
-        "operationId": "rtc.records.list",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "page",
             "in": "query",
@@ -1105,7 +109,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
+                  "$ref": "#/components/schemas/RtcMediaSessionListResponse"
                 }
               }
             }
@@ -1181,299 +185,26 @@
         "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
         "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
         "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.records",
+        "x-sdkwork-resource": "rtc.mediaSessions",
         "x-sdkwork-request-context": "AppRequestContext",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.records.read"
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/reject": {
-      "post": {
-        "tags": [
-          "rtcSessions"
-        ],
-        "summary": "Rtc sessions reject.",
-        "operationId": "rtc.sessions.reject",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.sessions",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.reject",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcOperationCommand"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/v3/api/rtc/sessions/{rtcSessionId}/signals": {
-      "get": {
-        "tags": [
-          "rtcSignals"
-        ],
-        "summary": "Rtc signals list.",
-        "operationId": "rtc.signals.list",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 200,
-              "default": 20
-            }
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sort",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "q",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.signals",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.signal"
+        "x-sdkwork-permission": "rtc.media_sessions.read",
+        "x-sdkwork-auth-mode": "dual-token"
       },
       "post": {
         "tags": [
-          "rtcSignals"
+          "rtcMediaSessions"
         ],
-        "summary": "Rtc signals create.",
-        "operationId": "rtc.signals.create",
-        "parameters": [
-          {
-            "name": "rtcSessionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "Rtc media Sessions create.",
+        "operationId": "rtc.mediaSessions.create",
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RtcApiResult"
+                  "$ref": "#/components/schemas/RtcMediaSessionResponse"
                 }
               }
             }
@@ -1549,10 +280,347 @@
         "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
         "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
         "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.signals",
+        "x-sdkwork-resource": "rtc.mediaSessions",
         "x-sdkwork-request-context": "AppRequestContext",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.signal",
+        "x-sdkwork-permission": "rtc.media_sessions.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcCreateMediaSessionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app/v3/api/rtc/media_sessions/{mediaSessionId}": {
+      "get": {
+        "tags": [
+          "rtcMediaSessions"
+        ],
+        "summary": "Rtc media Sessions retrieve.",
+        "operationId": "rtc.mediaSessions.retrieve",
+        "parameters": [
+          {
+            "name": "mediaSessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcMediaSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.mediaSessions",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.media_sessions.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      }
+    },
+    "/app/v3/api/rtc/media_sessions/{mediaSessionId}/completion_record": {
+      "get": {
+        "tags": [
+          "rtcMediaSessions"
+        ],
+        "summary": "Rtc media Sessions completion Record retrieve.",
+        "operationId": "rtc.mediaSessions.completionRecord.retrieve",
+        "parameters": [
+          {
+            "name": "mediaSessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcMediaSessionCompletionRecordResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.mediaSessions.completionRecord",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.media_sessions.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      }
+    },
+    "/app/v3/api/rtc/media_sessions/{mediaSessionId}/participants/{participantId}/credential": {
+      "post": {
+        "tags": [
+          "rtcParticipantCredentials"
+        ],
+        "summary": "Rtc media Sessions participant Credentials issue.",
+        "operationId": "rtc.mediaSessions.participantCredentials.issue",
+        "parameters": [
+          {
+            "name": "mediaSessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "participantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcParticipantCredentialResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.mediaSessions.participantCredentials",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.media_sessions.credentials.issue",
+        "x-sdkwork-auth-mode": "dual-token",
         "requestBody": {
           "required": true,
           "content": {
@@ -1563,6 +631,549 @@
             }
           }
         }
+      }
+    },
+    "/app/v3/api/rtc/media_sessions/{mediaSessionId}/recording_artifacts": {
+      "get": {
+        "tags": [
+          "rtcRecordingArtifacts"
+        ],
+        "summary": "Rtc media Sessions recording Artifacts list.",
+        "operationId": "rtc.mediaSessions.recordingArtifacts.list",
+        "parameters": [
+          {
+            "name": "mediaSessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcMediaArtifactListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.mediaSessions.recordingArtifacts",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.media_artifacts.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      }
+    },
+    "/app/v3/api/rtc/provider_profiles/active": {
+      "get": {
+        "tags": [
+          "rtcProviderProfiles"
+        ],
+        "summary": "Rtc provider Profiles active list.",
+        "operationId": "rtc.providerProfiles.active.list",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcActiveProviderProfileListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerProfiles.active",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_profiles.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      }
+    },
+    "/app/v3/api/rtc/rooms": {
+      "get": {
+        "tags": [
+          "rtcRooms"
+        ],
+        "summary": "Rtc rooms list.",
+        "operationId": "rtc.rooms.list",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcRoomListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.rooms",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.rooms.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      }
+    },
+    "/app/v3/api/rtc/rooms/{roomId}": {
+      "get": {
+        "tags": [
+          "rtcRooms"
+        ],
+        "summary": "Rtc rooms retrieve.",
+        "operationId": "rtc.rooms.retrieve",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcRoomResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.rooms",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.rooms.read",
+        "x-sdkwork-auth-mode": "dual-token"
       }
     }
   },
@@ -1582,37 +1193,231 @@
       }
     },
     "schemas": {
-      "RtcApiResult": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        }
-      },
       "RtcOperationCommand": {
         "type": "object",
         "additionalProperties": true,
         "description": "Operation-specific RTC command payload defined by the owning sdkwork-rtc Rust route/service module."
+      },
+      "MediaKind": {
+        "type": "string",
+        "enum": [
+          "image",
+          "video",
+          "audio",
+          "voice",
+          "document",
+          "archive",
+          "model",
+          "other"
+        ]
+      },
+      "MediaSource": {
+        "type": "string",
+        "enum": [
+          "drive",
+          "external_url",
+          "data_url",
+          "provider_asset",
+          "generated"
+        ]
+      },
+      "MediaChecksum": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "algorithm",
+          "value"
+        ],
+        "properties": {
+          "algorithm": {
+            "type": "string",
+            "enum": [
+              "sha256",
+              "md5",
+              "etag"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaAccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "visibility"
+        ],
+        "properties": {
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "tenant",
+              "organization",
+              "public",
+              "signed"
+            ]
+          },
+          "expiresAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "MediaResource": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "$ref": "#/components/schemas/MediaKind"
+          },
+          "source": {
+            "$ref": "#/components/schemas/MediaSource"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "Delivery URL. It is optional and may be temporary."
+          },
+          "publicUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "uri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "objectBlobId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fileName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 512
+          },
+          "mimeType": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "sizeBytes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "checksum": {
+            "$ref": "#/components/schemas/MediaChecksum"
+          },
+          "width": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "height": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "durationSeconds": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "altText": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 512
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "access": {
+            "$ref": "#/components/schemas/MediaAccess"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Extension metadata. Drive-backed RTC recordings include metadata.drive.spaceType = rtc."
+          }
+        }
+      },
+      "RtcDriveReference": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "driveUri",
+          "spaceId",
+          "spaceType",
+          "nodeId"
+        ],
+        "properties": {
+          "driveUri": {
+            "type": "string",
+            "pattern": "^drive://spaces/.+/nodes/.+$"
+          },
+          "spaceId": {
+            "type": "string"
+          },
+          "spaceType": {
+            "type": "string",
+            "enum": [
+              "rtc"
+            ],
+            "description": "Dedicated Drive space type for SDKWork RTC recording and artifact archives."
+          },
+          "nodeId": {
+            "type": "string"
+          },
+          "nodeVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
       },
       "RtcRoom": {
         "type": "object",
@@ -1651,13 +1456,133 @@
           }
         }
       },
-      "RtcCallSession": {
+      "RtcRoomListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RtcRoom"
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "RtcRoomResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "$ref": "#/components/schemas/RtcRoom"
+          }
+        }
+      },
+      "RtcCreateMediaSessionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "roomId",
+          "mediaMode"
+        ],
+        "properties": {
+          "roomId": {
+            "type": "string"
+          },
+          "mediaMode": {
+            "type": "string",
+            "enum": [
+              "audio",
+              "video",
+              "live"
+            ]
+          },
+          "providerProfileId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recordingRequested": {
+            "type": "boolean",
+            "default": false
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "RtcMediaSession": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "id",
           "roomId",
-          "callType",
+          "tenantId",
+          "organizationId",
+          "ownerUserId",
+          "mediaMode",
           "status",
           "participants"
         ],
@@ -1668,49 +1593,227 @@
           "roomId": {
             "type": "string"
           },
-          "callType": {
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "ownerUserId": {
+            "type": "string"
+          },
+          "mediaMode": {
             "type": "string",
             "enum": [
               "audio",
-              "video"
+              "video",
+              "live"
             ]
           },
           "status": {
             "type": "string",
             "enum": [
-              "ringing",
-              "connecting",
-              "connected",
+              "preparing",
+              "active",
+              "closing",
               "ended",
-              "failed",
-              "terminated"
+              "failed"
             ]
           },
           "providerProfileId": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerSessionId": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "startedAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "connectedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "endedAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "endReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "endSource": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "manual_close",
+              "provider_webhook",
+              "active_provider_query",
+              "provider_state_sync",
+              "timeout",
+              "system_reconcile",
+              "unknown",
+              null
+            ]
+          },
+          "participantCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxConcurrentParticipants": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "qualitySummary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RtcMediaSessionCompletionQualitySummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recordingSummary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RtcMediaSessionCompletionRecordingSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "completionRecordedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastProviderWebhookEventId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastProviderQueryJobId": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "participants": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RtcCallParticipant"
+              "$ref": "#/components/schemas/RtcMediaParticipant"
             }
           }
         }
       },
-      "RtcCallParticipant": {
+      "RtcMediaSessionListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RtcMediaSession"
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "RtcMediaSessionResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "$ref": "#/components/schemas/RtcMediaSession"
+          }
+        }
+      },
+      "RtcMediaParticipant": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "id",
-          "sessionId",
+          "mediaSessionId",
           "userId",
           "displayName",
           "role",
@@ -1720,7 +1823,7 @@
           "id": {
             "type": "string"
           },
-          "sessionId": {
+          "mediaSessionId": {
             "type": "string"
           },
           "userId": {
@@ -1740,7 +1843,7 @@
           "state": {
             "type": "string",
             "enum": [
-              "invited",
+              "joining",
               "joined",
               "left",
               "kicked",
@@ -1752,6 +1855,1030 @@
           },
           "videoMuted": {
             "type": "boolean"
+          },
+          "screenShareActive": {
+            "type": "boolean"
+          },
+          "providerParticipantId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "joinedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "leftAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "leaveReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "lastSeenAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "RtcParticipantCredential": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenantId",
+          "mediaSessionId",
+          "participantId",
+          "credential",
+          "expiresAt"
+        ],
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "mediaSessionId": {
+            "type": "string"
+          },
+          "participantId": {
+            "type": "string"
+          },
+          "credential": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RtcParticipantCredentialResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "$ref": "#/components/schemas/RtcParticipantCredential"
+          }
+        }
+      },
+      "RtcMediaArtifact": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "mediaSessionId",
+          "ownerUserId",
+          "artifactKind",
+          "artifactStatus",
+          "mediaRole",
+          "drive",
+          "resource"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mediaSessionId": {
+            "type": "string"
+          },
+          "ownerUserId": {
+            "type": "string"
+          },
+          "artifactKind": {
+            "type": "string",
+            "enum": [
+              "recording",
+              "transcript",
+              "screen_share",
+              "snapshot",
+              "other"
+            ]
+          },
+          "artifactStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "ready",
+              "failed",
+              "deleted"
+            ]
+          },
+          "mediaRole": {
+            "type": "string"
+          },
+          "providerProfileId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerArtifactId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "drive": {
+            "$ref": "#/components/schemas/RtcDriveReference"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/MediaResource"
+          },
+          "resourceHash": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "failureReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "sourceProviderWebhookEventId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceProviderQueryJobId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RtcMediaArtifactListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RtcMediaArtifact"
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "RtcMediaSessionCompletionQualitySummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sampleCount",
+          "participantSampleCount"
+        ],
+        "properties": {
+          "sampleCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "participantSampleCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "avgLatencyMs": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "maxLatencyMs": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "avgJitterMs": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "maxJitterMs": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "maxPacketLossRate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "minBitrateKbps": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "avgBitrateKbps": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "firstSampledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastSampledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "RtcMediaSessionCompletionRecordingSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifactCount",
+          "recordingArtifactCount",
+          "readyArtifactCount",
+          "failedArtifactCount",
+          "processingArtifactCount",
+          "driveResourceCount"
+        ],
+        "properties": {
+          "artifactCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "recordingArtifactCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "readyArtifactCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failedArtifactCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "processingArtifactCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalDurationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "driveResourceCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "RtcMediaSessionCompletionParticipantSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "participantId",
+          "userId",
+          "displayName",
+          "role",
+          "state"
+        ],
+        "properties": {
+          "participantId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "host",
+              "guest",
+              "listener"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "joining",
+              "joined",
+              "left",
+              "kicked",
+              "timeout"
+            ]
+          },
+          "joinedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "leftAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "leaveReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "providerParticipantId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RtcMediaSessionCompletionTrackSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trackId",
+          "participantId",
+          "trackKind",
+          "trackSource",
+          "status"
+        ],
+        "properties": {
+          "trackId": {
+            "type": "string"
+          },
+          "participantId": {
+            "type": "string"
+          },
+          "trackKind": {
+            "type": "string",
+            "enum": [
+              "audio",
+              "video",
+              "screen_share",
+              "data"
+            ]
+          },
+          "trackSource": {
+            "type": "string",
+            "enum": [
+              "microphone",
+              "camera",
+              "screen",
+              "system",
+              "custom"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "publishing",
+              "muted",
+              "stopped",
+              "failed"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "mutedDurationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "endReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          }
+        }
+      },
+      "RtcMediaSessionCompletionArtifactSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifactId",
+          "artifactKind",
+          "artifactStatus",
+          "mediaRole",
+          "driveUri",
+          "driveSpaceId",
+          "driveSpaceType",
+          "driveNodeId"
+        ],
+        "properties": {
+          "artifactId": {
+            "type": "string"
+          },
+          "artifactKind": {
+            "type": "string",
+            "enum": [
+              "recording",
+              "transcript",
+              "screen_share",
+              "snapshot",
+              "other"
+            ]
+          },
+          "artifactStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "ready",
+              "failed",
+              "deleted"
+            ]
+          },
+          "mediaRole": {
+            "type": "string"
+          },
+          "driveUri": {
+            "type": "string",
+            "pattern": "^drive://spaces/.+/nodes/.+$"
+          },
+          "driveSpaceId": {
+            "type": "string"
+          },
+          "driveSpaceType": {
+            "type": "string",
+            "enum": [
+              "rtc"
+            ],
+            "description": "Dedicated Drive space type used by SDKWork RTC post-session recording and artifact archives."
+          },
+          "driveNodeId": {
+            "type": "string"
+          },
+          "driveNodeVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerArtifactId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "failureReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          }
+        }
+      },
+      "RtcMediaSessionCompletionRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "organizationId",
+          "mediaSessionId",
+          "roomId",
+          "ownerUserId",
+          "mediaMode",
+          "sessionStatus",
+          "participantCount",
+          "maxConcurrentParticipants",
+          "qualitySummary",
+          "recordingSummary",
+          "participants",
+          "tracks",
+          "artifacts",
+          "completionSnapshotHash",
+          "recordedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "mediaSessionId": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "string"
+          },
+          "ownerUserId": {
+            "type": "string"
+          },
+          "providerProfileId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerSessionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mediaMode": {
+            "type": "string",
+            "enum": [
+              "audio",
+              "video",
+              "live"
+            ]
+          },
+          "sessionStatus": {
+            "type": "string",
+            "enum": [
+              "preparing",
+              "active",
+              "closing",
+              "ended",
+              "failed"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "connectedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "endReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "endSource": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "manual_close",
+              "provider_webhook",
+              "active_provider_query",
+              "provider_state_sync",
+              "timeout",
+              "system_reconcile",
+              "unknown",
+              null
+            ]
+          },
+          "participantCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxConcurrentParticipants": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "qualitySummary": {
+            "$ref": "#/components/schemas/RtcMediaSessionCompletionQualitySummary"
+          },
+          "recordingSummary": {
+            "$ref": "#/components/schemas/RtcMediaSessionCompletionRecordingSummary"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcMediaSessionCompletionParticipantSummary"
+            }
+          },
+          "tracks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcMediaSessionCompletionTrackSummary"
+            }
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcMediaSessionCompletionArtifactSummary"
+            }
+          },
+          "sourceWebhookEventId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceProviderQueryJobId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completionSnapshot": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "completionSnapshotHash": {
+            "type": "string"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RtcMediaSessionCompletionRecordResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "$ref": "#/components/schemas/RtcMediaSessionCompletionRecord"
+          }
+        }
+      },
+      "RtcActiveProviderProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "provider",
+          "code",
+          "name",
+          "isDefault",
+          "priority",
+          "environment",
+          "capabilities",
+          "healthStatus"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "staging",
+              "development",
+              "test",
+              "sandbox"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerAppId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endpoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/RtcProviderCapabilitySnapshot"
+          },
+          "healthStatus": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "healthy",
+              "degraded",
+              "unhealthy"
+            ]
+          }
+        }
+      },
+      "RtcProviderCapabilitySnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "audio",
+          "video",
+          "live",
+          "screenShare",
+          "recording",
+          "webhook",
+          "activeQuery"
+        ],
+        "properties": {
+          "audio": {
+            "type": "boolean"
+          },
+          "video": {
+            "type": "boolean"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "screenShare": {
+            "type": "boolean"
+          },
+          "recording": {
+            "type": "boolean"
+          },
+          "webhook": {
+            "type": "boolean"
+          },
+          "activeQuery": {
+            "type": "boolean"
+          },
+          "maxParticipants": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "supportedRegions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "providerFeatures": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "RtcActiveProviderProfileListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RtcActiveProviderProfile"
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
           }
         }
       },
@@ -1825,7 +2952,7 @@
   "x-sdkwork-materialized-from": [
     {
       "owner": "sdkwork-rtc",
-      "path": "services/sdkwork-routes-rtc-app-api/src/lib.rs",
+      "path": "services/sdkwork-routes-rtc-app-api/src/paths.rs",
       "packageName": "sdkwork-routes-rtc-app-api"
     }
   ],

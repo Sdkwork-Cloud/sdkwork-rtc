@@ -30,10 +30,17 @@ function readAssembly() {
   return JSON.parse(readFileSync(assemblyPath, 'utf8'));
 }
 
+function getRequiredBaselineCapabilities(assembly) {
+  return assembly.capabilityCatalog
+    .filter((capability) => capability.category === 'required-baseline')
+    .map((capability) => capability.capabilityKey);
+}
+
 test('materialized rtc provider catalog matches the assembly provider registry snapshot', async () => {
   const catalog = await loadCatalog();
-
-  const expectedProviders = readAssemblyProviders();
+  const assembly = readAssembly();
+  const expectedProviders = assembly.providers;
+  const expectedRequiredCapabilities = getRequiredBaselineCapabilities(assembly);
 
   assert.deepEqual(
     catalog.OFFICIAL_RTC_PROVIDER_KEYS,
@@ -68,7 +75,7 @@ test('materialized rtc provider catalog matches the assembly provider registry s
       builtin: provider.builtin,
       defaultSelected: provider.defaultSelected,
       urlSchemes: provider.urlSchemes,
-      requiredCapabilities: provider.requiredCapabilities,
+      requiredCapabilities: expectedRequiredCapabilities,
       optionalCapabilities: provider.optionalCapabilities,
       typescriptAdapter: provider.typescriptAdapter,
     })),
@@ -141,11 +148,25 @@ test('materialized rtc provider catalog exposes assembly-driven default provider
 
 test('materialized rtc provider catalog exposes typescript runtime bridge prerequisites', async () => {
   const catalog = await loadCatalog();
+  const assembly = readAssembly();
+  const expectedAdapterByProviderKey = new Map(
+    assembly.providers.map((provider) => [provider.providerKey, provider.typescriptAdapter]),
+  );
 
   for (const provider of catalog.OFFICIAL_RTC_PROVIDER_CATALOG) {
-    assert.equal(provider.typescriptAdapter.runtimeBridgeStatus, 'reference-baseline');
-    assert.equal(provider.typescriptAdapter.officialVendorSdkRequirement, 'required');
+    assert.deepEqual(
+      provider.typescriptAdapter,
+      expectedAdapterByProviderKey.get(provider.providerKey),
+    );
   }
+  assert.deepEqual(
+    catalog.OFFICIAL_RTC_PROVIDER_CATALOG
+      .filter(
+        (provider) => provider.typescriptAdapter.runtimeBridgeStatus === 'reference-baseline',
+      )
+      .map((provider) => provider.providerKey),
+    ['volcengine', 'tencent'],
+  );
 });
 
 test('materialized rtc provider activation catalog matches the assembly language activation snapshot', async () => {
@@ -175,7 +196,7 @@ test('materialized rtc provider activation catalog matches the assembly language
         driverId: provider.driverId,
         activationStatus: providerActivation.activationStatus,
         runtimeBridge: providerActivation.activationStatus !== 'control-metadata-only',
-        rootPublic: providerActivation.activationStatus === 'root-public-builtin',
+        rootPublic: false,
         packageBoundary: providerActivation.activationStatus !== 'control-metadata-only',
         builtin: provider.builtin,
         packageIdentity: provider.typescriptPackage.packageName,
@@ -244,9 +265,9 @@ test('materialized rtc language workspace catalog matches the assembly language 
   );
   assert.deepEqual(languageWorkspaceCatalog.TYPESCRIPT_RTC_LANGUAGE_WORKSPACE_ENTRY.providerPackageBoundary, {
     mode: 'catalog-governed-mixed',
-    rootPublicPolicy: 'builtin-only',
-    lifecycleStatusTerms: ['root_public_reference_boundary', 'package_reference_boundary'],
-    runtimeBridgeStatusTerms: ['reference-baseline'],
+    rootPublicPolicy: 'none',
+    lifecycleStatusTerms: ['package_reference_boundary'],
+    runtimeBridgeStatusTerms: ['reference-baseline', 'reserved'],
   });
   assert.equal(typeof rootSdk.getRtcLanguageWorkspaceByLanguage, 'function');
   assert.deepEqual(
@@ -259,24 +280,20 @@ test('materialized rtc language workspace catalog matches the assembly language 
     languageWorkspaceCatalog.FLUTTER_RTC_LANGUAGE_WORKSPACE_ENTRY,
   );
   assert.deepEqual(languageWorkspaceCatalog.TYPESCRIPT_RTC_LANGUAGE_WORKSPACE_ENTRY.runtimeBaseline, {
-    vendorSdkPackage: '@volcengine/rtc',
-    vendorSdkImportPath: '@volcengine/rtc',
-    signalingSdkPackage: '@sdkwork/rtc-sdk',
-    signalingSdkImportPath: '@sdkwork/rtc-sdk',
-    recommendedEntrypoint: 'createStandardRtcCallControllerStack',
-    smokeCommand: 'node ./bin/sdk-call-smoke.mjs --json',
+    vendorSdkPackage: '@sdkwork/rtc-sdk-provider-volcengine',
+    vendorSdkImportPath: '@sdkwork/rtc-sdk-provider-volcengine',
+    recommendedEntrypoint: 'installRtcProviderPackage',
+    smokeCommand: 'npm run smoke',
     smokeMode: 'runtime-backed',
-    smokeVariants: ['default', 'reuse-live-connection'],
+    smokeVariants: ['default'],
   });
   assert.deepEqual(languageWorkspaceCatalog.FLUTTER_RTC_LANGUAGE_WORKSPACE_ENTRY.runtimeBaseline, {
-    vendorSdkPackage: 'volc_engine_rtc',
-    vendorSdkImportPath: 'package:volc_engine_rtc/volc_engine_rtc.dart',
-    signalingSdkPackage: 'rtc_sdk',
-    signalingSdkImportPath: 'package:rtc_sdk/rtc_sdk.dart',
-    recommendedEntrypoint: 'createStandardRtcCallControllerStack',
-    smokeCommand: 'node ./bin/sdk-call-smoke.mjs --json',
+    vendorSdkPackage: 'rtc_sdk_provider_volcengine',
+    vendorSdkImportPath: 'package:rtc_sdk_provider_volcengine/rtc_sdk_provider_volcengine.dart',
+    recommendedEntrypoint: 'RtcDataSource',
+    smokeCommand: 'flutter analyze',
     smokeMode: 'analysis-backed',
-    smokeVariants: ['default', 'reuse-live-connection'],
+    smokeVariants: ['default'],
   });
   assert.equal(languageWorkspaceCatalog.getRtcLanguageWorkspaceByLanguage('ruby'), undefined);
 });

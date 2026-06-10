@@ -4,6 +4,8 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
@@ -17,6 +19,56 @@ const GENERATOR_BIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+const providerRuntimeSdkDependency = {
+  workspace: "sdkwork-rtc-sdk",
+  role: "provider-runtime-sdk",
+  required: true,
+  dependencyMode: "consumer-sdk",
+  apiPrefix: null,
+  generatedTransportImportPolicy: "forbidden",
+  packageByLanguage: {
+    typescript: "@sdkwork/rtc-sdk",
+    rust: "sdkwork-rtc-sdk",
+    java: "com.sdkwork:sdkwork-rtc-sdk",
+    python: "sdkwork-rtc-sdk",
+    go: "github.com/sdkwork/sdkwork-rtc-sdk",
+  },
+};
+
+const driveAppSdkDependency = {
+  workspace: "sdkwork-drive-app-sdk",
+  role: "drive-media-resource-app-capability",
+  required: true,
+  dependencyMode: "consumer-sdk",
+  apiPrefix: "/app/v3/api",
+  apiAuthority: "sdkwork-drive.app",
+  generatedTransportImportPolicy: "forbidden",
+  packageByLanguage: {
+    typescript: "@sdkwork/drive-app-sdk",
+    rust: "sdkwork-drive-app-sdk",
+    java: "com.sdkwork:sdkwork-drive-app-sdk",
+    python: "sdkwork-drive-app-sdk",
+    go: "github.com/sdkwork/sdkwork-drive-app-sdk",
+  },
+};
+
+const driveBackendSdkDependency = {
+  workspace: "sdkwork-drive-backend-sdk",
+  role: "drive-media-resource-backend-capability",
+  required: true,
+  dependencyMode: "consumer-sdk",
+  apiPrefix: "/backend/v3/api",
+  apiAuthority: "sdkwork-drive.backend",
+  generatedTransportImportPolicy: "forbidden",
+  packageByLanguage: {
+    typescript: "@sdkwork/drive-backend-sdk",
+    rust: "sdkwork-drive-backend-sdk",
+    java: "com.sdkwork:sdkwork-drive-backend-sdk",
+    python: "sdkwork-drive-backend-sdk",
+    go: "github.com/sdkwork/sdkwork-drive-backend-sdk",
+  },
+};
+
 const families = [
   {
     familyName: "sdkwork-rtc-app-sdk",
@@ -28,23 +80,7 @@ const families = [
       "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
     sourceOpenapi: "generated/openapi/rtc-app-api.openapi.json",
     defaultBaseUrl: "http://127.0.0.1:18080",
-    sdkDependencies: [
-      {
-        workspace: "sdkwork-rtc-sdk",
-        role: "provider-runtime-sdk",
-        required: true,
-        dependencyMode: "consumer-sdk",
-        apiPrefix: null,
-        generatedTransportImportPolicy: "forbidden",
-        packageByLanguage: {
-          typescript: "@sdkwork/rtc-sdk",
-          rust: "sdkwork-rtc-sdk",
-          java: "com.sdkwork:sdkwork-rtc-sdk",
-          python: "sdkwork-rtc-sdk",
-          go: "github.com/sdkwork/sdkwork-rtc-sdk",
-        },
-      },
-    ],
+    sdkDependencies: [providerRuntimeSdkDependency, driveAppSdkDependency],
   },
   {
     familyName: "sdkwork-rtc-backend-sdk",
@@ -56,23 +92,7 @@ const families = [
       "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
     sourceOpenapi: "generated/openapi/rtc-backend-api.openapi.json",
     defaultBaseUrl: "http://127.0.0.1:18080",
-    sdkDependencies: [
-      {
-        workspace: "sdkwork-rtc-sdk",
-        role: "provider-runtime-sdk",
-        required: true,
-        dependencyMode: "consumer-sdk",
-        apiPrefix: null,
-        generatedTransportImportPolicy: "forbidden",
-        packageByLanguage: {
-          typescript: "@sdkwork/rtc-sdk",
-          rust: "sdkwork-rtc-sdk",
-          java: "com.sdkwork:sdkwork-rtc-sdk",
-          python: "sdkwork-rtc-sdk",
-          go: "github.com/sdkwork/sdkwork-rtc-sdk",
-        },
-      },
-    ],
+    sdkDependencies: [providerRuntimeSdkDependency, driveBackendSdkDependency],
   },
 ];
 
@@ -111,6 +131,8 @@ function collectOperations(openapi) {
         authority: operation["x-sdkwork-api-authority"],
         sourceRouteCrate: operation["x-sdkwork-source-route-crate"],
         permission: operation["x-sdkwork-permission"],
+        authMode: operation["x-sdkwork-auth-mode"],
+        providerWebhookSignature: operation["x-sdkwork-provider-webhook-signature"],
       });
     }
   }
@@ -171,8 +193,16 @@ function validateRouteManifest(family, openapiOperations) {
       if (route.source?.packageName !== family.sourceRouteCrate) {
         throw new Error(`${route.operationId} manifest source package mismatch`);
       }
-      if (route.auth?.mode !== "dual-token") {
-        throw new Error(`${route.operationId} manifest auth mode must be dual-token`);
+      const expectedAuthMode =
+        route.operationId === "rtc.providerWebhooks.events.receive" ? "public" : "dual-token";
+      if (route.auth?.mode !== expectedAuthMode) {
+        throw new Error(`${route.operationId} manifest auth mode must be ${expectedAuthMode}`);
+      }
+      if (
+        route.operationId === "rtc.providerWebhooks.events.receive" &&
+        route.auth?.providerWebhookSignature !== true
+      ) {
+        throw new Error(`${route.operationId} manifest must require provider webhook signature`);
       }
       if (!route.auth?.permission?.startsWith("rtc.")) {
         throw new Error(`${route.operationId} manifest must declare rtc permission`);
@@ -217,12 +247,50 @@ function validateOpenapi(family, openapi) {
     if (!operation.permission?.startsWith("rtc.")) {
       throw new Error(`${operation.operationId} permission mismatch`);
     }
+    if (operation.operationId === "rtc.providerWebhooks.events.receive") {
+      if (operation.authMode !== "anonymous") {
+        throw new Error(`${operation.operationId} must use anonymous provider webhook auth mode`);
+      }
+      if (operation.providerWebhookSignature !== true) {
+        throw new Error(`${operation.operationId} must declare provider webhook signature`);
+      }
+    } else if (operation.authMode !== "dual-token") {
+      throw new Error(`${operation.operationId} must use dual-token auth mode`);
+    }
   }
-  if (!openapi.components?.schemas?.RtcRoom) {
-    throw new Error(`${family.authorityName} must expose RtcRoom`);
+  for (const schemaName of [
+    "RtcRoom",
+    "RtcMediaSession",
+    "RtcMediaParticipant",
+    "RtcMediaArtifact",
+    "MediaResource",
+  ]) {
+    if (!openapi.components?.schemas?.[schemaName]) {
+      throw new Error(`${family.authorityName} must expose ${schemaName}`);
+    }
   }
-  if (!openapi.components?.schemas?.RtcCallSession) {
-    throw new Error(`${family.authorityName} must expose RtcCallSession`);
+  if (family.sdkType === "backend") {
+    for (const schemaName of [
+      "RtcProviderWebhookEvent",
+      "RtcProviderQueryJob",
+      "RtcProviderQuerySnapshot",
+    ]) {
+      if (!openapi.components?.schemas?.[schemaName]) {
+        throw new Error(`${family.authorityName} must expose ${schemaName}`);
+      }
+    }
+  }
+
+  const schemaNames = Object.keys(openapi.components?.schemas ?? {});
+  const forbiddenSchemaName = schemaNames.find((schemaName) => /^RtcCall/u.test(schemaName));
+  if (forbiddenSchemaName) {
+    throw new Error(`${family.authorityName} must not expose call signaling schema ${forbiddenSchemaName}`);
+  }
+  const forbiddenPath = Object.keys(openapi.paths ?? {}).find((pathKey) =>
+    /call_sessions|call_invitations|conversation/u.test(pathKey),
+  );
+  if (forbiddenPath) {
+    throw new Error(`${family.authorityName} must not expose signaling path ${forbiddenPath}`);
   }
   validateRouteManifest(family, operations);
   return operations;
@@ -398,6 +466,36 @@ function selectedLanguages(args) {
   return OFFICIAL_LANGUAGE_ORDER.filter((language) => normalized.includes(language));
 }
 
+function normalizeGeneratedTypescriptSources(outputPath) {
+  const sourcePath = path.join(outputPath, "src");
+  if (!existsSync(sourcePath)) {
+    return;
+  }
+  const pending = [sourcePath];
+  while (pending.length > 0) {
+    const currentPath = pending.pop();
+    for (const entry of readdirSync(currentPath, { withFileTypes: true })) {
+      const entryPath = path.join(currentPath, entry.name);
+      if (entry.isDirectory()) {
+        pending.push(entryPath);
+        continue;
+      }
+      if (!entry.isFile() || path.extname(entry.name) !== ".ts") {
+        continue;
+      }
+      const stat = statSync(entryPath);
+      if (stat.size === 0) {
+        continue;
+      }
+      const current = readFileSync(entryPath, "utf8");
+      const normalized = current.replace(/[ \t]+$/gmu, "");
+      if (normalized !== current) {
+        writeFileSync(entryPath, normalized, "utf8");
+      }
+    }
+  }
+}
+
 function runSdkgen(family, synced, args) {
   if (!existsSync(GENERATOR_BIN)) {
     throw new Error(`standard SDK generator not found: ${GENERATOR_BIN}`);
@@ -451,6 +549,9 @@ function runSdkgen(family, synced, args) {
     }
     if (result.status !== 0) {
       throw new Error(`sdkgen failed for ${family.familyName} ${language}`);
+    }
+    if (language === "typescript") {
+      normalizeGeneratedTypescriptSources(outputPath);
     }
   }
 }

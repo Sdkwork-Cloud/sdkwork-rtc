@@ -1,5 +1,35 @@
-use sdkwork_rtc_adapter_aliyun::{ALIYUN_RTC_PLUGIN_ID, AliyunRtcProvider, AliyunRtcProviderConfig};
-use sdkwork_rtc_core::{RtcCallbackRequest, RtcCreateSessionRequest, RtcProviderPort};
+use sdkwork_rtc_adapter_aliyun::{
+    ALIYUN_RTC_PLUGIN_ID, AliyunRtcProvider, AliyunRtcProviderConfig,
+    create_aliyun_rtc_provider_plugin_factory,
+};
+use sdkwork_rtc_core::{
+    RtcCreateMediaSessionRequest, RtcMediaSessionMode, RtcProviderEventKind,
+    RtcProviderPluginFactory, RtcProviderPort, RtcProviderQueryKind, RtcProviderQueryRequest,
+    RtcProviderWebhookParseRequest,
+};
+
+#[test]
+fn test_aliyun_rtc_provider_factory_creates_standard_provider_plugin() {
+    let factory = create_aliyun_rtc_provider_plugin_factory(AliyunRtcProviderConfig {
+        access_endpoint: "wss://rtc.aliyun.local/session".into(),
+        region: "cn-shanghai".into(),
+    });
+
+    let descriptor = factory.descriptor();
+    assert_eq!(descriptor.plugin_id, ALIYUN_RTC_PLUGIN_ID);
+    assert_eq!(descriptor.provider_kind, "aliyun");
+
+    let provider = factory.create_provider();
+    assert_eq!(provider.descriptor(), descriptor);
+    assert_media_session_contract(
+        provider.as_ref(),
+        RtcMediaSessionMode::Video,
+        "rtc_factory_demo",
+        "aliyun:rtc_factory_demo",
+        "wss://rtc.aliyun.local/session",
+        "cn-shanghai",
+    );
+}
 
 #[test]
 fn test_aliyun_rtc_provider_implements_contract_surface() {
@@ -16,48 +46,60 @@ fn test_aliyun_rtc_provider_implements_contract_surface() {
         vec![
             "session",
             "credential",
-            "callback",
+            "provider.webhook",
             "health",
-            "call.audio",
-            "call.video",
+            "media.audio",
+            "media.video",
             "live.broadcast",
-            "live.audience"
+            "live.audience",
+            "provider.event-normalization"
         ]
     );
     assert_eq!(
         descriptor.optional_capabilities,
-        vec!["recording", "artifact", "screen-share", "cloud-mix"]
+        vec![
+            "recording",
+            "artifact",
+            "screen-share",
+            "cloud-mix",
+            "provider.active-query"
+        ]
     );
 
-    let session = provider
-        .create_session(RtcCreateSessionRequest {
-            tenant_id: "t_demo".into(),
-            rtc_session_id: "rtc_demo".into(),
-            conversation_id: Some("c_demo".into()),
-            rtc_mode: "voice".into(),
-            initiator_id: "u_demo".into(),
-        })
-        .expect("aliyun rtc create_session should succeed");
-    assert_eq!(session.provider_session_id, "aliyun:rtc_demo");
-    assert_eq!(
-        session.access_endpoint.as_deref(),
-        Some("wss://rtc.aliyun.local/session")
+    assert_media_session_contract(
+        &provider,
+        RtcMediaSessionMode::Audio,
+        "rtc_audio_demo",
+        "aliyun:rtc_audio_demo",
+        "wss://rtc.aliyun.local/session",
+        "cn-shanghai",
     );
-    assert_eq!(session.region.as_deref(), Some("cn-shanghai"));
+    assert_media_session_contract(
+        &provider,
+        RtcMediaSessionMode::Video,
+        "rtc_video_demo",
+        "aliyun:rtc_video_demo",
+        "wss://rtc.aliyun.local/session",
+        "cn-shanghai",
+    );
+    assert_media_session_contract(
+        &provider,
+        RtcMediaSessionMode::Live,
+        "rtc_live_demo",
+        "aliyun:rtc_live_demo",
+        "wss://rtc.aliyun.local/session",
+        "cn-shanghai",
+    );
+    assert_requested_region_overrides_provider_default(
+        &provider,
+        "rtc_region_override_demo",
+        "cn-beijing",
+    );
 
     let credential = provider
         .issue_participant_credential("t_demo", "rtc_demo", "u_peer")
         .expect("aliyun rtc credential should succeed");
     assert_eq!(credential.credential, "aliyun-token:t_demo:rtc_demo:u_peer");
-
-    let callback = provider
-        .map_provider_callback(RtcCallbackRequest {
-            rtc_session_id: "rtc_demo".into(),
-            callback_type: "room-ended".into(),
-            payload_json: "{\"reason\":\"host_left\"}".into(),
-        })
-        .expect("aliyun rtc callback mapping should succeed");
-    assert_eq!(callback.event_type, "room-ended");
 
     let artifact = provider
         .export_recording_artifact("t_demo", "rtc_demo")
@@ -77,4 +119,162 @@ fn test_aliyun_rtc_provider_implements_contract_surface() {
     assert_eq!(health.plugin_id, ALIYUN_RTC_PLUGIN_ID);
     assert_eq!(health.status, "healthy");
     assert_eq!(health.details["providerKind"], "aliyun");
+}
+
+#[test]
+fn test_aliyun_rtc_provider_implements_webhook_and_active_query_surface() {
+    let provider = AliyunRtcProvider::new(AliyunRtcProviderConfig {
+        access_endpoint: "wss://rtc.aliyun.local/session".into(),
+        region: "cn-shanghai".into(),
+    });
+
+    let parsed = provider
+        .parse_provider_webhook(RtcProviderWebhookParseRequest {
+            provider: "aliyun".into(),
+            provider_profile_id: Some("profile_aliyun".into()),
+            received_at: "2026-06-10T00:00:00.000Z".into(),
+            headers: vec![("X-Acs-Signature".into(), "aliyun-signature".into())],
+            raw_payload: r#"{
+                "eventType": "UserJoin",
+                "eventId": "aliyun-event-1",
+                "appId": "aliyun-app",
+                "channelId": "room_demo",
+                "userId": "u_guest",
+                "eventTime": 1781000000
+            }"#
+            .into(),
+        })
+        .expect("aliyun webhook should parse");
+    assert_eq!(parsed.provider, "aliyun");
+    assert_eq!(parsed.external_event_id.as_deref(), Some("aliyun-event-1"));
+    assert_eq!(parsed.event_kind, RtcProviderEventKind::ParticipantJoined);
+    assert_eq!(parsed.room_id.as_deref(), Some("room_demo"));
+    assert_eq!(parsed.participant_id.as_deref(), Some("u_guest"));
+    assert_eq!(parsed.signature_header.as_deref(), Some("aliyun-signature"));
+
+    let session_scoped = provider
+        .parse_provider_webhook(RtcProviderWebhookParseRequest {
+            provider: "aliyun".into(),
+            provider_profile_id: Some("profile_aliyun".into()),
+            received_at: "2026-06-10T00:00:00.500Z".into(),
+            headers: vec![],
+            raw_payload: r#"{
+                "eventType": "RoomEnd",
+                "eventId": "aliyun-session-event-1",
+                "data": {
+                    "channelId": "room_session",
+                    "SessionId": "rtc_session_webhook"
+                }
+            }"#
+            .into(),
+        })
+        .expect("aliyun session-scoped webhook should parse");
+    assert_eq!(session_scoped.event_kind, RtcProviderEventKind::RoomEnded);
+    assert_eq!(
+        session_scoped.rtc_session_id.as_deref(),
+        Some("rtc_session_webhook")
+    );
+    assert_eq!(
+        session_scoped.provider_session_id.as_deref(),
+        Some("aliyun:rtc_session_webhook")
+    );
+    assert!(
+        session_scoped
+            .normalized_event_json
+            .contains("\"rtcSessionId\":\"rtc_session_webhook\"")
+    );
+    assert!(
+        session_scoped
+            .normalized_event_json
+            .contains("\"providerSessionId\":\"aliyun:rtc_session_webhook\"")
+    );
+
+    let recording = provider
+        .parse_provider_webhook(RtcProviderWebhookParseRequest {
+            provider: "aliyun".into(),
+            provider_profile_id: Some("profile_aliyun".into()),
+            received_at: "2026-06-10T00:00:01.000Z".into(),
+            headers: vec![],
+            raw_payload: r#"{
+                "eventType": "RecordingComplete",
+                "eventId": "aliyun-recording-1",
+                "data": {
+                    "channelId": "room_recording",
+                    "taskId": "recording_task_1",
+                    "userId": "recorder"
+                }
+            }"#
+            .into(),
+        })
+        .expect("aliyun recording webhook should parse");
+    assert_eq!(
+        recording.event_kind,
+        RtcProviderEventKind::RecordingCompleted
+    );
+    assert_eq!(recording.room_id.as_deref(), Some("room_recording"));
+    assert_eq!(recording.recording_id.as_deref(), Some("recording_task_1"));
+
+    let query = provider
+        .query_provider_state(RtcProviderQueryRequest {
+            provider: "aliyun".into(),
+            provider_profile_id: Some("profile_aliyun".into()),
+            query_kind: RtcProviderQueryKind::QualitySamples,
+            room_id: Some("room_demo".into()),
+            rtc_session_id: Some("rtc_demo".into()),
+            provider_session_id: Some("aliyun:rtc_demo".into()),
+            cursor: None,
+        })
+        .expect("aliyun active query should return a provider snapshot");
+    assert_eq!(query.provider, "aliyun");
+    assert_eq!(query.query_kind, RtcProviderQueryKind::QualitySamples);
+    assert_eq!(query.room_id.as_deref(), Some("room_demo"));
+    assert_eq!(query.status, "ready");
+    assert!(query.raw_provider_action.contains("Quality"));
+    assert!(
+        query
+            .result_snapshot_json
+            .contains("\"provider\":\"aliyun\"")
+    );
+}
+
+fn assert_media_session_contract<P: RtcProviderPort + ?Sized>(
+    provider: &P,
+    media_mode: RtcMediaSessionMode,
+    rtc_session_id: &str,
+    expected_provider_session_id: &str,
+    expected_access_endpoint: &str,
+    expected_region: &str,
+) {
+    let session = provider
+        .create_session(RtcCreateMediaSessionRequest {
+            tenant_id: "t_demo".into(),
+            rtc_session_id: rtc_session_id.into(),
+            media_mode,
+            room_id: Some(format!("room_{rtc_session_id}")),
+            region: Some(expected_region.into()),
+        })
+        .expect("aliyun rtc create_session should succeed for declared media mode");
+    assert_eq!(session.provider_session_id, expected_provider_session_id);
+    assert_eq!(
+        session.access_endpoint.as_deref(),
+        Some(expected_access_endpoint)
+    );
+    assert_eq!(session.region.as_deref(), Some(expected_region));
+}
+
+fn assert_requested_region_overrides_provider_default<P: RtcProviderPort + ?Sized>(
+    provider: &P,
+    rtc_session_id: &str,
+    requested_region: &str,
+) {
+    let session = provider
+        .create_session(RtcCreateMediaSessionRequest {
+            tenant_id: "t_demo".into(),
+            rtc_session_id: rtc_session_id.into(),
+            media_mode: RtcMediaSessionMode::Video,
+            room_id: Some(format!("room_{rtc_session_id}")),
+            region: Some(requested_region.into()),
+        })
+        .expect("aliyun rtc create_session should honor requested region");
+    assert_eq!(session.region.as_deref(), Some(requested_region));
 }

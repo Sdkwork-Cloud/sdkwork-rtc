@@ -17,7 +17,6 @@ class RtcProviderActivationCatalogEntry:
 
 class RtcProviderActivationCatalog:
     recognizedActivationStatuses = [
-        "root-public-builtin",
         "package-boundary",
         "control-metadata-only",
     ]

@@ -1,0 +1,1 @@
+{"version":3,"file":"rtc-media-session-response.d.ts","sourceRoot":"","sources":["../../src/types/rtc-media-session-response.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,qBAAqB,CAAC;AAE3D,MAAM,WAAW,uBAAuB;IACtC,IAAI,EAAE,MAAM,CAAC;IACb,OAAO,EAAE,MAAM,CAAC;IAChB,2CAA2C;IAC3C,SAAS,EAAE,MAAM,CAAC;IAClB,IAAI,EAAE,eAAe,CAAC;CACvB"}

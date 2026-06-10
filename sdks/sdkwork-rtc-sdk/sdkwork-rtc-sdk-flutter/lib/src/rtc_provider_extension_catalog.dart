@@ -49,7 +49,7 @@ final class RtcProviderExtensionCatalog {
           displayName: "Aliyun Native Client",
           surface: "runtime-bridge",
           access: "unwrap-only",
-          status: "reference-baseline",
+          status: "reserved",
         ),
         RtcProviderExtensionCatalogEntry(
           extensionKey: "tencent.native-client",

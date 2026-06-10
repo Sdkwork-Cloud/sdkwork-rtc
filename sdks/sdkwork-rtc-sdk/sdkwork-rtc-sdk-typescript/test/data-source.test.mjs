@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {
+  createManagerWithProviderPackages,
+  loadProviderPackage,
+} from './provider-test-helpers.mjs';
 
-async function loadSdk() {
-  return import('../dist/index.js');
-}
+test('data source defaults provider selection to volcengine after installing the provider package', async () => {
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine']);
 
-test('data source defaults provider selection to volcengine', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
-
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
   });
 
   const client = await dataSource.createClient();
@@ -22,36 +22,28 @@ test('data source defaults provider selection to volcengine', async () => {
 });
 
 test('data source preserves provider metadata and capability declarations', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager, hasCapability } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages(['aliyun']);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerKey: 'aliyun',
   });
 
   const client = await dataSource.createClient();
 
   assert.equal(client.metadata.providerKey, 'aliyun');
-  assert.equal(hasCapability(client.capabilities, 'session'), true);
-  assert.equal(hasCapability(client.capabilities, 'screen-share'), true);
+  assert.equal(sdk.hasCapability(client.capabilities, 'session'), true);
+  assert.equal(sdk.hasCapability(client.capabilities, 'screen-share'), true);
 });
 
-test('data source unwrap returns the native client instance created by the adapter', async () => {
-  const {
-    RtcDataSource,
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-  } = await loadSdk();
-
+test('data source unwrap returns the native client instance created by the provider package adapter', async () => {
   const nativeClient = { sdk: 'volcengine-web-native' };
-  const manager = new RtcDriverManager({
-    drivers: [
-      createVolcengineRtcDriver({
-        nativeFactory: async () => nativeClient,
-      }),
-    ],
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine'], {
+    volcengine: {
+      nativeFactory: async () => nativeClient,
+    },
   });
-  const dataSource = new RtcDataSource({
+  const dataSource = new sdk.RtcDataSource({
     driverManager: manager,
   });
 
@@ -60,10 +52,10 @@ test('data source unwrap returns the native client instance created by the adapt
 });
 
 test('data source describe resolves metadata before client creation', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine', 'tencent']);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerUrl: 'rtc:tencent://room-service/default',
   });
 
@@ -73,10 +65,14 @@ test('data source describe resolves metadata before client creation', async () =
 });
 
 test('data source exposes stable provider selection introspection', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages([
+    'volcengine',
+    'aliyun',
+    'tencent',
+  ]);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     deploymentProfileProviderKey: 'tencent',
     tenantOverrideProviderKey: 'aliyun',
   });
@@ -95,10 +91,13 @@ test('data source exposes stable provider selection introspection', async () => 
 });
 
 test('data source can describe provider support state without connecting', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages([
+    'volcengine',
+    'agora',
+  ]);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerKey: 'agora',
   });
 
@@ -122,10 +121,13 @@ test('data source can describe provider support state without connecting', async
 });
 
 test('data source can list provider support state matrix without connecting', async () => {
-  const { RtcDataSource, createBuiltinRtcDriverManager } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages([
+    'volcengine',
+    'livekit',
+  ]);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
   });
   const providerSupport = dataSource.listProviderSupport();
 
@@ -154,14 +156,10 @@ test('data source can list provider support state matrix without connecting', as
 });
 
 test('client capability checks use a stable capability_not_supported error', async () => {
-  const {
-    RtcDataSource,
-    RtcSdkException,
-    createBuiltinRtcDriverManager,
-  } = await loadSdk();
+  const { sdk, manager } = await createManagerWithProviderPackages(['aliyun']);
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
     providerKey: 'aliyun',
   });
   const client = await dataSource.createClient();
@@ -175,7 +173,7 @@ test('client capability checks use a stable capability_not_supported error', asy
   assert.throws(
     () => client.requireCapability('data-channel'),
     (error) => {
-      assert.ok(error instanceof RtcSdkException);
+      assert.ok(error instanceof sdk.RtcSdkException);
       assert.equal(error.code, 'capability_not_supported');
       assert.equal(error.providerKey, 'aliyun');
       return true;
@@ -184,71 +182,63 @@ test('client capability checks use a stable capability_not_supported error', asy
 });
 
 test('client delegates runtime bridge operations through the provider-neutral runtime surface', async () => {
-  const {
-    RtcDataSource,
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-  } = await loadSdk();
-
   const nativeClient = { sdk: 'volcengine-web-native' };
   const calls = [];
-  const manager = new RtcDriverManager({
-    drivers: [
-      createVolcengineRtcDriver({
-        nativeFactory: async () => nativeClient,
-        runtimeController: {
-          async join(options, context) {
-            calls.push(['join', options, context.selection.providerKey]);
-            assert.equal(context.nativeClient, nativeClient);
-            return {
-              sessionId: options.sessionId,
-              roomId: options.roomId,
-              participantId: options.participantId,
-              providerKey: context.metadata.providerKey,
-              connectionState: 'joined',
-            };
-          },
-          async leave(context) {
-            calls.push(['leave', context.selection.providerKey]);
-            return {
-              sessionId: 'session-1',
-              roomId: 'room-1',
-              participantId: 'local-user',
-              providerKey: context.metadata.providerKey,
-              connectionState: 'left',
-            };
-          },
-          async publish(options, context) {
-            calls.push(['publish', options.trackId, context.selection.providerKey]);
-            return {
-              trackId: options.trackId,
-              kind: options.kind,
-              muted: false,
-            };
-          },
-          async unpublish(trackId, context) {
-            calls.push(['unpublish', trackId, context.selection.providerKey]);
-          },
-          async muteAudio(muted, context) {
-            calls.push(['mute-audio', muted, context.selection.providerKey]);
-            return {
-              kind: 'audio',
-              muted,
-            };
-          },
-          async muteVideo(muted, context) {
-            calls.push(['mute-video', muted, context.selection.providerKey]);
-            return {
-              kind: 'video',
-              muted,
-            };
-          },
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine'], {
+    volcengine: {
+      nativeFactory: async () => nativeClient,
+      runtimeController: {
+        async join(options, context) {
+          calls.push(['join', options, context.selection.providerKey]);
+          assert.equal(context.nativeClient, nativeClient);
+          return {
+            sessionId: options.sessionId,
+            roomId: options.roomId,
+            participantId: options.participantId,
+            providerKey: context.metadata.providerKey,
+            connectionState: 'joined',
+          };
         },
-      }),
-    ],
+        async leave(context) {
+          calls.push(['leave', context.selection.providerKey]);
+          return {
+            sessionId: 'session-1',
+            roomId: 'room-1',
+            participantId: 'local-user',
+            providerKey: context.metadata.providerKey,
+            connectionState: 'left',
+          };
+        },
+        async publish(options, context) {
+          calls.push(['publish', options.trackId, context.selection.providerKey]);
+          return {
+            trackId: options.trackId,
+            kind: options.kind,
+            muted: false,
+          };
+        },
+        async unpublish(trackId, context) {
+          calls.push(['unpublish', trackId, context.selection.providerKey]);
+        },
+        async muteAudio(muted, context) {
+          calls.push(['mute-audio', muted, context.selection.providerKey]);
+          return {
+            kind: 'audio',
+            muted,
+          };
+        },
+        async muteVideo(muted, context) {
+          calls.push(['mute-video', muted, context.selection.providerKey]);
+          return {
+            kind: 'video',
+            muted,
+          };
+        },
+      },
+    },
   });
 
-  const dataSource = new RtcDataSource({
+  const dataSource = new sdk.RtcDataSource({
     driverManager: manager,
   });
   const client = await dataSource.createClient();
@@ -312,15 +302,129 @@ test('client delegates runtime bridge operations through the provider-neutral ru
   ]);
 });
 
-test('default Volcengine runtime requires explicit native appId configuration before join', async () => {
-  const {
-    RtcDataSource,
-    RtcSdkException,
-    createBuiltinRtcDriverManager,
-  } = await loadSdk();
+test('client delegates explicit screen-share operations when the provider bridge implements them', async () => {
+  const nativeClient = { sdk: 'volcengine-web-native' };
+  const calls = [];
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine'], {
+    volcengine: {
+      nativeFactory: async () => nativeClient,
+      runtimeController: {
+        async startScreenShare(options, context) {
+          calls.push(['start-screen-share', options, context.selection.providerKey]);
+          assert.equal(context.nativeClient, nativeClient);
+          return {
+            trackId: options.trackId,
+            kind: 'screen-share',
+            muted: false,
+          };
+        },
+        async stopScreenShare(trackId, context) {
+          calls.push(['stop-screen-share', trackId, context.selection.providerKey]);
+        },
+        async publish(options, context) {
+          calls.push(['publish', options.kind, context.selection.providerKey]);
+          return {
+            trackId: options.trackId,
+            kind: options.kind,
+            muted: false,
+          };
+        },
+        async unpublish(trackId, context) {
+          calls.push(['unpublish', trackId, context.selection.providerKey]);
+        },
+      },
+    },
+  });
 
-  const dataSource = new RtcDataSource({
-    driverManager: createBuiltinRtcDriverManager(),
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
+  });
+  const client = await dataSource.createClient();
+
+  assert.deepEqual(
+    await client.startScreenShare({
+      trackId: 'screen-track-1',
+      metadata: {
+        source: 'window',
+      },
+    }),
+    {
+      trackId: 'screen-track-1',
+      kind: 'screen-share',
+      muted: false,
+    },
+  );
+  await client.stopScreenShare('screen-track-1');
+  assert.deepEqual(calls, [
+    [
+      'start-screen-share',
+      {
+        trackId: 'screen-track-1',
+        metadata: {
+          source: 'window',
+        },
+      },
+      'volcengine',
+    ],
+    ['stop-screen-share', 'screen-track-1', 'volcengine'],
+  ]);
+});
+
+test('client falls back to screen-share publish and unpublish for provider bridges without specialized methods', async () => {
+  const calls = [];
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine'], {
+    volcengine: {
+      nativeFactory: async () => ({ sdk: 'fallback-native' }),
+      runtimeController: {
+        async publish(options, context) {
+          calls.push(['publish', options, context.selection.providerKey]);
+          return {
+            trackId: options.trackId,
+            kind: options.kind,
+            muted: false,
+          };
+        },
+        async unpublish(trackId, context) {
+          calls.push(['unpublish', trackId, context.selection.providerKey]);
+        },
+      },
+    },
+  });
+
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
+  });
+  const client = await dataSource.createClient();
+
+  assert.deepEqual(
+    await client.startScreenShare({
+      trackId: 'screen-track-fallback',
+    }),
+    {
+      trackId: 'screen-track-fallback',
+      kind: 'screen-share',
+      muted: false,
+    },
+  );
+  await client.stopScreenShare('screen-track-fallback');
+  assert.deepEqual(calls, [
+    [
+      'publish',
+      {
+        trackId: 'screen-track-fallback',
+        kind: 'screen-share',
+      },
+      'volcengine',
+    ],
+    ['unpublish', 'screen-track-fallback', 'volcengine'],
+  ]);
+});
+
+test('default Volcengine provider plugin runtime requires explicit native appId configuration before join', async () => {
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine']);
+
+  const dataSource = new sdk.RtcDataSource({
+    driverManager: manager,
   });
   const client = await dataSource.createClient();
 
@@ -332,11 +436,32 @@ test('default Volcengine runtime requires explicit native appId configuration be
         participantId: 'local-user',
       }),
     (error) => {
-      assert.ok(error instanceof RtcSdkException);
+      assert.ok(error instanceof sdk.RtcSdkException);
       assert.equal(error.code, 'invalid_native_config');
       assert.equal(error.providerKey, 'volcengine');
       assert.deepEqual(error.details?.missingConfigKeys, ['appId']);
       return true;
     },
+  );
+});
+
+test('root data source without installed provider package does not create runtime clients', async () => {
+  const { sdk } = await loadProviderPackage('volcengine');
+  const dataSource = new sdk.RtcDataSource();
+
+  assert.deepEqual(dataSource.describeProviderSupport(), {
+    providerKey: 'volcengine',
+    status: 'official_unregistered',
+    builtin: true,
+    official: true,
+    registered: false,
+  });
+
+  await assert.rejects(
+    async () => dataSource.createClient(),
+    (error) =>
+      error instanceof sdk.RtcSdkException &&
+      error.code === 'provider_not_supported' &&
+      error.providerKey === 'volcengine',
   );
 });

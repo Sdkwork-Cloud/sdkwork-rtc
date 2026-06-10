@@ -4,14 +4,9 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   assertRtcAssemblyWorkspaceBaseline,
-  getRtcDefaultCallSmokeLanguage,
   getRtcExecutableLanguageEntries,
   getRtcExecutableLanguageEntriesBySmokeMode,
 } from './rtc-standard-assembly-baseline.mjs';
-import {
-  renderRtcRootCallSmokeCommand,
-  renderRtcRootCallSmokeCommandVariants,
-} from './rtc-call-smoke-standard.mjs';
 import {
   readJsonFile,
   readUtf8File,
@@ -20,7 +15,6 @@ import {
 } from './rtc-standard-file-helpers.mjs';
 import {
   buildReservedLanguageMaterializationPlan,
-  resolveFlutterRuntimeBaselineDependencyLines,
 } from './materialize-sdk-reserved-scaffolds.mjs';
 import { RTC_TEMPLATE_MATERIALIZATION_ASSETS } from './materialize-sdk-template-assets.mjs';
 import {
@@ -38,7 +32,24 @@ import {
 import { REQUIRED_TYPESCRIPT_PROVIDER_PACKAGE_BOUNDARY_STATUS_TERMS } from './verify-sdk-standard-constants.mjs';
 
 export const RTC_SDK_STALE_MATERIALIZED_FILES = [
-  'sdkwork-rtc-sdk-typescript/src/providers/catalog.ts',
+  'sdkwork-rtc-sdk-typescript/src/builtin-driver-manager.ts',
+  'sdkwork-rtc-sdk-typescript/src/volcengine-official-web.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/agora.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/aliyun.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/index.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/janus.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/jitsi.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/livekit.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/mediasoup.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/tencent.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/twilio.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/volcengine.ts',
+  'sdkwork-rtc-sdk-typescript/src/providers/zego.ts',
+  'sdkwork-rtc-sdk-flutter/lib/src/rtc_builtin_driver_manager.dart',
+  'sdkwork-rtc-sdk-flutter/lib/src/volcengine_official_flutter.dart',
+  'sdkwork-rtc-sdk-flutter/lib/src/providers/volcengine.dart',
+  'sdkwork-rtc-sdk-flutter/lib/rtc_sdk_extensions.dart',
+  'sdkwork-rtc-sdk-flutter/pubspec_overrides.yaml',
 ];
 
 function readMaterializedTemplate(workspaceRoot, relativePath) {
@@ -66,7 +77,12 @@ ${Object.entries(entries ?? {})
 }
 
 function renderMarkdownCodeList(values) {
-  return (values ?? []).map((value) => `\`${value}\``).join(', ');
+  const items = (values ?? []).map((value) => `\`${value}\``);
+  if (items.length === 0) {
+    return '`none`';
+  }
+
+  return items.join(', ');
 }
 
 function renderMarkdownCodeNaturalList(values) {
@@ -142,50 +158,49 @@ function renderTemplateExecutableTargetsSummary(assembly) {
     return 'Current implemented targets are assembly-governed and no executable language baseline is declared yet.';
   }
 
-  const defaultLanguage = getRtcDefaultCallSmokeLanguage(assembly);
   const languageSummary = renderMarkdownCodeNaturalList(executableLanguages);
   if (executableLanguages.length === 1) {
-    return `Current implemented target is ${languageSummary}. The default root smoke dispatch resolves to \`${defaultLanguage}\`.`;
+    return `Current implemented target is ${languageSummary}. Runtime smoke is executed from that workspace-owned command.`;
   }
 
-  return `Current implemented targets are ${languageSummary}. The default root smoke dispatch resolves to \`${defaultLanguage}\`, and every additional executable language is selected through \`--language <language>\`.`;
+  return `Current implemented targets are ${languageSummary}. Runtime smoke is executed from each workspace-owned command.`;
 }
 
-function renderTemplateFastCallSmokeCommands(assembly) {
+function renderRootRuntimeSmokeCommand(languageEntry) {
+  const command = String(languageEntry.runtimeBaseline?.smokeCommand ?? '').trim();
+  if (!command) {
+    return '';
+  }
+
+  return `cd .\\${languageEntry.workspace.replace(/\//gu, '\\')} && ${command}`;
+}
+
+function renderTemplateFastRuntimeSmokeCommands(assembly) {
   return getExecutableRuntimeLanguageEntries(assembly)
-    .flatMap((languageEntry) =>
-      renderRtcRootCallSmokeCommandVariants(assembly, languageEntry.language),
-    )
+    .map(renderRootRuntimeSmokeCommand)
+    .filter(Boolean)
     .join('\n');
 }
 
-function renderTemplateRequiredCallSmokeSteps(assembly) {
+function renderTemplateRequiredRuntimeSmokeSteps(assembly) {
   const requiredEntries = getRtcExecutableLanguageEntriesBySmokeMode(assembly, 'runtime-backed');
   if (requiredEntries.length === 0) {
     return '- none currently declared in assembly';
   }
 
   return requiredEntries
-    .flatMap((languageEntry) =>
-      renderRtcRootCallSmokeCommandVariants(assembly, languageEntry.language).map(
-        (command) => `- \`${command}\``,
-      ),
-    )
+    .map((languageEntry) => `- \`${renderRootRuntimeSmokeCommand(languageEntry)}\``)
     .join('\n');
 }
 
-function renderTemplateOptionalCallSmokeSteps(assembly) {
+function renderTemplateOptionalRuntimeSmokeSteps(assembly) {
   const optionalEntries = getRtcExecutableLanguageEntriesBySmokeMode(assembly, 'analysis-backed');
   if (optionalEntries.length === 0) {
     return '- none currently declared in assembly';
   }
 
   return optionalEntries
-    .flatMap((languageEntry) =>
-      renderRtcRootCallSmokeCommandVariants(assembly, languageEntry.language).map(
-        (command) => `- \`${command}\``,
-      ),
-    )
+    .map((languageEntry) => `- \`${renderRootRuntimeSmokeCommand(languageEntry)}\``)
     .join('\n');
 }
 
@@ -194,13 +209,11 @@ function renderUsageGuideLocalVerificationCommands(assembly) {
     'node .\\bin\\materialize-sdk.mjs',
     'node .\\test\\verify-sdk-automation.test.mjs',
     'node .\\bin\\verify-sdk.mjs',
-    ...getExecutableRuntimeLanguageEntries(assembly).flatMap((languageEntry) =>
-      renderRtcRootCallSmokeCommandVariants(assembly, languageEntry.language),
-    ),
+    ...getExecutableRuntimeLanguageEntries(assembly).map(renderRootRuntimeSmokeCommand),
     'node .\\bin\\smoke-sdk.mjs',
   ];
 
-  return commandLines.join('\n');
+  return commandLines.filter(Boolean).join('\n');
 }
 
 function renderUsageGuideAdoptionGuidance(assembly) {
@@ -227,9 +240,9 @@ function renderMaterializedTemplateContent(workspaceRoot, templateRelativePath, 
   const templateContent = readMaterializedTemplate(workspaceRoot, templateRelativePath);
   const replacements = new Map([
     ['{{RTC_EXECUTABLE_TARGETS_SUMMARY}}', renderTemplateExecutableTargetsSummary(assembly)],
-    ['{{RTC_FAST_CALL_SMOKE_COMMANDS}}', renderTemplateFastCallSmokeCommands(assembly)],
-    ['{{RTC_REQUIRED_CALL_SMOKE_STEPS}}', renderTemplateRequiredCallSmokeSteps(assembly)],
-    ['{{RTC_OPTIONAL_CALL_SMOKE_STEPS}}', renderTemplateOptionalCallSmokeSteps(assembly)],
+    ['{{RTC_FAST_RUNTIME_SMOKE_COMMANDS}}', renderTemplateFastRuntimeSmokeCommands(assembly)],
+    ['{{RTC_REQUIRED_RUNTIME_SMOKE_STEPS}}', renderTemplateRequiredRuntimeSmokeSteps(assembly)],
+    ['{{RTC_OPTIONAL_RUNTIME_SMOKE_STEPS}}', renderTemplateOptionalRuntimeSmokeSteps(assembly)],
   ]);
 
   let materializedContent = templateContent;
@@ -339,13 +352,7 @@ The current ${guide.runtimeLabel} runtime path is:
 - default provider: \`${defaultProviderKey}\`
 - vendor SDK package: \`${languageEntry.runtimeBaseline.vendorSdkPackage}\`
 - vendor SDK import path: \`${languageEntry.runtimeBaseline.vendorSdkImportPath}\`
-- signaling SDK package: \`${languageEntry.runtimeBaseline.signalingSdkPackage}\`
-- signaling SDK import path: \`${languageEntry.runtimeBaseline.signalingSdkImportPath}\`
-${(languageEntry.language === 'typescript' || languageEntry.language === 'flutter')
-  ? '- signaling live receive path: RTC transport/liveConnection over WebSocket'
-  : ''}
-- standard call/session entrypoint: \`StandardRtcCallController\`
-- recommended quick-start entrypoint: \`${languageEntry.runtimeBaseline.recommendedEntrypoint}\`
+- recommended media runtime entrypoint: \`${languageEntry.runtimeBaseline.recommendedEntrypoint}\`
 - smoke command: \`${languageEntry.runtimeBaseline.smokeCommand}\`
 - smoke mode: \`${languageEntry.runtimeBaseline.smokeMode}\`
 - smoke variants: ${renderMarkdownCodeNaturalList(languageEntry.runtimeBaseline.smokeVariants)}
@@ -389,38 +396,6 @@ function renderUsageGuideExecutableIntegrationBindings(assembly) {
     .join('\n');
 }
 
-function renderUsageGuideWebSocketAuthStandard() {
-  return lines(`
-## 7. WebSocket Signaling And Auth Standard
-
-Executable baselines keep RTC signaling on the RTC live WebSocket path and never expose polling
-fallback controls.
-
-The assembly-driven \`signalingTransportStandard\` is materialized into
-\`sdkwork-rtc-sdk-typescript/src/signaling-transport.ts\`, the Flutter root-public module
-\`sdkwork-rtc-sdk-flutter/lib/src/rtc_signaling_transport.dart\`, and the root-public
-\`RTC_SIGNALING_TRANSPORT_STANDARD\` plus \`rtcSignalingTransportStandard\` contracts.
-
-Cross-language rules:
-
-- RTC \`deviceId\` is top-level and authoritative across the standard stack
-- \`connectOptions.deviceId\` stays optional and must match the top-level \`deviceId\` when both
-  are supplied
-- \`connectOptions.webSocketAuth\` is passed through the caller-supplied RTC signaling adapter;
-  RTC does not introduce provider-specific auth shims
-- standard auth modes are \`automatic\`, \`queryBearer\`, \`headerBearer\`, and \`none\`
-- \`automatic\` remains the recommended default; browser WebSocket paths can resolve to
-  query-bearer while native or custom-socket paths can resolve to header-bearer when headers are
-  available
-- prefer \`credentialProvider\` with short-lived realtime tickets instead of long-lived access
-  tokens, especially when query-parameter auth is required
-- if the application already owns one shared RTC live connection, pass \`liveConnection\`; RTC keeps
-  subscription sync on that same socket instead of opening a second connection
-- auth failure should fail fast on the WebSocket connect path; the RTC standard does not downgrade
-  to polling
-`);
-}
-
 function renderUsageGuide(assembly) {
   const executableLanguageEntries = getExecutableRuntimeLanguageEntries(assembly);
   const executableLanguageSections = executableLanguageEntries
@@ -439,9 +414,6 @@ function renderUsageGuide(assembly) {
   const nonBuiltinProviderKeys = (assembly.providers ?? [])
     .filter((provider) => !provider.builtin)
     .map((provider) => provider.providerKey);
-  const executableSignalingImports = executableLanguageEntries
-    .map((languageEntry) => `\`${languageEntry.runtimeBaseline.signalingSdkImportPath}\``)
-    .join(', ');
   const executableLanguageLabels = renderMarkdownCodeNaturalList(
     executableLanguageEntries.map((languageEntry) => languageEntry.language),
   );
@@ -451,26 +423,28 @@ function renderUsageGuide(assembly) {
 
 This document is the entrypoint for adopting \`sdkwork-rtc-sdk\`.
 
-It focuses on the standardized provider model, current runnable baselines, default \`${defaultProviderKey}\`
-selection contract, and the recommended runtime-specific guides.
+It focuses on provider-neutral RTC media runtime contracts, current runnable baselines, default
+\`${defaultProviderKey}\` selection, and runtime-specific guides. IM owns user call lifecycle,
+invite delivery, conversation discovery, and business session orchestration.
 
 ## 1. Positioning
 
 \`sdkwork-rtc-sdk\` is not a reimplementation of vendor media engines.
 
-Its responsibility is to provide one provider-neutral RTC standard:
+Its responsibility is to provide one provider-neutral RTC media runtime standard:
 
 - JDBC-style \`DriverManager\` / \`DataSource\` / \`Client\` contracts
 - standardized provider selection and default-provider resolution
 - standardized capability negotiation, error semantics, and extension metadata
 - pluggable provider integration through official catalogs and package boundaries
-- one consistent runtime surface across web, mobile, and future language workspaces
+- one consistent media runtime surface across web, mobile, and future language workspaces
 
 The standard intentionally keeps vendor SDK ownership on the application side:
 
 - official vendor SDKs remain consumer-supplied
 - \`sdkwork-rtc-sdk\` provides the standard contracts and adapter boundaries
 - runtime bridges map vendor behavior into the standard surface instead of hiding vendor engines
+- application and IM layers provide room/session credentials before the RTC client joins media
 
 ## 2. Official Providers
 
@@ -527,23 +501,15 @@ The correct vendor integration boundary is still the same:
 - \`sdkwork-rtc-sdk\` owns the standard contracts and provider-neutral runtime surface
 - the vendor SDK owns real media behavior
 - the application wires vendor SDK instances into the standard driver/runtime-controller boundary
-- signaling adapters map application-supplied RTC transport semantics into the RTC call/session standard
-- executable baselines keep signaling WebSocket-first through RTC transport/liveConnection; the RTC standard
-  does not expose polling controls
-- executable baselines surface WebSocket auth policy through \`connectOptions.webSocketAuth\`
-- executable baselines can reuse one app-owned RTC live connection through \`liveConnection\`
-  instead of opening a second RTC-specific socket
+- IM creates or resolves business call sessions and provider credentials before media join
+- RTC runtime code accepts room, participant, and provider token inputs; it does not discover invites
+  or manage conversation delivery
 
 For the current runnable baselines, this boundary is already materialized:
 
 ${renderUsageGuideExecutableIntegrationBindings(assembly)}
-- executable baselines compose RTC-owned signaling through ${executableSignalingImports}
-- executable baselines publish call invites over conversation-scoped RTC signals and reconcile remote
-  accept, reject, end, SDP, and ICE events through the standard \`CallController\`
 
-${renderUsageGuideWebSocketAuthStandard()}
-
-## 8. Non-Builtin Provider Packages
+## 7. Non-Builtin Provider Packages
 
 For providers such as ${renderMarkdownCodeList(nonBuiltinProviderKeys)},
 the standard path is package-boundary integration instead of deep root-entrypoint coupling.
@@ -555,7 +521,7 @@ That contract stays:
 - runtime code is loaded through the provider-package loader SPI
 - runtime bridge ownership stays with the integrating application or provider package
 
-## 9. Error Semantics
+## 8. Error Semantics
 
 Important standardized error codes include:
 
@@ -569,8 +535,6 @@ Important standardized error codes include:
 - \`provider_module_contract_mismatch\`
 - \`provider_metadata_mismatch\`
 - \`native_sdk_not_available\`
-- \`signaling_not_available\`
-- \`call_state_invalid\`
 - \`vendor_error\`
 
 The two most important runtime distinctions are:
@@ -580,7 +544,7 @@ The two most important runtime distinctions are:
 - \`native_sdk_not_available\`: the standard surface exists but the actual vendor runtime bridge is
   missing or misconfigured
 
-## 10. Local Verification
+## 9. Local Verification
 
 Use the following commands in the workspace root:
 
@@ -594,12 +558,10 @@ Verification intent:
 - \`verify-sdk-automation.test.mjs\` protects standard assets and materialization behavior
 - \`verify-sdk.mjs\` validates assembly contracts and generated output
 ${renderUsageGuideExecutableSmokeNotes(assembly)}
-- \`smoke-sdk.mjs\` runs the repository regression entrypoint, including
-  the default and shared-\`liveConnection\` call-smoke variants for executable languages, plus
-  \`flutter analyze ./bin/sdk-call-smoke.dart\` and \`flutter analyze\` when the Flutter toolchain
-  is available
+- \`smoke-sdk.mjs\` runs the repository regression entrypoint, including TypeScript package tests
+  and optional language checks when toolchains are available
 
-## 11. Practical Adoption Guidance
+## 10. Practical Adoption Guidance
 
 Use this rule of thumb:
 
@@ -609,8 +571,8 @@ Current reality is straightforward:
 
 - \`${defaultProviderKey}\` is the default provider
 - executable language baselines are ${executableLanguageLabels}
-- the RTC signaling adapter is the standard path for invite discovery, RTC lifecycle, and WebRTC
-  signal exchange in the current end-to-end call flow
+- IM owns call session lifecycle and realtime business delivery
+- RTC owns media runtime provider selection, joining, publishing, muting, and leaving
 - the remaining language workspaces stay standardized and extensible without pretending they are
   already executable runtimes
 `);
@@ -627,20 +589,20 @@ function renderTypeScriptRuntimeUsageDoc(assembly) {
     DEFAULT_RTC_PROVIDER_KEY;
 
   return lines(`
-# SDKWork RTC SDK TypeScript Usage
+# SDKWork RTC SDK TypeScript Runtime Usage
 
-This document describes the current executable TypeScript baseline of \`sdkwork-rtc-sdk\`.
+This guide describes the executable TypeScript/web media runtime baseline of \`sdkwork-rtc-sdk\`.
+IM-owned SDKs and services create business call sessions, deliver invitations, and issue provider
+credentials. The RTC SDK consumes media-room inputs and drives provider media behavior.
 
 ## Current Runnable Baseline
 
 - Default media provider: \`${defaultProviderKey}\`
-- Default web runtime package: official \`${runtimeBaseline.vendorSdkPackage}\`
-- Default web runtime import path: \`${runtimeBaseline.vendorSdkImportPath}\`
-- Default signaling adapter package: \`${runtimeBaseline.signalingSdkPackage}\`
-- Default signaling adapter import path: \`${runtimeBaseline.signalingSdkImportPath}\`
+- Default web provider plugin package: \`${runtimeBaseline.vendorSdkPackage}\`
+- Default web provider plugin import path: \`${runtimeBaseline.vendorSdkImportPath}\`
+- Default web vendor SDK package: \`@volcengine/rtc\`
 - Standard media entrypoint: \`RtcDataSource\`
-- Standard call/session entrypoint: \`StandardRtcCallController\`
-- Recommended quick-start entrypoint: \`${runtimeBaseline.recommendedEntrypoint}\`
+- Recommended runtime entrypoint: \`${runtimeBaseline.recommendedEntrypoint}\`
 - Smoke command: \`${runtimeBaseline.smokeCommand}\`
 - Smoke mode: \`${runtimeBaseline.smokeMode}\`
 - Smoke variants: ${renderMarkdownCodeNaturalList(runtimeBaseline.smokeVariants)}
@@ -648,100 +610,42 @@ This document describes the current executable TypeScript baseline of \`sdkwork-
 ## Install
 
 \`\`\`bash
-npm install ${languageEntry.publicPackage} ${runtimeBaseline.vendorSdkPackage}
+npm install ${languageEntry.publicPackage} ${runtimeBaseline.vendorSdkPackage} @volcengine/rtc
 \`\`\`
 
-## Fast Smoke Verification
+## Fast Runtime Verification
 
-Run the public TypeScript smoke command inside \`${languageEntry.workspace}\` when you want to validate the
-default provider entrypoint without depending on a live signaling service or a real vendor credential:
+Run the public TypeScript smoke command inside \`${languageEntry.workspace}\` when you want to validate
+the default provider runtime bridge without depending on live credentials:
 
 \`\`\`bash
 ${runtimeBaseline.smokeCommand}
 \`\`\`
 
-The smoke CLI runs the public \`${languageEntry.publicPackage}\` surface against a mocked RTC signaling
-adapter and a mocked official \`${runtimeBaseline.vendorSdkPackage}\` module, then prints the resolved provider,
-runtime calls, signaling calls, and final controller states.
-The JSON summary also includes a \`signalingTransport\` descriptor so maintainers can verify the
-resolved auth mode, authoritative \`deviceId\`, matching \`connectOptions.deviceId\`, shared
-\`liveConnection\` reuse flag, and no-polling contract at the CLI boundary.
-Add \`--reuse-live-connection\` when you want the smoke to verify RTC reuses an app-owned RTC
-WebSocket live connection instead of opening another one.
+The smoke command builds the TypeScript package and verifies the root public API boundary. It guards
+against retired call-lifecycle exports reappearing in the RTC SDK surface.
 
-## WebSocket Auth Standard
-
-RTC delegates live signaling auth to the caller-supplied RTC signaling transport or shared
-live connection. Prefer typed transport options instead of provider-specific auth shims.
-
-- \`{ mode: 'automatic' }\` is the recommended default; on the standard browser
-  \`WebSocket\` path it resolves to query-bearer auth
-- \`{ mode: 'queryBearer' }\` is the explicit browser/gateway override when the upstream
-  only accepts query-parameter auth
-- \`{ mode: 'headerBearer' }\` is the explicit Node or custom-socket override when
-  headers are available
-- \`{ mode: 'none' }\` is reserved for trusted internal links or pre-signed socket
-  URLs
-- prefer \`credentialProvider\` with a short-lived realtime ticket; avoid putting long-lived access
-  tokens on the WebSocket URL
-- keep \`deviceId\` at the RTC stack top level; \`connectOptions.deviceId\` is optional and must
-  match when supplied
-- when the application already owns a shared RTC socket, pass \`liveConnection\` so RTC syncs
-  subscriptions on that same WebSocket instead of opening another one
-- call \`describeRtcSignalingTransport(...)\` when the host needs one immutable runtime snapshot of
-  the resolved auth mode, authoritative \`deviceId\`, shared-\`liveConnection\` reuse flag, and
-  fail-fast/no-polling guarantees before opening the RTC signaling path
+## Media Runtime Flow
 
 \`\`\`ts
 import {
-  createRtcAppHttpClient,
-  describeRtcSignalingTransport,
-  ${runtimeBaseline.recommendedEntrypoint},
-} from '${languageEntry.publicPackage}';
-
-const transport = createRtcAppHttpClient({
-  baseUrl: 'https://rtc.example.com',
-  authToken: 'app-token',
-});
-
-const rtc = await ${runtimeBaseline.recommendedEntrypoint}({
-  transport,
-  deviceId: 'device-1',
-  connectOptions: {
-    webSocketAuth: { mode: 'automatic' },
-  },
-  dataSourceConfig: {
-    nativeConfig: {
-      appId: 'volc-app-id',
-    },
-  },
-});
-
-const signalingTransport = describeRtcSignalingTransport({
-  deviceId: 'device-1',
-  connectOptions: {
-    webSocketAuth: { mode: 'automatic' },
-  },
-});
-
-console.log(signalingTransport.authMode);
-console.log(signalingTransport.usesSharedLiveConnection);
-\`\`\`
-
-## Media Runtime Only
-
-Use this path when the app already has its own session/token orchestration and only needs the RTC
-media runtime.
-
-\`\`\`ts
-import {
-  createRtcCallTrackId,
+  createRtcProviderPackageLoader,
+  installRtcProviderPackage,
+  RtcDriverManager,
   RtcDataSource,
-  createBuiltinRtcDriverManager,
 } from '${languageEntry.publicPackage}';
+import * as volcengineProvider from '${runtimeBaseline.vendorSdkImportPath}';
+
+const driverManager = await installRtcProviderPackage(
+  new RtcDriverManager(),
+  {
+    providerKey: '${defaultProviderKey}',
+  },
+  createRtcProviderPackageLoader(async () => volcengineProvider),
+);
 
 const dataSource = new RtcDataSource({
-  driverManager: createBuiltinRtcDriverManager(),
+  driverManager,
   nativeConfig: {
     appId: 'volc-app-id',
     engineConfig: {
@@ -763,24 +667,24 @@ const dataSource = new RtcDataSource({
 const rtcClient = await dataSource.createClient();
 
 await rtcClient.join({
-  sessionId: 'rtc-session-1',
-  roomId: 'room-1',
+  sessionId: 'media-session-1',
+  roomId: 'provider-room-1',
   participantId: 'user-1',
   token: 'provider-issued-token',
 });
 
 await rtcClient.publish({
-  trackId: createRtcCallTrackId('rtc-session-1', 'audio'),
+  trackId: 'media-session-1-audio',
   kind: 'audio',
 });
 
 await rtcClient.publish({
-  trackId: createRtcCallTrackId('rtc-session-1', 'video'),
+  trackId: 'media-session-1-video',
   kind: 'video',
 });
 \`\`\`
 
-### Required Native Config
+## Required Native Config
 
 For the default Volcengine Web runtime, \`nativeConfig.appId\` is mandatory before \`join()\`.
 
@@ -799,170 +703,18 @@ type RtcVolcengineWebNativeConfig = {
 };
 \`\`\`
 
-## Complete Call Flow With RTC Signaling
-
-Use this path when the app wants one standard session that combines:
-
-- RTC session creation/invite/accept/reject/end through the signaling adapter
-- conversation-scoped incoming call discovery through \`${runtimeBaseline.signalingSdkPackage}\`
-- realtime session signal delivery through \`${runtimeBaseline.signalingSdkPackage}\`
-- provider participant credential issuance
-- Volcengine media join and auto publish
-- typed offer/answer/ice signaling over the RTC session stream
-
-\`\`\`ts
-import {
-  createRtcAppHttpClient,
-  ${runtimeBaseline.recommendedEntrypoint},
-  RTC_CALL_OFFER_SIGNAL_TYPE,
-} from '${languageEntry.publicPackage}';
-
-const transport = createRtcAppHttpClient({
-  baseUrl: 'https://rtc.example.com',
-  authToken: 'app-token',
-});
-
-const liveConnection = await transport.connect?.({
-  deviceId: 'device-1',
-  subscriptions: {
-    conversations: ['conversation-1'],
-  },
-  webSocketAuth: { mode: 'automatic' },
-});
-if (!liveConnection) {
-  throw new Error('Provide transport.connect() or a shared liveConnection when watching incoming RTC calls.');
-}
-
-const rtc = await ${runtimeBaseline.recommendedEntrypoint}({
-  transport,
-  deviceId: 'device-1',
-  liveConnection,
-  connectOptions: {
-    webSocketAuth: { mode: 'automatic' },
-  },
-  watchConversationIds: ['conversation-1'],
-  dataSourceConfig: {
-    nativeConfig: {
-      appId: 'volc-app-id',
-    },
-  },
-});
-
-rtc.callController.onEvent((event) => {
-  if (event.type === 'incoming_invitation') {
-    void rtc.callController.acceptIncoming({
-      rtcSessionId: event.invitation.rtcSessionId,
-      participantId: 'user-1',
-      autoPublish: {
-        audio: true,
-        video: true,
-      },
-    });
-  }
-
-  if (event.type === 'signal' && event.signal.signalType === RTC_CALL_OFFER_SIGNAL_TYPE) {
-    console.log('remote offer', event.signal.payload);
-  }
-});
-
-await rtc.callController.startOutgoing({
-  rtcSessionId: 'rtc-session-1',
-  conversationId: 'conversation-1',
-  rtcMode: 'video_call',
-  roomId: 'room-1',
-  participantId: 'user-1',
-  signalingStreamId: 'rtc-signal-1',
-  autoPublish: {
-    audio: true,
-    video: true,
-  },
-});
-
-await rtc.callController.sendOffer({
-  sdp: 'offer-sdp',
-});
-
-await rtc.callController.sendIceCandidate({
-  candidate: 'candidate:1 1 udp 2122260223 10.0.0.2 55000 typ host',
-});
-
-await rtc.callController.end();
-\`\`\`
-
-## Reuse Existing RTC WebSocket
-
-When the application already owns one shared RTC live connection, reuse it so RTC does not open a
-second WebSocket:
-
-\`\`\`ts
-const liveConnection = await transport.connect({
-  deviceId: 'device-1',
-  subscriptions: {
-    conversations: ['conversation-1'],
-  },
-  webSocketAuth: { mode: 'automatic' },
-});
-
-const rtc = await ${runtimeBaseline.recommendedEntrypoint}({
-  transport,
-  deviceId: 'device-1',
-  liveConnection,
-  watchConversationIds: ['conversation-1'],
-  dataSourceConfig: {
-    nativeConfig: {
-      appId: 'volc-app-id',
-    },
-  },
-});
-\`\`\`
-
-## Signaling Contract Mapping
-
-\`createRtcSignalingAdapter(...)\` maps the caller-supplied RTC signaling transport to the RTC
-standard call/signaling contract:
-
-- \`transport.createSession(...)\` -> \`createSession(...)\`
-- \`transport.inviteSession(...)\` -> \`inviteSession(...)\`
-- \`transport.acceptSession(...)\` -> \`acceptSession(...)\`
-- \`transport.rejectSession(...)\` -> \`rejectSession(...)\`
-- \`transport.endSession(...)\` -> \`endSession(...)\`
-- \`transport.postJsonSignal(...)\` -> \`sendSignal(...)\`
-- \`transport.issueParticipantCredential(...)\` -> \`issueParticipantCredential(...)\`
-- shared \`RtcSignalingRealtimeDispatcher\` -> one RTC WebSocket connection for both
-  \`liveConnection.signals.onRtcSession(...)\` and
-  \`liveConnection.messages.onConversation(...)\`
-- optional \`transport.createSignalMessage(...)\` + \`transport.send(...)\` or
-  \`transport.messages.createSignal(...)\` + \`transport.messages.send(...)\` ->
-  conversation-scoped invite publication
-- optional \`transport.realtime.replaceSubscriptions(...)\` -> live subscription sync without
-  opening a second realtime connection
-
 ## Runtime Guarantees
 
-- \`${runtimeBaseline.recommendedEntrypoint}(...)\` returns \`driverManager\`, \`dataSource\`,
-  \`mediaClient\`, \`signaling\`, \`callSession\`, \`realtimeDispatcher\`, and \`callController\`
-  as one explicit standard bundle
-- \`createRtcCallTrackId(rtcSessionId, kind)\` is the standard cross-language track id helper and
-  yields canonical ids such as \`rtc-session-1-audio\`
-- TypeScript now defaults \`subscribeSignals\` to \`true\`, aligned with Flutter/mobile
-- \`createBuiltinRtcDriverManager()\` defaults to \`${defaultProviderKey}\`
-- Volcengine Web runtime loading is lazy
-- official vendor SDKs are not bundled into the RTC standard package
-- RTC signaling is WebSocket-first; the TypeScript RTC standard does not expose polling controls
-- \`connectOptions.webSocketAuth\` is passed through to \`${runtimeBaseline.signalingSdkPackage}\`
-  so browser gateways can prefer query-bearer WebSocket auth while non-browser callers can keep
-  header-bearer mode
-- \`liveConnection\` lets the TypeScript RTC standard reuse an app-owned shared RTC WebSocket live
-  connection instead of opening a second RTC-specific socket
-- \`deviceId\` remains the authoritative RTC realtime identity; when
-  \`connectOptions.deviceId\` is provided it must match the RTC stack \`deviceId\`
-- signal payloads are exposed as parsed JSON when possible and as raw strings otherwise
-- the call/session layer does not leak application transport DTOs into the RTC public standard
-- \`StandardRtcCallController\` is the default orchestration layer for invite discovery, remote
-  lifecycle reconciliation, and typed offer/answer/ice signaling
+- \`RtcDataSource\` is the standard provider-neutral media client factory
+- \`installRtcProviderPackage(...)\` registers provider drivers through explicit plugin packages
+- \`RtcDriverManager\` and \`RtcDataSource\` default to \`${defaultProviderKey}\` only after the
+  matching provider package is installed into the manager
+- official provider plugin packages and vendor SDKs are not bundled into the RTC standard root package
+- provider plugin packages own any vendor SDK peer dependencies
+- provider credentials are supplied by the application or IM layer before \`join()\`
+- RTC runtime code does not own user invitation, conversation delivery, or business call lifecycle
 `);
 }
-
 function renderFlutterRuntimeUsageInstallDependencies(languageEntry) {
   if (!languageEntry.runtimeBaseline) {
     throw new Error('Flutter usage guide requires runtimeBaseline metadata');
@@ -973,7 +725,6 @@ function renderFlutterRuntimeUsageInstallDependencies(languageEntry) {
     '    sdk: flutter',
     `  ${languageEntry.publicPackage}:`,
     '    path: ../sdkwork-rtc-sdk/sdkwork-rtc-sdk-flutter',
-    ...resolveFlutterRuntimeBaselineDependencyLines(languageEntry.runtimeBaseline.vendorSdkPackage),
   ].join('\n');
 }
 
@@ -988,362 +739,76 @@ function renderFlutterRuntimeUsageDoc(assembly) {
     DEFAULT_RTC_PROVIDER_KEY;
 
   return lines(`
-# SDKWork RTC SDK Flutter Usage
+# SDKWork RTC SDK Flutter Runtime Usage
 
-This document describes the current executable Flutter/mobile baseline of \`sdkwork-rtc-sdk\`.
+This guide describes the executable Flutter/mobile media runtime baseline of \`sdkwork-rtc-sdk\`.
+IM-owned SDKs and services create business call sessions, deliver invitations, and issue provider
+credentials. The RTC SDK consumes media-room inputs and drives provider media behavior.
 
 ## Current Runnable Baseline
 
 - Default media provider: \`${defaultProviderKey}\`
-- Default mobile runtime package: official \`${runtimeBaseline.vendorSdkPackage}\`
-- Default mobile runtime import path: \`${runtimeBaseline.vendorSdkImportPath}\`
-- Default signaling package: \`${runtimeBaseline.signalingSdkPackage}\`
-- Default signaling import path: \`${runtimeBaseline.signalingSdkImportPath}\`
+- Default mobile provider plugin package: \`${runtimeBaseline.vendorSdkPackage}\`
+- Default mobile provider plugin import path: \`${runtimeBaseline.vendorSdkImportPath}\`
 - Standard media entrypoint: \`RtcDataSource\`
-- Standard call/session entrypoint: \`StandardRtcCallController\`
-- Recommended quick-start entrypoint: \`${runtimeBaseline.recommendedEntrypoint}\`
+- Recommended runtime entrypoint: \`${runtimeBaseline.recommendedEntrypoint}\`
 - Smoke command: \`${runtimeBaseline.smokeCommand}\`
 - Smoke mode: \`${runtimeBaseline.smokeMode}\`
+- Smoke variants: ${renderMarkdownCodeNaturalList(runtimeBaseline.smokeVariants)}
 
 ## Install
 
-Add the standard RTC package, the official Volcengine Flutter SDK, and the RTC SDK:
+Add the standard RTC package. Provider plugin packages such as
+\`${runtimeBaseline.vendorSdkPackage}\` are installed by the application only when that provider is
+selected. The root package has no provider or vendor SDK dependency.
 
 \`\`\`yaml
 dependencies:
 ${renderFlutterRuntimeUsageInstallDependencies(languageEntry)}
 \`\`\`
 
-Recommended RTC realtime rule:
+## Fast Runtime Verification
 
-- keep \`${runtimeBaseline.signalingSdkPackage}\` on the delivered RTC WebSocket
-  live path
-- keep \`RtcSignalingWebSocketAuthOptions.automatic()\` as the default and prefer
-  \`credentialProvider\` with a short-lived realtime ticket for browser-facing gateways
-- when HTTP and realtime origins are split, set \`websocketBaseUrl\` on \`RtcSignalingClient implementation\`
-- when RTC needs a live-auth override, pass \`connectOptions.webSocketAuth\` on
-  \`${runtimeBaseline.recommendedEntrypoint}(...)\`
-- when the app already owns one shared RTC live connection, pass \`liveConnection\` on the RTC
-  standard stack so RTC reuses that WebSocket instead of opening another one
-
-## WebSocket Auth Standard
-
-RTC delegates live signaling auth directly to \`${runtimeBaseline.signalingSdkPackage}\` and stays
-WebSocket-first.
-
-- \`RtcSignalingWebSocketAuthOptions.automatic()\` is the recommended default
-- \`RtcSignalingWebSocketAuthOptions.queryBearer()\` is the explicit override for gateways that only accept
-  query-parameter auth
-- \`RtcSignalingWebSocketAuthOptions.headerBearer()\` is the explicit override for custom native socket
-  bridges that can attach headers
-- \`RtcSignalingWebSocketAuthOptions.none()\` is reserved for trusted internal sockets or pre-signed WebSocket
-  URLs
-- prefer \`credentialProvider\` with short-lived realtime tickets instead of long-lived access
-  tokens
-- keep \`deviceId\` on the RTC stack top level; \`connectOptions.deviceId\` is optional and must
-  match when supplied
-- if the application already owns one shared RTC live connection, pass \`liveConnection\`; RTC
-  keeps subscription sync on that same socket and does not open another one
-- WebSocket auth failure should fail fast; the Flutter RTC standard does not downgrade to polling
-- call \`describeRtcSignalingTransport(...)\` when the host needs one immutable runtime snapshot of
-  the resolved auth mode, authoritative \`deviceId\`, shared-\`liveConnection\` reuse flag, and
-  fail-fast/no-polling guarantees before opening the RTC signaling path
-
-\`\`\`dart
-import '${runtimeBaseline.signalingSdkImportPath}';
-import 'package:rtc_sdk/rtc_sdk.dart';
-
-Future<void> connectRtcLive(RtcSignalingClient rtcSignalingClient) async {
-  final rtc = await ${runtimeBaseline.recommendedEntrypoint}<
-      RtcVolcengineFlutterNativeClient>(
-    CreateStandardRtcCallControllerStackOptions(
-      sdk: rtcSignalingClient,
-      deviceId: 'device-1',
-      connectOptions: const RtcSignalingConnectOptions(
-        webSocketAuth: RtcSignalingWebSocketAuthOptions.automatic(),
-      ),
-      dataSourceOptions: const RtcDataSourceOptions(
-        nativeConfig: RtcVolcengineFlutterNativeConfig(
-          appId: 'volc-app-id',
-        ),
-      ),
-    ),
-  );
-
-  final signalingTransport = describeRtcSignalingTransport(
-    deviceId: 'device-1',
-    connectOptions: const RtcSignalingConnectOptions(
-      webSocketAuth: RtcSignalingWebSocketAuthOptions.automatic(),
-    ),
-  );
-
-  print(signalingTransport.authMode);
-  print(signalingTransport.usesSharedLiveConnection);
-
-  await rtc.close();
-}
-\`\`\`
-
-## Fast Smoke Verification
-
-Run the public Flutter smoke command inside \`${languageEntry.workspace}\` when you need to verify the default
-\`${defaultProviderKey} + ${runtimeBaseline.signalingSdkPackage}\` path without live services:
+Run the public Flutter analysis command inside \`${languageEntry.workspace}\` when you need to verify
+the provider-neutral media runtime contracts:
 
 \`\`\`powershell
 ${runtimeBaseline.smokeCommand}
 \`\`\`
 
-Add \`--reuse-live-connection\` when you want the analyze-backed Flutter smoke to validate the
-shared RTC WebSocket ownership path as part of the public RTC baseline.
-
-The executable wrapper is currently analyze-backed because the official
-\`${runtimeBaseline.vendorSdkPackage}\` package crashes under Dart VM CLI compilation in the current toolchain.
-It still gives one stable command for maintainers to verify the standard smoke scenario source.
-Its JSON summary also includes a \`signalingTransport\` descriptor aligned with the Dart smoke
-source so maintainers can verify the resolved auth mode, authoritative \`deviceId\`, shared
-\`liveConnection\` reuse flag, and no-polling contract at the public command boundary.
-
-The verified smoke surface is:
-
-- \`${runtimeBaseline.recommendedEntrypoint}(...)\`
-- the default \`${defaultProviderKey}\` provider selection path
-- \`${runtimeBaseline.signalingSdkPackage}\` client composition through \`RtcSignalingClient implementation\`
-- authoritative top-level \`deviceId\` plus the optional shared \`liveConnection\` stack variant
-- the official Volcengine Flutter bridge smoke scenario source in \`bin/sdk-call-smoke.dart\`
-- the future runtime-backed path that will be used once the vendor package is CLI-runnable in the
-  active toolchain
-
-## Media Runtime Only
-
-Use this path when the application already owns its own session orchestration and only needs the
-standard media runtime.
+## Media Runtime Flow
 
 \`\`\`dart
 import 'package:rtc_sdk/rtc_sdk.dart';
 
-Future<void> startRtcMediaOnly() async {
-  final dataSource = RtcDataSource(
-    options: const RtcDataSourceOptions(
-      nativeConfig: RtcVolcengineFlutterNativeConfig(
-        appId: 'volc-app-id',
-        room: RtcVolcengineFlutterRoomConfig(
-          userId: 'user-1',
-          profile: 'communication',
-          scenario: 'general',
-        ),
-      ),
-    ),
+void inspectRtcProviderBoundary() {
+  final packageEntry = getRtcProviderPackageByProviderKey('${defaultProviderKey}');
+  final target = resolveRtcProviderPackageLoadTarget(
+    const RtcProviderPackageLoadRequest(providerKey: '${defaultProviderKey}'),
   );
 
-  final rtcClient = await dataSource.createClient<RtcVolcengineFlutterNativeClient>();
-
-  await rtcClient.join(
-    const RtcJoinOptions(
-      sessionId: 'rtc-session-1',
-      roomId: 'room-1',
-      participantId: 'user-1',
-      token: 'provider-issued-token',
-    ),
-  );
-
-  await rtcClient.publish(
-    RtcPublishOptions(
-      trackId: createRtcCallTrackId('rtc-session-1', RtcTrackKind.audio),
-      kind: RtcTrackKind.audio,
-    ),
-  );
-
-  await rtcClient.publish(
-    RtcPublishOptions(
-      trackId: createRtcCallTrackId('rtc-session-1', RtcTrackKind.video),
-      kind: RtcTrackKind.video,
-    ),
-  );
+  assert(packageEntry?.packageIdentity == '${runtimeBaseline.vendorSdkPackage}');
+  assert(target.packageEntry.packageIdentity == '${runtimeBaseline.vendorSdkPackage}');
 }
 \`\`\`
 
-## Required Native Config
+## Provider Native Config
 
-For the default Volcengine Flutter runtime, \`RtcVolcengineFlutterNativeConfig.appId\` is mandatory.
-The driver fails fast before \`join()\` if it is missing.
-
-The standard native config shape is:
-
-\`\`\`dart
-const RtcVolcengineFlutterNativeConfig(
-  appId: 'volc-app-id',
-  room: RtcVolcengineFlutterRoomConfig(
-    userId: 'user-1',
-    profile: 'communication',
-    scenario: 'general',
-    token: 'optional-direct-room-token',
-  ),
-);
-\`\`\`
-
-## Complete Call Flow With RTC Signaling
-
-Use this path when the app wants one standard session that combines:
-
-- RTC-side RTC session creation, invite, accept, reject, and end
-- conversation-scoped incoming call discovery through \`${runtimeBaseline.signalingSdkPackage}\`
-- realtime session signal delivery through \`${runtimeBaseline.signalingSdkPackage}\`
-- provider participant credential issuance
-- Volcengine media join and auto publish
-- typed offer/answer/ice signaling over the RTC session stream
-
-\`\`\`dart
-import '${runtimeBaseline.signalingSdkImportPath}';
-import 'package:rtc_sdk/rtc_sdk.dart';
-
-Future<void> startRtcCall({
-  required RtcSignalingClient rtcSignalingClient,
-  required String currentUserId,
-}) async {
-  final rtc = await ${runtimeBaseline.recommendedEntrypoint}<
-      RtcVolcengineFlutterNativeClient>(
-    CreateStandardRtcCallControllerStackOptions(
-      sdk: rtcSignalingClient,
-      deviceId: 'device-1',
-      watchConversationIds: const <String>['conversation-1'],
-      connectOptions: const RtcSignalingConnectOptions(
-        webSocketAuth: RtcSignalingWebSocketAuthOptions.automatic(),
-      ),
-      dataSourceOptions: const RtcDataSourceOptions(
-        nativeConfig: RtcVolcengineFlutterNativeConfig(
-          appId: 'volc-app-id',
-        ),
-      ),
-    ),
-  );
-
-  rtc.callController.onEvent((event) {
-    if (event.type == RtcCallControllerEventType.incomingInvitation) {
-      unawaited(
-        rtc.callController.acceptIncoming(
-          RtcCallControllerAcceptOptions(
-            rtcSessionId: event.invitation!.rtcSessionId,
-            participantId: currentUserId,
-            autoPublish: const RtcCallAutoPublishOptions(
-              audio: true,
-              video: true,
-            ),
-          ),
-        ),
-      );
-    }
-  });
-
-  await rtc.callController.startOutgoing(
-    RtcCallControllerOutgoingOptions(
-      rtcSessionId: 'rtc-session-1',
-      conversationId: 'conversation-1',
-      rtcMode: 'video_call',
-      roomId: 'room-1',
-      participantId: currentUserId,
-      signalingStreamId: 'rtc-signal-1',
-      autoPublish: const RtcCallAutoPublishOptions(
-        audio: true,
-        video: true,
-      ),
-    ),
-  );
-
-  await rtc.callController.sendOffer(
-    const RtcCallSessionDescriptionPayload(
-      sdp: 'offer-sdp',
-    ),
-  );
-
-  await rtc.callController.sendIceCandidate(
-    const RtcCallIceCandidatePayload(
-      candidate: 'candidate:1 1 udp 2122260223 10.0.0.2 55000 typ host',
-    ),
-  );
-
-await rtc.callController.end();
-}
-\`\`\`
-
-## Reuse Existing RTC WebSocket
-
-When the application already owns one shared RTC live connection, pass that connection into the RTC
-stack so signaling stays on the same WebSocket:
-
-\`\`\`dart
-final liveConnection = await rtcSignalingClient.connect(
-  const RtcSignalingConnectOptions(
-    deviceId: 'device-1',
-    subscriptions: RtcSignalingRealtimeSubscriptionGroups(
-      conversations: <String>['conversation-1'],
-    ),
-    webSocketAuth: RtcSignalingWebSocketAuthOptions.automatic(),
-  ),
-);
-
-final rtc = await ${runtimeBaseline.recommendedEntrypoint}<
-    RtcVolcengineFlutterNativeClient>(
-  CreateStandardRtcCallControllerStackOptions(
-    sdk: rtcSignalingClient,
-    deviceId: 'device-1',
-    liveConnection: liveConnection,
-    watchConversationIds: const <String>['conversation-1'],
-    connectOptions: const RtcSignalingConnectOptions(
-      webSocketAuth: RtcSignalingWebSocketAuthOptions.automatic(),
-    ),
-    dataSourceOptions: const RtcDataSourceOptions(
-      nativeConfig: RtcVolcengineFlutterNativeConfig(
-        appId: 'volc-app-id',
-      ),
-    ),
-  ),
-);
-\`\`\`
-
-## Signaling Contract Mapping
-
-\`createRtcSignalingAdapter(...)\` maps the \`${runtimeBaseline.signalingSdkPackage}\` composed RTC surface to the RTC
-standard call/signaling contract:
-
-- \`RtcSignalingClient.rtc.create(...)\` -> \`createSession(...)\`
-- \`RtcSignalingClient.rtc.invite(...)\` -> \`inviteSession(...)\`
-- \`RtcSignalingClient.rtc.accept(...)\` -> \`acceptSession(...)\`
-- \`RtcSignalingClient.rtc.reject(...)\` -> \`rejectSession(...)\`
-- \`RtcSignalingClient.rtc.end(...)\` -> \`endSession(...)\`
-- \`RtcSignalingClient.rtc.postJsonSignal(...)\` -> \`sendSignal(...)\`
-- \`RtcSignalingClient.rtc.issueParticipantCredential(...)\` -> \`issueParticipantCredential(...)\`
-- \`RtcSignalingClient.connect(...)\` -> internal shared RTC realtime dispatcher live stream
-- \`RtcSignalingClient.realtime.replaceSubscriptions(...)\` -> live subscription sync without opening a second
-  RTC-specific socket
-- \`RtcSignalingClient.conversations.postSignalMessage(...)\` -> conversation-scoped invite publication
+The Flutter root package is provider-neutral. Provider-specific native config types belong to the
+selected provider plugin package and are imported only by applications that install that plugin.
 
 ## Runtime Guarantees
 
-- \`${runtimeBaseline.recommendedEntrypoint}(...)\` returns \`driverManager\`, \`dataSource\`,
-  \`mediaClient\`, \`signaling\`, \`callSession\`, \`realtimeDispatcher\`, and \`callController\`
-  in one explicit standard bundle
-- \`createRtcCallTrackId(rtcSessionId, kind)\` is the standard cross-language track id helper and
-  yields canonical ids such as \`rtc-session-1-audio\`
-- \`RtcDriverManager()\` auto-registers the default Volcengine Flutter driver
-- \`RtcDataSource()\` defaults to \`${defaultProviderKey}\`
-- the call/session layer does not leak RTC transport DTOs into the RTC public standard
-- \`StandardRtcCallController\` is the default orchestration layer for invite discovery, remote
-  lifecycle reconciliation, and typed offer/answer/ice signaling
-- \`StandardRtcCallSession\` remains the focused single-session executor under the controller
-- \`RtcJoinOptions.token\` is sourced from RTC-issued participant credentials in the standard call
-  flow instead of hardcoding vendor tokens in the caller
-- audio and video auto-publish are standardized through \`RtcCallAutoPublishOptions\`
-- \`connectOptions.webSocketAuth\` is passed through to \`${runtimeBaseline.signalingSdkPackage}\`
-  when the RTC stack establishes its shared RTC WebSocket live connection
-- \`liveConnection\` lets the RTC standard reuse an app-owned \`RtcSignalingClient.connect(...)\` live connection
-  instead of opening a second RTC-specific socket
-- \`deviceId\` remains the authoritative RTC realtime identity; when
-  \`connectOptions.deviceId\` is provided it must match the RTC stack \`deviceId\`
-- \`reconnectInterval\` is the standard Flutter RTC reconnect-backoff option for RTC live signaling;
-  the public Flutter RTC standard does not expose polling controls
+- \`RtcDataSource\` is the standard provider-neutral media client factory
+- \`RtcDriverManager\` accepts provider drivers registered by explicit provider plugin packages
+- \`RtcDataSource\` defaults to \`${defaultProviderKey}\` only after the matching provider driver is
+  registered
+- provider plugin packages own concrete native bridge implementations and vendor dependencies
+- provider credentials are supplied by the application or IM layer before \`join()\`
+- RTC runtime code does not own user invitation, conversation delivery, or business call lifecycle
+- audio and video publish operations stay standardized through \`RtcPublishOptions\`
 `);
 }
-
 function renderTypeScriptAdapterContract(contract) {
   return `{
     sdkProvisioning: ${renderStringLiteral(contract.sdkProvisioning)},
@@ -1376,161 +841,6 @@ export const RTC_RUNTIME_SURFACE_STANDARD = freezeRtcRuntimeValue({
   methodTerms: RTC_RUNTIME_SURFACE_METHODS,
   failureCode: RTC_RUNTIME_SURFACE_FAILURE_CODE,
 } as const);
-`;
-}
-
-function renderTypeScriptSignalingTransport(assembly) {
-  return `import { freezeRtcRuntimeValue } from './runtime-freeze.js';
-
-export const RTC_SIGNALING_TRANSPORT_TERM = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.transportTerm ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.authConfigPath ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.authPassThroughTerm ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS = freezeRtcRuntimeValue(${renderReadonlyStringArray(
-    assembly.signalingTransportStandard?.authModeTerms ?? [],
-  )});
-
-export type RtcSignalingTransportAuthMode =
-  (typeof RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS)[number];
-
-export const RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE: RtcSignalingTransportAuthMode = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.recommendedAuthMode ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.deviceIdAuthorityTerm ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.connectOptionsDeviceIdRuleTerm ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.liveConnectionTerm ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.pollingFallbackTerm ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM = ${renderStringLiteral(
-    assembly.signalingTransportStandard?.authFailureTerm ?? '',
-  )};
-
-export const RTC_SIGNALING_TRANSPORT_STANDARD = freezeRtcRuntimeValue({
-  transportTerm: RTC_SIGNALING_TRANSPORT_TERM,
-  authConfigPath: RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH,
-  authPassThroughTerm: RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM,
-  authModeTerms: RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS,
-  recommendedAuthMode: RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE,
-  deviceIdAuthorityTerm: RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM,
-  connectOptionsDeviceIdRuleTerm:
-    RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM,
-  liveConnectionTerm: RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM,
-  pollingFallbackTerm: RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM,
-  authFailureTerm: RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM,
-} as const);
-
-export interface RtcSignalingTransportAuthOptionsLike {
-  readonly mode?: RtcSignalingTransportAuthMode;
-}
-
-export interface RtcSignalingTransportConnectOptionsLike {
-  readonly deviceId?: string | number;
-  readonly webSocketAuth?: RtcSignalingTransportAuthOptionsLike;
-}
-
-export interface DescribeRtcSignalingTransportOptions {
-  readonly deviceId: string | number;
-  readonly connectOptions?: RtcSignalingTransportConnectOptionsLike;
-  readonly liveConnection?: unknown;
-}
-
-export interface RtcSignalingTransportDescriptor {
-  readonly deviceId: string;
-  readonly connectOptionsDeviceId?: string;
-  readonly authMode: RtcSignalingTransportAuthMode;
-  readonly usesSharedLiveConnection: boolean;
-  readonly transportTerm: typeof RTC_SIGNALING_TRANSPORT_TERM;
-  readonly authConfigPath: typeof RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH;
-  readonly authPassThroughTerm: typeof RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM;
-  readonly recommendedAuthMode: RtcSignalingTransportAuthMode;
-  readonly deviceIdAuthorityTerm: typeof RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM;
-  readonly connectOptionsDeviceIdRuleTerm:
-    typeof RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM;
-  readonly liveConnectionTerm: typeof RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM;
-  readonly pollingFallbackTerm: typeof RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM;
-  readonly authFailureTerm: typeof RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM;
-}
-
-function normalizeRtcSignalingTransportDeviceId(deviceId: string | number): string {
-  const normalized = String(deviceId).trim();
-  if (!normalized) {
-    throw new TypeError('RTC signaling deviceId must not be empty.');
-  }
-  return normalized;
-}
-
-function isRtcSignalingTransportAuthMode(
-  value: string,
-): value is RtcSignalingTransportAuthMode {
-  return (RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS as readonly string[]).includes(value);
-}
-
-function resolveRtcSignalingTransportAuthMode(
-  connectOptions?: RtcSignalingTransportConnectOptionsLike,
-): RtcSignalingTransportAuthMode {
-  const mode = connectOptions?.webSocketAuth?.mode;
-  if (mode === undefined) {
-    return RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE;
-  }
-
-  if (!isRtcSignalingTransportAuthMode(mode)) {
-    throw new TypeError(\`Unsupported RTC signaling auth mode: \${mode}\`);
-  }
-
-  return mode;
-}
-
-export function describeRtcSignalingTransport(
-  options: DescribeRtcSignalingTransportOptions,
-): RtcSignalingTransportDescriptor {
-  const deviceId = normalizeRtcSignalingTransportDeviceId(options.deviceId);
-  const connectOptionsDeviceId = options.connectOptions?.deviceId === undefined
-    ? undefined
-    : normalizeRtcSignalingTransportDeviceId(options.connectOptions.deviceId);
-
-  if (connectOptionsDeviceId !== undefined && connectOptionsDeviceId !== deviceId) {
-    throw new TypeError(
-      'RTC signaling deviceId must match connectOptions.deviceId when both are provided.',
-    );
-  }
-
-  return freezeRtcRuntimeValue({
-    deviceId,
-    connectOptionsDeviceId,
-    authMode: resolveRtcSignalingTransportAuthMode(options.connectOptions),
-    usesSharedLiveConnection: options.liveConnection !== undefined,
-    transportTerm: RTC_SIGNALING_TRANSPORT_TERM,
-    authConfigPath: RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH,
-    authPassThroughTerm: RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM,
-    recommendedAuthMode: RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE,
-    deviceIdAuthorityTerm: RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM,
-    connectOptionsDeviceIdRuleTerm:
-      RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM,
-    liveConnectionTerm: RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM,
-    pollingFallbackTerm: RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM,
-    authFailureTerm: RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM,
-  });
-}
 `;
 }
 
@@ -1681,41 +991,17 @@ function getExecutableLanguageRuntimeBaseline(assembly, language) {
   };
 }
 
-function resolveTypeScriptRuntimeBaselinePeerDependencyRange(packageName) {
-  switch (packageName) {
-    case '@volcengine/rtc':
-      return '^4.68.3';
-    default:
-      throw new Error(
-        `Unsupported TypeScript runtime baseline peer dependency. Extend the manifest renderer for ${packageName}.`,
-      );
-  }
-}
-
 function renderTypeScriptWorkspaceManifest(assembly) {
-  const { languageEntry, runtimeBaseline } = getExecutableLanguageRuntimeBaseline(
+  const { languageEntry } = getExecutableLanguageRuntimeBaseline(
     assembly,
     'typescript',
-  );
-
-  const peerDependencies = Object.fromEntries(
-    [runtimeBaseline.vendorSdkPackage]
-      .filter((packageName) => packageName !== languageEntry.publicPackage)
-      .map((packageName) => [
-        packageName,
-        resolveTypeScriptRuntimeBaselinePeerDependencyRange(packageName),
-      ]),
-  );
-
-  const peerDependenciesMeta = Object.fromEntries(
-    Object.keys(peerDependencies).map((packageName) => [packageName, { optional: true }]),
   );
 
   const packageJson = {
     name: languageEntry.publicPackage,
     version: '0.1.1',
     description:
-      'JDBC-style RTC provider standard SDK with built-in driver management and provider adapters',
+      'Provider-neutral RTC media SDK with JDBC-style provider package loading',
     type: 'module',
     main: './dist/index.js',
     module: './dist/index.js',
@@ -1729,8 +1015,6 @@ function renderTypeScriptWorkspaceManifest(assembly) {
     },
     sideEffects: false,
     files: ['dist'],
-    peerDependencies,
-    peerDependenciesMeta,
     scripts: {
       clean:
         'call "%npm_node_execpath%" ./bin/package-task.mjs clean || "$npm_node_execpath" ./bin/package-task.mjs clean || node ./bin/package-task.mjs clean',
@@ -1744,6 +1028,43 @@ function renderTypeScriptWorkspaceManifest(assembly) {
   };
 
   return `${JSON.stringify(packageJson, null, 2)}\n`;
+}
+
+function renderTypeScriptBuildTsconfig() {
+  return `${JSON.stringify(
+    {
+      compilerOptions: {
+        target: 'ES2022',
+        module: 'NodeNext',
+        moduleResolution: 'NodeNext',
+        rootDir: './src',
+        outDir: './dist',
+        declaration: true,
+        strict: true,
+        skipLibCheck: true,
+        verbatimModuleSyntax: true,
+      },
+      include: ['src/**/*.ts'],
+    },
+    null,
+    2,
+  )}\n`;
+}
+
+function renderTypeScriptRootEntrypoint(assembly) {
+  const exportPaths = [
+    ...(assembly.rootPublicSurfaceStandard?.typescriptProviderNeutralExportPaths ?? []),
+    ...(assembly.rootPublicSurfaceStandard?.typescriptBuiltinProviderExportPaths ?? []),
+  ];
+  const helperNames = assembly.rootPublicSurfaceStandard?.typescriptInlineHelperNames ?? [];
+
+  if (helperNames.length > 0) {
+    throw new Error(
+      `TypeScript root inline helpers are not supported by the plugin-only RTC root: ${helperNames.join(', ')}`,
+    );
+  }
+
+  return `${exportPaths.map((exportPath) => `export * from '${exportPath}';`).join('\n')}\n`;
 }
 
 function writeIfChanged(workspaceRoot, filePath, nextContent, changedFiles) {
@@ -1957,9 +1278,7 @@ function buildTypeScriptProviderPackageCatalogEntries(assembly) {
     moduleSymbol: provider.typescriptPackage.moduleSymbol,
     builtin: provider.builtin === true,
     rootPublic: provider.typescriptPackage.rootPublic === true,
-    status: provider.builtin
-      ? 'root_public_reference_boundary'
-      : 'package_reference_boundary',
+    status: 'package_reference_boundary',
     runtimeBridgeStatus: provider.typescriptAdapter.runtimeBridgeStatus,
     requiredCapabilities: [...(provider.requiredCapabilities ?? [])],
     optionalCapabilities: [...(provider.optionalCapabilities ?? [])],
@@ -2033,8 +1352,6 @@ function buildLanguageWorkspaceCatalogEntries(assembly) {
       ? {
           vendorSdkPackage: languageEntry.runtimeBaseline.vendorSdkPackage,
           vendorSdkImportPath: languageEntry.runtimeBaseline.vendorSdkImportPath,
-          signalingSdkPackage: languageEntry.runtimeBaseline.signalingSdkPackage,
-          signalingSdkImportPath: languageEntry.runtimeBaseline.signalingSdkImportPath,
           recommendedEntrypoint: languageEntry.runtimeBaseline.recommendedEntrypoint,
           smokeCommand: languageEntry.runtimeBaseline.smokeCommand,
           smokeMode: languageEntry.runtimeBaseline.smokeMode,
@@ -2088,6 +1405,14 @@ function buildLanguageWorkspaceCatalogEntries(assembly) {
           sourceTemplateTokens: [
             ...(languageEntry.providerPackageScaffold.sourceTemplateTokens ?? []),
           ],
+          referenceProviderKey: languageEntry.providerPackageScaffold.referenceProviderKey,
+          referenceStatus: languageEntry.providerPackageScaffold.referenceStatus,
+          referenceRuntimeBridgeStatus:
+            languageEntry.providerPackageScaffold.referenceRuntimeBridgeStatus,
+          referenceVendorSdkPackage:
+            languageEntry.providerPackageScaffold.referenceVendorSdkPackage,
+          referenceVendorSdkVersion:
+            languageEntry.providerPackageScaffold.referenceVendorSdkVersion,
           runtimeBridgeStatus: languageEntry.providerPackageScaffold.runtimeBridgeStatus,
           rootPublic: languageEntry.providerPackageScaffold.rootPublic === true,
           status: languageEntry.providerPackageScaffold.status,
@@ -2128,8 +1453,6 @@ Runtime baseline contract:
 
 - vendor SDK package: \`${languageEntry.runtimeBaseline.vendorSdkPackage}\`
 - vendor SDK import path: \`${languageEntry.runtimeBaseline.vendorSdkImportPath}\`
-- signaling SDK package: \`${languageEntry.runtimeBaseline.signalingSdkPackage}\`
-- signaling SDK import path: \`${languageEntry.runtimeBaseline.signalingSdkImportPath}\`
 - recommended entrypoint: \`${languageEntry.runtimeBaseline.recommendedEntrypoint}\`
 - smoke command: \`${languageEntry.runtimeBaseline.smokeCommand}\`
 - smoke mode: \`${languageEntry.runtimeBaseline.smokeMode}\`
@@ -2183,6 +1506,17 @@ function renderTypeScriptLanguageWorkspaceProviderPackageScaffold(providerPackag
     return 'undefined';
   }
 
+  const referenceFields = [
+    ['referenceProviderKey', providerPackageScaffold.referenceProviderKey],
+    ['referenceStatus', providerPackageScaffold.referenceStatus],
+    ['referenceRuntimeBridgeStatus', providerPackageScaffold.referenceRuntimeBridgeStatus],
+    ['referenceVendorSdkPackage', providerPackageScaffold.referenceVendorSdkPackage],
+    ['referenceVendorSdkVersion', providerPackageScaffold.referenceVendorSdkVersion],
+  ]
+    .filter(([, value]) => typeof value === 'string')
+    .map(([key, value]) => `    ${key}: ${renderStringLiteral(value)},`)
+    .join('\n');
+
   return `freezeRtcRuntimeValue({
     relativePath: ${renderStringLiteral(providerPackageScaffold.relativePath)},
     directoryPattern: ${renderStringLiteral(providerPackageScaffold.directoryPattern)},
@@ -2193,7 +1527,7 @@ function renderTypeScriptLanguageWorkspaceProviderPackageScaffold(providerPackag
     sourceSymbolPattern: ${renderStringLiteral(providerPackageScaffold.sourceSymbolPattern)},
     templateTokens: freezeRtcRuntimeValue(${renderReadonlyStringArray(providerPackageScaffold.templateTokens)}),
     sourceTemplateTokens: freezeRtcRuntimeValue(${renderReadonlyStringArray(providerPackageScaffold.sourceTemplateTokens)}),
-    runtimeBridgeStatus: ${renderStringLiteral(providerPackageScaffold.runtimeBridgeStatus)},
+${referenceFields ? `${referenceFields}\n` : ''}    runtimeBridgeStatus: ${renderStringLiteral(providerPackageScaffold.runtimeBridgeStatus)},
     rootPublic: ${providerPackageScaffold.rootPublic ? 'true' : 'false'},
     status: ${renderStringLiteral(providerPackageScaffold.status)},
   })`;
@@ -2257,8 +1591,6 @@ function renderTypeScriptLanguageWorkspaceRuntimeBaseline(runtimeBaseline) {
   return `freezeRtcRuntimeValue({
     vendorSdkPackage: ${renderStringLiteral(runtimeBaseline.vendorSdkPackage)},
     vendorSdkImportPath: ${renderStringLiteral(runtimeBaseline.vendorSdkImportPath)},
-    signalingSdkPackage: ${renderStringLiteral(runtimeBaseline.signalingSdkPackage)},
-    signalingSdkImportPath: ${renderStringLiteral(runtimeBaseline.signalingSdkImportPath)},
     recommendedEntrypoint: ${renderStringLiteral(runtimeBaseline.recommendedEntrypoint)},
     smokeCommand: ${renderStringLiteral(runtimeBaseline.smokeCommand)},
     smokeMode: ${renderStringLiteral(runtimeBaseline.smokeMode)},
@@ -2358,8 +1690,7 @@ function renderTypeScriptWorkspaceReadme(languageEntry, assembly) {
     'standard provider selection helpers at src/provider-selection.ts',
     'standard capability negotiation helpers at src/capability-negotiation.ts',
     'standard provider support helpers at src/provider-support.ts',
-    'standard call-stack composition helper at src/standard-call-stack.ts for default Volcengine plus sdkwork-rtc-sdk signaling',
-    'shared RTC WebSocket realtime dispatcher at src/signaling-adapter.ts for unified RTC session and conversation invite subscriptions',
+    'standard media runtime helpers for provider-neutral join, publish, mute, and leave flows',
     'assembly-driven provider package catalog at src/provider-package-catalog.ts',
     'standard provider package loader and installer SPI at src/provider-package-loader.ts',
     'assembly-driven provider activation catalog at src/provider-activation-catalog.ts',
@@ -2393,28 +1724,6 @@ The shared runtime-surface module at \`src/runtime-surface.ts\` materializes
 \`runtimeSurfaceStandard\` into \`RTC_RUNTIME_SURFACE_METHODS\`,
 \`RTC_RUNTIME_SURFACE_FAILURE_CODE\`, and \`RTC_RUNTIME_SURFACE_STANDARD\` so the provider-neutral
 runtime method vocabulary and missing-runtime failure semantics stay assembly-governed.
-The shared signaling-transport module at \`src/signaling-transport.ts\` materializes
-\`signalingTransportStandard\` into \`RTC_SIGNALING_TRANSPORT_TERM\`,
-\`RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH\`,
-\`RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM\`,
-\`RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS\`,
-\`RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE\`,
-\`RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM\`,
-\`RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM\`,
-\`RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM\`,
-\`RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM\`,
-\`RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM\`, and
-\`RTC_SIGNALING_TRANSPORT_STANDARD\` so the WebSocket-only signaling contract, auth pass-through
-boundary, authoritative \`deviceId\` rule, shared \`liveConnection\` reuse, no-polling policy,
-and fail-fast auth semantics stay assembly-governed.
-The Flutter/mobile counterpart at \`../sdkwork-rtc-sdk-flutter/lib/src/rtc_signaling_transport.dart\`
-keeps \`rtcSignalingTransportTerm\`, \`rtcSignalingTransportAuthConfigPath\`,
-\`rtcSignalingTransportAuthPassThroughTerm\`, \`rtcSignalingTransportAuthModeTerms\`,
-\`rtcSignalingTransportRecommendedAuthMode\`, \`rtcSignalingTransportDeviceIdAuthorityTerm\`,
-\`rtcSignalingTransportConnectOptionsDeviceIdRuleTerm\`, \`rtcSignalingTransportLiveConnectionTerm\`,
-\`rtcSignalingTransportPollingFallbackTerm\`, \`rtcSignalingTransportAuthFailureTerm\`, and
-\`rtcSignalingTransportStandard\` aligned to the same assembly-driven contract so the executable
-web/browser and mobile baselines cannot drift.
 The shared runtime-immutability module at \`src/runtime-immutability.ts\` materializes
 \`runtimeImmutabilityStandard\` into \`RTC_RUNTIME_IMMUTABILITY_FROZEN_TERM\`,
 \`RTC_RUNTIME_IMMUTABILITY_SNAPSHOT_TERM\`,
@@ -2443,17 +1752,13 @@ ${renderLanguageWorkspaceCatalogSection(languageEntry)}
 ${renderLanguageWorkspaceRuntimeBaselineSection(languageEntry)}
 ${renderLanguageWorkspaceProviderPackageBoundary(languageEntry)}
 
-Local smoke CLI:
+Local runtime verification:
 
-- \`bin/sdk-call-smoke.mjs\` verifies the public TypeScript call stack against mocked
-  \`sdkwork-rtc-sdk\` signaling and a mocked official Volcengine Web SDK module
 - \`npm run smoke\`
-- \`node ./bin/sdk-call-smoke.mjs --json\`
-- \`node ./bin/sdk-call-smoke.mjs --json --reuse-live-connection\`
-- signaling uses one shared RTC WebSocket realtime dispatcher, and \`connectOptions.webSocketAuth\`
-  remains part of the public TypeScript RTC baseline
-- \`liveConnection\` is also part of the public TypeScript RTC baseline when the application wants
-  RTC to reuse an existing shared RTC WebSocket live connection
+- \`npm run test\`
+- \`npm run build\`
+- RTC remains a provider/media runtime bridge; IM-owned packages handle business conversation
+  delivery, invitations, and lifecycle state
 
 Standards references:
 
@@ -2509,80 +1814,36 @@ function renderReservedLanguageRuntimeUsage(languageEntry) {
     return '';
   }
 
-  return `Executable baseline:
+  return `Provider plugin boundary:
 
-- Flutter/mobile now ships a runnable default adapter for \`volcengine\`
-- media runtime delegates to the official \`volc_engine_rtc\` package
-- signaling delegates to \`sdkwork-rtc-sdk\` through \`package:rtc_sdk/rtc_sdk.dart\`
-- \`RtcDriverManager\` auto-registers \`createVolcengineRtcDriver()\`
-- \`RtcDataSource()\` therefore resolves to \`volcengine\` by default with no extra provider selection
-- \`createStandardRtcCallControllerStack(...)\` is the recommended quick-start entrypoint for the
-  default Volcengine plus \`sdkwork-rtc-sdk\` call flow
-- \`StandardRtcCallController\` is the default orchestration layer for invite discovery, RTC
-  lifecycle reconciliation, and typed offer/answer/ice signaling
-- \`StandardRtcCallSession\` remains the focused single-session executor under the controller
+- Flutter/mobile root stays provider-neutral and ships no concrete provider adapter
+- provider plugins such as \`rtc_sdk_provider_volcengine\` are installed only by applications that select them
+- \`RtcDriverManager\` does not auto-register provider drivers from the root package
+- \`RtcDataSource()\` resolves metadata but requires an explicitly registered provider driver before connecting
+- business invitations, lifecycle state, and conversation delivery are supplied by IM-owned SDKs
 
 Quick start:
 
 \`\`\`dart
 import 'package:rtc_sdk/rtc_sdk.dart';
-import 'package:rtc_sdk/rtc_sdk.dart';
 
-Future<void> startRtcCall({
-  required RtcSignalingClient rtcSignalingClient,
-  required String currentUserId,
-}) async {
-  final rtc =
-      await createStandardRtcCallControllerStack<RtcVolcengineFlutterNativeClient>(
-    CreateStandardRtcCallControllerStackOptions(
-      sdk: rtcSignalingClient,
-      deviceId: 'current-device-id',
-      connectOptions: const RtcSignalingConnectOptions(
-        webSocketAuth: RtcSignalingWebSocketAuthOptions.automatic(),
-      ),
-      dataSourceOptions: const RtcDataSourceOptions(
-        nativeConfig: RtcVolcengineFlutterNativeConfig(
-          appId: 'your-volcengine-app-id',
-        ),
-      ),
-    ),
+void inspectProviderPluginPackage() {
+  final target = resolveRtcProviderPackageLoadTarget(
+    const RtcProviderPackageLoadRequest(providerKey: 'volcengine'),
   );
 
-  await rtc.callController.startOutgoing(
-    RtcCallControllerOutgoingOptions(
-      rtcSessionId: 'rtc-session-001',
-      conversationId: 'conversation-001',
-      rtcMode: 'video_call',
-      participantId: currentUserId,
-      autoPublish: const RtcCallAutoPublishOptions(
-        audio: true,
-        video: true,
-      ),
-    ),
-  );
+  assert(target.packageEntry.packageIdentity == 'rtc_sdk_provider_volcengine');
 }
 \`\`\`
 
 Runtime notes:
 
-- \`createStandardRtcCallControllerStack(...)\` returns \`driverManager\`, \`dataSource\`,
-  \`mediaClient\`, \`signaling\`, \`callSession\`, \`realtimeDispatcher\`, and \`callController\`
-  so callers can keep the standard pieces explicit
-- \`RtcVolcengineFlutterNativeConfig.appId\` is mandatory; join will fail fast without it
-- \`RtcJoinOptions.token\` is filled from \`sdkwork-rtc-sdk\` issued participant credentials, not by
-  hardcoding vendor tokens in the caller
-- \`RtcPublishOptions\` supports standard audio and video publishing through the Volcengine adapter
-- signaling subscriptions are multiplexed through one shared RTC realtime dispatcher backed by
-  \`rtc_sdk.connect(...)\` WebSocket live receive, so multiple RTC sessions do not overwrite each
-  other at the subscription layer
-- \`connectOptions.webSocketAuth\` is forwarded to the shared RTC live connection when the RTC stack
-  establishes its own WebSocket
-- \`liveConnection\` lets the Flutter RTC standard reuse an app-owned shared RTC WebSocket live
-  connection instead of creating another one
-- \`deviceId\` remains the authoritative RTC realtime identity; if \`connectOptions.deviceId\` is
-  provided it must match the RTC stack \`deviceId\`
-- \`reconnectInterval\` is the standard RTC live signaling reconnect-backoff option for the shared
-  WebSocket live connection; the Flutter RTC standard does not expose polling controls`;
+- provider-specific native config types belong to the selected provider plugin package
+- \`RtcJoinOptions.token\` is supplied by the application or IM layer, not hardcoded in RTC callers
+- \`RtcPublishOptions\` remains provider-neutral and supports standard audio and video publishing
+- \`RtcDataSource\` keeps the provider-neutral runtime boundary stable across native SDK adapters
+- IM-owned services decide who should join, which provider room to use, and when the media runtime
+  should leave`;
 }
 
 function renderCapabilityMatrix(assembly) {
@@ -2726,24 +1987,6 @@ function renderCapabilityMatrix(assembly) {
     `- \`runtimeSurfaceStandard.failureCode\`: \`${assembly.runtimeSurfaceStandard?.failureCode ?? ''}\``,
     '- TypeScript root public constants: `RTC_RUNTIME_SURFACE_METHODS`, `RTC_RUNTIME_SURFACE_FAILURE_CODE`',
   ].join('\n');
-  const signalingTransportStandardLines = [
-    `- \`signalingTransportStandard.transportTerm\`: \`${assembly.signalingTransportStandard?.transportTerm ?? ''}\``,
-    `- \`signalingTransportStandard.authConfigPath\`: \`${assembly.signalingTransportStandard?.authConfigPath ?? ''}\``,
-    `- \`signalingTransportStandard.authPassThroughTerm\`: \`${assembly.signalingTransportStandard?.authPassThroughTerm ?? ''}\``,
-    `- \`signalingTransportStandard.authModeTerms\`: ${renderMarkdownCodeList(
-      assembly.signalingTransportStandard?.authModeTerms ?? [],
-    )}`,
-    `- \`signalingTransportStandard.recommendedAuthMode\`: \`${assembly.signalingTransportStandard?.recommendedAuthMode ?? ''}\``,
-    `- \`signalingTransportStandard.deviceIdAuthorityTerm\`: \`${assembly.signalingTransportStandard?.deviceIdAuthorityTerm ?? ''}\``,
-    `- \`signalingTransportStandard.connectOptionsDeviceIdRuleTerm\`: \`${assembly.signalingTransportStandard?.connectOptionsDeviceIdRuleTerm ?? ''}\``,
-    `- \`signalingTransportStandard.liveConnectionTerm\`: \`${assembly.signalingTransportStandard?.liveConnectionTerm ?? ''}\``,
-    `- \`signalingTransportStandard.pollingFallbackTerm\`: \`${assembly.signalingTransportStandard?.pollingFallbackTerm ?? ''}\``,
-    `- \`signalingTransportStandard.authFailureTerm\`: \`${assembly.signalingTransportStandard?.authFailureTerm ?? ''}\``,
-    '- TypeScript root public module: `sdkwork-rtc-sdk-typescript/src/signaling-transport.ts`',
-    '- TypeScript root public constants: `RTC_SIGNALING_TRANSPORT_TERM`, `RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH`, `RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM`, `RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS`, `RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE`, `RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM`, `RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM`, `RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM`, `RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM`, `RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM`, `RTC_SIGNALING_TRANSPORT_STANDARD`',
-    '- Flutter root public module: `sdkwork-rtc-sdk-flutter/lib/src/rtc_signaling_transport.dart`',
-    '- Flutter root public constants: `rtcSignalingTransportTerm`, `rtcSignalingTransportAuthConfigPath`, `rtcSignalingTransportAuthPassThroughTerm`, `rtcSignalingTransportAuthModeTerms`, `rtcSignalingTransportRecommendedAuthMode`, `rtcSignalingTransportDeviceIdAuthorityTerm`, `rtcSignalingTransportConnectOptionsDeviceIdRuleTerm`, `rtcSignalingTransportLiveConnectionTerm`, `rtcSignalingTransportPollingFallbackTerm`, `rtcSignalingTransportAuthFailureTerm`, `rtcSignalingTransportStandard`',
-  ].join('\n');
   const runtimeImmutabilityStandardLines = [
     `- \`runtimeImmutabilityStandard.frozenTerm\`: \`${assembly.runtimeImmutabilityStandard?.frozenTerm ?? ''}\``,
     `- \`runtimeImmutabilityStandard.snapshotTerm\`: \`${assembly.runtimeImmutabilityStandard?.snapshotTerm ?? ''}\``,
@@ -2850,10 +2093,6 @@ ${capabilityNegotiationStandardLines}
 ## Runtime Surface Standard
 
 ${runtimeSurfaceStandardLines}
-
-## Signaling Transport Standard
-
-${signalingTransportStandardLines}
 
 ## Runtime Immutability Standard
 
@@ -2972,11 +2211,33 @@ ${languageProviderActivationRows}
 
 function renderProviderPackageManifest(provider) {
   const packageContract = provider.typescriptPackage;
+  const hasReferenceRuntimeBridge =
+    provider.typescriptAdapter.runtimeBridgeStatus === 'reference-baseline';
+  const peerDependencies = {
+    '@sdkwork/rtc-sdk': '^0.1.1',
+  };
+  const peerDependenciesMeta = {};
+  if (provider.providerKey === 'volcengine' && hasReferenceRuntimeBridge) {
+    peerDependencies['@volcengine/rtc'] = '^4.68.3';
+    peerDependenciesMeta['@volcengine/rtc'] = {
+      optional: true,
+    };
+  }
+  if (provider.providerKey === 'tencent' && hasReferenceRuntimeBridge) {
+    peerDependencies['trtc-sdk-v5'] = '^5.18.0';
+    peerDependenciesMeta['trtc-sdk-v5'] = {
+      optional: true,
+    };
+  }
+  const boundaryDescription = hasReferenceRuntimeBridge
+    ? `Reference TypeScript provider boundary for ${provider.displayName} within sdkwork-rtc-sdk`
+    : `Reserved TypeScript provider boundary for ${provider.displayName} within sdkwork-rtc-sdk`;
+
   const packageJson = {
     name: packageContract.packageName,
     version: '0.1.0',
     private: true,
-    description: `Reference TypeScript provider boundary for ${provider.displayName} within sdkwork-rtc-sdk`,
+    description: boundaryDescription,
     type: 'module',
     main: './index.js',
     types: './index.d.ts',
@@ -2989,14 +2250,17 @@ function renderProviderPackageManifest(provider) {
     },
     sideEffects: false,
     files: ['index.js', 'index.d.ts', 'README.md'],
+    peerDependencies,
+    peerDependenciesMeta,
+    devDependencies: {
+      '@sdkwork/rtc-sdk': 'workspace:*',
+    },
     sdkworkRtcProvider: {
       providerKey: provider.providerKey,
       displayName: provider.displayName,
       tier: provider.tier,
       builtin: provider.builtin,
-      status: provider.builtin
-        ? 'root_public_reference_boundary'
-        : 'package_reference_boundary',
+      status: 'package_reference_boundary',
       registrationContract: 'RtcProviderModule',
       sourceModule: packageContract.sourceModule,
       driverFactory: packageContract.driverFactory,
@@ -3019,35 +2283,1404 @@ function renderProviderPackageManifest(provider) {
   return `${JSON.stringify(packageJson, null, 2)}\n`;
 }
 
-function renderProviderPackageEntrypoint(provider) {
-  const packageContract = provider.typescriptPackage;
-
-  return `export {
-  ${packageContract.driverFactory},
-  ${packageContract.metadataSymbol},
-  ${packageContract.moduleSymbol},
-} from '../../dist/providers/${provider.providerKey}.js';
+function renderProviderPackageImportPrelude(symbols) {
+  return `import {
+  ${symbols.join(',\n  ')},
+} from '@sdkwork/rtc-sdk';
 `;
+}
+
+function renderGenericProviderPackageEntrypoint(provider) {
+  const packageContract = provider.typescriptPackage;
+  const catalogSymbol = `${toUpperSnakeCase(provider.providerKey)}_RTC_PROVIDER_CATALOG_ENTRY`;
+
+  return `${renderProviderPackageImportPrelude([
+    catalogSymbol,
+    'createRtcProviderDriver',
+    'createRtcProviderModule',
+  ])}
+
+export const ${packageContract.metadataSymbol} = ${catalogSymbol};
+
+export function ${packageContract.driverFactory}(options = {}) {
+  return createRtcProviderDriver({
+    metadata: ${packageContract.metadataSymbol},
+    nativeFactory: options.nativeFactory,
+    runtimeController: options.runtimeController,
+  });
+}
+
+export const ${packageContract.moduleSymbol} = createRtcProviderModule({
+  packageName: ${packageContract.metadataSymbol}.typescriptPackage.packageName,
+  metadata: ${packageContract.metadataSymbol},
+  builtin: ${catalogSymbol}.builtin,
+  createDriver: ${packageContract.driverFactory},
+});
+`;
+}
+
+function renderVolcengineProviderPackageEntrypoint(provider) {
+  const packageContract = provider.typescriptPackage;
+  const catalogSymbol = 'VOLCENGINE_RTC_PROVIDER_CATALOG_ENTRY';
+
+  return `${renderProviderPackageImportPrelude([
+    catalogSymbol,
+    'RtcSdkException',
+    'createRtcProviderDriver',
+    'createRtcProviderModule',
+  ])}
+
+export const ${packageContract.metadataSymbol} = ${catalogSymbol};
+
+async function defaultLoadVolcengineWebSdk() {
+  try {
+    return await import('@volcengine/rtc');
+  } catch (error) {
+    throw new RtcSdkException({
+      code: 'native_sdk_not_available',
+      message: 'Official Volcengine Web RTC SDK package "@volcengine/rtc" is not available.',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      pluginId: ${packageContract.metadataSymbol}.pluginId,
+      details: {
+        packageName: '@volcengine/rtc',
+      },
+      cause: error,
+    });
+  }
+}
+
+function resolveNativeConfig(config) {
+  const nativeConfig = config.nativeConfig ?? {};
+
+  if (
+    nativeConfig === null ||
+    typeof nativeConfig !== 'object' ||
+    Array.isArray(nativeConfig)
+  ) {
+    throw new RtcSdkException({
+      code: 'invalid_native_config',
+      message: 'RTC nativeConfig must be an object for the official Volcengine Web bridge.',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      pluginId: ${packageContract.metadataSymbol}.pluginId,
+    });
+  }
+
+  return nativeConfig;
+}
+
+function assertRequiredVolcengineConfig(nativeConfig) {
+  if (nativeConfig.appId) {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'invalid_native_config',
+    message: 'Official Volcengine Web RTC runtime requires nativeConfig.appId.',
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      missingConfigKeys: ['appId'],
+    },
+  });
+}
+
+function resolveVolcengineWebSdkModule(sdkModule) {
+  const candidate =
+    sdkModule &&
+    typeof sdkModule === 'object' &&
+    typeof sdkModule.createEngine !== 'function'
+      ? sdkModule.default
+      : sdkModule;
+
+  if (
+    !candidate ||
+    typeof candidate.createEngine !== 'function' ||
+    typeof candidate.destroyEngine !== 'function'
+  ) {
+    throw new RtcSdkException({
+      code: 'native_sdk_not_available',
+      message: 'Official Volcengine Web RTC SDK package "@volcengine/rtc" did not expose createEngine and destroyEngine.',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      pluginId: ${packageContract.metadataSymbol}.pluginId,
+      details: {
+        packageName: '@volcengine/rtc',
+        expectedExports: ['createEngine', 'destroyEngine'],
+      },
+    });
+  }
+
+  return candidate;
+}
+
+async function ensureEngine(context) {
+  const nativeConfig = resolveNativeConfig(context.nativeClient.resolvedConfig);
+  assertRequiredVolcengineConfig(nativeConfig);
+
+  if (!context.nativeClient.sdkModule) {
+    context.nativeClient.sdkModule = resolveVolcengineWebSdkModule(
+      await context.nativeClient.loadSdk(),
+    );
+  }
+
+  if (!context.nativeClient.engine) {
+    context.nativeClient.engine = context.nativeClient.sdkModule.createEngine(
+      nativeConfig.appId,
+      nativeConfig.engineConfig,
+    );
+  }
+
+  return {
+    nativeConfig,
+    sdkModule: context.nativeClient.sdkModule,
+    engine: context.nativeClient.engine,
+  };
+}
+
+function buildRtcSessionDescriptor(options) {
+  return {
+    sessionId: options.sessionId,
+    roomId: options.roomId,
+    participantId: options.participantId,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    connectionState: 'joined',
+  };
+}
+
+function buildUserInfo(options, nativeConfig) {
+  const mergedExtraInfo = {
+    ...(nativeConfig.userExtraInfo ?? {}),
+    ...(options.metadata ?? {}),
+  };
+
+  return {
+    userId: options.participantId,
+    extraInfo:
+      Object.keys(mergedExtraInfo).length > 0
+        ? JSON.stringify(mergedExtraInfo)
+        : undefined,
+  };
+}
+
+async function publishMediaKind(engine, nativeConfig, kind) {
+  if (kind === 'audio') {
+    await engine.startAudioCapture(nativeConfig.capture?.audioDeviceId);
+    await engine.publishStream('audio');
+    return;
+  }
+
+  if (kind === 'screen-share') {
+    await engine.startScreenCapture(nativeConfig.capture?.screen);
+    await engine.publishScreen();
+    return;
+  }
+
+  await engine.startVideoCapture(nativeConfig.capture?.videoDeviceId);
+  await engine.publishStream('video');
+}
+
+async function unpublishMediaKind(engine, kind) {
+  if (kind === 'screen-share') {
+    await engine.unpublishScreen();
+    await engine.stopScreenCapture();
+    return;
+  }
+
+  await engine.unpublishStream(kind);
+  if (kind === 'audio') {
+    await engine.stopAudioCapture();
+    return;
+  }
+
+  await engine.stopVideoCapture();
+}
+
+async function muteMediaKind(engine, nativeConfig, kind, muted) {
+  if (kind === 'audio') {
+    if (muted) {
+      await engine.stopAudioCapture();
+      await engine.unpublishStream('audio');
+    } else {
+      await engine.startAudioCapture(nativeConfig.capture?.audioDeviceId);
+      await engine.publishStream('audio');
+    }
+
+    return {
+      kind: 'audio',
+      muted,
+    };
+  }
+
+  if (muted) {
+    await engine.stopVideoCapture();
+    await engine.unpublishStream('video');
+  } else {
+    await engine.startVideoCapture(nativeConfig.capture?.videoDeviceId);
+    await engine.publishStream('video');
+  }
+
+  return {
+    kind: 'video',
+    muted,
+  };
+}
+
+function isLocalMediaKind(kind) {
+  return kind === 'audio' || kind === 'video';
+}
+
+function hasPublishedMediaKind(nativeClient, kind) {
+  for (const publishedKind of nativeClient.publishedTracks.values()) {
+    if (publishedKind === kind) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasOtherPublishedMediaKind(nativeClient, trackId, kind) {
+  for (const [publishedTrackId, publishedKind] of nativeClient.publishedTracks.entries()) {
+    if (publishedTrackId !== trackId && publishedKind === kind) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function markMediaKindActive(nativeClient, kind) {
+  if (isLocalMediaKind(kind)) {
+    nativeClient.mutedMediaKinds.delete(kind);
+  }
+}
+
+function markMediaKindMuted(nativeClient, kind, muted) {
+  if (!isLocalMediaKind(kind)) {
+    return;
+  }
+
+  if (muted) {
+    nativeClient.mutedMediaKinds.add(kind);
+    return;
+  }
+
+  nativeClient.mutedMediaKinds.delete(kind);
+}
+
+function forgetPublishedTrack(nativeClient, trackId, kind) {
+  nativeClient.publishedTracks.delete(trackId);
+  if (isLocalMediaKind(kind) && !hasPublishedMediaKind(nativeClient, kind)) {
+    nativeClient.mutedMediaKinds.delete(kind);
+  }
+}
+
+function shouldApplyMute(nativeClient, kind, muted) {
+  if (!hasPublishedMediaKind(nativeClient, kind)) {
+    return false;
+  }
+
+  return nativeClient.mutedMediaKinds.has(kind) !== muted;
+}
+
+function resolveTrackPublicationMuted(nativeClient, kind) {
+  return isLocalMediaKind(kind) && nativeClient.mutedMediaKinds.has(kind);
+}
+
+function shouldPublishNativeMedia(nativeClient, kind) {
+  return !hasPublishedMediaKind(nativeClient, kind);
+}
+
+function shouldUnpublishNativeMedia(nativeClient, trackId, kind) {
+  if (kind === 'screen-share') {
+    return true;
+  }
+
+  return (
+    !nativeClient.mutedMediaKinds.has(kind) &&
+    !hasOtherPublishedMediaKind(nativeClient, trackId, kind)
+  );
+}
+
+function assertTrackKindReusable(nativeClient, trackId, kind) {
+  const existingKind = nativeClient.publishedTracks.get(trackId);
+  if (!existingKind || existingKind === kind) {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'vendor_error',
+    message: \`RTC track id "\${trackId}" is already published as "\${existingKind}" and cannot be republished as "\${kind}".\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      trackId,
+      existingKind,
+      requestedKind: kind,
+    },
+  });
+}
+
+function getActiveScreenShareTrackId(nativeClient) {
+  for (const [publishedTrackId, publishedKind] of nativeClient.publishedTracks.entries()) {
+    if (publishedKind === 'screen-share') {
+      return publishedTrackId;
+    }
+  }
+
+  return undefined;
+}
+
+function assertScreenShareTrackAvailable(nativeClient, trackId) {
+  const activeTrackId = getActiveScreenShareTrackId(nativeClient);
+  if (!activeTrackId || activeTrackId === trackId) {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'vendor_error',
+    message: \`RTC screen share is already active on track "\${activeTrackId}" and cannot be started as "\${trackId}".\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      activeTrackId,
+      requestedTrackId: trackId,
+      kind: 'screen-share',
+    },
+  });
+}
+
+function assertTrackPublishable(nativeClient, trackId, kind) {
+  assertTrackKindReusable(nativeClient, trackId, kind);
+  if (kind === 'screen-share') {
+    assertScreenShareTrackAvailable(nativeClient, trackId);
+  }
+}
+
+function assertJoined(nativeClient, operation) {
+  const currentState = nativeClient.joinedSession?.connectionState ?? 'left';
+  if (currentState === 'joined') {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'vendor_error',
+    message: \`RTC operation "\${operation}" requires a joined room before local media can be controlled.\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      operation,
+      requiredState: 'joined',
+      currentState,
+    },
+  });
+}
+
+async function drainPublishedMedia(engine, nativeClient) {
+  for (const [trackId, mediaKind] of Array.from(nativeClient.publishedTracks.entries())) {
+    if (!nativeClient.publishedTracks.has(trackId)) {
+      continue;
+    }
+
+    if (shouldUnpublishNativeMedia(nativeClient, trackId, mediaKind)) {
+      await unpublishMediaKind(engine, mediaKind);
+    }
+    forgetPublishedTrack(nativeClient, trackId, mediaKind);
+  }
+
+  nativeClient.publishedTracks.clear();
+  nativeClient.mutedMediaKinds.clear();
+}
+
+function resolvePublishedMediaKind(options) {
+  if (
+    options.kind === 'audio' ||
+    options.kind === 'video' ||
+    options.kind === 'screen-share'
+  ) {
+    return options.kind;
+  }
+
+  throw new RtcSdkException({
+    code: 'capability_not_supported',
+    message: \`Official Volcengine Web bridge does not support publishing track kind "\${options.kind}" through the standard runtime surface.\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      kind: options.kind,
+    },
+  });
+}
+
+const OFFICIAL_VOLCENGINE_WEB_RUNTIME_CONTROLLER = {
+  async join(options, context) {
+    const { nativeConfig, engine } = await ensureEngine(context);
+    await engine.joinRoom(
+      options.token ?? null,
+      options.roomId,
+      buildUserInfo(options, nativeConfig),
+      nativeConfig.roomConfig,
+    );
+
+    const sessionDescriptor = buildRtcSessionDescriptor(options);
+    context.nativeClient.joinedSession = sessionDescriptor;
+    return sessionDescriptor;
+  },
+  async leave(context) {
+    if (!context.nativeClient.engine) {
+      return (
+        context.nativeClient.joinedSession ?? {
+          sessionId: '',
+          roomId: '',
+          participantId: '',
+          providerKey: ${packageContract.metadataSymbol}.providerKey,
+          connectionState: 'left',
+        }
+      );
+    }
+
+    const engine = context.nativeClient.engine;
+    await drainPublishedMedia(engine, context.nativeClient);
+    await engine.leaveRoom();
+    context.nativeClient.sdkModule?.destroyEngine(engine);
+    const joinedSession = context.nativeClient.joinedSession;
+    context.nativeClient.engine = undefined;
+    context.nativeClient.joinedSession = undefined;
+    context.nativeClient.publishedTracks.clear();
+    context.nativeClient.mutedMediaKinds.clear();
+
+    return {
+      sessionId: joinedSession?.sessionId ?? '',
+      roomId: joinedSession?.roomId ?? '',
+      participantId: joinedSession?.participantId ?? '',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      connectionState: 'left',
+    };
+  },
+  async publish(options, context) {
+    assertJoined(context.nativeClient, 'publish');
+    const mediaKind = resolvePublishedMediaKind(options);
+    assertTrackPublishable(context.nativeClient, options.trackId, mediaKind);
+    const { nativeConfig, engine } = await ensureEngine(context);
+    const shouldPublish = shouldPublishNativeMedia(context.nativeClient, mediaKind);
+    if (shouldPublish) {
+      await publishMediaKind(engine, nativeConfig, mediaKind);
+    }
+    context.nativeClient.publishedTracks.set(options.trackId, mediaKind);
+    if (shouldPublish) {
+      markMediaKindActive(context.nativeClient, mediaKind);
+    }
+    return {
+      trackId: options.trackId,
+      kind: options.kind,
+      muted: resolveTrackPublicationMuted(context.nativeClient, mediaKind),
+    };
+  },
+  async unpublish(trackId, context) {
+    const mediaKind = context.nativeClient.publishedTracks.get(trackId);
+    if (!mediaKind) {
+      return;
+    }
+
+    if (shouldUnpublishNativeMedia(context.nativeClient, trackId, mediaKind)) {
+      const { engine } = await ensureEngine(context);
+      await unpublishMediaKind(engine, mediaKind);
+    }
+    forgetPublishedTrack(context.nativeClient, trackId, mediaKind);
+  },
+  async startScreenShare(options, context) {
+    assertJoined(context.nativeClient, 'startScreenShare');
+    assertTrackPublishable(context.nativeClient, options.trackId, 'screen-share');
+    const { nativeConfig, engine } = await ensureEngine(context);
+    const shouldPublish = shouldPublishNativeMedia(context.nativeClient, 'screen-share');
+    if (shouldPublish) {
+      await publishMediaKind(engine, nativeConfig, 'screen-share');
+    }
+    context.nativeClient.publishedTracks.set(options.trackId, 'screen-share');
+    return {
+      trackId: options.trackId,
+      kind: 'screen-share',
+      muted: false,
+    };
+  },
+  async stopScreenShare(trackId, context) {
+    const mediaKind = context.nativeClient.publishedTracks.get(trackId);
+    if (mediaKind !== 'screen-share') {
+      return;
+    }
+
+    const { engine } = await ensureEngine(context);
+    await unpublishMediaKind(engine, 'screen-share');
+    context.nativeClient.publishedTracks.delete(trackId);
+  },
+  async muteAudio(muted, context) {
+    assertJoined(context.nativeClient, 'muteAudio');
+    if (!shouldApplyMute(context.nativeClient, 'audio', muted)) {
+      return {
+        kind: 'audio',
+        muted,
+      };
+    }
+
+    const { nativeConfig, engine } = await ensureEngine(context);
+    const muteState = await muteMediaKind(engine, nativeConfig, 'audio', muted);
+    markMediaKindMuted(context.nativeClient, 'audio', muted);
+    return muteState;
+  },
+  async muteVideo(muted, context) {
+    assertJoined(context.nativeClient, 'muteVideo');
+    if (!shouldApplyMute(context.nativeClient, 'video', muted)) {
+      return {
+        kind: 'video',
+        muted,
+      };
+    }
+
+    const { nativeConfig, engine } = await ensureEngine(context);
+    const muteState = await muteMediaKind(engine, nativeConfig, 'video', muted);
+    markMediaKindMuted(context.nativeClient, 'video', muted);
+    return muteState;
+  },
+};
+
+export function createOfficialVolcengineWebRtcDriver(options = {}) {
+  const loadSdk = options.loadSdk ?? defaultLoadVolcengineWebSdk;
+
+  return createRtcProviderDriver({
+    metadata: ${packageContract.metadataSymbol},
+    nativeFactory(config) {
+      return {
+        resolvedConfig: config,
+        loadSdk,
+        publishedTracks: new Map(),
+        mutedMediaKinds: new Set(),
+      };
+    },
+    runtimeController: OFFICIAL_VOLCENGINE_WEB_RUNTIME_CONTROLLER,
+  });
+}
+
+export function ${packageContract.driverFactory}(options = {}) {
+  if (!options.nativeFactory && !options.runtimeController) {
+    return createOfficialVolcengineWebRtcDriver({
+      loadSdk: options.loadSdk,
+    });
+  }
+
+  return createRtcProviderDriver({
+    metadata: ${packageContract.metadataSymbol},
+    nativeFactory: options.nativeFactory,
+    runtimeController: options.runtimeController,
+  });
+}
+
+export const ${packageContract.moduleSymbol} = createRtcProviderModule({
+  packageName: ${packageContract.metadataSymbol}.typescriptPackage.packageName,
+  metadata: ${packageContract.metadataSymbol},
+  builtin: ${catalogSymbol}.builtin,
+  createDriver: ${packageContract.driverFactory},
+});
+`;
+}
+
+function renderTencentProviderPackageEntrypoint(provider) {
+  const packageContract = provider.typescriptPackage;
+  const catalogSymbol = 'TENCENT_RTC_PROVIDER_CATALOG_ENTRY';
+
+  return `${renderProviderPackageImportPrelude([
+    catalogSymbol,
+    'RtcSdkException',
+    'createRtcProviderDriver',
+    'createRtcProviderModule',
+  ])}
+
+export const ${packageContract.metadataSymbol} = ${catalogSymbol};
+
+async function defaultLoadTencentWebSdk() {
+  try {
+    return await import('trtc-sdk-v5');
+  } catch (error) {
+    throw new RtcSdkException({
+      code: 'native_sdk_not_available',
+      message: 'Official Tencent TRTC Web SDK package "trtc-sdk-v5" is not available.',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      pluginId: ${packageContract.metadataSymbol}.pluginId,
+      details: {
+        packageName: 'trtc-sdk-v5',
+      },
+      cause: error,
+    });
+  }
+}
+
+function resolveNativeConfig(config) {
+  const nativeConfig = config.nativeConfig ?? {};
+
+  if (
+    nativeConfig === null ||
+    typeof nativeConfig !== 'object' ||
+    Array.isArray(nativeConfig)
+  ) {
+    throw new RtcSdkException({
+      code: 'invalid_native_config',
+      message: 'RTC nativeConfig must be an object for the official Tencent Web bridge.',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      pluginId: ${packageContract.metadataSymbol}.pluginId,
+    });
+  }
+
+  return nativeConfig;
+}
+
+function assertRequiredTencentConfig(nativeConfig) {
+  const missingConfigKeys = [];
+  if (!nativeConfig.sdkAppId) {
+    missingConfigKeys.push('sdkAppId');
+  }
+  if (!nativeConfig.userSig) {
+    missingConfigKeys.push('userSig');
+  }
+
+  if (missingConfigKeys.length === 0) {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'invalid_native_config',
+    message: 'Official Tencent Web RTC runtime requires nativeConfig.sdkAppId and nativeConfig.userSig.',
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      missingConfigKeys,
+    },
+  });
+}
+
+function resolveTencentWebSdkModule(sdkModule) {
+  const candidate =
+    sdkModule &&
+    typeof sdkModule === 'object' &&
+    typeof sdkModule.create !== 'function'
+      ? sdkModule.default
+      : sdkModule;
+
+  if (!candidate || typeof candidate.create !== 'function') {
+    throw new RtcSdkException({
+      code: 'native_sdk_not_available',
+      message: 'Official Tencent TRTC Web SDK package "trtc-sdk-v5" did not expose create.',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      pluginId: ${packageContract.metadataSymbol}.pluginId,
+      details: {
+        packageName: 'trtc-sdk-v5',
+        expectedExports: ['create'],
+      },
+    });
+  }
+
+  return candidate;
+}
+
+async function ensureTrtc(context) {
+  const nativeConfig = resolveNativeConfig(context.nativeClient.resolvedConfig);
+  assertRequiredTencentConfig(nativeConfig);
+
+  if (!context.nativeClient.sdkModule) {
+    context.nativeClient.sdkModule = resolveTencentWebSdkModule(
+      await context.nativeClient.loadSdk(),
+    );
+  }
+
+  if (!context.nativeClient.trtc) {
+    context.nativeClient.trtc = context.nativeClient.sdkModule.create();
+  }
+
+  return {
+    nativeConfig,
+    sdkModule: context.nativeClient.sdkModule,
+    trtc: context.nativeClient.trtc,
+  };
+}
+
+function buildRtcSessionDescriptor(options) {
+  return {
+    sessionId: options.sessionId,
+    roomId: options.roomId,
+    participantId: options.participantId,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    connectionState: 'joined',
+  };
+}
+
+function resolveTencentRoomId(roomId) {
+  const normalizedRoomId = String(roomId).trim();
+  if (/^\\d+$/.test(normalizedRoomId)) {
+    return Number(normalizedRoomId);
+  }
+
+  return roomId;
+}
+
+function buildEnterRoomOptions(options, nativeConfig) {
+  return {
+    sdkAppId: Number(nativeConfig.sdkAppId),
+    roomId: resolveTencentRoomId(options.roomId),
+    userId: options.participantId,
+    userSig: nativeConfig.userSig,
+    ...(nativeConfig.scene ? { scene: nativeConfig.scene } : {}),
+    ...(nativeConfig.role ? { role: nativeConfig.role } : {}),
+    ...(nativeConfig.privateMapKey ? { privateMapKey: nativeConfig.privateMapKey } : {}),
+  };
+}
+
+async function publishMediaKind(trtc, nativeConfig, kind) {
+  if (kind === 'audio') {
+    await trtc.startLocalAudio(nativeConfig.audio);
+    return;
+  }
+
+  if (kind === 'screen-share') {
+    await trtc.startScreenShare(nativeConfig.screen);
+    return;
+  }
+
+  await trtc.startLocalVideo(nativeConfig.video);
+}
+
+async function unpublishMediaKind(trtc, kind) {
+  if (kind === 'audio') {
+    await trtc.stopLocalAudio();
+    return;
+  }
+
+  if (kind === 'screen-share') {
+    await trtc.stopScreenShare();
+    return;
+  }
+
+  await trtc.stopLocalVideo();
+}
+
+async function muteMediaKind(trtc, nativeConfig, kind, muted) {
+  if (muted) {
+    await unpublishMediaKind(trtc, kind);
+  } else {
+    await publishMediaKind(trtc, nativeConfig, kind);
+  }
+
+  return {
+    kind,
+    muted,
+  };
+}
+
+function isLocalMediaKind(kind) {
+  return kind === 'audio' || kind === 'video';
+}
+
+function hasPublishedMediaKind(nativeClient, kind) {
+  for (const publishedKind of nativeClient.publishedTracks.values()) {
+    if (publishedKind === kind) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasOtherPublishedMediaKind(nativeClient, trackId, kind) {
+  for (const [publishedTrackId, publishedKind] of nativeClient.publishedTracks.entries()) {
+    if (publishedTrackId !== trackId && publishedKind === kind) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function markMediaKindActive(nativeClient, kind) {
+  if (isLocalMediaKind(kind)) {
+    nativeClient.mutedMediaKinds.delete(kind);
+  }
+}
+
+function markMediaKindMuted(nativeClient, kind, muted) {
+  if (!isLocalMediaKind(kind)) {
+    return;
+  }
+
+  if (muted) {
+    nativeClient.mutedMediaKinds.add(kind);
+    return;
+  }
+
+  nativeClient.mutedMediaKinds.delete(kind);
+}
+
+function forgetPublishedTrack(nativeClient, trackId, kind) {
+  nativeClient.publishedTracks.delete(trackId);
+  if (isLocalMediaKind(kind) && !hasPublishedMediaKind(nativeClient, kind)) {
+    nativeClient.mutedMediaKinds.delete(kind);
+  }
+}
+
+function shouldApplyMute(nativeClient, kind, muted) {
+  if (!hasPublishedMediaKind(nativeClient, kind)) {
+    return false;
+  }
+
+  return nativeClient.mutedMediaKinds.has(kind) !== muted;
+}
+
+function resolveTrackPublicationMuted(nativeClient, kind) {
+  return isLocalMediaKind(kind) && nativeClient.mutedMediaKinds.has(kind);
+}
+
+function shouldPublishNativeMedia(nativeClient, kind) {
+  return !hasPublishedMediaKind(nativeClient, kind);
+}
+
+function shouldUnpublishNativeMedia(nativeClient, trackId, kind) {
+  if (kind === 'screen-share') {
+    return true;
+  }
+
+  return (
+    !nativeClient.mutedMediaKinds.has(kind) &&
+    !hasOtherPublishedMediaKind(nativeClient, trackId, kind)
+  );
+}
+
+function assertTrackKindReusable(nativeClient, trackId, kind) {
+  const existingKind = nativeClient.publishedTracks.get(trackId);
+  if (!existingKind || existingKind === kind) {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'vendor_error',
+    message: \`RTC track id "\${trackId}" is already published as "\${existingKind}" and cannot be republished as "\${kind}".\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      trackId,
+      existingKind,
+      requestedKind: kind,
+    },
+  });
+}
+
+function getActiveScreenShareTrackId(nativeClient) {
+  for (const [publishedTrackId, publishedKind] of nativeClient.publishedTracks.entries()) {
+    if (publishedKind === 'screen-share') {
+      return publishedTrackId;
+    }
+  }
+
+  return undefined;
+}
+
+function assertScreenShareTrackAvailable(nativeClient, trackId) {
+  const activeTrackId = getActiveScreenShareTrackId(nativeClient);
+  if (!activeTrackId || activeTrackId === trackId) {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'vendor_error',
+    message: \`RTC screen share is already active on track "\${activeTrackId}" and cannot be started as "\${trackId}".\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      activeTrackId,
+      requestedTrackId: trackId,
+      kind: 'screen-share',
+    },
+  });
+}
+
+function assertTrackPublishable(nativeClient, trackId, kind) {
+  assertTrackKindReusable(nativeClient, trackId, kind);
+  if (kind === 'screen-share') {
+    assertScreenShareTrackAvailable(nativeClient, trackId);
+  }
+}
+
+function assertJoined(nativeClient, operation) {
+  const currentState = nativeClient.joinedSession?.connectionState ?? 'left';
+  if (currentState === 'joined') {
+    return;
+  }
+
+  throw new RtcSdkException({
+    code: 'vendor_error',
+    message: \`RTC operation "\${operation}" requires a joined room before local media can be controlled.\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      operation,
+      requiredState: 'joined',
+      currentState,
+    },
+  });
+}
+
+async function drainPublishedMedia(trtc, nativeClient) {
+  for (const [trackId, mediaKind] of Array.from(nativeClient.publishedTracks.entries())) {
+    if (!nativeClient.publishedTracks.has(trackId)) {
+      continue;
+    }
+
+    if (shouldUnpublishNativeMedia(nativeClient, trackId, mediaKind)) {
+      await unpublishMediaKind(trtc, mediaKind);
+    }
+    forgetPublishedTrack(nativeClient, trackId, mediaKind);
+  }
+
+  nativeClient.publishedTracks.clear();
+  nativeClient.mutedMediaKinds.clear();
+}
+
+function resolvePublishedMediaKind(options) {
+  if (
+    options.kind === 'audio' ||
+    options.kind === 'video' ||
+    options.kind === 'screen-share'
+  ) {
+    return options.kind;
+  }
+
+  throw new RtcSdkException({
+    code: 'capability_not_supported',
+    message: \`Official Tencent Web bridge does not support publishing track kind "\${options.kind}" through the standard runtime surface.\`,
+    providerKey: ${packageContract.metadataSymbol}.providerKey,
+    pluginId: ${packageContract.metadataSymbol}.pluginId,
+    details: {
+      kind: options.kind,
+    },
+  });
+}
+
+const OFFICIAL_TENCENT_WEB_RUNTIME_CONTROLLER = {
+  async join(options, context) {
+    const { nativeConfig, trtc } = await ensureTrtc(context);
+    await trtc.enterRoom(buildEnterRoomOptions(options, nativeConfig));
+
+    const sessionDescriptor = buildRtcSessionDescriptor(options);
+    context.nativeClient.joinedSession = sessionDescriptor;
+    return sessionDescriptor;
+  },
+  async leave(context) {
+    if (!context.nativeClient.trtc) {
+      return (
+        context.nativeClient.joinedSession ?? {
+          sessionId: '',
+          roomId: '',
+          participantId: '',
+          providerKey: ${packageContract.metadataSymbol}.providerKey,
+          connectionState: 'left',
+        }
+      );
+    }
+
+    const trtc = context.nativeClient.trtc;
+    await drainPublishedMedia(trtc, context.nativeClient);
+    await trtc.exitRoom();
+    await trtc.destroy?.();
+    const joinedSession = context.nativeClient.joinedSession;
+    context.nativeClient.trtc = undefined;
+    context.nativeClient.joinedSession = undefined;
+    context.nativeClient.publishedTracks.clear();
+    context.nativeClient.mutedMediaKinds.clear();
+
+    return {
+      sessionId: joinedSession?.sessionId ?? '',
+      roomId: joinedSession?.roomId ?? '',
+      participantId: joinedSession?.participantId ?? '',
+      providerKey: ${packageContract.metadataSymbol}.providerKey,
+      connectionState: 'left',
+    };
+  },
+  async publish(options, context) {
+    assertJoined(context.nativeClient, 'publish');
+    const mediaKind = resolvePublishedMediaKind(options);
+    assertTrackPublishable(context.nativeClient, options.trackId, mediaKind);
+    const { nativeConfig, trtc } = await ensureTrtc(context);
+    const shouldPublish = shouldPublishNativeMedia(context.nativeClient, mediaKind);
+    if (shouldPublish) {
+      await publishMediaKind(trtc, nativeConfig, mediaKind);
+    }
+    context.nativeClient.publishedTracks.set(options.trackId, mediaKind);
+    if (shouldPublish) {
+      markMediaKindActive(context.nativeClient, mediaKind);
+    }
+    return {
+      trackId: options.trackId,
+      kind: options.kind,
+      muted: resolveTrackPublicationMuted(context.nativeClient, mediaKind),
+    };
+  },
+  async unpublish(trackId, context) {
+    const mediaKind = context.nativeClient.publishedTracks.get(trackId);
+    if (!mediaKind) {
+      return;
+    }
+
+    if (shouldUnpublishNativeMedia(context.nativeClient, trackId, mediaKind)) {
+      const { trtc } = await ensureTrtc(context);
+      await unpublishMediaKind(trtc, mediaKind);
+    }
+    forgetPublishedTrack(context.nativeClient, trackId, mediaKind);
+  },
+  async startScreenShare(options, context) {
+    assertJoined(context.nativeClient, 'startScreenShare');
+    assertTrackPublishable(context.nativeClient, options.trackId, 'screen-share');
+    const { nativeConfig, trtc } = await ensureTrtc(context);
+    const shouldPublish = shouldPublishNativeMedia(context.nativeClient, 'screen-share');
+    if (shouldPublish) {
+      await publishMediaKind(trtc, nativeConfig, 'screen-share');
+    }
+    context.nativeClient.publishedTracks.set(options.trackId, 'screen-share');
+    return {
+      trackId: options.trackId,
+      kind: 'screen-share',
+      muted: false,
+    };
+  },
+  async stopScreenShare(trackId, context) {
+    const mediaKind = context.nativeClient.publishedTracks.get(trackId);
+    if (mediaKind !== 'screen-share') {
+      return;
+    }
+
+    const { trtc } = await ensureTrtc(context);
+    await unpublishMediaKind(trtc, 'screen-share');
+    context.nativeClient.publishedTracks.delete(trackId);
+  },
+  async muteAudio(muted, context) {
+    assertJoined(context.nativeClient, 'muteAudio');
+    if (!shouldApplyMute(context.nativeClient, 'audio', muted)) {
+      return {
+        kind: 'audio',
+        muted,
+      };
+    }
+
+    const { nativeConfig, trtc } = await ensureTrtc(context);
+    const muteState = await muteMediaKind(trtc, nativeConfig, 'audio', muted);
+    markMediaKindMuted(context.nativeClient, 'audio', muted);
+    return muteState;
+  },
+  async muteVideo(muted, context) {
+    assertJoined(context.nativeClient, 'muteVideo');
+    if (!shouldApplyMute(context.nativeClient, 'video', muted)) {
+      return {
+        kind: 'video',
+        muted,
+      };
+    }
+
+    const { nativeConfig, trtc } = await ensureTrtc(context);
+    const muteState = await muteMediaKind(trtc, nativeConfig, 'video', muted);
+    markMediaKindMuted(context.nativeClient, 'video', muted);
+    return muteState;
+  },
+};
+
+export function createOfficialTencentWebRtcDriver(options = {}) {
+  const loadSdk = options.loadSdk ?? defaultLoadTencentWebSdk;
+
+  return createRtcProviderDriver({
+    metadata: ${packageContract.metadataSymbol},
+    nativeFactory(config) {
+      return {
+        resolvedConfig: config,
+        loadSdk,
+        publishedTracks: new Map(),
+        mutedMediaKinds: new Set(),
+      };
+    },
+    runtimeController: OFFICIAL_TENCENT_WEB_RUNTIME_CONTROLLER,
+  });
+}
+
+export function ${packageContract.driverFactory}(options = {}) {
+  if (!options.nativeFactory && !options.runtimeController) {
+    return createOfficialTencentWebRtcDriver({
+      loadSdk: options.loadSdk,
+    });
+  }
+
+  return createRtcProviderDriver({
+    metadata: ${packageContract.metadataSymbol},
+    nativeFactory: options.nativeFactory,
+    runtimeController: options.runtimeController,
+  });
+}
+
+export const ${packageContract.moduleSymbol} = createRtcProviderModule({
+  packageName: ${packageContract.metadataSymbol}.typescriptPackage.packageName,
+  metadata: ${packageContract.metadataSymbol},
+  builtin: ${catalogSymbol}.builtin,
+  createDriver: ${packageContract.driverFactory},
+});
+`;
+}
+
+function renderProviderPackageEntrypoint(provider) {
+  if (provider.providerKey === 'volcengine') {
+    return renderVolcengineProviderPackageEntrypoint(provider);
+  }
+
+  if (provider.providerKey === 'tencent') {
+    return renderTencentProviderPackageEntrypoint(provider);
+  }
+
+  return renderGenericProviderPackageEntrypoint(provider);
 }
 
 function renderProviderPackageDeclarationEntrypoint(provider) {
   const packageContract = provider.typescriptPackage;
 
-  return `export {
-  ${packageContract.driverFactory},
-  ${packageContract.metadataSymbol},
-  ${packageContract.moduleSymbol},
-} from '../../dist/providers/${provider.providerKey}.js';
+  if (provider.providerKey === 'volcengine') {
+    return `import type {
+  CreateRtcProviderDriverOptions,
+  RtcProviderCatalogEntry,
+  RtcProviderDriver,
+  RtcProviderModule,
+  RtcResolvedClientConfig,
+  RtcSessionDescriptor,
+} from '@sdkwork/rtc-sdk';
+
+export interface RtcVolcengineWebSdkModule {
+  createEngine(appId: string, config?: Record<string, unknown>): RtcVolcengineWebEngineLike;
+  destroyEngine(engine: RtcVolcengineWebEngineLike): void;
+}
+
+export interface RtcVolcengineWebSdkModuleNamespace {
+  default?: RtcVolcengineWebSdkModule;
+}
+
+export type RtcVolcengineWebSdkModuleLoadResult =
+  | RtcVolcengineWebSdkModule
+  | RtcVolcengineWebSdkModuleNamespace;
+
+export interface RtcVolcengineWebEngineLike {
+  joinRoom(
+    token: string | null,
+    roomId: string,
+    userInfo: {
+      userId: string;
+      extraInfo?: string;
+    },
+    roomConfig?: Record<string, unknown>,
+  ): Promise<void>;
+  leaveRoom(waitAck?: boolean): Promise<void>;
+  publishStream(mediaType: 'audio' | 'video'): Promise<void>;
+  unpublishStream(mediaType: 'audio' | 'video'): Promise<void>;
+  startScreenCapture(config?: Record<string, unknown>): Promise<unknown>;
+  stopScreenCapture(): Promise<void>;
+  publishScreen(): Promise<void>;
+  unpublishScreen(): Promise<void>;
+  startVideoCapture(deviceId?: string): Promise<unknown>;
+  stopVideoCapture(): Promise<void>;
+  startAudioCapture(deviceId?: string): Promise<unknown>;
+  stopAudioCapture(): Promise<void>;
+}
+
+export interface RtcVolcengineWebNativeConfig {
+  appId?: string;
+  engineConfig?: Record<string, unknown>;
+  roomConfig?: Record<string, unknown>;
+  userExtraInfo?: Record<string, unknown>;
+  capture?: {
+    audioDeviceId?: string;
+    videoDeviceId?: string;
+    screen?: Record<string, unknown>;
+  };
+}
+
+export interface RtcVolcengineOfficialWebNativeClient {
+  readonly resolvedConfig: RtcResolvedClientConfig;
+  readonly loadSdk: () => Promise<RtcVolcengineWebSdkModuleLoadResult>;
+  sdkModule?: RtcVolcengineWebSdkModule;
+  engine?: RtcVolcengineWebEngineLike;
+  joinedSession?: RtcSessionDescriptor;
+  publishedTracks: Map<string, 'audio' | 'video' | 'screen-share'>;
+  mutedMediaKinds: Set<'audio' | 'video'>;
+}
+
+export interface CreateOfficialVolcengineWebRtcDriverOptions {
+  loadSdk?: () => Promise<RtcVolcengineWebSdkModuleLoadResult>;
+}
+
+export const ${packageContract.metadataSymbol}: RtcProviderCatalogEntry;
+
+export function createOfficialVolcengineWebRtcDriver(
+  options?: CreateOfficialVolcengineWebRtcDriverOptions,
+): RtcProviderDriver<RtcVolcengineOfficialWebNativeClient>;
+
+export type CreateVolcengineRtcDriverOptions<TNativeClient = unknown> = Omit<
+  CreateRtcProviderDriverOptions<TNativeClient>,
+  'metadata'
+> &
+  CreateOfficialVolcengineWebRtcDriverOptions;
+
+export function ${packageContract.driverFactory}<TNativeClient = unknown>(
+  options?: CreateVolcengineRtcDriverOptions<TNativeClient>,
+): RtcProviderDriver<TNativeClient | RtcVolcengineOfficialWebNativeClient>;
+
+export const ${packageContract.moduleSymbol}: RtcProviderModule;
+`;
+  }
+
+  if (provider.providerKey === 'tencent') {
+    return `import type {
+  CreateRtcProviderDriverOptions,
+  RtcProviderCatalogEntry,
+  RtcProviderDriver,
+  RtcProviderModule,
+  RtcResolvedClientConfig,
+  RtcSessionDescriptor,
+} from '@sdkwork/rtc-sdk';
+
+export interface RtcTencentWebSdkModule {
+  create(): RtcTencentWebTrtcLike;
+}
+
+export interface RtcTencentWebSdkModuleNamespace {
+  default?: RtcTencentWebSdkModule;
+}
+
+export type RtcTencentWebSdkModuleLoadResult =
+  | RtcTencentWebSdkModule
+  | RtcTencentWebSdkModuleNamespace;
+
+export interface RtcTencentWebTrtcLike {
+  enterRoom(options: RtcTencentWebEnterRoomOptions): Promise<void>;
+  exitRoom(): Promise<void>;
+  destroy?(): Promise<void> | void;
+  startLocalAudio(options?: RtcTencentWebAudioOptions): Promise<void>;
+  stopLocalAudio(): Promise<void>;
+  startLocalVideo(options?: RtcTencentWebVideoOptions): Promise<void>;
+  stopLocalVideo(): Promise<void>;
+  startScreenShare(options?: RtcTencentWebScreenShareOptions): Promise<void>;
+  stopScreenShare(): Promise<void>;
+}
+
+export interface RtcTencentWebEnterRoomOptions {
+  sdkAppId: number;
+  roomId: number | string;
+  userId: string;
+  userSig: string;
+  scene?: string;
+  role?: string;
+  privateMapKey?: string;
+}
+
+export interface RtcTencentWebAudioOptions {
+  microphoneId?: string;
+  profile?: string;
+  [key: string]: unknown;
+}
+
+export interface RtcTencentWebVideoOptions {
+  cameraId?: string;
+  view?: unknown;
+  profile?: string;
+  [key: string]: unknown;
+}
+
+export interface RtcTencentWebScreenShareOptions {
+  option?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface RtcTencentWebNativeConfig {
+  sdkAppId?: number | string;
+  userSig?: string;
+  scene?: string;
+  role?: string;
+  privateMapKey?: string;
+  audio?: RtcTencentWebAudioOptions;
+  video?: RtcTencentWebVideoOptions;
+  screen?: RtcTencentWebScreenShareOptions;
+}
+
+export interface RtcTencentOfficialWebNativeClient {
+  readonly resolvedConfig: RtcResolvedClientConfig;
+  readonly loadSdk: () => Promise<RtcTencentWebSdkModuleLoadResult>;
+  sdkModule?: RtcTencentWebSdkModule;
+  trtc?: RtcTencentWebTrtcLike;
+  joinedSession?: RtcSessionDescriptor;
+  publishedTracks: Map<string, 'audio' | 'video' | 'screen-share'>;
+  mutedMediaKinds: Set<'audio' | 'video'>;
+}
+
+export interface CreateOfficialTencentWebRtcDriverOptions {
+  loadSdk?: () => Promise<RtcTencentWebSdkModuleLoadResult>;
+}
+
+export const ${packageContract.metadataSymbol}: RtcProviderCatalogEntry;
+
+export function createOfficialTencentWebRtcDriver(
+  options?: CreateOfficialTencentWebRtcDriverOptions,
+): RtcProviderDriver<RtcTencentOfficialWebNativeClient>;
+
+export type CreateTencentRtcDriverOptions<TNativeClient = unknown> = Omit<
+  CreateRtcProviderDriverOptions<TNativeClient>,
+  'metadata'
+> &
+  CreateOfficialTencentWebRtcDriverOptions;
+
+export function ${packageContract.driverFactory}<TNativeClient = unknown>(
+  options?: CreateTencentRtcDriverOptions<TNativeClient>,
+): RtcProviderDriver<TNativeClient | RtcTencentOfficialWebNativeClient>;
+
+export const ${packageContract.moduleSymbol}: RtcProviderModule;
+`;
+  }
+
+  return `import type {
+  CreateRtcProviderDriverOptions,
+  RtcProviderCatalogEntry,
+  RtcProviderDriver,
+  RtcProviderModule,
+} from '@sdkwork/rtc-sdk';
+
+export const ${packageContract.metadataSymbol}: RtcProviderCatalogEntry;
+
+export type Create${toPascalCase(provider.providerKey)}RtcDriverOptions<TNativeClient = unknown> = Omit<
+  CreateRtcProviderDriverOptions<TNativeClient>,
+  'metadata'
+>;
+
+export function ${packageContract.driverFactory}<TNativeClient = unknown>(
+  options?: Create${toPascalCase(provider.providerKey)}RtcDriverOptions<TNativeClient>,
+): RtcProviderDriver<TNativeClient>;
+
+export const ${packageContract.moduleSymbol}: RtcProviderModule;
 `;
 }
 
 function renderProviderPackageReadme(provider) {
-  const rootExposureRule = provider.builtin
-    ? '- the driver factory and provider module symbol may be re-exported from the root `@sdkwork/rtc-sdk` entrypoint because this provider is builtin'
-    : '- the driver factory and provider module symbol are not re-exported from the root `@sdkwork/rtc-sdk` entrypoint because this provider is not builtin';
-  const packageStatus = provider.builtin
-    ? 'root_public_reference_boundary'
-    : 'package_reference_boundary';
+  const packageStatus = 'package_reference_boundary';
+  const hasReferenceRuntimeBridge =
+    provider.typescriptAdapter.runtimeBridgeStatus === 'reference-baseline';
+  const boundaryLabel = hasReferenceRuntimeBridge
+    ? 'Reference TypeScript provider package boundary'
+    : 'Reserved TypeScript provider package boundary';
+  const boundarySummary = hasReferenceRuntimeBridge
+    ? `Reference TypeScript provider package boundary for ${provider.displayName}.`
+    : `Reserved TypeScript provider package boundary for ${provider.displayName}.`;
+  const bridgeRules = hasReferenceRuntimeBridge
+    ? [
+        '- wraps the official vendor SDK instead of re-implementing media runtime',
+        '- declares the official vendor SDK as an optional peer dependency and loads it only when this provider package is installed',
+      ]
+    : [
+        '- reserves the official provider plugin boundary until a verified official runtime bridge is implemented',
+        '- accepts consumer-supplied `nativeFactory` and `runtimeController` hooks for application-owned bridge injection',
+        '- does not declare vendor SDK peer dependencies or expose an official bridge factory until the package owns a verified bridge',
+      ];
   const extensionKeys =
     (provider.extensionKeys ?? []).length === 0
       ? '`<none>`'
@@ -3067,7 +3700,7 @@ function renderProviderPackageReadme(provider) {
 
   return `# ${provider.typescriptPackage.packageName}
 
-Reference TypeScript provider package boundary for ${provider.displayName}.
+${boundarySummary}
 
 - provider key: \`${provider.providerKey}\`
 - tier: \`${provider.tier}\`
@@ -3084,13 +3717,16 @@ Reference TypeScript provider package boundary for ${provider.displayName}.
 
 Rules:
 
-- wraps the official vendor SDK instead of re-implementing media runtime
+- ${boundaryLabel}
+${bridgeRules.join('\n')}
 - depends on the core \`@sdkwork/rtc-sdk\` contracts
 - registers through the \`RtcProviderModule\` adapter contract
 - ships executable \`index.js\` and \`index.d.ts\` entrypoints
 - declares \`exports\` so \`import\` and \`default\` resolve to \`index.js\` and \`types\` resolve
   to \`index.d.ts\`
-${rootExposureRule}
+- driver factories and provider module symbols live only behind this provider package boundary
+- the root \`@sdkwork/rtc-sdk\` package exposes provider-neutral SPI, catalogs, loader, manager, and
+  data-source contracts but does not re-export this provider implementation
 `;
 }
 
@@ -3541,16 +4177,24 @@ export function buildRtcSdkMaterializationPlan(workspaceRoot) {
       content: renderUsageGuide(assembly),
     },
     {
-      relativePath: 'docs/typescript-volcengine-signaling-usage.md',
+      relativePath: 'docs/typescript-volcengine-runtime-usage.md',
       content: renderTypeScriptRuntimeUsageDoc(assembly),
     },
     {
-      relativePath: 'docs/flutter-volcengine-signaling-usage.md',
+      relativePath: 'docs/flutter-volcengine-runtime-usage.md',
       content: renderFlutterRuntimeUsageDoc(assembly),
     },
     {
       relativePath: 'sdkwork-rtc-sdk-typescript/package.json',
       content: renderTypeScriptWorkspaceManifest(assembly),
+    },
+    {
+      relativePath: 'sdkwork-rtc-sdk-typescript/tsconfig.build.json',
+      content: renderTypeScriptBuildTsconfig(),
+    },
+    {
+      relativePath: 'sdkwork-rtc-sdk-typescript/src/index.ts',
+      content: renderTypeScriptRootEntrypoint(assembly),
     },
     {
       relativePath: 'sdkwork-rtc-sdk-typescript/src/capability-catalog.ts',
@@ -3567,10 +4211,6 @@ export function buildRtcSdkMaterializationPlan(workspaceRoot) {
     {
       relativePath: 'sdkwork-rtc-sdk-typescript/src/runtime-surface.ts',
       content: renderTypeScriptRuntimeSurface(assembly),
-    },
-    {
-      relativePath: 'sdkwork-rtc-sdk-typescript/src/signaling-transport.ts',
-      content: renderTypeScriptSignalingTransport(assembly),
     },
     {
       relativePath: 'sdkwork-rtc-sdk-typescript/src/runtime-immutability.ts',

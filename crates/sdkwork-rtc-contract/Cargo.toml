@@ -1,9 +1,0 @@
-[package]
-name = "sdkwork-rtc-contract"
-edition.workspace = true
-license.workspace = true
-version.workspace = true
-
-[dependencies]
-serde.workspace = true
-sdkwork-rtc-core.workspace = true

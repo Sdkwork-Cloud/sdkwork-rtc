@@ -16,7 +16,199 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/backend/v3/api/rtc/provider-profiles",
+      "path": "/backend/v3/api/rtc/media_artifacts",
+      "operationId": "rtc.mediaArtifacts.list",
+      "tags": [
+        "rtcMediaArtifacts"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.media_artifacts.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "mediaArtifacts_list"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcMediaArtifactListResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/media_artifacts/{mediaArtifactId}",
+      "operationId": "rtc.mediaArtifacts.retrieve",
+      "tags": [
+        "rtcMediaArtifacts"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.media_artifacts.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "mediaArtifacts_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcMediaArtifactResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/media_sessions",
+      "operationId": "rtc.mediaSessions.list",
+      "tags": [
+        "rtcMediaSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.media_sessions.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "mediaSessions_list"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcMediaSessionListResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/media_sessions/{mediaSessionId}",
+      "operationId": "rtc.mediaSessions.retrieve",
+      "tags": [
+        "rtcMediaSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.media_sessions.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "mediaSessions_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcMediaSessionResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/rtc/media_sessions/{mediaSessionId}/close",
+      "operationId": "rtc.mediaSessions.close",
+      "tags": [
+        "rtcMediaSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.media_sessions.close",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "mediaSessions_close"
+      },
+      "schemas": {
+        "request": "RtcCloseMediaSessionRequest",
+        "response": "RtcMediaSessionResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/media_sessions/{mediaSessionId}/completion_record",
+      "operationId": "rtc.mediaSessions.completionRecord.retrieve",
+      "tags": [
+        "rtcMediaSessions"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.media_sessions.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "mediaSessions_completionRecord_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcMediaSessionCompletionRecordResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/provider_profiles",
       "operationId": "rtc.providerProfiles.list",
       "tags": [
         "rtcProviderProfiles"
@@ -34,7 +226,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "RtcProviderProfileListResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -43,12 +235,12 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     },
     {
       "method": "POST",
-      "path": "/backend/v3/api/rtc/provider-profiles",
+      "path": "/backend/v3/api/rtc/provider_profiles",
       "operationId": "rtc.providerProfiles.create",
       "tags": [
         "rtcProviderProfiles"
@@ -65,8 +257,8 @@
         "name": "providerProfiles_create"
       },
       "schemas": {
-        "request": "RtcOperationCommand",
-        "response": "RtcApiResult",
+        "request": "RtcProviderProfileCommand",
+        "response": "RtcProviderProfileResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -75,12 +267,44 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/provider_profiles/{providerProfileId}",
+      "operationId": "rtc.providerProfiles.retrieve",
+      "tags": [
+        "rtcProviderProfiles"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_profiles.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerProfiles_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcProviderProfileResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     },
     {
       "method": "PATCH",
-      "path": "/backend/v3/api/rtc/provider-profiles/{providerProfileId}",
+      "path": "/backend/v3/api/rtc/provider_profiles/{providerProfileId}",
       "operationId": "rtc.providerProfiles.update",
       "tags": [
         "rtcProviderProfiles"
@@ -97,8 +321,8 @@
         "name": "providerProfiles_update"
       },
       "schemas": {
-        "request": "RtcOperationCommand",
-        "response": "RtcApiResult",
+        "request": "RtcProviderProfileCommand",
+        "response": "RtcProviderProfileResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -107,12 +331,172 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/disable",
+      "operationId": "rtc.providerProfiles.disable",
+      "tags": [
+        "rtcProviderProfiles"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_profiles.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerProfiles_disable"
+      },
+      "schemas": {
+        "request": "RtcProviderProfileDisableRequest",
+        "response": "RtcProviderProfileResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/verify",
+      "operationId": "rtc.providerProfiles.verify",
+      "tags": [
+        "rtcProviderProfiles"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_profiles.verify",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerProfiles_verify"
+      },
+      "schemas": {
+        "request": "RtcProviderProfileVerifyRequest",
+        "response": "RtcProviderProfileVerifyResultResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/rtc/provider_query_jobs",
+      "operationId": "rtc.providerQueryJobs.create",
+      "tags": [
+        "rtcProviderQueryJobs"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_query_jobs.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerQueryJobs_create"
+      },
+      "schemas": {
+        "request": "RtcProviderQueryJobCreateRequest",
+        "response": "RtcProviderQueryJobResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     },
     {
       "method": "GET",
-      "path": "/backend/v3/api/rtc/provider-routes",
+      "path": "/backend/v3/api/rtc/provider_query_jobs/{providerQueryJobId}",
+      "operationId": "rtc.providerQueryJobs.retrieve",
+      "tags": [
+        "rtcProviderQueryJobs"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_query_jobs.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerQueryJobs_retrieve"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcProviderQueryJobResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/provider_query_jobs/{providerQueryJobId}/snapshots",
+      "operationId": "rtc.providerQueryJobs.snapshots.list",
+      "tags": [
+        "rtcProviderQueryJobs"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_query_jobs.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerQueryJobs_snapshots_list"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcProviderQuerySnapshotListResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/provider_routes",
       "operationId": "rtc.providerRoutes.list",
       "tags": [
         "rtcProviderRoutes"
@@ -130,7 +514,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "RtcProviderRouteListResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -139,12 +523,12 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     },
     {
       "method": "POST",
-      "path": "/backend/v3/api/rtc/provider-routes",
+      "path": "/backend/v3/api/rtc/provider_routes",
       "operationId": "rtc.providerRoutes.create",
       "tags": [
         "rtcProviderRoutes"
@@ -161,8 +545,8 @@
         "name": "providerRoutes_create"
       },
       "schemas": {
-        "request": "RtcOperationCommand",
-        "response": "RtcApiResult",
+        "request": "RtcProviderRouteCommand",
+        "response": "RtcProviderRouteResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -171,12 +555,77 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/rtc/provider_webhooks/{provider}/events",
+      "operationId": "rtc.providerWebhooks.events.receive",
+      "tags": [
+        "rtcProviderWebhooks"
+      ],
+      "auth": {
+        "mode": "public",
+        "required": true,
+        "permission": "rtc.provider_webhooks.receive",
+        "tenantScope": "tenant",
+        "dataScope": "organization",
+        "providerWebhookSignature": true
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerWebhooks_events_receive"
+      },
+      "schemas": {
+        "request": "RtcProviderWebhookReceiveRequest",
+        "response": "RtcProviderWebhookEventResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     },
     {
       "method": "GET",
-      "path": "/backend/v3/api/rtc/quality-samples",
+      "path": "/backend/v3/api/rtc/provider_webhooks/events",
+      "operationId": "rtc.providerWebhooks.events.list",
+      "tags": [
+        "rtcProviderWebhooks"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.provider_webhooks.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "providerWebhooks_events_list"
+      },
+      "schemas": {
+        "request": null,
+        "response": "RtcProviderWebhookEventListResponse",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/rtc/quality_samples",
       "operationId": "rtc.qualitySamples.list",
       "tags": [
         "rtcQualitySamples"
@@ -194,7 +643,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "RtcQualitySampleListResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -203,30 +652,30 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     },
     {
       "method": "GET",
-      "path": "/backend/v3/api/rtc/sessions",
-      "operationId": "rtc.sessions.list",
+      "path": "/backend/v3/api/rtc/rooms",
+      "operationId": "rtc.rooms.list",
       "tags": [
-        "rtcSessions"
+        "rtcRooms"
       ],
       "auth": {
         "mode": "dual-token",
         "required": true,
-        "permission": "rtc.sessions.read",
+        "permission": "rtc.rooms.read",
         "tenantScope": "tenant",
         "dataScope": "organization"
       },
       "handler": {
         "module": "crate::handlers",
-        "name": "sessions_list"
+        "name": "rooms_list"
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "RtcRoomListResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -235,30 +684,30 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     },
     {
       "method": "GET",
-      "path": "/backend/v3/api/rtc/sessions/{sessionId}",
-      "operationId": "rtc.sessions.retrieve",
+      "path": "/backend/v3/api/rtc/rooms/{roomId}",
+      "operationId": "rtc.rooms.retrieve",
       "tags": [
-        "rtcSessions"
+        "rtcRooms"
       ],
       "auth": {
         "mode": "dual-token",
         "required": true,
-        "permission": "rtc.sessions.read",
+        "permission": "rtc.rooms.read",
         "tenantScope": "tenant",
         "dataScope": "organization"
       },
       "handler": {
         "module": "crate::handlers",
-        "name": "sessions_retrieve"
+        "name": "rooms_retrieve"
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "RtcRoomResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -267,71 +716,7 @@
       },
       "source": {
         "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
-      }
-    },
-    {
-      "method": "POST",
-      "path": "/backend/v3/api/rtc/sessions/{sessionId}/terminate",
-      "operationId": "rtc.sessions.terminate",
-      "tags": [
-        "rtcSessions"
-      ],
-      "auth": {
-        "mode": "dual-token",
-        "required": true,
-        "permission": "rtc.sessions.terminate",
-        "tenantScope": "tenant",
-        "dataScope": "organization"
-      },
-      "handler": {
-        "module": "crate::handlers",
-        "name": "sessions_terminate"
-      },
-      "schemas": {
-        "request": "RtcOperationCommand",
-        "response": "RtcApiResult",
-        "problem": "ProblemDetail"
-      },
-      "ownership": {
-        "owner": "sdkwork-rtc",
-        "apiAuthority": "sdkwork-rtc-backend-api"
-      },
-      "source": {
-        "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/backend/v3/api/rtc/signaling-events",
-      "operationId": "rtc.signalingEvents.list",
-      "tags": [
-        "rtcSignalingEvents"
-      ],
-      "auth": {
-        "mode": "dual-token",
-        "required": true,
-        "permission": "rtc.signaling.read",
-        "tenantScope": "tenant",
-        "dataScope": "organization"
-      },
-      "handler": {
-        "module": "crate::handlers",
-        "name": "signalingEvents_list"
-      },
-      "schemas": {
-        "request": null,
-        "response": "RtcApiResult",
-        "problem": "ProblemDetail"
-      },
-      "ownership": {
-        "owner": "sdkwork-rtc",
-        "apiAuthority": "sdkwork-rtc-backend-api"
-      },
-      "source": {
-        "packageName": "sdkwork-routes-rtc-backend-api",
-        "file": "services/sdkwork-routes-rtc-backend-api/src/lib.rs"
+        "file": "services/sdkwork-routes-rtc-backend-api/src/paths.rs"
       }
     }
   ]

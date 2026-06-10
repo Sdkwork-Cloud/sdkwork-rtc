@@ -2,7 +2,7 @@
   "name": "@sdkwork/rtc-sdk-provider-livekit",
   "version": "0.1.0",
   "private": true,
-  "description": "Reference TypeScript provider boundary for LiveKit RTC within sdkwork-rtc-sdk",
+  "description": "Reserved TypeScript provider boundary for LiveKit RTC within sdkwork-rtc-sdk",
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -19,27 +19,35 @@
     "index.d.ts",
     "README.md"
   ],
+  "peerDependencies": {
+    "@sdkwork/rtc-sdk": "^0.1.1"
+  },
+  "peerDependenciesMeta": {},
+  "devDependencies": {
+    "@sdkwork/rtc-sdk": "workspace:*"
+  },
   "sdkworkRtcProvider": {
     "providerKey": "livekit",
     "displayName": "LiveKit RTC",
     "tier": "tier-a",
     "builtin": true,
-    "status": "root_public_reference_boundary",
+    "status": "package_reference_boundary",
     "registrationContract": "RtcProviderModule",
-    "sourceModule": "../../src/providers/livekit.ts",
+    "sourceModule": "./index.js",
     "driverFactory": "createLivekitRtcDriver",
     "metadataSymbol": "LIVEKIT_RTC_PROVIDER_METADATA",
     "moduleSymbol": "LIVEKIT_RTC_PROVIDER_MODULE",
-    "rootPublic": true,
+    "rootPublic": false,
     "requiredCapabilities": [
       "session",
       "credential",
-      "callback",
+      "provider.webhook",
       "health",
-      "call.audio",
-      "call.video",
+      "media.audio",
+      "media.video",
       "live.broadcast",
-      "live.audience"
+      "live.audience",
+      "provider.event-normalization"
     ],
     "optionalCapabilities": [
       "screen-share",
@@ -47,7 +55,8 @@
       "artifact",
       "data-channel",
       "transcription",
-      "e2ee"
+      "e2ee",
+      "provider.active-query"
     ],
     "extensionKeys": [
       "livekit.native-client"
@@ -56,8 +65,8 @@
       "sdkProvisioning": "consumer-supplied",
       "bindingStrategy": "native-factory",
       "bundlePolicy": "must-not-bundle",
-      "runtimeBridgeStatus": "reference-baseline",
-      "officialVendorSdkRequirement": "required"
+      "runtimeBridgeStatus": "reserved",
+      "officialVendorSdkRequirement": "not-declared-until-bridge"
     }
   }
 }

@@ -28,26 +28,9 @@ support boundaries, and maturity tiers stay exact and verifiable.
 
 ## Runtime Surface Standard
 
-- `runtimeSurfaceStandard.methodTerms`: `join`, `leave`, `publish`, `unpublish`, `muteAudio`, `muteVideo`
+- `runtimeSurfaceStandard.methodTerms`: `join`, `leave`, `publish`, `unpublish`, `startScreenShare`, `stopScreenShare`, `muteAudio`, `muteVideo`
 - `runtimeSurfaceStandard.failureCode`: `native_sdk_not_available`
 - TypeScript root public constants: `RTC_RUNTIME_SURFACE_METHODS`, `RTC_RUNTIME_SURFACE_FAILURE_CODE`
-
-## Signaling Transport Standard
-
-- `signalingTransportStandard.transportTerm`: `websocket-only`
-- `signalingTransportStandard.authConfigPath`: `connectOptions.webSocketAuth`
-- `signalingTransportStandard.authPassThroughTerm`: `signaling-adapter-pass-through`
-- `signalingTransportStandard.authModeTerms`: `automatic`, `headerBearer`, `queryBearer`, `none`
-- `signalingTransportStandard.recommendedAuthMode`: `automatic`
-- `signalingTransportStandard.deviceIdAuthorityTerm`: `top-level-device-id`
-- `signalingTransportStandard.connectOptionsDeviceIdRuleTerm`: `must-match-top-level-device-id`
-- `signalingTransportStandard.liveConnectionTerm`: `shared-rtc-live-connection`
-- `signalingTransportStandard.pollingFallbackTerm`: `not-supported`
-- `signalingTransportStandard.authFailureTerm`: `fail-fast`
-- TypeScript root public module: `sdkwork-rtc-sdk-typescript/src/signaling-transport.ts`
-- TypeScript root public constants: `RTC_SIGNALING_TRANSPORT_TERM`, `RTC_SIGNALING_TRANSPORT_AUTH_CONFIG_PATH`, `RTC_SIGNALING_TRANSPORT_AUTH_PASS_THROUGH_TERM`, `RTC_SIGNALING_TRANSPORT_AUTH_MODE_TERMS`, `RTC_SIGNALING_TRANSPORT_RECOMMENDED_AUTH_MODE`, `RTC_SIGNALING_TRANSPORT_DEVICE_ID_AUTHORITY_TERM`, `RTC_SIGNALING_TRANSPORT_CONNECT_OPTIONS_DEVICE_ID_RULE_TERM`, `RTC_SIGNALING_TRANSPORT_LIVE_CONNECTION_TERM`, `RTC_SIGNALING_TRANSPORT_POLLING_FALLBACK_TERM`, `RTC_SIGNALING_TRANSPORT_AUTH_FAILURE_TERM`, `RTC_SIGNALING_TRANSPORT_STANDARD`
-- Flutter root public module: `sdkwork-rtc-sdk-flutter/lib/src/rtc_signaling_transport.dart`
-- Flutter root public constants: `rtcSignalingTransportTerm`, `rtcSignalingTransportAuthConfigPath`, `rtcSignalingTransportAuthPassThroughTerm`, `rtcSignalingTransportAuthModeTerms`, `rtcSignalingTransportRecommendedAuthMode`, `rtcSignalingTransportDeviceIdAuthorityTerm`, `rtcSignalingTransportConnectOptionsDeviceIdRuleTerm`, `rtcSignalingTransportLiveConnectionTerm`, `rtcSignalingTransportPollingFallbackTerm`, `rtcSignalingTransportAuthFailureTerm`, `rtcSignalingTransportStandard`
 
 ## Runtime Immutability Standard
 
@@ -59,13 +42,13 @@ support boundaries, and maturity tiers stay exact and verifiable.
 
 ## Root Public Surface Standard
 
-- `rootPublicSurfaceStandard.typescriptProviderNeutralExportPaths`: `./errors.js`, `./runtime-surface.js`, `./signaling-transport.js`, `./runtime-immutability.js`, `./root-public-surface.js`, `./types.js`, `./call-types.js`, `./call-controller.js`, `./call-session.js`, `./signaling-adapter.js`, `./standard-call-stack.js`, `./app-http-client.js`, `./capability-catalog.js`, `./capability-negotiation.js`, `./language-workspace-catalog.js`, `./provider-selection.js`, `./provider-support.js`, `./provider-extension-catalog.js`, `./provider-package-catalog.js`, `./provider-package-loader.js`, `./provider-activation-catalog.js`, `./capabilities.js`, `./client.js`, `./driver.js`, `./driver-manager.js`, `./data-source.js`, `./provider-module.js`, `./providers/index.js`
-- `rootPublicSurfaceStandard.typescriptBuiltinProviderExportPaths`: `./providers/volcengine.js`, `./providers/aliyun.js`, `./providers/tencent.js`, `./providers/agora.js`, `./providers/livekit.js`
-- `rootPublicSurfaceStandard.typescriptInlineHelperNames`: `createBuiltinRtcDriverManager`
+- `rootPublicSurfaceStandard.typescriptProviderNeutralExportPaths`: `./errors.js`, `./runtime-surface.js`, `./runtime-immutability.js`, `./root-public-surface.js`, `./types.js`, `./capability-catalog.js`, `./capability-negotiation.js`, `./provider-catalog.js`, `./language-workspace-catalog.js`, `./provider-selection.js`, `./provider-support.js`, `./provider-extension-catalog.js`, `./provider-package-catalog.js`, `./provider-package-loader.js`, `./provider-activation-catalog.js`, `./capabilities.js`, `./client.js`, `./driver.js`, `./driver-manager.js`, `./data-source.js`, `./provider-module.js`
+- `rootPublicSurfaceStandard.typescriptBuiltinProviderExportPaths`: `none`
+- `rootPublicSurfaceStandard.typescriptInlineHelperNames`: `none`
 - `rootPublicSurfaceStandard.reservedSurfaceFamilies`: `standard-contract`, `provider-catalog`, `provider-package-catalog`, `provider-activation-catalog`, `capability-catalog`, `provider-extension-catalog`, `language-workspace-catalog`, `provider-selection`, `provider-package-loader`, `provider-support`, `driver-manager`, `data-source`
 - `rootPublicSurfaceStandard.reservedEntryPointKinds.flutter`: `barrel`
 - `rootPublicSurfaceStandard.reservedEntryPointKinds.python`: `package-init`
-- `rootPublicSurfaceStandard.builtinProviderExposureTerm`: `root-public-builtin-only`
+- `rootPublicSurfaceStandard.builtinProviderExposureTerm`: `provider-plugin-package-only`
 - `rootPublicSurfaceStandard.nonBuiltinProviderExposureTerm`: `package-boundary-only`
 - TypeScript root public module: `sdkwork-rtc-sdk-typescript/src/root-public-surface.ts`
 - TypeScript root public constants: `RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_PROVIDER_NEUTRAL_EXPORT_PATHS`, `RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_BUILTIN_PROVIDER_EXPORT_PATHS`, `RTC_ROOT_PUBLIC_SURFACE_TYPESCRIPT_INLINE_HELPER_NAMES`, `RTC_ROOT_PUBLIC_SURFACE_RESERVED_SURFACE_FAMILIES`, `RTC_ROOT_PUBLIC_SURFACE_RESERVED_ENTRYPOINT_KINDS`, `RTC_ROOT_PUBLIC_SURFACE_STANDARD`
@@ -79,7 +62,7 @@ support boundaries, and maturity tiers stay exact and verifiable.
 
 ## Error Code Standard
 
-- `errorCodeStandard.codeTerms`: `provider_package_not_found`, `provider_package_identity_mismatch`, `provider_package_load_failed`, `provider_module_export_missing`, `provider_module_contract_mismatch`, `driver_already_registered`, `driver_not_found`, `provider_not_official`, `provider_not_supported`, `provider_metadata_mismatch`, `provider_selection_failed`, `capability_not_supported`, `invalid_provider_url`, `invalid_native_config`, `native_sdk_not_available`, `signaling_not_available`, `call_state_invalid`, `vendor_error`
+- `errorCodeStandard.codeTerms`: `provider_package_not_found`, `provider_package_identity_mismatch`, `provider_package_load_failed`, `provider_module_export_missing`, `provider_module_contract_mismatch`, `driver_already_registered`, `driver_not_found`, `provider_not_official`, `provider_not_supported`, `provider_metadata_mismatch`, `provider_selection_failed`, `capability_not_supported`, `invalid_provider_url`, `invalid_native_config`, `native_sdk_not_available`, `vendor_error`
 - `errorCodeStandard.fallbackCode`: `vendor_error`
 
 ## Provider Extension Standard
@@ -92,8 +75,8 @@ support boundaries, and maturity tiers stay exact and verifiable.
 - `typescriptAdapterStandard.sdkProvisioningTerms`: `consumer-supplied`
 - `typescriptAdapterStandard.bindingStrategyTerms`: `native-factory`
 - `typescriptAdapterStandard.bundlePolicyTerms`: `must-not-bundle`
-- `typescriptAdapterStandard.runtimeBridgeStatusTerms`: `reference-baseline`
-- `typescriptAdapterStandard.officialVendorSdkRequirementTerms`: `required`
+- `typescriptAdapterStandard.runtimeBridgeStatusTerms`: `reference-baseline`, `reserved`
+- `typescriptAdapterStandard.officialVendorSdkRequirementTerms`: `required`, `not-declared-until-bridge`
 - `typescriptAdapterStandard.referenceContract.sdkProvisioning`: `consumer-supplied`
 - `typescriptAdapterStandard.referenceContract.bindingStrategy`: `native-factory`
 - `typescriptAdapterStandard.referenceContract.bundlePolicy`: `must-not-bundle`
@@ -103,11 +86,11 @@ support boundaries, and maturity tiers stay exact and verifiable.
 ## TypeScript Package Standard
 
 - `typescriptPackageStandard.packageNamePattern`: `@sdkwork/rtc-sdk-provider-{providerKey}`
-- `typescriptPackageStandard.sourceModulePattern`: `../../src/providers/{providerKey}.ts`
+- `typescriptPackageStandard.sourceModulePattern`: `./index.js`
 - `typescriptPackageStandard.driverFactoryPattern`: `create{providerPascal}RtcDriver`
 - `typescriptPackageStandard.metadataSymbolPattern`: `{providerUpperSnake}_RTC_PROVIDER_METADATA`
 - `typescriptPackageStandard.moduleSymbolPattern`: `{providerUpperSnake}_RTC_PROVIDER_MODULE`
-- `typescriptPackageStandard.rootPublicRule`: `builtin-aligned`
+- `typescriptPackageStandard.rootPublicRule`: `plugin-package-only`
 
 ## Capability Catalog
 
@@ -115,10 +98,11 @@ support boundaries, and maturity tiers stay exact and verifiable.
 | --- | --- | --- |
 | `session` | `required-baseline` | `cross-surface` |
 | `credential` | `required-baseline` | `control-plane` |
-| `callback` | `required-baseline` | `control-plane` |
+| `provider.webhook` | `required-baseline` | `control-plane` |
+| `provider.event-normalization` | `required-baseline` | `control-plane` |
 | `health` | `required-baseline` | `control-plane` |
-| `call.audio` | `required-baseline` | `runtime-bridge` |
-| `call.video` | `required-baseline` | `runtime-bridge` |
+| `media.audio` | `required-baseline` | `runtime-bridge` |
+| `media.video` | `required-baseline` | `runtime-bridge` |
 | `live.broadcast` | `required-baseline` | `cross-surface` |
 | `live.audience` | `required-baseline` | `cross-surface` |
 | `screen-share` | `optional-advanced` | `runtime-bridge` |
@@ -131,13 +115,14 @@ support boundaries, and maturity tiers stay exact and verifiable.
 | `beauty` | `optional-advanced` | `runtime-bridge` |
 | `spatial-audio` | `optional-advanced` | `runtime-bridge` |
 | `e2ee` | `optional-advanced` | `runtime-bridge` |
+| `provider.active-query` | `optional-advanced` | `control-plane` |
 
 ## Provider Extension Catalog
 
 | Extension key | Provider key | Display name | Surface | Access | Status |
 | --- | --- | --- | --- | --- | --- |
 | `volcengine.native-client` | `volcengine` | Volcengine Native Client | `runtime-bridge` | `unwrap-only` | `reference-baseline` |
-| `aliyun.native-client` | `aliyun` | Aliyun Native Client | `runtime-bridge` | `unwrap-only` | `reference-baseline` |
+| `aliyun.native-client` | `aliyun` | Aliyun Native Client | `runtime-bridge` | `unwrap-only` | `reserved` |
 | `tencent.native-client` | `tencent` | Tencent Native Client | `runtime-bridge` | `unwrap-only` | `reference-baseline` |
 | `agora.native-client` | `agora` | Agora Native Client | `runtime-bridge` | `unwrap-only` | `reserved` |
 | `zego.native-client` | `zego` | ZEGO Native Client | `runtime-bridge` | `unwrap-only` | `reserved` |
@@ -166,31 +151,31 @@ support boundaries, and maturity tiers stay exact and verifiable.
 
 | Provider key | Required capabilities | Optional capabilities |
 | --- | --- | --- |
-| `volcengine` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact`, `cloud-mix` |
-| `aliyun` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact` |
-| `tencent` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact`, `cdn-relay` |
-| `agora` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact`, `cloud-mix`, `data-channel`, `spatial-audio`, `e2ee` |
-| `zego` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact`, `cloud-mix`, `beauty` |
-| `livekit` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact`, `data-channel`, `transcription`, `e2ee` |
-| `twilio` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact`, `data-channel` |
-| `jitsi` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `screen-share`, `recording`, `artifact`, `transcription` |
-| `janus` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `data-channel` |
-| `mediasoup` | `session`, `credential`, `callback`, `health`, `call.audio`, `call.video`, `live.broadcast`, `live.audience` | `data-channel` |
+| `volcengine` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `cloud-mix`, `provider.active-query` |
+| `aliyun` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `cloud-mix`, `provider.active-query` |
+| `tencent` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `cdn-relay`, `provider.active-query` |
+| `agora` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `cloud-mix`, `data-channel`, `spatial-audio`, `e2ee`, `provider.active-query` |
+| `zego` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `cloud-mix`, `beauty`, `provider.active-query` |
+| `livekit` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `data-channel`, `transcription`, `e2ee`, `provider.active-query` |
+| `twilio` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `data-channel`, `provider.active-query` |
+| `jitsi` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `screen-share`, `recording`, `artifact`, `transcription`, `provider.active-query` |
+| `janus` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `data-channel`, `provider.active-query` |
+| `mediasoup` | `session`, `credential`, `provider.webhook`, `health`, `media.audio`, `media.video`, `live.broadcast`, `live.audience`, `provider.event-normalization` | `data-channel`, `provider.active-query` |
 
 ## TypeScript Provider Runtime Baseline
 
 | Provider key | Runtime bridge status | Vendor SDK requirement | SDK provisioning | Binding strategy | Bundle policy |
 | --- | --- | --- | --- | --- | --- |
 | `volcengine` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `aliyun` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `aliyun` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
 | `tencent` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `agora` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `zego` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `livekit` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `twilio` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `jitsi` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `janus` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
-| `mediasoup` | `reference-baseline` | `required` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `agora` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `zego` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `livekit` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `twilio` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `jitsi` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `janus` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
+| `mediasoup` | `reserved` | `not-declared-until-bridge` | `consumer-supplied` | `native-factory` | `must-not-bundle` |
 
 ## Language Matrix
 
@@ -224,8 +209,8 @@ support boundaries, and maturity tiers stay exact and verifiable.
 
 | Language | Mode | Root public policy | Lifecycle status terms | Runtime bridge status terms | Concrete scaffold path |
 | --- | --- | --- | --- | --- | --- |
-| TypeScript | `catalog-governed-mixed` | `builtin-only` | `root_public_reference_boundary`, `package_reference_boundary` | `reference-baseline` | `<none>` |
-| Flutter | `scaffold-per-provider-package` | `none` | `future-runtime-bridge-only` | `reserved` | `providers/provider-package-scaffold.md` |
+| TypeScript | `catalog-governed-mixed` | `none` | `package_reference_boundary` | `reference-baseline`, `reserved` | `<none>` |
+| Flutter | `scaffold-per-provider-package` | `none` | `package_reference_boundary`, `future-runtime-bridge-only` | `reference-baseline`, `reserved` | `providers/provider-package-scaffold.md` |
 | Rust | `scaffold-per-provider-package` | `none` | `future-runtime-bridge-only` | `reserved` | `providers/provider-package-scaffold.md` |
 | Java | `scaffold-per-provider-package` | `none` | `future-runtime-bridge-only` | `reserved` | `providers/provider-package-scaffold.md` |
 | C# | `scaffold-per-provider-package` | `none` | `future-runtime-bridge-only` | `reserved` | `providers/provider-package-scaffold.md` |
@@ -290,17 +275,17 @@ support boundaries, and maturity tiers stay exact and verifiable.
 
 | Language | Provider key | Activation status | Runtime bridge | Root public | Package boundary |
 | --- | --- | --- | --- | --- | --- |
-| TypeScript | `volcengine` | `root-public-builtin` | Yes | Yes | Yes |
-| TypeScript | `aliyun` | `root-public-builtin` | Yes | Yes | Yes |
-| TypeScript | `tencent` | `root-public-builtin` | Yes | Yes | Yes |
-| TypeScript | `agora` | `root-public-builtin` | Yes | Yes | Yes |
+| TypeScript | `volcengine` | `package-boundary` | Yes | No | Yes |
+| TypeScript | `aliyun` | `package-boundary` | Yes | No | Yes |
+| TypeScript | `tencent` | `package-boundary` | Yes | No | Yes |
+| TypeScript | `agora` | `package-boundary` | Yes | No | Yes |
 | TypeScript | `zego` | `package-boundary` | Yes | No | Yes |
-| TypeScript | `livekit` | `root-public-builtin` | Yes | Yes | Yes |
+| TypeScript | `livekit` | `package-boundary` | Yes | No | Yes |
 | TypeScript | `twilio` | `package-boundary` | Yes | No | Yes |
 | TypeScript | `jitsi` | `package-boundary` | Yes | No | Yes |
 | TypeScript | `janus` | `package-boundary` | Yes | No | Yes |
 | TypeScript | `mediasoup` | `package-boundary` | Yes | No | Yes |
-| Flutter | `volcengine` | `root-public-builtin` | Yes | Yes | Yes |
+| Flutter | `volcengine` | `package-boundary` | Yes | No | Yes |
 | Flutter | `aliyun` | `control-metadata-only` | No | No | No |
 | Flutter | `tencent` | `control-metadata-only` | No | No | No |
 | Flutter | `agora` | `control-metadata-only` | No | No | No |

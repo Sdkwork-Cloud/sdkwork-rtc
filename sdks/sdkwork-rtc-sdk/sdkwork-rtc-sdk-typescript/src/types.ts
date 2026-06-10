@@ -71,6 +71,11 @@ export interface RtcPublishOptions {
   metadata?: Record<string, unknown>;
 }
 
+export interface RtcScreenShareOptions {
+  trackId: string;
+  metadata?: Record<string, unknown>;
+}
+
 export interface RtcTrackPublication {
   trackId: string;
   kind: RtcTrackKind;
@@ -126,8 +131,8 @@ export interface RtcTypeScriptAdapterContract {
   sdkProvisioning: 'consumer-supplied';
   bindingStrategy: 'native-factory';
   bundlePolicy: 'must-not-bundle';
-  runtimeBridgeStatus: 'reference-baseline';
-  officialVendorSdkRequirement: 'required';
+  runtimeBridgeStatus: 'reference-baseline' | 'reserved';
+  officialVendorSdkRequirement: 'required' | 'not-declared-until-bridge';
 }
 
 export interface RtcTypeScriptPackageContract {
@@ -213,8 +218,6 @@ export type RtcLanguageWorkspaceSmokeVariant = 'default' | 'reuse-live-connectio
 export interface RtcLanguageWorkspaceRuntimeBaseline {
   vendorSdkPackage: string;
   vendorSdkImportPath: string;
-  signalingSdkPackage: string;
-  signalingSdkImportPath: string;
   recommendedEntrypoint: string;
   smokeCommand: string;
   smokeMode: RtcLanguageWorkspaceSmokeMode;
@@ -225,9 +228,7 @@ export type RtcProviderPackageRuntimeBridgeStatus =
   | RtcTypeScriptAdapterContract['runtimeBridgeStatus']
   | 'reserved';
 
-export type RtcProviderPackageCatalogStatus =
-  | 'root_public_reference_boundary'
-  | 'package_reference_boundary';
+export type RtcProviderPackageCatalogStatus = 'package_reference_boundary';
 
 export type RtcLanguageWorkspaceProviderPackageScaffoldStatus =
   | 'future-runtime-bridge-only';
@@ -236,9 +237,7 @@ export type RtcLanguageWorkspaceProviderPackageBoundaryMode =
   | 'catalog-governed-mixed'
   | 'scaffold-per-provider-package';
 
-export type RtcLanguageWorkspaceProviderPackageBoundaryRootPublicPolicy =
-  | 'builtin-only'
-  | 'none';
+export type RtcLanguageWorkspaceProviderPackageBoundaryRootPublicPolicy = 'none';
 
 export type RtcLanguageWorkspaceProviderPackageBoundaryLifecycleStatus =
   | RtcProviderPackageCatalogStatus
@@ -268,6 +267,11 @@ export interface RtcLanguageWorkspaceProviderPackageScaffold {
   sourceSymbolPattern: string;
   templateTokens: readonly string[];
   sourceTemplateTokens: readonly string[];
+  referenceProviderKey?: string;
+  referenceStatus?: RtcProviderPackageCatalogStatus;
+  referenceRuntimeBridgeStatus?: RtcProviderPackageRuntimeBridgeStatus;
+  referenceVendorSdkPackage?: string;
+  referenceVendorSdkVersion?: string;
   runtimeBridgeStatus: RtcProviderPackageRuntimeBridgeStatus;
   rootPublic: boolean;
   status: RtcLanguageWorkspaceProviderPackageScaffoldStatus;
@@ -314,14 +318,13 @@ export interface RtcProviderPackageCatalogEntry {
   builtin: boolean;
   rootPublic: boolean;
   status: RtcProviderPackageCatalogStatus;
-  runtimeBridgeStatus: RtcTypeScriptAdapterContract['runtimeBridgeStatus'];
+  runtimeBridgeStatus: RtcProviderPackageRuntimeBridgeStatus;
   requiredCapabilities: readonly RtcRequiredCapability[];
   optionalCapabilities: readonly RtcOptionalCapability[];
   extensionKeys: readonly string[];
 }
 
 export type RtcProviderActivationStatus =
-  | 'root-public-builtin'
   | 'package-boundary'
   | 'control-metadata-only';
 
@@ -388,6 +391,14 @@ export interface RtcRuntimeController<TNativeClient = unknown> {
     context: RtcRuntimeControllerContext<TNativeClient>,
   ): Promise<RtcTrackPublication> | RtcTrackPublication;
   unpublish(
+    trackId: string,
+    context: RtcRuntimeControllerContext<TNativeClient>,
+  ): Promise<void> | void;
+  startScreenShare?(
+    options: RtcScreenShareOptions,
+    context: RtcRuntimeControllerContext<TNativeClient>,
+  ): Promise<RtcTrackPublication> | RtcTrackPublication;
+  stopScreenShare?(
     trackId: string,
     context: RtcRuntimeControllerContext<TNativeClient>,
   ): Promise<void> | void;

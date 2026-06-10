@@ -1,30 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {
+  createManagerWithProviderPackages,
+  loadProviderPackage,
+  loadSdk,
+} from './provider-test-helpers.mjs';
 
-async function loadSdk() {
-  return import('../dist/index.js');
-}
-
-test('driver manager resolves a built-in provider by explicit provider key', async () => {
-  const { RtcDriverManager, createVolcengineRtcDriver, createAliyunRtcDriver } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    defaultProviderKey: 'volcengine',
-    drivers: [createVolcengineRtcDriver(), createAliyunRtcDriver()],
-  });
+test('driver manager resolves a provider package by explicit provider key', async () => {
+  const { manager } = await createManagerWithProviderPackages(['volcengine', 'aliyun']);
 
   const driver = manager.resolve({ providerKey: 'aliyun' });
   assert.equal(driver.metadata.providerKey, 'aliyun');
   assert.equal(driver.metadata.pluginId, 'rtc-aliyun');
 });
 
-test('driver manager resolves a built-in provider by rtc provider url', async () => {
-  const { RtcDriverManager, createVolcengineRtcDriver, createTencentRtcDriver } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    defaultProviderKey: 'volcengine',
-    drivers: [createVolcengineRtcDriver(), createTencentRtcDriver()],
-  });
+test('driver manager resolves a provider package by rtc provider url', async () => {
+  const { manager } = await createManagerWithProviderPackages(['volcengine', 'tencent']);
 
   const driver = manager.resolve({ providerUrl: 'rtc:tencent://app/default' });
   assert.equal(driver.metadata.providerKey, 'tencent');
@@ -32,17 +23,12 @@ test('driver manager resolves a built-in provider by rtc provider url', async ()
 });
 
 test('driver manager throws a stable invalid_provider_url error for malformed rtc urls', async () => {
-  const { RtcDriverManager, RtcSdkException, createVolcengineRtcDriver } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    defaultProviderKey: 'volcengine',
-    drivers: [createVolcengineRtcDriver()],
-  });
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine']);
 
   await assert.rejects(
     async () => manager.connect({ providerUrl: 'https://example.test/not-an-rtc-url' }),
     (error) => {
-      assert.ok(error instanceof RtcSdkException);
+      assert.ok(error instanceof sdk.RtcSdkException);
       assert.equal(error.code, 'invalid_provider_url');
       return true;
     },
@@ -50,17 +36,12 @@ test('driver manager throws a stable invalid_provider_url error for malformed rt
 });
 
 test('driver manager throws a stable driver_not_found error for unknown providers', async () => {
-  const { RtcDriverManager, RtcSdkException, createVolcengineRtcDriver } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    defaultProviderKey: 'volcengine',
-    drivers: [createVolcengineRtcDriver()],
-  });
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine']);
 
   await assert.rejects(
     async () => manager.connect({ providerKey: 'vendor-x' }),
     (error) => {
-      assert.ok(error instanceof RtcSdkException);
+      assert.ok(error instanceof sdk.RtcSdkException);
       assert.equal(error.code, 'driver_not_found');
       return true;
     },
@@ -68,16 +49,7 @@ test('driver manager throws a stable driver_not_found error for unknown provider
 });
 
 test('driver manager can inspect provider metadata without creating a client', async () => {
-  const {
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-    createTencentRtcDriver,
-  } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    defaultProviderKey: 'volcengine',
-    drivers: [createVolcengineRtcDriver(), createTencentRtcDriver()],
-  });
+  const { manager } = await createManagerWithProviderPackages(['volcengine', 'tencent']);
 
   assert.equal(manager.hasDriver('volcengine'), true);
   assert.equal(manager.hasDriver('aliyun'), false);
@@ -86,20 +58,16 @@ test('driver manager can inspect provider metadata without creating a client', a
 });
 
 test('driver manager rejects duplicate provider registration', async () => {
-  const {
-    RtcDriverManager,
-    RtcSdkException,
-    createVolcengineRtcDriver,
-  } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    drivers: [createVolcengineRtcDriver()],
+  const { sdk, namespace, packageEntry } = await loadProviderPackage('volcengine');
+  const createDriver = namespace[packageEntry.driverFactory];
+  const manager = new sdk.RtcDriverManager({
+    drivers: [createDriver()],
   });
 
   assert.throws(
-    () => manager.register(createVolcengineRtcDriver()),
+    () => manager.register(createDriver()),
     (error) => {
-      assert.ok(error instanceof RtcSdkException);
+      assert.ok(error instanceof sdk.RtcSdkException);
       assert.equal(error.code, 'driver_already_registered');
       assert.equal(error.providerKey, 'volcengine');
       return true;
@@ -108,11 +76,7 @@ test('driver manager rejects duplicate provider registration', async () => {
 });
 
 test('driver manager rejects registering drivers for unknown providers', async () => {
-  const {
-    RtcDriverManager,
-    RtcSdkException,
-    createRtcProviderDriver,
-  } = await loadSdk();
+  const { RtcDriverManager, RtcSdkException, createRtcProviderDriver } = await loadSdk();
 
   const manager = new RtcDriverManager();
   const driver = createRtcProviderDriver({
@@ -123,7 +87,7 @@ test('driver manager rejects registering drivers for unknown providers', async (
       displayName: 'Vendor X RTC',
       defaultSelected: false,
       urlSchemes: ['rtc:vendor-x'],
-      requiredCapabilities: ['session', 'join', 'publish', 'subscribe', 'mute', 'basic-events', 'health', 'unwrap'],
+      requiredCapabilities: ['session', 'credential', 'provider.webhook', 'health', 'media.audio', 'media.video', 'live.broadcast', 'live.audience', 'provider.event-normalization'],
       optionalCapabilities: ['screen-share'],
       extensionKeys: ['vendor-x.native-client'],
     },
@@ -145,20 +109,17 @@ test('driver manager rejects registering official providers with metadata drift'
     RtcDriverManager,
     RtcSdkException,
     createRtcProviderDriver,
+    getOfficialRtcProviderMetadataByKey,
   } = await loadSdk();
+
+  const officialAgora = getOfficialRtcProviderMetadataByKey('agora');
+  assert.ok(officialAgora);
 
   const manager = new RtcDriverManager();
   const driftedDriver = createRtcProviderDriver({
     metadata: {
-      providerKey: 'agora',
+      ...officialAgora,
       pluginId: 'rtc-agora-custom',
-      driverId: 'sdkwork-rtc-driver-agora',
-      displayName: 'Agora RTC',
-      defaultSelected: false,
-      urlSchemes: ['rtc:agora'],
-      requiredCapabilities: ['session', 'join', 'publish', 'subscribe', 'mute', 'basic-events', 'health', 'unwrap'],
-      optionalCapabilities: ['screen-share', 'recording', 'cloud-mix', 'data-channel', 'spatial-audio', 'e2ee'],
-      extensionKeys: ['agora.native-client'],
     },
   });
 
@@ -175,22 +136,14 @@ test('driver manager rejects registering official providers with metadata drift'
 });
 
 test('driver manager distinguishes official-but-unregistered providers from unknown providers', async () => {
-  const {
-    RtcDriverManager,
-    RtcSdkException,
-    createVolcengineRtcDriver,
-  } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    drivers: [createVolcengineRtcDriver()],
-  });
+  const { sdk, manager } = await createManagerWithProviderPackages(['volcengine']);
 
   assert.equal(manager.getMetadata({ providerKey: 'agora' }).providerKey, 'agora');
 
   await assert.rejects(
     async () => manager.connect({ providerKey: 'agora' }),
     (error) => {
-      assert.ok(error instanceof RtcSdkException);
+      assert.ok(error instanceof sdk.RtcSdkException);
       assert.equal(error.code, 'provider_not_supported');
       assert.equal(error.providerKey, 'agora');
       return true;
@@ -199,21 +152,11 @@ test('driver manager distinguishes official-but-unregistered providers from unkn
 });
 
 test('driver manager exposes stable provider selection precedence', async () => {
-  const {
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-    createAliyunRtcDriver,
-    createTencentRtcDriver,
-  } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    defaultProviderKey: 'volcengine',
-    drivers: [
-      createVolcengineRtcDriver(),
-      createAliyunRtcDriver(),
-      createTencentRtcDriver(),
-    ],
-  });
+  const { manager } = await createManagerWithProviderPackages([
+    'volcengine',
+    'aliyun',
+    'tencent',
+  ]);
 
   assert.deepEqual(
     manager.resolveSelection({
@@ -267,15 +210,7 @@ test('driver manager exposes stable provider selection precedence', async () => 
 });
 
 test('driver manager exposes provider support-state introspection', async () => {
-  const {
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-    createTencentRtcDriver,
-  } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    drivers: [createVolcengineRtcDriver(), createTencentRtcDriver()],
-  });
+  const { manager } = await createManagerWithProviderPackages(['volcengine', 'tencent']);
 
   assert.deepEqual(manager.describeProviderSupport('volcengine'), {
     providerKey: 'volcengine',
@@ -311,15 +246,7 @@ test('driver manager exposes provider support-state introspection', async () => 
 });
 
 test('driver manager lists provider support-state across the official provider catalog', async () => {
-  const {
-    RtcDriverManager,
-    createVolcengineRtcDriver,
-    createTencentRtcDriver,
-  } = await loadSdk();
-
-  const manager = new RtcDriverManager({
-    drivers: [createVolcengineRtcDriver(), createTencentRtcDriver()],
-  });
+  const { manager } = await createManagerWithProviderPackages(['volcengine', 'tencent']);
   const providerSupport = manager.listProviderSupport();
 
   assert.equal(Array.isArray(providerSupport), true);
