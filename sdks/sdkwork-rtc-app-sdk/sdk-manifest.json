@@ -6,6 +6,7 @@
   "sdkFamily": "sdkwork-rtc-app-sdk",
   "sdkType": "app",
   "apiPrefix": "/app/v3/api",
+  "sourceAuthoritySpec": "../../apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
   "generationInputSpec": "openapi/sdkwork-rtc-app-api.sdkgen.json",
   "sdkDependencies": [
     {

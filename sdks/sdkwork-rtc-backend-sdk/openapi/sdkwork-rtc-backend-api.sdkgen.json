@@ -27,6 +27,21 @@
       "x-sdk-nested-resource-surface": true
     },
     {
+      "name": "rtcProviderAccounts",
+      "description": "Rtc Provider Accounts API resources.",
+      "x-sdk-nested-resource-surface": true
+    },
+    {
+      "name": "rtcProviderApplications",
+      "description": "Rtc Provider Applications API resources.",
+      "x-sdk-nested-resource-surface": true
+    },
+    {
+      "name": "rtcProviderCredentials",
+      "description": "Rtc Provider Credentials API resources.",
+      "x-sdk-nested-resource-surface": true
+    },
+    {
       "name": "rtcProviderProfiles",
       "description": "Rtc Provider Profiles API resources.",
       "x-sdk-nested-resource-surface": true
@@ -198,7 +213,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.mediaArtifacts",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -304,7 +319,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.mediaArtifacts",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -447,7 +462,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.mediaSessions",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -553,7 +568,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.mediaSessions",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -659,7 +674,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.mediaSessions",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -775,13 +790,1799 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.mediaSessions.completionRecord",
         "x-sdkwork-request-context": "BackendRequestContext",
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.media_sessions.read",
         "x-sdkwork-auth-mode": "dual-token"
+      }
+    },
+    "/backend/v3/api/rtc/provider_accounts": {
+      "get": {
+        "tags": [
+          "rtcProviderAccounts"
+        ],
+        "summary": "Rtc provider Accounts list.",
+        "operationId": "rtc.providerAccounts.list",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderAccountListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerAccounts",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_accounts.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      },
+      "post": {
+        "tags": [
+          "rtcProviderAccounts"
+        ],
+        "summary": "Rtc provider Accounts create.",
+        "operationId": "rtc.providerAccounts.create",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerAccounts",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_accounts.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderAccountCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_accounts/{providerAccountId}": {
+      "get": {
+        "tags": [
+          "rtcProviderAccounts"
+        ],
+        "summary": "Rtc provider Accounts retrieve.",
+        "operationId": "rtc.providerAccounts.retrieve",
+        "parameters": [
+          {
+            "name": "providerAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerAccounts",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_accounts.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      },
+      "patch": {
+        "tags": [
+          "rtcProviderAccounts"
+        ],
+        "summary": "Rtc provider Accounts update.",
+        "operationId": "rtc.providerAccounts.update",
+        "parameters": [
+          {
+            "name": "providerAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerAccounts",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_accounts.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderAccountCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_accounts/{providerAccountId}/applications": {
+      "get": {
+        "tags": [
+          "rtcProviderApplications"
+        ],
+        "summary": "Rtc provider Accounts applications list.",
+        "operationId": "rtc.providerAccounts.applications.list",
+        "parameters": [
+          {
+            "name": "providerAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderApplicationListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerAccounts.applications",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_applications.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      },
+      "post": {
+        "tags": [
+          "rtcProviderApplications"
+        ],
+        "summary": "Rtc provider Accounts applications create.",
+        "operationId": "rtc.providerAccounts.applications.create",
+        "parameters": [
+          {
+            "name": "providerAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerAccounts.applications",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_applications.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderApplicationCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_accounts/{providerAccountId}/disable": {
+      "post": {
+        "tags": [
+          "rtcProviderAccounts"
+        ],
+        "summary": "Rtc provider Accounts disable.",
+        "operationId": "rtc.providerAccounts.disable",
+        "parameters": [
+          {
+            "name": "providerAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerAccounts",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_accounts.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderAccountDisableRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_applications/{providerApplicationId}": {
+      "get": {
+        "tags": [
+          "rtcProviderApplications"
+        ],
+        "summary": "Rtc provider Applications retrieve.",
+        "operationId": "rtc.providerApplications.retrieve",
+        "parameters": [
+          {
+            "name": "providerApplicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerApplications",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_applications.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      },
+      "patch": {
+        "tags": [
+          "rtcProviderApplications"
+        ],
+        "summary": "Rtc provider Applications update.",
+        "operationId": "rtc.providerApplications.update",
+        "parameters": [
+          {
+            "name": "providerApplicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerApplications",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_applications.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderApplicationCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_applications/{providerApplicationId}/credentials": {
+      "get": {
+        "tags": [
+          "rtcProviderCredentials"
+        ],
+        "summary": "Rtc provider Applications credentials list.",
+        "operationId": "rtc.providerApplications.credentials.list",
+        "parameters": [
+          {
+            "name": "providerApplicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderCredentialListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerApplications.credentials",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_credentials.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      },
+      "post": {
+        "tags": [
+          "rtcProviderCredentials"
+        ],
+        "summary": "Rtc provider Applications credentials create.",
+        "operationId": "rtc.providerApplications.credentials.create",
+        "parameters": [
+          {
+            "name": "providerApplicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderCredentialResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerApplications.credentials",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_credentials.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderCredentialCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_applications/{providerApplicationId}/disable": {
+      "post": {
+        "tags": [
+          "rtcProviderApplications"
+        ],
+        "summary": "Rtc provider Applications disable.",
+        "operationId": "rtc.providerApplications.disable",
+        "parameters": [
+          {
+            "name": "providerApplicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerApplications",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_applications.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderApplicationDisableRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_credentials/{providerCredentialId}": {
+      "get": {
+        "tags": [
+          "rtcProviderCredentials"
+        ],
+        "summary": "Rtc provider Credentials retrieve.",
+        "operationId": "rtc.providerCredentials.retrieve",
+        "parameters": [
+          {
+            "name": "providerCredentialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderCredentialResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerCredentials",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_credentials.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      },
+      "patch": {
+        "tags": [
+          "rtcProviderCredentials"
+        ],
+        "summary": "Rtc provider Credentials update.",
+        "operationId": "rtc.providerCredentials.update",
+        "parameters": [
+          {
+            "name": "providerCredentialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderCredentialResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerCredentials",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_credentials.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderCredentialCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/rtc/provider_credentials/{providerCredentialId}/revoke": {
+      "post": {
+        "tags": [
+          "rtcProviderCredentials"
+        ],
+        "summary": "Rtc provider Credentials revoke.",
+        "operationId": "rtc.providerCredentials.revoke",
+        "parameters": [
+          {
+            "name": "providerCredentialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderCredentialResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerCredentials",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_credentials.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcProviderCredentialRevokeRequest"
+              }
+            }
+          }
+        }
       }
     },
     "/backend/v3/api/rtc/provider_profiles": {
@@ -918,7 +2719,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerProfiles",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1013,7 +2814,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerProfiles",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1129,7 +2930,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerProfiles",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1233,7 +3034,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerProfiles",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1349,7 +3150,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerProfiles",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1465,7 +3266,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerProfiles",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1572,7 +3373,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerQueryJobs",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1688,7 +3489,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerQueryJobs",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1839,7 +3640,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerQueryJobs.snapshots",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -1982,7 +3783,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerRoutes",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -2077,7 +3878,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerRoutes",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -2188,7 +3989,7 @@
         "security": [],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerWebhooks.events",
         "x-sdkwork-request-context": "ProviderWebhookRequestContext",
@@ -2361,7 +4162,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.providerWebhooks.events",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -2504,7 +4305,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.qualitySamples",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -2647,7 +4448,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.rooms",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -2753,7 +4554,7 @@
         ],
         "x-sdkwork-owner": "sdkwork-rtc",
         "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
         "x-sdkwork-domain": "rtc",
         "x-sdkwork-resource": "rtc.rooms",
         "x-sdkwork-request-context": "BackendRequestContext",
@@ -4226,6 +6027,940 @@
           }
         }
       },
+      "RtcProviderAccount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "organizationId",
+          "provider",
+          "code",
+          "name",
+          "status",
+          "environment",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled",
+              "archived"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "staging",
+              "development",
+              "test",
+              "sandbox"
+            ]
+          },
+          "externalTenantId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cloudAccountId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projectId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resourceGroupId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastVerifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastVerificationError": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "deletedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RtcProviderAccountCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "code",
+          "name",
+          "environment"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled",
+              "archived"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "staging",
+              "development",
+              "test",
+              "sandbox"
+            ]
+          },
+          "externalTenantId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cloudAccountId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projectId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resourceGroupId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RtcProviderAccountDisableRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          }
+        }
+      },
+      "RtcProviderAccountListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RtcProviderAccount"
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "RtcProviderAccountResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "$ref": "#/components/schemas/RtcProviderAccount"
+          }
+        }
+      },
+      "RtcProviderApplication": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "organizationId",
+          "providerAccountId",
+          "provider",
+          "code",
+          "name",
+          "status",
+          "environment",
+          "providerApplicationId",
+          "providerApplicationIdKind",
+          "configSnapshot",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "providerAccountId": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled",
+              "archived"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "staging",
+              "development",
+              "test",
+              "sandbox"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerApplicationId": {
+            "type": "string"
+          },
+          "providerApplicationIdKind": {
+            "type": "string",
+            "enum": [
+              "volcengine_app_id",
+              "tencent_sdk_app_id",
+              "provider_application_id"
+            ]
+          },
+          "accessEndpoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "apiEndpoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "apiHost": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "apiVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhookCallbackUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "configSnapshot": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "lastVerifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastVerificationError": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "deletedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RtcProviderApplicationCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "name",
+          "environment",
+          "providerApplicationId",
+          "providerApplicationIdKind",
+          "configSnapshot"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled",
+              "archived"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "staging",
+              "development",
+              "test",
+              "sandbox"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerApplicationId": {
+            "type": "string"
+          },
+          "providerApplicationIdKind": {
+            "type": "string",
+            "enum": [
+              "volcengine_app_id",
+              "tencent_sdk_app_id",
+              "provider_application_id"
+            ]
+          },
+          "accessEndpoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "apiEndpoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "apiHost": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "apiVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhookCallbackUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "configSnapshot": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "RtcProviderApplicationDisableRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          }
+        }
+      },
+      "RtcProviderApplicationListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RtcProviderApplication"
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "RtcProviderApplicationResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "$ref": "#/components/schemas/RtcProviderApplication"
+          }
+        }
+      },
+      "RtcProviderCredential": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "organizationId",
+          "providerAccountId",
+          "providerApplicationId",
+          "provider",
+          "credentialRole",
+          "credentialLabel",
+          "credentialRef",
+          "status",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "providerAccountId": {
+            "type": "string"
+          },
+          "providerApplicationId": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "credentialRole": {
+            "type": "string",
+            "enum": [
+              "rtc_token_signing",
+              "open_api_signing",
+              "usersig_signing",
+              "cloud_api_signing",
+              "webhook_signing"
+            ]
+          },
+          "credentialLabel": {
+            "type": "string"
+          },
+          "credentialRef": {
+            "type": "string",
+            "description": "Reference to secret-managed provider credential material. Raw provider secrets are never returned by the RTC API."
+          },
+          "credentialFingerprint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "secretVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "pending",
+              "disabled",
+              "revoked",
+              "expired"
+            ]
+          },
+          "validFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "rotationDueAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "rotatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "revokedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastVerifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastUsedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          }
+        }
+      },
+      "RtcProviderCredentialCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "credentialRole",
+          "credentialLabel",
+          "credentialRef"
+        ],
+        "properties": {
+          "credentialRole": {
+            "type": "string",
+            "enum": [
+              "rtc_token_signing",
+              "open_api_signing",
+              "usersig_signing",
+              "cloud_api_signing",
+              "webhook_signing"
+            ]
+          },
+          "credentialLabel": {
+            "type": "string"
+          },
+          "credentialRef": {
+            "type": "string"
+          },
+          "credentialFingerprint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "secretVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "pending",
+              "disabled",
+              "revoked",
+              "expired"
+            ]
+          },
+          "validFrom": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "rotationDueAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "RtcProviderCredentialRevokeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          }
+        }
+      },
+      "RtcProviderCredentialListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RtcProviderCredential"
+                }
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "RtcProviderCredentialResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "data": {
+            "$ref": "#/components/schemas/RtcProviderCredential"
+          }
+        }
+      },
       "RtcProviderProfile": {
         "type": "object",
         "additionalProperties": false,
@@ -5566,11 +8301,11 @@
   "x-sdkwork-materialized-from": [
     {
       "owner": "sdkwork-rtc",
-      "path": "services/sdkwork-routes-rtc-backend-api/src/paths.rs",
-      "packageName": "sdkwork-routes-rtc-backend-api"
+      "path": "crates/sdkwork-router-rtc-backend-api/src/paths.rs",
+      "packageName": "sdkwork-router-rtc-backend-api"
     }
   ],
-  "x-sdkwork-route-manifest": "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+  "x-sdkwork-route-manifest": "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
   "x-sdkwork-request-context": {
     "contextObject": "BackendRequestContext",
     "serverRequestId": "server-owned",

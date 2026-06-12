@@ -34,9 +34,9 @@
 ### Task 3: Migrate RTC PC React Package
 
 **Files:**
-- Copy: `sdkwork-appbase/packages/pc-react/communication/sdkwork-rtc-pc-react` to `packages/pc-react/communication/sdkwork-rtc-pc-react`
-- Modify: `packages/pc-react/communication/sdkwork-rtc-pc-react/src/rtc.ts`
-- Modify: `packages/pc-react/communication/sdkwork-rtc-pc-react/package.json`
+- Copy: `sdkwork-appbase/packages/pc-react/communication/sdkwork-rtc-pc-react` to `apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc`
+- Modify: `apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/src/rtc.ts`
+- Modify: `apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/package.json`
 
 - [ ] Copy the RTC PC React package into `sdkwork-rtc`.
 - [ ] Replace the `@sdkwork/appbase-pc-react` manifest dependency with local RTC manifest primitives so RTC UI no longer depends on appbase.
@@ -47,9 +47,9 @@
 **Files:**
 - Create: `Cargo.toml`
 - Create: `rust-toolchain.toml`
-- Create: `crates/sdkwork-rtc-core/*`
-- Create: `crates/sdkwork-rtc-storage-sqlx/*`
-- Create: `services/sdkwork-routes-rtc-backend-api/*`
+- Create: `crates/sdkwork-communication-rtc-service/*`
+- Create: `crates/sdkwork-communication-rtc-repository-sqlx/*`
+- Create: `crates/sdkwork-router-rtc-backend-api/*`
 
 - [ ] Add focused Rust crates for core contract metadata, storage schema contracts, and backend route catalogs.
 - [ ] Add SQL schema files for Postgres and SQLite.

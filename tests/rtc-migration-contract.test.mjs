@@ -15,14 +15,14 @@ const requiredRtcPaths = [
   "sdks/sdkwork-rtc-app-sdk/openapi/sdkwork-rtc-app-api.openapi.json",
   "sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.openapi.json",
   "sdks/materialize-rtc-v3-openapi-boundaries.mjs",
-  "packages/pc-react/communication/sdkwork-rtc-pc-react/package.json",
-  "packages/pc-react/communication/sdkwork-rtc-pc-react/src/rtc.ts",
-  "crates/sdkwork-rtc-storage-sqlx/Cargo.toml",
-  "crates/sdkwork-rtc-storage-sqlx/src/lib.rs",
-  "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
-  "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
-  "services/sdkwork-routes-rtc-app-api/src/lib.rs",
-  "services/sdkwork-routes-rtc-backend-api/src/lib.rs",
+  "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/package.json",
+  "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/src/rtc.ts",
+  "crates/sdkwork-communication-rtc-repository-sqlx/Cargo.toml",
+  "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs",
+  "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+  "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
+  "crates/sdkwork-router-rtc-app-api/src/lib.rs",
+  "crates/sdkwork-router-rtc-backend-api/src/lib.rs",
 ];
 
 const forbiddenRtcSignalingPaths = [
@@ -36,6 +36,7 @@ const forbiddenAppbasePaths = [
 const forbiddenAppbasePatterns = [
   /@sdkwork\/rtc-sdk/,
   /@sdkwork\/rtc-pc-react/,
+  /sdkwork-rtc-pc-rtc/,
   /sdkwork-rtc-sdk/,
   /sdkwork-space[\\/]sdkwork-rtc/,
   /\.\.\/craw-chat\/sdks\/sdkwork-rtc-sdk/,
@@ -49,9 +50,9 @@ const allowedAppbaseBoundaryFiles = new Set([
 ]);
 
 const forbiddenCrawChatPaths = [
-  "adapters/rtc-aliyun",
-  "adapters/rtc-tencent",
-  "adapters/rtc-volcengine",
+  "plugins/rtc-aliyun",
+  "plugins/rtc-tencent",
+  "plugins/rtc-volcengine",
   "crates/craw-chat-contract-rtc",
   "sdks/sdkwork-rtc-sdk",
   "services/rtc-signaling-service",
@@ -310,7 +311,7 @@ test("sdkwork-rtc does not own app call signaling routes or signaling services",
 
 test("sdkwork-rtc declares RTC-only app and backend API authorities", () => {
   const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-core/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
     "utf8",
   );
 
@@ -419,11 +420,11 @@ test("craw-chat Rust runtime consumes RTC media/provider crates but not RTC sign
   const workspaceManifest = readFileSync(workspacePath(crawChatRoot, "Cargo.toml"), "utf8");
   assert.match(
     workspaceManifest,
-    /sdkwork-rtc-core = \{ path = "\.\.\/sdkwork-rtc\/crates\/sdkwork-rtc-core" \}/,
+    /sdkwork-communication-rtc-service = \{ path = "\.\.\/sdkwork-rtc\/crates\/sdkwork-communication-rtc-service" \}/,
   );
   for (const manifest of manifests) {
     const manifestSource = readFileSync(workspacePath(crawChatRoot, manifest), "utf8");
-    assert.match(manifestSource, /sdkwork-rtc-core\.workspace = true/);
+    assert.match(manifestSource, /sdkwork-communication-rtc-service\.workspace = true/);
   }
 
   const localMinimalNode = readFileSync(
@@ -494,7 +495,7 @@ test("sdkwork-rtc core does not publish IM call signaling state contracts", () =
   );
 
   const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-core/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
     "utf8",
   );
   for (const forbiddenSymbol of [
@@ -511,15 +512,15 @@ test("sdkwork-rtc core does not publish IM call signaling state contracts", () =
     assert.doesNotMatch(
       coreSource,
       new RegExp(`\\b${forbiddenSymbol}\\b`),
-      `sdkwork-rtc-core must keep provider/media runtime contracts only, not IM call signaling state: ${forbiddenSymbol}`,
+      `sdkwork-communication-rtc-service must keep provider/media runtime contracts only, not IM call signaling state: ${forbiddenSymbol}`,
     );
   }
 });
 
 test("sdkwork-rtc storage schema does not keep IM call signaling tables", () => {
   const schemaFiles = [
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
   ];
 
   for (const relativePath of schemaFiles) {
@@ -538,7 +539,7 @@ test("sdkwork-rtc storage schema does not keep IM call signaling tables", () => 
   }
 
   const storageRegistrySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
   assert.doesNotMatch(
@@ -563,7 +564,7 @@ test("sdkwork-rtc HTTP surfaces expose RTC media capabilities without signaling"
   assert.deepEqual(rtcMatches, []);
 
   const appRouteSource = readFileSync(
-    workspacePath(rtcRoot, "services/sdkwork-routes-rtc-app-api/src/paths.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-router-rtc-app-api/src/paths.rs"),
     "utf8",
   );
   for (const required of [
@@ -710,13 +711,13 @@ test("sdkwork-core does not aggregate RTC SDK sources", () => {
 
 test("sdkwork-rtc active contracts use media runtime names instead of call signaling lifecycle names", () => {
   const contractFiles = [
-    "crates/sdkwork-rtc-core/src/lib.rs",
-    "services/sdkwork-rtc-product/src/lib.rs",
-    "services/sdkwork-routes-rtc-app-api/src/lib.rs",
-    "services/sdkwork-routes-rtc-backend-api/src/lib.rs",
+    "crates/sdkwork-communication-rtc-service/src/lib.rs",
+    "crates/sdkwork-rtc-service-host/src/lib.rs",
+    "crates/sdkwork-router-rtc-app-api/src/lib.rs",
+    "crates/sdkwork-router-rtc-backend-api/src/lib.rs",
     "sdks/materialize-rtc-v3-openapi-boundaries.mjs",
-    "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
-    "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+    "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
+    "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
     "sdks/sdkwork-rtc-app-sdk/openapi/sdkwork-rtc-app-api.openapi.json",
     "sdks/sdkwork-rtc-app-sdk/openapi/sdkwork-rtc-app-api.sdkgen.json",
     "sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.openapi.json",
@@ -744,8 +745,8 @@ test("sdkwork-rtc active contracts use media runtime names instead of call signa
 
 test("sdkwork-rtc storage owns media runtime tables and no call invitation tables", () => {
   const schemaFiles = [
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
   ];
 
   for (const relativePath of schemaFiles) {
@@ -777,7 +778,7 @@ test("sdkwork-rtc storage owns media runtime tables and no call invitation table
   }
 
   const storageRegistrySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
   assert.match(storageRegistrySource, /table_name:\s*"rtc_media_session"/);
@@ -788,8 +789,8 @@ test("sdkwork-rtc storage owns media runtime tables and no call invitation table
 
 test("sdkwork-rtc storage models provider webhooks and active provider query reconciliation", () => {
   const schemaFiles = [
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
   ];
 
   for (const relativePath of schemaFiles) {
@@ -859,7 +860,7 @@ test("sdkwork-rtc storage models provider webhooks and active provider query rec
   }
 
   const storageRegistrySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
   assert.match(
@@ -886,7 +887,7 @@ test("sdkwork-rtc storage models provider webhooks and active provider query rec
   }
 
   const providerEventRepositorySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/provider_event.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/provider_event.rs"),
     "utf8",
   );
   assert.match(
@@ -941,8 +942,8 @@ test("sdkwork-rtc storage models provider webhooks and active provider query rec
 
 test("sdkwork-rtc storage supports multiple RTC provider profiles without storing raw secrets", () => {
   const schemaFiles = [
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
   ];
 
   for (const relativePath of schemaFiles) {
@@ -1021,7 +1022,7 @@ test("sdkwork-rtc storage supports multiple RTC provider profiles without storin
   }
 
   const storageRegistrySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
   assert.match(
@@ -1061,7 +1062,7 @@ test("sdkwork-rtc storage supports multiple RTC provider profiles without storin
   }
 
   const providerProfileRepositorySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/provider_profile.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/provider_profile.rs"),
     "utf8",
   );
   assert.match(
@@ -1090,10 +1091,204 @@ test("sdkwork-rtc storage supports multiple RTC provider profiles without storin
   }
 });
 
+test("sdkwork-rtc storage models provider accounts, applications, and credential roles", () => {
+  const schemaFiles = [
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
+  ];
+
+  for (const relativePath of schemaFiles) {
+    const source = readFileSync(workspacePath(rtcRoot, relativePath), "utf8");
+    const providerAccountTable = tableBlock(source, "rtc_provider_account");
+    const providerApplicationTable = tableBlock(source, "rtc_provider_application");
+    const providerCredentialTable = tableBlock(source, "rtc_provider_credential");
+
+    for (const requiredColumn of [
+      "tenant_id",
+      "organization_id",
+      "provider",
+      "code",
+      "name",
+      "status",
+      "environment",
+      "external_tenant_id",
+      "cloud_account_id",
+      "project_id",
+      "resource_group_id",
+      "last_verified_at",
+      "last_verification_error",
+      "created_by",
+      "updated_by",
+      "created_at",
+      "updated_at",
+      "version",
+      "deleted_at",
+      "deleted_by",
+    ]) {
+      assert.match(
+        providerAccountTable,
+        new RegExp(`\\b${requiredColumn}\\b`),
+        `${relativePath} rtc_provider_account must persist ${requiredColumn}`,
+      );
+    }
+    assert.match(
+      providerAccountTable,
+      /uk_rtc_provider_account_tenant_org_provider_code/,
+      `${relativePath} rtc_provider_account must scope account code uniqueness by tenant/org/provider`,
+    );
+
+    for (const requiredColumn of [
+      "provider_account_id",
+      "provider",
+      "code",
+      "name",
+      "status",
+      "environment",
+      "region",
+      "provider_application_id",
+      "provider_application_id_kind",
+      "access_endpoint",
+      "api_endpoint",
+      "api_host",
+      "api_version",
+      "webhook_callback_url",
+      "config_snapshot",
+      "last_verified_at",
+      "last_verification_error",
+      "created_by",
+      "updated_by",
+      "created_at",
+      "updated_at",
+      "version",
+      "deleted_at",
+      "deleted_by",
+    ]) {
+      assert.match(
+        providerApplicationTable,
+        new RegExp(`\\b${requiredColumn}\\b`),
+        `${relativePath} rtc_provider_application must persist ${requiredColumn}`,
+      );
+    }
+    assert.match(
+      providerApplicationTable,
+      /uk_rtc_provider_application_account_code/,
+      `${relativePath} rtc_provider_application must prevent duplicate app codes per provider account`,
+    );
+    assert.match(
+      providerApplicationTable,
+      /idx_rtc_provider_application_scope_provider_status/,
+      `${relativePath} rtc_provider_application must support scoped provider/status lookup`,
+    );
+
+    for (const requiredColumn of [
+      "provider_account_id",
+      "provider_application_id",
+      "provider",
+      "credential_role",
+      "credential_label",
+      "credential_ref",
+      "credential_fingerprint",
+      "secret_version",
+      "status",
+      "valid_from",
+      "expires_at",
+      "rotation_due_at",
+      "rotated_at",
+      "revoked_at",
+      "last_verified_at",
+      "last_used_at",
+      "created_by",
+      "updated_by",
+      "created_at",
+      "updated_at",
+      "version",
+    ]) {
+      assert.match(
+        providerCredentialTable,
+        new RegExp(`\\b${requiredColumn}\\b`),
+        `${relativePath} rtc_provider_credential must persist ${requiredColumn}`,
+      );
+    }
+    assert.match(
+      providerCredentialTable,
+      /uk_rtc_provider_credential_application_role_label/,
+      `${relativePath} rtc_provider_credential must uniquely scope credential role labels per application`,
+    );
+    assert.match(
+      providerCredentialTable,
+      /idx_rtc_provider_credential_scope_role_status/,
+      `${relativePath} rtc_provider_credential must support scoped role/status lookup`,
+    );
+
+    for (const forbiddenSecretColumn of [
+      "app_key",
+      "sdk_secret_key",
+      "secret_key",
+      "secret_access_key",
+      "raw_secret",
+      "private_key",
+      "token",
+    ]) {
+      assert.doesNotMatch(
+        providerCredentialTable,
+        new RegExp(`\\b${forbiddenSecretColumn}\\b`, "i"),
+        `${relativePath} rtc_provider_credential must store secret refs/fingerprints, not raw ${forbiddenSecretColumn}`,
+      );
+    }
+  }
+
+  const storageRegistrySource = readFileSync(
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
+    "utf8",
+  ).split("#[cfg(test)]")[0];
+  assert.match(
+    storageRegistrySource,
+    /pub mod provider_account/,
+    "storage crate must expose provider account storage as a focused module",
+  );
+  assert.match(
+    storageRegistrySource,
+    /RtcSqliteProviderAccountRepository/,
+    "storage crate root must re-export a SQLite provider account repository",
+  );
+  assert.match(
+    storageRegistrySource,
+    /RtcPostgresProviderAccountRepository/,
+    "storage crate root must re-export a Postgres provider account repository",
+  );
+
+  const providerAccountRepositoryPath = workspacePath(
+    rtcRoot,
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/provider_account.rs",
+  );
+  assert.ok(existsSync(providerAccountRepositoryPath), "provider account repository module must exist");
+  const providerAccountRepositorySource = readFileSync(providerAccountRepositoryPath, "utf8");
+  for (const requiredMethod of [
+    "upsert_provider_account",
+    "get_provider_account_by_id",
+    "list_provider_accounts",
+    "disable_provider_account",
+    "upsert_provider_application",
+    "get_provider_application_by_id",
+    "list_provider_applications",
+    "disable_provider_application",
+    "upsert_provider_credential",
+    "get_provider_credential_by_id",
+    "list_provider_credentials",
+    "revoke_provider_credential",
+  ]) {
+    assert.match(
+      providerAccountRepositorySource,
+      new RegExp(`pub async fn ${requiredMethod}\\b`),
+      `provider account repository must expose ${requiredMethod}`,
+    );
+  }
+});
+
 test("sdkwork-rtc storage persists provider routes for region-based RTC provider selection", () => {
   const schemaFiles = [
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
   ];
 
   for (const relativePath of schemaFiles) {
@@ -1139,7 +1334,7 @@ test("sdkwork-rtc storage persists provider routes for region-based RTC provider
   }
 
   const storageRegistrySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
   assert.match(
@@ -1170,7 +1365,7 @@ test("sdkwork-rtc storage persists provider routes for region-based RTC provider
 
   const providerRouteRepositoryPath = workspacePath(
     rtcRoot,
-    "crates/sdkwork-rtc-storage-sqlx/src/provider_route.rs",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/provider_route.rs",
   );
   assert.ok(existsSync(providerRouteRepositoryPath), "provider route repository module must exist");
   const providerRouteRepositorySource = readFileSync(providerRouteRepositoryPath, "utf8");
@@ -1201,8 +1396,8 @@ test("sdkwork-rtc storage persists provider routes for region-based RTC provider
 
 test("sdkwork-rtc storage persists complete post-session media completion records", () => {
   const schemaFiles = [
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
   ];
 
   for (const relativePath of schemaFiles) {
@@ -1329,7 +1524,7 @@ test("sdkwork-rtc storage persists complete post-session media completion record
   }
 
   const storageRegistrySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
   assert.match(
@@ -1368,7 +1563,7 @@ test("sdkwork-rtc storage persists complete post-session media completion record
   );
 
   const completionRepositorySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/completion_record.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/completion_record.rs"),
     "utf8",
   );
   assert.match(
@@ -1393,7 +1588,7 @@ test("sdkwork-rtc storage persists complete post-session media completion record
   );
 
   const mediaSessionRepositorySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/media_session.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/media_session.rs"),
     "utf8",
   );
   assert.match(
@@ -1425,9 +1620,9 @@ test("sdkwork-rtc storage persists complete post-session media completion record
 
 test("sdkwork-rtc backend control plane uses media session resources only", () => {
   const routeAndContractFiles = [
-    "services/sdkwork-routes-rtc-backend-api/src/paths.rs",
+    "crates/sdkwork-router-rtc-backend-api/src/paths.rs",
     "sdks/materialize-rtc-v3-openapi-boundaries.mjs",
-    "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+    "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
     "sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.openapi.json",
     "sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.sdkgen.json",
     "sdks/sdkwork-rtc-backend-sdk/specs/component.spec.json",
@@ -1444,7 +1639,7 @@ test("sdkwork-rtc backend control plane uses media session resources only", () =
   assert.deepEqual(matches, []);
 
   const backendRouteSource = readFileSync(
-    workspacePath(rtcRoot, "services/sdkwork-routes-rtc-backend-api/src/paths.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-router-rtc-backend-api/src/paths.rs"),
     "utf8",
   );
   assert.match(backendRouteSource, /\/backend\/v3\/api\/rtc\/media_sessions/);
@@ -1455,7 +1650,7 @@ test("sdkwork-rtc backend control plane uses media session resources only", () =
 
 test("sdkwork-rtc recording artifacts use dedicated RTC Drive spaces", () => {
   const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-core/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
     "utf8",
   );
   assert.match(coreSource, /RTC_DRIVE_SPACE_TYPE:\s*&str\s*=\s*"rtc"/);
@@ -1468,8 +1663,8 @@ test("sdkwork-rtc recording artifacts use dedicated RTC Drive spaces", () => {
   );
 
   const schemaFiles = [
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql",
-    "crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+    "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
   ];
   for (const relativePath of schemaFiles) {
     const source = readFileSync(workspacePath(rtcRoot, relativePath), "utf8");
@@ -1497,14 +1692,14 @@ test("sdkwork-rtc recording artifacts use dedicated RTC Drive spaces", () => {
   }
 
   const storageRegistrySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
   assert.match(storageRegistrySource, /"drive_space_type"/);
   assert.match(storageRegistrySource, /"ck_rtc_media_artifact_drive_space_type"/);
 
   const mediaSessionRepositorySource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-storage-sqlx/src/media_session.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-repository-sqlx/src/media_session.rs"),
     "utf8",
   );
   assert.match(mediaSessionRepositorySource, /drive_space_type/);
@@ -1570,11 +1765,11 @@ test("sdkwork-rtc recording artifacts use dedicated RTC Drive spaces", () => {
 test("sdkwork-rtc route crates expose executable app and backend API routers", () => {
   const routeCrates = [
     {
-      root: "services/sdkwork-routes-rtc-app-api",
-      lib: "services/sdkwork-routes-rtc-app-api/src/lib.rs",
-      service: "services/sdkwork-routes-rtc-app-api/src/service.rs",
-      handlers: "services/sdkwork-routes-rtc-app-api/src/handlers.rs",
-      routes: "services/sdkwork-routes-rtc-app-api/src/routes.rs",
+      root: "crates/sdkwork-router-rtc-app-api",
+      lib: "crates/sdkwork-router-rtc-app-api/src/lib.rs",
+      service: "crates/sdkwork-router-rtc-app-api/src/service.rs",
+      handlers: "crates/sdkwork-router-rtc-app-api/src/handlers.rs",
+      routes: "crates/sdkwork-router-rtc-app-api/src/routes.rs",
       expectedTrait: "RtcAppApiService",
       expectedBuilder: "build_sdkwork_rtc_app_api_router",
       expectedPrefix: "/app/v3/api",
@@ -1588,11 +1783,11 @@ test("sdkwork-rtc route crates expose executable app and backend API routers", (
       ],
     },
     {
-      root: "services/sdkwork-routes-rtc-backend-api",
-      lib: "services/sdkwork-routes-rtc-backend-api/src/lib.rs",
-      service: "services/sdkwork-routes-rtc-backend-api/src/service.rs",
-      handlers: "services/sdkwork-routes-rtc-backend-api/src/handlers.rs",
-      routes: "services/sdkwork-routes-rtc-backend-api/src/routes.rs",
+      root: "crates/sdkwork-router-rtc-backend-api",
+      lib: "crates/sdkwork-router-rtc-backend-api/src/lib.rs",
+      service: "crates/sdkwork-router-rtc-backend-api/src/service.rs",
+      handlers: "crates/sdkwork-router-rtc-backend-api/src/handlers.rs",
+      routes: "crates/sdkwork-router-rtc-backend-api/src/routes.rs",
       expectedTrait: "RtcBackendApiService",
       expectedBuilder: "build_sdkwork_rtc_backend_api_router",
       expectedPrefix: "/backend/v3/api",
@@ -1680,6 +1875,15 @@ test("sdkwork-rtc app and backend APIs cover room, credential, artifact, webhook
   }
   for (const requiredPath of [
     "/backend/v3/api/rtc/rooms",
+    "/backend/v3/api/rtc/provider_accounts",
+    "/backend/v3/api/rtc/provider_accounts/{providerAccountId}",
+    "/backend/v3/api/rtc/provider_accounts/{providerAccountId}/disable",
+    "/backend/v3/api/rtc/provider_accounts/{providerAccountId}/applications",
+    "/backend/v3/api/rtc/provider_applications/{providerApplicationId}",
+    "/backend/v3/api/rtc/provider_applications/{providerApplicationId}/disable",
+    "/backend/v3/api/rtc/provider_applications/{providerApplicationId}/credentials",
+    "/backend/v3/api/rtc/provider_credentials/{providerCredentialId}",
+    "/backend/v3/api/rtc/provider_credentials/{providerCredentialId}/revoke",
     "/backend/v3/api/rtc/provider_profiles",
     "/backend/v3/api/rtc/provider_profiles/{providerProfileId}",
     "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/disable",
@@ -1717,6 +1921,21 @@ test("sdkwork-rtc app and backend APIs cover room, credential, artifact, webhook
     ),
   );
   for (const requiredOperationId of [
+    "rtc.providerAccounts.list",
+    "rtc.providerAccounts.create",
+    "rtc.providerAccounts.retrieve",
+    "rtc.providerAccounts.update",
+    "rtc.providerAccounts.disable",
+    "rtc.providerAccounts.applications.list",
+    "rtc.providerAccounts.applications.create",
+    "rtc.providerApplications.retrieve",
+    "rtc.providerApplications.update",
+    "rtc.providerApplications.disable",
+    "rtc.providerApplications.credentials.list",
+    "rtc.providerApplications.credentials.create",
+    "rtc.providerCredentials.retrieve",
+    "rtc.providerCredentials.update",
+    "rtc.providerCredentials.revoke",
     "rtc.providerProfiles.retrieve",
     "rtc.providerProfiles.disable",
     "rtc.providerProfiles.verify",
@@ -1748,6 +1967,15 @@ test("sdkwork-rtc app and backend APIs cover room, credential, artifact, webhook
     "RtcMediaSessionCompletionRecordingSummary",
     "RtcMediaArtifact",
     "RtcProviderWebhookEvent",
+    "RtcProviderAccount",
+    "RtcProviderAccountCommand",
+    "RtcProviderAccountDisableRequest",
+    "RtcProviderApplication",
+    "RtcProviderApplicationCommand",
+    "RtcProviderApplicationDisableRequest",
+    "RtcProviderCredential",
+    "RtcProviderCredentialCommand",
+    "RtcProviderCredentialRevokeRequest",
     "RtcProviderProfile",
     "RtcProviderProfileCommand",
     "RtcProviderProfileVerifyRequest",
@@ -2144,6 +2372,181 @@ test("sdkwork-rtc app and backend APIs expose typed operation DTOs for generated
     );
   }
 
+  const providerManagementOperationExpectations = [
+    {
+      method: "get",
+      path: "/backend/v3/api/rtc/provider_accounts",
+      operationId: "rtc.providerAccounts.list",
+      requestRef: undefined,
+      responseRef: "#/components/schemas/RtcProviderAccountListResponse",
+    },
+    {
+      method: "post",
+      path: "/backend/v3/api/rtc/provider_accounts",
+      operationId: "rtc.providerAccounts.create",
+      requestRef: "#/components/schemas/RtcProviderAccountCommand",
+      responseRef: "#/components/schemas/RtcProviderAccountResponse",
+    },
+    {
+      method: "get",
+      path: "/backend/v3/api/rtc/provider_accounts/{providerAccountId}",
+      operationId: "rtc.providerAccounts.retrieve",
+      requestRef: undefined,
+      responseRef: "#/components/schemas/RtcProviderAccountResponse",
+    },
+    {
+      method: "patch",
+      path: "/backend/v3/api/rtc/provider_accounts/{providerAccountId}",
+      operationId: "rtc.providerAccounts.update",
+      requestRef: "#/components/schemas/RtcProviderAccountCommand",
+      responseRef: "#/components/schemas/RtcProviderAccountResponse",
+    },
+    {
+      method: "get",
+      path: "/backend/v3/api/rtc/provider_accounts/{providerAccountId}/applications",
+      operationId: "rtc.providerAccounts.applications.list",
+      requestRef: undefined,
+      responseRef: "#/components/schemas/RtcProviderApplicationListResponse",
+    },
+    {
+      method: "post",
+      path: "/backend/v3/api/rtc/provider_accounts/{providerAccountId}/applications",
+      operationId: "rtc.providerAccounts.applications.create",
+      requestRef: "#/components/schemas/RtcProviderApplicationCommand",
+      responseRef: "#/components/schemas/RtcProviderApplicationResponse",
+    },
+    {
+      method: "post",
+      path: "/backend/v3/api/rtc/provider_accounts/{providerAccountId}/disable",
+      operationId: "rtc.providerAccounts.disable",
+      requestRef: "#/components/schemas/RtcProviderAccountDisableRequest",
+      responseRef: "#/components/schemas/RtcProviderAccountResponse",
+    },
+    {
+      method: "get",
+      path: "/backend/v3/api/rtc/provider_applications/{providerApplicationId}",
+      operationId: "rtc.providerApplications.retrieve",
+      requestRef: undefined,
+      responseRef: "#/components/schemas/RtcProviderApplicationResponse",
+    },
+    {
+      method: "patch",
+      path: "/backend/v3/api/rtc/provider_applications/{providerApplicationId}",
+      operationId: "rtc.providerApplications.update",
+      requestRef: "#/components/schemas/RtcProviderApplicationCommand",
+      responseRef: "#/components/schemas/RtcProviderApplicationResponse",
+    },
+    {
+      method: "get",
+      path: "/backend/v3/api/rtc/provider_applications/{providerApplicationId}/credentials",
+      operationId: "rtc.providerApplications.credentials.list",
+      requestRef: undefined,
+      responseRef: "#/components/schemas/RtcProviderCredentialListResponse",
+    },
+    {
+      method: "post",
+      path: "/backend/v3/api/rtc/provider_applications/{providerApplicationId}/credentials",
+      operationId: "rtc.providerApplications.credentials.create",
+      requestRef: "#/components/schemas/RtcProviderCredentialCommand",
+      responseRef: "#/components/schemas/RtcProviderCredentialResponse",
+    },
+    {
+      method: "post",
+      path: "/backend/v3/api/rtc/provider_applications/{providerApplicationId}/disable",
+      operationId: "rtc.providerApplications.disable",
+      requestRef: "#/components/schemas/RtcProviderApplicationDisableRequest",
+      responseRef: "#/components/schemas/RtcProviderApplicationResponse",
+    },
+    {
+      method: "get",
+      path: "/backend/v3/api/rtc/provider_credentials/{providerCredentialId}",
+      operationId: "rtc.providerCredentials.retrieve",
+      requestRef: undefined,
+      responseRef: "#/components/schemas/RtcProviderCredentialResponse",
+    },
+    {
+      method: "patch",
+      path: "/backend/v3/api/rtc/provider_credentials/{providerCredentialId}",
+      operationId: "rtc.providerCredentials.update",
+      requestRef: "#/components/schemas/RtcProviderCredentialCommand",
+      responseRef: "#/components/schemas/RtcProviderCredentialResponse",
+    },
+    {
+      method: "post",
+      path: "/backend/v3/api/rtc/provider_credentials/{providerCredentialId}/revoke",
+      operationId: "rtc.providerCredentials.revoke",
+      requestRef: "#/components/schemas/RtcProviderCredentialRevokeRequest",
+      responseRef: "#/components/schemas/RtcProviderCredentialResponse",
+    },
+  ];
+  const providerManagementOperations = [];
+  for (const expectation of providerManagementOperationExpectations) {
+    const operation = openApiOperation(backendOpenapi, expectation.method, expectation.path);
+    providerManagementOperations.push(operation);
+    assert.equal(operation.operationId, expectation.operationId);
+    assert.equal(
+      jsonRequestSchemaRef(operation),
+      expectation.requestRef,
+      `${expectation.operationId} must use a provider-management request DTO`,
+    );
+    assert.equal(
+      jsonResponseSchemaRef(operation),
+      expectation.responseRef,
+      `${expectation.operationId} must use a provider-management response DTO`,
+    );
+  }
+
+  const providerApplicationSchema =
+    backendOpenapi.components?.schemas?.RtcProviderApplication;
+  const providerApplicationCommandSchema =
+    backendOpenapi.components?.schemas?.RtcProviderApplicationCommand;
+  for (const [schemaName, schema] of Object.entries({
+    RtcProviderApplication: providerApplicationSchema,
+    RtcProviderApplicationCommand: providerApplicationCommandSchema,
+  })) {
+    assert.deepEqual(
+      schema?.properties?.providerApplicationIdKind?.enum,
+      ["volcengine_app_id", "tencent_sdk_app_id", "provider_application_id"],
+      `${schemaName} must distinguish Volcengine AppId and Tencent SDKAppID account standards`,
+    );
+  }
+
+  const providerCredentialSchema =
+    backendOpenapi.components?.schemas?.RtcProviderCredential;
+  const providerCredentialCommandSchema =
+    backendOpenapi.components?.schemas?.RtcProviderCredentialCommand;
+  for (const [schemaName, schema] of Object.entries({
+    RtcProviderCredential: providerCredentialSchema,
+    RtcProviderCredentialCommand: providerCredentialCommandSchema,
+  })) {
+    assert.deepEqual(
+      schema?.properties?.credentialRole?.enum,
+      [
+        "rtc_token_signing",
+        "open_api_signing",
+        "usersig_signing",
+        "cloud_api_signing",
+        "webhook_signing",
+      ],
+      `${schemaName} must model Volcengine and Tencent credential roles explicitly`,
+    );
+    for (const forbiddenProperty of [
+      "appKey",
+      "sdkSecretKey",
+      "secretKey",
+      "secretAccessKey",
+      "rawSecret",
+      "privateKey",
+      "token",
+    ]) {
+      assert.equal(
+        schema?.properties?.[forbiddenProperty],
+        undefined,
+        `${schemaName} must not expose raw provider secret property ${forbiddenProperty}`,
+      );
+    }
+  }
+
   const receiveWebhook = openApiOperation(
     backendOpenapi,
     "post",
@@ -2192,7 +2595,7 @@ test("sdkwork-rtc app and backend APIs expose typed operation DTOs for generated
     readFileSync(
       workspacePath(
         rtcRoot,
-        "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+        "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
       ),
       "utf8",
     ),
@@ -2270,6 +2673,7 @@ test("sdkwork-rtc app and backend APIs expose typed operation DTOs for generated
 
   for (const operation of [
     appCreateSession,
+    ...providerManagementOperations,
     receiveWebhook,
     createQueryJob,
   ]) {
@@ -2281,6 +2685,149 @@ test("sdkwork-rtc app and backend APIs expose typed operation DTOs for generated
 test("sdkwork-rtc generated backend TypeScript SDK DTOs match provider management OpenAPI", () => {
   const generatedTypesRoot =
     "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/src/types";
+  const generatedApiRoot =
+    "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/src/api";
+  const generatedDeclarationTypesRoot =
+    "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/dist/types";
+  const generatedDeclarationApiRoot =
+    "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/dist/api";
+
+  for (const generatedTypeFile of [
+    "rtc-provider-account.ts",
+    "rtc-provider-account-command.ts",
+    "rtc-provider-account-disable-request.ts",
+    "rtc-provider-account-list-response.ts",
+    "rtc-provider-account-response.ts",
+    "rtc-provider-application.ts",
+    "rtc-provider-application-command.ts",
+    "rtc-provider-application-disable-request.ts",
+    "rtc-provider-application-list-response.ts",
+    "rtc-provider-application-response.ts",
+    "rtc-provider-credential.ts",
+    "rtc-provider-credential-command.ts",
+    "rtc-provider-credential-revoke-request.ts",
+    "rtc-provider-credential-list-response.ts",
+    "rtc-provider-credential-response.ts",
+  ]) {
+    assert.ok(
+      exists(rtcRoot, `${generatedTypesRoot}/${generatedTypeFile}`),
+      `generated backend TypeScript SDK source must expose ${generatedTypeFile}`,
+    );
+    assert.ok(
+      exists(
+        rtcRoot,
+        `${generatedDeclarationTypesRoot}/${generatedTypeFile.replace(/\.ts$/, ".d.ts")}`,
+      ),
+      `generated backend TypeScript SDK declarations must expose ${generatedTypeFile}`,
+    );
+  }
+  for (const generatedApiFile of [
+    "rtc-provider-accounts.ts",
+    "rtc-provider-applications.ts",
+    "rtc-provider-credentials.ts",
+  ]) {
+    assert.ok(
+      exists(rtcRoot, `${generatedApiRoot}/${generatedApiFile}`),
+      `generated backend TypeScript SDK source must expose ${generatedApiFile}`,
+    );
+    assert.ok(
+      exists(
+        rtcRoot,
+        `${generatedDeclarationApiRoot}/${generatedApiFile.replace(/\.ts$/, ".d.ts")}`,
+      ),
+      `generated backend TypeScript SDK declarations must expose ${generatedApiFile}`,
+    );
+  }
+
+  const providerApplicationCommand = readFileSync(
+    workspacePath(rtcRoot, `${generatedTypesRoot}/rtc-provider-application-command.ts`),
+    "utf8",
+  );
+  assert.match(
+    providerApplicationCommand,
+    /providerApplicationIdKind: 'volcengine_app_id' \| 'tencent_sdk_app_id' \| 'provider_application_id'/,
+    "generated provider application command must distinguish Volcengine AppId and Tencent SDKAppID",
+  );
+
+  const providerCredentialCommand = readFileSync(
+    workspacePath(rtcRoot, `${generatedTypesRoot}/rtc-provider-credential-command.ts`),
+    "utf8",
+  );
+  assert.match(
+    providerCredentialCommand,
+    /credentialRole: 'rtc_token_signing' \| 'open_api_signing' \| 'usersig_signing' \| 'cloud_api_signing' \| 'webhook_signing'/,
+    "generated provider credential command must expose Volcengine and Tencent credential role choices",
+  );
+  for (const rawSecretToken of [
+    "appKey",
+    "sdkSecretKey",
+    "secretKey",
+    "secretAccessKey",
+    "rawSecret",
+    "privateKey",
+    "token",
+  ]) {
+    assert.doesNotMatch(
+      providerCredentialCommand,
+      new RegExp(`\\b${rawSecretToken}\\b`),
+      `generated provider credential command must not expose raw secret token ${rawSecretToken}`,
+    );
+  }
+
+  const providerAccountsApi = readFileSync(
+    workspacePath(rtcRoot, `${generatedApiRoot}/rtc-provider-accounts.ts`),
+    "utf8",
+  );
+  for (const requiredMethod of [
+    "async list",
+    "async create",
+    "async retrieve",
+    "async update",
+    "async disable",
+  ]) {
+    assert.match(
+      providerAccountsApi,
+      new RegExp(requiredMethod.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+      `generated provider accounts API must expose ${requiredMethod}`,
+    );
+  }
+
+  const providerApplicationsApi = readFileSync(
+    workspacePath(rtcRoot, `${generatedApiRoot}/rtc-provider-applications.ts`),
+    "utf8",
+  );
+  for (const requiredMethod of [
+    "async list",
+    "async create",
+    "async retrieve",
+    "async update",
+    "async disable",
+  ]) {
+    assert.match(
+      providerApplicationsApi,
+      new RegExp(requiredMethod.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+      `generated provider applications API must expose ${requiredMethod}`,
+    );
+  }
+
+  const providerCredentialsApi = readFileSync(
+    workspacePath(rtcRoot, `${generatedApiRoot}/rtc-provider-credentials.ts`),
+    "utf8",
+  );
+  for (const requiredMethod of [
+    "async list",
+    "async create",
+    "async retrieve",
+    "async update",
+    "async revoke",
+  ]) {
+    assert.match(
+      providerCredentialsApi,
+      new RegExp(requiredMethod.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+      `generated provider credentials API must expose ${requiredMethod}`,
+    );
+  }
+
   const providerProfileVerifyRequest = readFileSync(
     workspacePath(rtcRoot, `${generatedTypesRoot}/rtc-provider-profile-verify-request.ts`),
     "utf8",
@@ -2403,9 +2950,9 @@ test("sdkwork-rtc generated TypeScript SDK DTOs preserve OpenAPI required fields
 
 test("sdkwork-rtc PC React package exposes media runtime helpers instead of call workflow helpers", () => {
   const packageFiles = [
-    "packages/pc-react/communication/sdkwork-rtc-pc-react/package.json",
-    "packages/pc-react/communication/sdkwork-rtc-pc-react/src/rtc.ts",
-    "packages/pc-react/communication/sdkwork-rtc-pc-react/tests/rtc.test.ts",
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/package.json",
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/src/rtc.ts",
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/tests/rtc.test.ts",
   ];
 
   const matches = findPatternMatches(rtcRoot, packageFiles, [
@@ -2423,7 +2970,7 @@ test("sdkwork-rtc PC React package exposes media runtime helpers instead of call
   assert.deepEqual(matches, []);
 
   const source = readFileSync(
-    workspacePath(rtcRoot, "packages/pc-react/communication/sdkwork-rtc-pc-react/src/rtc.ts"),
+    workspacePath(rtcRoot, "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/src/rtc.ts"),
     "utf8",
   );
   assert.match(source, /\bSdkworkRtcMediaSessionMode\b/);
@@ -2434,7 +2981,7 @@ test("sdkwork-rtc PC React package exposes media runtime helpers instead of call
 
 test("sdkwork-rtc capability keys use media runtime terms instead of call workflow terms", () => {
   const capabilityFiles = [
-    "crates/sdkwork-rtc-core/src/lib.rs",
+    "crates/sdkwork-communication-rtc-service/src/lib.rs",
     "sdks/sdkwork-rtc-sdk/.sdkwork-assembly.json",
     "sdks/sdkwork-rtc-sdk/bin/rtc-standard-contract-constants.mjs",
     "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/capability-catalog.ts",
@@ -2534,7 +3081,7 @@ test("sdkwork-rtc builtin Rust provider adapters implement declared webhook and 
       `${providerKey} must be cataloged as a built-in provider with active query capability`,
     );
 
-    const adapterSourcePath = `adapters/rtc-${providerKey}/src`;
+    const adapterSourcePath = `plugins/rtc-${providerKey}/src`;
     const adapterSource = listTextFiles(rtcRoot, adapterSourcePath)
       .filter((relativePath) => relativePath.endsWith(".rs"))
       .map((relativePath) => readFileSync(workspacePath(rtcRoot, relativePath), "utf8"))
@@ -2563,7 +3110,7 @@ test("sdkwork-rtc builtin Rust provider adapters implement declared webhook and 
       `${adapterSourcePath} must not rely on default active query unsupported capability`,
     );
 
-    const adapterTestPath = `adapters/rtc-${providerKey}/tests/adapter_contract_test.rs`;
+    const adapterTestPath = `plugins/rtc-${providerKey}/tests/adapter_contract_test.rs`;
     const adapterTestSource = readFileSync(workspacePath(rtcRoot, adapterTestPath), "utf8");
     assert.match(
       adapterTestSource,
@@ -2592,6 +3139,9 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
         "AgoraRtcProvider",
         "AgoraRtcProviderConfig",
         "AgoraRtcProviderPluginFactory",
+        "AgoraRtcOpenApiExecutor",
+        "AgoraRtcOpenApiRequest",
+        "AgoraRtcOpenApiResponse",
         "AGORA_RTC_PLUGIN_ID",
         "create_agora_rtc_provider_plugin_factory",
       ],
@@ -2604,6 +3154,9 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
         "AliyunRtcProvider",
         "AliyunRtcProviderConfig",
         "AliyunRtcProviderPluginFactory",
+        "AliyunRtcOpenApiExecutor",
+        "AliyunRtcOpenApiRequest",
+        "AliyunRtcOpenApiResponse",
         "ALIYUN_RTC_PLUGIN_ID",
         "create_aliyun_rtc_provider_plugin_factory",
       ],
@@ -2616,6 +3169,9 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
         "LivekitRtcProvider",
         "LivekitRtcProviderConfig",
         "LivekitRtcProviderPluginFactory",
+        "LivekitRtcOpenApiExecutor",
+        "LivekitRtcOpenApiRequest",
+        "LivekitRtcOpenApiResponse",
         "LIVEKIT_RTC_PLUGIN_ID",
         "create_livekit_rtc_provider_plugin_factory",
       ],
@@ -2685,7 +3241,7 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
   ];
 
   for (const [providerKey, expectation] of Object.entries(expectedProviders)) {
-    const componentSpecPath = `adapters/rtc-${providerKey}/specs/component.spec.json`;
+    const componentSpecPath = `plugins/rtc-${providerKey}/specs/component.spec.json`;
     const componentSpecAbsolutePath = workspacePath(rtcRoot, componentSpecPath);
     const componentSpec = JSON.parse(readFileSync(componentSpecAbsolutePath, "utf8"));
 
@@ -2725,7 +3281,7 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
         factoryExport: expectation.factoryExport,
         factoryFunction: expectation.factoryFunction,
         descriptorMethod: "RtcProviderPort::descriptor",
-        capabilitiesSource: "crates/sdkwork-rtc-core/src/lib.rs",
+        capabilitiesSource: "crates/sdkwork-communication-rtc-service/src/lib.rs",
       },
       `${componentSpecPath} must declare the RTC provider plugin contract`,
     );
@@ -2741,9 +3297,9 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
 
 test("sdkwork-rtc builtin Rust provider adapter crate roots stay thin plugin entrypoints", () => {
   const expectedModules = {
-    agora: ["config", "plugin", "provider", "query", "recording", "webhook"],
-    aliyun: ["config", "plugin", "provider", "query", "recording", "webhook"],
-    livekit: ["config", "plugin", "provider", "query", "recording", "webhook"],
+    agora: ["config", "open_api", "plugin", "provider", "query", "recording", "webhook"],
+    aliyun: ["config", "open_api", "plugin", "provider", "query", "recording", "webhook"],
+    livekit: ["config", "open_api", "plugin", "provider", "query", "recording", "webhook"],
     tencent: [
       "config",
       "credential",
@@ -2779,7 +3335,7 @@ test("sdkwork-rtc builtin Rust provider adapter crate roots stay thin plugin ent
   ];
 
   for (const [providerKey, modules] of Object.entries(expectedModules)) {
-    const libPath = `adapters/rtc-${providerKey}/src/lib.rs`;
+    const libPath = `plugins/rtc-${providerKey}/src/lib.rs`;
     const libSource = readFileSync(workspacePath(rtcRoot, libPath), "utf8");
     const lineCount = libSource.split(/\r?\n/u).length;
     assert.ok(lineCount <= 80, `${libPath} must remain a thin crate-root entrypoint`);
@@ -2790,8 +3346,8 @@ test("sdkwork-rtc builtin Rust provider adapter crate roots stay thin plugin ent
         `${libPath} must assemble ${moduleName}.rs`,
       );
       assert.ok(
-        exists(rtcRoot, `adapters/rtc-${providerKey}/src/${moduleName}.rs`),
-        `adapters/rtc-${providerKey}/src/${moduleName}.rs must exist`,
+        exists(rtcRoot, `plugins/rtc-${providerKey}/src/${moduleName}.rs`),
+        `plugins/rtc-${providerKey}/src/${moduleName}.rs must exist`,
       );
     }
     assert.match(
@@ -2833,7 +3389,7 @@ test("sdkwork-rtc builtin provider capability declarations stay aligned across R
     livekit: "RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES",
   };
   const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-core/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
     "utf8",
   );
   const requiredCapabilities = parseRustStringArrayConstant(
@@ -2931,7 +3487,7 @@ test("sdkwork-rtc builtin Rust provider adapter tests cover declared media sessi
       `${providerKey} must inherit the standard required RTC capabilities`,
     );
 
-    const adapterTestPath = `adapters/rtc-${providerKey}/tests/adapter_contract_test.rs`;
+    const adapterTestPath = `plugins/rtc-${providerKey}/tests/adapter_contract_test.rs`;
     const adapterTestSource = readFileSync(workspacePath(rtcRoot, adapterTestPath), "utf8");
 
     for (const modeName of ["Audio", "Video", "Live"]) {
@@ -2960,23 +3516,40 @@ test("sdkwork-rtc builtin Rust provider adapter tests cover declared media sessi
     if (optionalCapabilities.includes("'recording'") && optionalCapabilities.includes("'artifact'")) {
       for (const artifactToken of [
         "export_recording_artifact",
-        "drive://spaces/space_rtc_recordings/nodes/node_",
+        "RtcRecordingArtifactImportPort",
+        "RtcRecordingArtifactImportRequest",
+        "with_recording_importer",
+        "recording export must fail closed",
         "resource.uri.as_deref()",
-        "rtc_recording",
       ]) {
         assert.match(
           adapterTestSource,
           new RegExp(artifactToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
-          `${adapterTestPath} must assert Drive-backed recording artifact export because ${providerKey} declares recording + artifact capabilities`,
+          `${adapterTestPath} must assert the Drive importer boundary because ${providerKey} declares recording + artifact capabilities`,
         );
       }
+      assert.doesNotMatch(
+        adapterTestSource,
+        /space_rtc_recordings/,
+        `${adapterTestPath} must not assert provider-fabricated Drive recording spaces`,
+      );
+
+      const adapterSource = listTextFiles(rtcRoot, `plugins/rtc-${providerKey}/src`)
+        .filter((relativePath) => relativePath.endsWith(".rs"))
+        .map((relativePath) => readFileSync(workspacePath(rtcRoot, relativePath), "utf8"))
+        .join("\n");
+      assert.doesNotMatch(
+        adapterSource,
+        /space_rtc_recordings|provider_executor_not_configured/,
+        `plugins/rtc-${providerKey}/src must fail closed instead of fabricating Drive resources or local provider-query success`,
+      );
     }
   }
 });
 
 test("sdkwork-rtc provider registry is RTC-only", () => {
   const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-rtc-core/src/lib.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
     "utf8",
   ).split("#[cfg(test)]")[0];
 

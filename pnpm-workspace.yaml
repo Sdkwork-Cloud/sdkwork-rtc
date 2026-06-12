@@ -1,5 +1,5 @@
 packages:
-  - "packages/*/*/*"
+  - "apps/*/packages/*"
   - "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript"
   - "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/providers/*"
   - "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi"

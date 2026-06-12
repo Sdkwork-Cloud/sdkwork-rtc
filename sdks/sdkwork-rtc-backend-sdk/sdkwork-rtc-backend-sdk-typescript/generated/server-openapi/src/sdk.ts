@@ -4,6 +4,9 @@ import type { AuthTokenManager } from '@sdkwork/sdk-common';
 
 import { RtcMediaArtifactsApi, createRtcMediaArtifactsApi } from './api/rtc-media-artifacts';
 import { RtcMediaSessionsApi, createRtcMediaSessionsApi } from './api/rtc-media-sessions';
+import { RtcProviderAccountsApi, createRtcProviderAccountsApi } from './api/rtc-provider-accounts';
+import { RtcProviderApplicationsApi, createRtcProviderApplicationsApi } from './api/rtc-provider-applications';
+import { RtcProviderCredentialsApi, createRtcProviderCredentialsApi } from './api/rtc-provider-credentials';
 import { RtcProviderProfilesApi, createRtcProviderProfilesApi } from './api/rtc-provider-profiles';
 import { RtcProviderQueryJobsApi, createRtcProviderQueryJobsApi } from './api/rtc-provider-query-jobs';
 import { RtcProviderRoutesApi, createRtcProviderRoutesApi } from './api/rtc-provider-routes';
@@ -16,6 +19,9 @@ export class SdkworkBackendClient {
 
   public readonly rtcMediaArtifacts: RtcMediaArtifactsApi;
   public readonly rtcMediaSessions: RtcMediaSessionsApi;
+  public readonly rtcProviderAccounts: RtcProviderAccountsApi;
+  public readonly rtcProviderApplications: RtcProviderApplicationsApi;
+  public readonly rtcProviderCredentials: RtcProviderCredentialsApi;
   public readonly rtcProviderProfiles: RtcProviderProfilesApi;
   public readonly rtcProviderQueryJobs: RtcProviderQueryJobsApi;
   public readonly rtcProviderRoutes: RtcProviderRoutesApi;
@@ -28,6 +34,12 @@ export class SdkworkBackendClient {
     this.rtcMediaArtifacts = createRtcMediaArtifactsApi(this.httpClient);
 
     this.rtcMediaSessions = createRtcMediaSessionsApi(this.httpClient);
+
+    this.rtcProviderAccounts = createRtcProviderAccountsApi(this.httpClient);
+
+    this.rtcProviderApplications = createRtcProviderApplicationsApi(this.httpClient);
+
+    this.rtcProviderCredentials = createRtcProviderCredentialsApi(this.httpClient);
 
     this.rtcProviderProfiles = createRtcProviderProfilesApi(this.httpClient);
 

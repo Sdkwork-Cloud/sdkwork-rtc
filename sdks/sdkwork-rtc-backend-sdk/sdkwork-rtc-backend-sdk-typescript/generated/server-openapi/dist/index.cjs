@@ -283,18 +283,18 @@ class RtcMediaArtifactsRtcMediaArtifactsApi {
     }
     /** Rtc media Artifacts list. */
     async list(params) {
-        const query = buildQueryString$7([
+        const query = buildQueryString$a([
             { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
             { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
             { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
             { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
             { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
         ]);
-        return this.client.get(appendQueryString$7(backendApiPath(`/rtc/media_artifacts`), query));
+        return this.client.get(appendQueryString$a(backendApiPath(`/rtc/media_artifacts`), query));
     }
     /** Rtc media Artifacts retrieve. */
     async retrieve(mediaArtifactId) {
-        return this.client.get(backendApiPath(`/rtc/media_artifacts/${serializePathParameter$5(mediaArtifactId, { name: 'mediaArtifactId'})}`));
+        return this.client.get(backendApiPath(`/rtc/media_artifacts/${serializePathParameter$8(mediaArtifactId, { name: 'mediaArtifactId'})}`));
     }
 }
 class RtcMediaArtifactsRtcApi {
@@ -312,6 +312,672 @@ class RtcMediaArtifactsApi {
 function createRtcMediaArtifactsApi(client) {
     return new RtcMediaArtifactsApi(client);
 }
+function appendQueryString$a(path, rawQueryString) {
+    const query = rawQueryString.replace(/^\?+/, '');
+    if (!query) {
+        return path;
+    }
+    return path.includes('?') ? `${path}&${query}` : `${path}?${query}`;
+}
+function serializePathParameter$8(value, spec) {
+    if (value === undefined || value === null) {
+        return '';
+    }
+    if (Array.isArray(value)) {
+        return serializePathArray$8(spec.name, value);
+    }
+    if (typeof value === 'object') {
+        return serializePathObject$8(spec.name, value);
+    }
+    return pathPrefix$8() + encodePathValue$8(serializePathPrimitive$8(value));
+}
+function serializePathArray$8(name, values, style, explode) {
+    const serialized = values
+        .filter((item) => item !== undefined && item !== null)
+        .map((item) => encodePathValue$8(serializePathPrimitive$8(item)));
+    if (serialized.length === 0) {
+        return pathPrefix$8();
+    }
+    return pathPrefix$8() + serialized.join(',');
+}
+function serializePathObject$8(name, value, style, explode) {
+    const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+    if (entries.length === 0) {
+        return pathPrefix$8();
+    }
+    const serialized = entries.flatMap(([key, entryValue]) => [encodePathValue$8(key), encodePathValue$8(serializePathPrimitive$8(entryValue))]).join(',');
+    return pathPrefix$8() + serialized;
+}
+function pathPrefix$8(name, style, _objectValue) {
+    return '';
+}
+function encodePathValue$8(value) {
+    return encodeURIComponent(value);
+}
+function serializePathPrimitive$8(value) {
+    if (value instanceof Date) {
+        return value.toISOString();
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value);
+    }
+    return String(value);
+}
+function buildQueryString$a(parameters) {
+    const pairs = [];
+    for (const parameter of parameters) {
+        appendSerializedParameter$a(pairs, parameter);
+    }
+    return pairs.join('&');
+}
+function appendSerializedParameter$a(pairs, parameter) {
+    if (parameter.value === undefined || parameter.value === null) {
+        return;
+    }
+    if (parameter.contentType) {
+        pairs.push(`${encodeQueryComponent$a(parameter.name)}=${encodeQueryValue$a(JSON.stringify(parameter.value), parameter.allowReserved)}`);
+        return;
+    }
+    const style = parameter.style || 'form';
+    if (style === 'deepObject') {
+        appendDeepObjectParameter$a(pairs, parameter.name, parameter.value, parameter.allowReserved);
+        return;
+    }
+    if (Array.isArray(parameter.value)) {
+        appendArrayParameter$a(pairs, parameter.name, parameter.value, style, parameter.explode, parameter.allowReserved);
+        return;
+    }
+    if (typeof parameter.value === 'object') {
+        appendObjectParameter$a(pairs, parameter.name, parameter.value, style, parameter.explode, parameter.allowReserved);
+        return;
+    }
+    pairs.push(`${encodeQueryComponent$a(parameter.name)}=${encodeQueryValue$a(serializePrimitive$a(parameter.value), parameter.allowReserved)}`);
+}
+function appendArrayParameter$a(pairs, name, value, style, explode, allowReserved) {
+    const values = value
+        .filter((item) => item !== undefined && item !== null)
+        .map((item) => serializePrimitive$a(item));
+    if (values.length === 0) {
+        return;
+    }
+    if (style === 'form' && explode) {
+        for (const item of values) {
+            pairs.push(`${encodeQueryComponent$a(name)}=${encodeQueryValue$a(item, allowReserved)}`);
+        }
+        return;
+    }
+    pairs.push(`${encodeQueryComponent$a(name)}=${encodeQueryValue$a(values.join(','), allowReserved)}`);
+}
+function appendObjectParameter$a(pairs, name, value, style, explode, allowReserved) {
+    const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+    if (entries.length === 0) {
+        return;
+    }
+    if (style === 'form' && explode) {
+        for (const [key, entryValue] of entries) {
+            pairs.push(`${encodeQueryComponent$a(key)}=${encodeQueryValue$a(serializePrimitive$a(entryValue), allowReserved)}`);
+        }
+        return;
+    }
+    const serialized = entries.flatMap(([key, entryValue]) => [key, serializePrimitive$a(entryValue)]).join(',');
+    pairs.push(`${encodeQueryComponent$a(name)}=${encodeQueryValue$a(serialized, allowReserved)}`);
+}
+function appendDeepObjectParameter$a(pairs, name, value, allowReserved) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        pairs.push(`${encodeQueryComponent$a(name)}=${encodeQueryValue$a(serializePrimitive$a(value), allowReserved)}`);
+        return;
+    }
+    for (const [key, entryValue] of Object.entries(value)) {
+        if (entryValue === undefined || entryValue === null) {
+            continue;
+        }
+        pairs.push(`${encodeQueryComponent$a(`${name}[${key}]`)}=${encodeQueryValue$a(serializePrimitive$a(entryValue), allowReserved)}`);
+    }
+}
+function serializePrimitive$a(value) {
+    if (value instanceof Date) {
+        return value.toISOString();
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value);
+    }
+    return String(value);
+}
+function encodeQueryComponent$a(value) {
+    return encodeURIComponent(value);
+}
+function encodeQueryValue$a(value, allowReserved) {
+    const encoded = encodeURIComponent(value);
+    if (!allowReserved) {
+        return encoded;
+    }
+    return encoded.replace(/%3A/gi, ':')
+        .replace(/%2F/gi, '/')
+        .replace(/%3F/gi, '?')
+        .replace(/%23/gi, '#')
+        .replace(/%5B/gi, '[')
+        .replace(/%5D/gi, ']')
+        .replace(/%40/gi, '@')
+        .replace(/%21/gi, '!')
+        .replace(/%24/gi, '$')
+        .replace(/%26/gi, '&')
+        .replace(/%27/gi, "'")
+        .replace(/%28/gi, '(')
+        .replace(/%29/gi, ')')
+        .replace(/%2A/gi, '*')
+        .replace(/%2B/gi, '+')
+        .replace(/%2C/gi, ',')
+        .replace(/%3B/gi, ';')
+        .replace(/%3D/gi, '=');
+}
+
+class RtcMediaSessionsRtcMediaSessionsCompletionRecordApi {
+    constructor(client) {
+        this.client = client;
+    }
+    /** Rtc media Sessions completion Record retrieve. */
+    async retrieve(mediaSessionId) {
+        return this.client.get(backendApiPath(`/rtc/media_sessions/${serializePathParameter$7(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/completion_record`));
+    }
+}
+class RtcMediaSessionsRtcMediaSessionsApi {
+    constructor(client) {
+        this.client = client;
+        this.completionRecord = new RtcMediaSessionsRtcMediaSessionsCompletionRecordApi(client);
+    }
+    /** Rtc media Sessions list. */
+    async list(params) {
+        const query = buildQueryString$9([
+            { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+            { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+            { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
+            { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
+            { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+        ]);
+        return this.client.get(appendQueryString$9(backendApiPath(`/rtc/media_sessions`), query));
+    }
+    /** Rtc media Sessions retrieve. */
+    async retrieve(mediaSessionId) {
+        return this.client.get(backendApiPath(`/rtc/media_sessions/${serializePathParameter$7(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}`));
+    }
+    /** Rtc media Sessions close. */
+    async close(mediaSessionId, body) {
+        return this.client.post(backendApiPath(`/rtc/media_sessions/${serializePathParameter$7(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/close`), body, undefined, undefined, 'application/json');
+    }
+}
+class RtcMediaSessionsRtcApi {
+    constructor(client) {
+        this.client = client;
+        this.mediaSessions = new RtcMediaSessionsRtcMediaSessionsApi(client);
+    }
+}
+class RtcMediaSessionsApi {
+    constructor(client) {
+        this.client = client;
+        this.rtc = new RtcMediaSessionsRtcApi(client);
+    }
+}
+function createRtcMediaSessionsApi(client) {
+    return new RtcMediaSessionsApi(client);
+}
+function appendQueryString$9(path, rawQueryString) {
+    const query = rawQueryString.replace(/^\?+/, '');
+    if (!query) {
+        return path;
+    }
+    return path.includes('?') ? `${path}&${query}` : `${path}?${query}`;
+}
+function serializePathParameter$7(value, spec) {
+    if (value === undefined || value === null) {
+        return '';
+    }
+    const style = spec.style || 'simple';
+    if (Array.isArray(value)) {
+        return serializePathArray$7(spec.name, value, style, spec.explode);
+    }
+    if (typeof value === 'object') {
+        return serializePathObject$7(spec.name, value, style, spec.explode);
+    }
+    return pathPrefix$7(spec.name, style) + encodePathValue$7(serializePathPrimitive$7(value));
+}
+function serializePathArray$7(name, values, style, explode) {
+    const serialized = values
+        .filter((item) => item !== undefined && item !== null)
+        .map((item) => encodePathValue$7(serializePathPrimitive$7(item)));
+    if (serialized.length === 0) {
+        return pathPrefix$7(name, style);
+    }
+    if (style === 'matrix') {
+        return explode
+            ? serialized.map((item) => `;${name}=${item}`).join('')
+            : `;${name}=${serialized.join(',')}`;
+    }
+    return pathPrefix$7(name, style) + serialized.join(explode ? '.' : ',');
+}
+function serializePathObject$7(name, value, style, explode) {
+    const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+    if (entries.length === 0) {
+        return pathPrefix$7(name, style);
+    }
+    if (style === 'matrix') {
+        return explode
+            ? entries.map(([key, entryValue]) => `;${encodePathValue$7(key)}=${encodePathValue$7(serializePathPrimitive$7(entryValue))}`).join('')
+            : `;${name}=${entries.flatMap(([key, entryValue]) => [encodePathValue$7(key), encodePathValue$7(serializePathPrimitive$7(entryValue))]).join(',')}`;
+    }
+    const serialized = explode
+        ? entries.map(([key, entryValue]) => `${encodePathValue$7(key)}=${encodePathValue$7(serializePathPrimitive$7(entryValue))}`).join(style === 'label' ? '.' : ',')
+        : entries.flatMap(([key, entryValue]) => [encodePathValue$7(key), encodePathValue$7(serializePathPrimitive$7(entryValue))]).join(',');
+    return pathPrefix$7(name, style) + serialized;
+}
+function pathPrefix$7(name, style, _objectValue) {
+    if (style === 'label')
+        return '.';
+    if (style === 'matrix')
+        return `;${name}`;
+    return '';
+}
+function encodePathValue$7(value) {
+    return encodeURIComponent(value);
+}
+function serializePathPrimitive$7(value) {
+    if (value instanceof Date) {
+        return value.toISOString();
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value);
+    }
+    return String(value);
+}
+function buildQueryString$9(parameters) {
+    const pairs = [];
+    for (const parameter of parameters) {
+        appendSerializedParameter$9(pairs, parameter);
+    }
+    return pairs.join('&');
+}
+function appendSerializedParameter$9(pairs, parameter) {
+    if (parameter.value === undefined || parameter.value === null) {
+        return;
+    }
+    if (parameter.contentType) {
+        pairs.push(`${encodeQueryComponent$9(parameter.name)}=${encodeQueryValue$9(JSON.stringify(parameter.value), parameter.allowReserved)}`);
+        return;
+    }
+    const style = parameter.style || 'form';
+    if (style === 'deepObject') {
+        appendDeepObjectParameter$9(pairs, parameter.name, parameter.value, parameter.allowReserved);
+        return;
+    }
+    if (Array.isArray(parameter.value)) {
+        appendArrayParameter$9(pairs, parameter.name, parameter.value, style, parameter.explode, parameter.allowReserved);
+        return;
+    }
+    if (typeof parameter.value === 'object') {
+        appendObjectParameter$9(pairs, parameter.name, parameter.value, style, parameter.explode, parameter.allowReserved);
+        return;
+    }
+    pairs.push(`${encodeQueryComponent$9(parameter.name)}=${encodeQueryValue$9(serializePrimitive$9(parameter.value), parameter.allowReserved)}`);
+}
+function appendArrayParameter$9(pairs, name, value, style, explode, allowReserved) {
+    const values = value
+        .filter((item) => item !== undefined && item !== null)
+        .map((item) => serializePrimitive$9(item));
+    if (values.length === 0) {
+        return;
+    }
+    if (style === 'form' && explode) {
+        for (const item of values) {
+            pairs.push(`${encodeQueryComponent$9(name)}=${encodeQueryValue$9(item, allowReserved)}`);
+        }
+        return;
+    }
+    pairs.push(`${encodeQueryComponent$9(name)}=${encodeQueryValue$9(values.join(','), allowReserved)}`);
+}
+function appendObjectParameter$9(pairs, name, value, style, explode, allowReserved) {
+    const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+    if (entries.length === 0) {
+        return;
+    }
+    if (style === 'form' && explode) {
+        for (const [key, entryValue] of entries) {
+            pairs.push(`${encodeQueryComponent$9(key)}=${encodeQueryValue$9(serializePrimitive$9(entryValue), allowReserved)}`);
+        }
+        return;
+    }
+    const serialized = entries.flatMap(([key, entryValue]) => [key, serializePrimitive$9(entryValue)]).join(',');
+    pairs.push(`${encodeQueryComponent$9(name)}=${encodeQueryValue$9(serialized, allowReserved)}`);
+}
+function appendDeepObjectParameter$9(pairs, name, value, allowReserved) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        pairs.push(`${encodeQueryComponent$9(name)}=${encodeQueryValue$9(serializePrimitive$9(value), allowReserved)}`);
+        return;
+    }
+    for (const [key, entryValue] of Object.entries(value)) {
+        if (entryValue === undefined || entryValue === null) {
+            continue;
+        }
+        pairs.push(`${encodeQueryComponent$9(`${name}[${key}]`)}=${encodeQueryValue$9(serializePrimitive$9(entryValue), allowReserved)}`);
+    }
+}
+function serializePrimitive$9(value) {
+    if (value instanceof Date) {
+        return value.toISOString();
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value);
+    }
+    return String(value);
+}
+function encodeQueryComponent$9(value) {
+    return encodeURIComponent(value);
+}
+function encodeQueryValue$9(value, allowReserved) {
+    const encoded = encodeURIComponent(value);
+    if (!allowReserved) {
+        return encoded;
+    }
+    return encoded.replace(/%3A/gi, ':')
+        .replace(/%2F/gi, '/')
+        .replace(/%3F/gi, '?')
+        .replace(/%23/gi, '#')
+        .replace(/%5B/gi, '[')
+        .replace(/%5D/gi, ']')
+        .replace(/%40/gi, '@')
+        .replace(/%21/gi, '!')
+        .replace(/%24/gi, '$')
+        .replace(/%26/gi, '&')
+        .replace(/%27/gi, "'")
+        .replace(/%28/gi, '(')
+        .replace(/%29/gi, ')')
+        .replace(/%2A/gi, '*')
+        .replace(/%2B/gi, '+')
+        .replace(/%2C/gi, ',')
+        .replace(/%3B/gi, ';')
+        .replace(/%3D/gi, '=');
+}
+
+class RtcProviderAccountsRtcProviderAccountsApi {
+    constructor(client) {
+        this.client = client;
+    }
+    /** Rtc provider Accounts list. */
+    async list(params) {
+        const query = buildQueryString$8([
+            { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+            { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+            { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
+            { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
+            { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+        ]);
+        return this.client.get(appendQueryString$8(backendApiPath(`/rtc/provider_accounts`), query));
+    }
+    /** Rtc provider Accounts create. */
+    async create(body) {
+        return this.client.post(backendApiPath(`/rtc/provider_accounts`), body, undefined, undefined, 'application/json');
+    }
+    /** Rtc provider Accounts retrieve. */
+    async retrieve(providerAccountId) {
+        return this.client.get(backendApiPath(`/rtc/provider_accounts/${serializePathParameter$6(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}`));
+    }
+    /** Rtc provider Accounts update. */
+    async update(providerAccountId, body) {
+        return this.client.patch(backendApiPath(`/rtc/provider_accounts/${serializePathParameter$6(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+    }
+    /** Rtc provider Accounts disable. */
+    async disable(providerAccountId, body) {
+        return this.client.post(backendApiPath(`/rtc/provider_accounts/${serializePathParameter$6(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}/disable`), body, undefined, undefined, 'application/json');
+    }
+}
+class RtcProviderAccountsRtcApi {
+    constructor(client) {
+        this.client = client;
+        this.providerAccounts = new RtcProviderAccountsRtcProviderAccountsApi(client);
+    }
+}
+class RtcProviderAccountsApi {
+    constructor(client) {
+        this.client = client;
+        this.rtc = new RtcProviderAccountsRtcApi(client);
+    }
+}
+function createRtcProviderAccountsApi(client) {
+    return new RtcProviderAccountsApi(client);
+}
+function appendQueryString$8(path, rawQueryString) {
+    const query = rawQueryString.replace(/^\?+/, '');
+    if (!query) {
+        return path;
+    }
+    return path.includes('?') ? `${path}&${query}` : `${path}?${query}`;
+}
+function serializePathParameter$6(value, spec) {
+    if (value === undefined || value === null) {
+        return '';
+    }
+    const style = spec.style || 'simple';
+    if (Array.isArray(value)) {
+        return serializePathArray$6(spec.name, value, style, spec.explode);
+    }
+    if (typeof value === 'object') {
+        return serializePathObject$6(spec.name, value, style, spec.explode);
+    }
+    return pathPrefix$6(spec.name, style) + encodePathValue$6(serializePathPrimitive$6(value));
+}
+function serializePathArray$6(name, values, style, explode) {
+    const serialized = values
+        .filter((item) => item !== undefined && item !== null)
+        .map((item) => encodePathValue$6(serializePathPrimitive$6(item)));
+    if (serialized.length === 0) {
+        return pathPrefix$6(name, style);
+    }
+    if (style === 'matrix') {
+        return explode
+            ? serialized.map((item) => `;${name}=${item}`).join('')
+            : `;${name}=${serialized.join(',')}`;
+    }
+    return pathPrefix$6(name, style) + serialized.join(explode ? '.' : ',');
+}
+function serializePathObject$6(name, value, style, explode) {
+    const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+    if (entries.length === 0) {
+        return pathPrefix$6(name, style);
+    }
+    if (style === 'matrix') {
+        return explode
+            ? entries.map(([key, entryValue]) => `;${encodePathValue$6(key)}=${encodePathValue$6(serializePathPrimitive$6(entryValue))}`).join('')
+            : `;${name}=${entries.flatMap(([key, entryValue]) => [encodePathValue$6(key), encodePathValue$6(serializePathPrimitive$6(entryValue))]).join(',')}`;
+    }
+    const serialized = explode
+        ? entries.map(([key, entryValue]) => `${encodePathValue$6(key)}=${encodePathValue$6(serializePathPrimitive$6(entryValue))}`).join(style === 'label' ? '.' : ',')
+        : entries.flatMap(([key, entryValue]) => [encodePathValue$6(key), encodePathValue$6(serializePathPrimitive$6(entryValue))]).join(',');
+    return pathPrefix$6(name, style) + serialized;
+}
+function pathPrefix$6(name, style, _objectValue) {
+    if (style === 'label')
+        return '.';
+    if (style === 'matrix')
+        return `;${name}`;
+    return '';
+}
+function encodePathValue$6(value) {
+    return encodeURIComponent(value);
+}
+function serializePathPrimitive$6(value) {
+    if (value instanceof Date) {
+        return value.toISOString();
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value);
+    }
+    return String(value);
+}
+function buildQueryString$8(parameters) {
+    const pairs = [];
+    for (const parameter of parameters) {
+        appendSerializedParameter$8(pairs, parameter);
+    }
+    return pairs.join('&');
+}
+function appendSerializedParameter$8(pairs, parameter) {
+    if (parameter.value === undefined || parameter.value === null) {
+        return;
+    }
+    if (parameter.contentType) {
+        pairs.push(`${encodeQueryComponent$8(parameter.name)}=${encodeQueryValue$8(JSON.stringify(parameter.value), parameter.allowReserved)}`);
+        return;
+    }
+    const style = parameter.style || 'form';
+    if (style === 'deepObject') {
+        appendDeepObjectParameter$8(pairs, parameter.name, parameter.value, parameter.allowReserved);
+        return;
+    }
+    if (Array.isArray(parameter.value)) {
+        appendArrayParameter$8(pairs, parameter.name, parameter.value, style, parameter.explode, parameter.allowReserved);
+        return;
+    }
+    if (typeof parameter.value === 'object') {
+        appendObjectParameter$8(pairs, parameter.name, parameter.value, style, parameter.explode, parameter.allowReserved);
+        return;
+    }
+    pairs.push(`${encodeQueryComponent$8(parameter.name)}=${encodeQueryValue$8(serializePrimitive$8(parameter.value), parameter.allowReserved)}`);
+}
+function appendArrayParameter$8(pairs, name, value, style, explode, allowReserved) {
+    const values = value
+        .filter((item) => item !== undefined && item !== null)
+        .map((item) => serializePrimitive$8(item));
+    if (values.length === 0) {
+        return;
+    }
+    if (style === 'form' && explode) {
+        for (const item of values) {
+            pairs.push(`${encodeQueryComponent$8(name)}=${encodeQueryValue$8(item, allowReserved)}`);
+        }
+        return;
+    }
+    pairs.push(`${encodeQueryComponent$8(name)}=${encodeQueryValue$8(values.join(','), allowReserved)}`);
+}
+function appendObjectParameter$8(pairs, name, value, style, explode, allowReserved) {
+    const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+    if (entries.length === 0) {
+        return;
+    }
+    if (style === 'form' && explode) {
+        for (const [key, entryValue] of entries) {
+            pairs.push(`${encodeQueryComponent$8(key)}=${encodeQueryValue$8(serializePrimitive$8(entryValue), allowReserved)}`);
+        }
+        return;
+    }
+    const serialized = entries.flatMap(([key, entryValue]) => [key, serializePrimitive$8(entryValue)]).join(',');
+    pairs.push(`${encodeQueryComponent$8(name)}=${encodeQueryValue$8(serialized, allowReserved)}`);
+}
+function appendDeepObjectParameter$8(pairs, name, value, allowReserved) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        pairs.push(`${encodeQueryComponent$8(name)}=${encodeQueryValue$8(serializePrimitive$8(value), allowReserved)}`);
+        return;
+    }
+    for (const [key, entryValue] of Object.entries(value)) {
+        if (entryValue === undefined || entryValue === null) {
+            continue;
+        }
+        pairs.push(`${encodeQueryComponent$8(`${name}[${key}]`)}=${encodeQueryValue$8(serializePrimitive$8(entryValue), allowReserved)}`);
+    }
+}
+function serializePrimitive$8(value) {
+    if (value instanceof Date) {
+        return value.toISOString();
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value);
+    }
+    return String(value);
+}
+function encodeQueryComponent$8(value) {
+    return encodeURIComponent(value);
+}
+function encodeQueryValue$8(value, allowReserved) {
+    const encoded = encodeURIComponent(value);
+    if (!allowReserved) {
+        return encoded;
+    }
+    return encoded.replace(/%3A/gi, ':')
+        .replace(/%2F/gi, '/')
+        .replace(/%3F/gi, '?')
+        .replace(/%23/gi, '#')
+        .replace(/%5B/gi, '[')
+        .replace(/%5D/gi, ']')
+        .replace(/%40/gi, '@')
+        .replace(/%21/gi, '!')
+        .replace(/%24/gi, '$')
+        .replace(/%26/gi, '&')
+        .replace(/%27/gi, "'")
+        .replace(/%28/gi, '(')
+        .replace(/%29/gi, ')')
+        .replace(/%2A/gi, '*')
+        .replace(/%2B/gi, '+')
+        .replace(/%2C/gi, ',')
+        .replace(/%3B/gi, ';')
+        .replace(/%3D/gi, '=');
+}
+
+class RtcProviderApplicationsRtcProviderApplicationsApi {
+    constructor(client) {
+        this.client = client;
+    }
+    /** Rtc provider Applications retrieve. */
+    async retrieve(providerApplicationId) {
+        return this.client.get(backendApiPath(`/rtc/provider_applications/${serializePathParameter$5(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}`));
+    }
+    /** Rtc provider Applications update. */
+    async update(providerApplicationId, body) {
+        return this.client.patch(backendApiPath(`/rtc/provider_applications/${serializePathParameter$5(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+    }
+    /** Rtc provider Applications disable. */
+    async disable(providerApplicationId, body) {
+        return this.client.post(backendApiPath(`/rtc/provider_applications/${serializePathParameter$5(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/disable`), body, undefined, undefined, 'application/json');
+    }
+}
+class RtcProviderApplicationsRtcProviderAccountsApplicationsApi {
+    constructor(client) {
+        this.client = client;
+    }
+    /** Rtc provider Accounts applications list. */
+    async list(providerAccountId, params) {
+        const query = buildQueryString$7([
+            { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+            { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+            { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
+            { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
+            { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+        ]);
+        return this.client.get(appendQueryString$7(backendApiPath(`/rtc/provider_accounts/${serializePathParameter$5(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}/applications`), query));
+    }
+    /** Rtc provider Accounts applications create. */
+    async create(providerAccountId, body) {
+        return this.client.post(backendApiPath(`/rtc/provider_accounts/${serializePathParameter$5(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}/applications`), body, undefined, undefined, 'application/json');
+    }
+}
+class RtcProviderApplicationsRtcProviderAccountsApi {
+    constructor(client) {
+        this.client = client;
+        this.applications = new RtcProviderApplicationsRtcProviderAccountsApplicationsApi(client);
+    }
+}
+class RtcProviderApplicationsRtcApi {
+    constructor(client) {
+        this.client = client;
+        this.providerAccounts = new RtcProviderApplicationsRtcProviderAccountsApi(client);
+        this.providerApplications = new RtcProviderApplicationsRtcProviderApplicationsApi(client);
+    }
+}
+class RtcProviderApplicationsApi {
+    constructor(client) {
+        this.client = client;
+        this.rtc = new RtcProviderApplicationsRtcApi(client);
+    }
+}
+function createRtcProviderApplicationsApi(client) {
+    return new RtcProviderApplicationsApi(client);
+}
 function appendQueryString$7(path, rawQueryString) {
     const query = rawQueryString.replace(/^\?+/, '');
     if (!query) {
@@ -323,32 +989,49 @@ function serializePathParameter$5(value, spec) {
     if (value === undefined || value === null) {
         return '';
     }
+    const style = spec.style || 'simple';
     if (Array.isArray(value)) {
-        return serializePathArray$5(spec.name, value);
+        return serializePathArray$5(spec.name, value, style, spec.explode);
     }
     if (typeof value === 'object') {
-        return serializePathObject$5(spec.name, value);
+        return serializePathObject$5(spec.name, value, style, spec.explode);
     }
-    return pathPrefix$5() + encodePathValue$5(serializePathPrimitive$5(value));
+    return pathPrefix$5(spec.name, style) + encodePathValue$5(serializePathPrimitive$5(value));
 }
 function serializePathArray$5(name, values, style, explode) {
     const serialized = values
         .filter((item) => item !== undefined && item !== null)
         .map((item) => encodePathValue$5(serializePathPrimitive$5(item)));
     if (serialized.length === 0) {
-        return pathPrefix$5();
+        return pathPrefix$5(name, style);
     }
-    return pathPrefix$5() + serialized.join(',');
+    if (style === 'matrix') {
+        return explode
+            ? serialized.map((item) => `;${name}=${item}`).join('')
+            : `;${name}=${serialized.join(',')}`;
+    }
+    return pathPrefix$5(name, style) + serialized.join(explode ? '.' : ',');
 }
 function serializePathObject$5(name, value, style, explode) {
     const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
     if (entries.length === 0) {
-        return pathPrefix$5();
+        return pathPrefix$5(name, style);
     }
-    const serialized = entries.flatMap(([key, entryValue]) => [encodePathValue$5(key), encodePathValue$5(serializePathPrimitive$5(entryValue))]).join(',');
-    return pathPrefix$5() + serialized;
+    if (style === 'matrix') {
+        return explode
+            ? entries.map(([key, entryValue]) => `;${encodePathValue$5(key)}=${encodePathValue$5(serializePathPrimitive$5(entryValue))}`).join('')
+            : `;${name}=${entries.flatMap(([key, entryValue]) => [encodePathValue$5(key), encodePathValue$5(serializePathPrimitive$5(entryValue))]).join(',')}`;
+    }
+    const serialized = explode
+        ? entries.map(([key, entryValue]) => `${encodePathValue$5(key)}=${encodePathValue$5(serializePathPrimitive$5(entryValue))}`).join(style === 'label' ? '.' : ',')
+        : entries.flatMap(([key, entryValue]) => [encodePathValue$5(key), encodePathValue$5(serializePathPrimitive$5(entryValue))]).join(',');
+    return pathPrefix$5(name, style) + serialized;
 }
 function pathPrefix$5(name, style, _objectValue) {
+    if (style === 'label')
+        return '.';
+    if (style === 'matrix')
+        return `;${name}`;
     return '';
 }
 function encodePathValue$5(value) {
@@ -471,22 +1154,29 @@ function encodeQueryValue$7(value, allowReserved) {
         .replace(/%3D/gi, '=');
 }
 
-class RtcMediaSessionsRtcMediaSessionsCompletionRecordApi {
+class RtcProviderCredentialsRtcProviderCredentialsApi {
     constructor(client) {
         this.client = client;
     }
-    /** Rtc media Sessions completion Record retrieve. */
-    async retrieve(mediaSessionId) {
-        return this.client.get(backendApiPath(`/rtc/media_sessions/${serializePathParameter$4(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/completion_record`));
+    /** Rtc provider Credentials retrieve. */
+    async retrieve(providerCredentialId) {
+        return this.client.get(backendApiPath(`/rtc/provider_credentials/${serializePathParameter$4(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`));
+    }
+    /** Rtc provider Credentials update. */
+    async update(providerCredentialId, body) {
+        return this.client.patch(backendApiPath(`/rtc/provider_credentials/${serializePathParameter$4(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+    }
+    /** Rtc provider Credentials revoke. */
+    async revoke(providerCredentialId, body) {
+        return this.client.post(backendApiPath(`/rtc/provider_credentials/${serializePathParameter$4(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}/revoke`), body, undefined, undefined, 'application/json');
     }
 }
-class RtcMediaSessionsRtcMediaSessionsApi {
+class RtcProviderCredentialsRtcProviderApplicationsCredentialsApi {
     constructor(client) {
         this.client = client;
-        this.completionRecord = new RtcMediaSessionsRtcMediaSessionsCompletionRecordApi(client);
     }
-    /** Rtc media Sessions list. */
-    async list(params) {
+    /** Rtc provider Applications credentials list. */
+    async list(providerApplicationId, params) {
         const query = buildQueryString$6([
             { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
             { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -494,31 +1184,34 @@ class RtcMediaSessionsRtcMediaSessionsApi {
             { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
             { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
         ]);
-        return this.client.get(appendQueryString$6(backendApiPath(`/rtc/media_sessions`), query));
+        return this.client.get(appendQueryString$6(backendApiPath(`/rtc/provider_applications/${serializePathParameter$4(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), query));
     }
-    /** Rtc media Sessions retrieve. */
-    async retrieve(mediaSessionId) {
-        return this.client.get(backendApiPath(`/rtc/media_sessions/${serializePathParameter$4(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}`));
-    }
-    /** Rtc media Sessions close. */
-    async close(mediaSessionId, body) {
-        return this.client.post(backendApiPath(`/rtc/media_sessions/${serializePathParameter$4(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/close`), body, undefined, undefined, 'application/json');
+    /** Rtc provider Applications credentials create. */
+    async create(providerApplicationId, body) {
+        return this.client.post(backendApiPath(`/rtc/provider_applications/${serializePathParameter$4(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), body, undefined, undefined, 'application/json');
     }
 }
-class RtcMediaSessionsRtcApi {
+class RtcProviderCredentialsRtcProviderApplicationsApi {
     constructor(client) {
         this.client = client;
-        this.mediaSessions = new RtcMediaSessionsRtcMediaSessionsApi(client);
+        this.credentials = new RtcProviderCredentialsRtcProviderApplicationsCredentialsApi(client);
     }
 }
-class RtcMediaSessionsApi {
+class RtcProviderCredentialsRtcApi {
     constructor(client) {
         this.client = client;
-        this.rtc = new RtcMediaSessionsRtcApi(client);
+        this.providerApplications = new RtcProviderCredentialsRtcProviderApplicationsApi(client);
+        this.providerCredentials = new RtcProviderCredentialsRtcProviderCredentialsApi(client);
     }
 }
-function createRtcMediaSessionsApi(client) {
-    return new RtcMediaSessionsApi(client);
+class RtcProviderCredentialsApi {
+    constructor(client) {
+        this.client = client;
+        this.rtc = new RtcProviderCredentialsRtcApi(client);
+    }
+}
+function createRtcProviderCredentialsApi(client) {
+    return new RtcProviderCredentialsApi(client);
 }
 function appendQueryString$6(path, rawQueryString) {
     const query = rawQueryString.replace(/^\?+/, '');
@@ -1839,6 +2532,9 @@ class SdkworkBackendClient {
         this.httpClient = createHttpClient(config);
         this.rtcMediaArtifacts = createRtcMediaArtifactsApi(this.httpClient);
         this.rtcMediaSessions = createRtcMediaSessionsApi(this.httpClient);
+        this.rtcProviderAccounts = createRtcProviderAccountsApi(this.httpClient);
+        this.rtcProviderApplications = createRtcProviderApplicationsApi(this.httpClient);
+        this.rtcProviderCredentials = createRtcProviderCredentialsApi(this.httpClient);
         this.rtcProviderProfiles = createRtcProviderProfilesApi(this.httpClient);
         this.rtcProviderQueryJobs = createRtcProviderQueryJobsApi(this.httpClient);
         this.rtcProviderRoutes = createRtcProviderRoutesApi(this.httpClient);
@@ -1911,6 +2607,9 @@ exports.BaseApi = BaseApi;
 exports.HttpClient = HttpClient;
 exports.RtcMediaArtifactsApi = RtcMediaArtifactsApi;
 exports.RtcMediaSessionsApi = RtcMediaSessionsApi;
+exports.RtcProviderAccountsApi = RtcProviderAccountsApi;
+exports.RtcProviderApplicationsApi = RtcProviderApplicationsApi;
+exports.RtcProviderCredentialsApi = RtcProviderCredentialsApi;
 exports.RtcProviderProfilesApi = RtcProviderProfilesApi;
 exports.RtcProviderQueryJobsApi = RtcProviderQueryJobsApi;
 exports.RtcProviderRoutesApi = RtcProviderRoutesApi;
@@ -1923,6 +2622,9 @@ exports.createClient = createClient;
 exports.createHttpClient = createHttpClient;
 exports.createRtcMediaArtifactsApi = createRtcMediaArtifactsApi;
 exports.createRtcMediaSessionsApi = createRtcMediaSessionsApi;
+exports.createRtcProviderAccountsApi = createRtcProviderAccountsApi;
+exports.createRtcProviderApplicationsApi = createRtcProviderApplicationsApi;
+exports.createRtcProviderCredentialsApi = createRtcProviderCredentialsApi;
 exports.createRtcProviderProfilesApi = createRtcProviderProfilesApi;
 exports.createRtcProviderQueryJobsApi = createRtcProviderQueryJobsApi;
 exports.createRtcProviderRoutesApi = createRtcProviderRoutesApi;

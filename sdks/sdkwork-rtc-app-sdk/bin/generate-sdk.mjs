@@ -6,10 +6,10 @@ await runRtcSdkGenerator({
   authorityName: "sdkwork-rtc-app-api",
   sdkType: "app",
   apiPrefix: "/app/v3/api",
-  sourceRouteCrate: "sdkwork-routes-rtc-app-api",
+  sourceRouteCrate: "sdkwork-router-rtc-app-api",
   routeManifest:
-    "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
-  sourceOpenapi: "generated/openapi/rtc-app-api.openapi.json",
+    "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
+  sourceOpenapi: "apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
   defaultBaseUrl: "http://127.0.0.1:18080",
   sdkDependencies: [
     {

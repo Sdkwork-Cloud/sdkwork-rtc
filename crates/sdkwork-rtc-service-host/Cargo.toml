@@ -1,0 +1,19 @@
+[package]
+name = "sdkwork-rtc-service-host"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdkwork-communication-rtc-service.workspace = true
+sdkwork-drive-storage-contract.workspace = true
+sdkwork-drive-workspace-service.workspace = true
+sdkwork-router-rtc-app-api.workspace = true
+sdkwork-router-rtc-backend-api.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+sdkwork-drive-config.workspace = true
+sdkwork-drive-storage-local.workspace = true
+sqlx.workspace = true
+tokio.workspace = true

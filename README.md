@@ -12,8 +12,20 @@ WebSocket call workflow behavior. Those workflows remain in Craw Chat.
 - Provider/runtime SDK: `sdks/sdkwork-rtc-sdk`
 - App API SDK: `sdks/sdkwork-rtc-app-sdk`
 - Backend API SDK: `sdks/sdkwork-rtc-backend-sdk`
-- Rust core/storage/routes: `crates/` and `services/`
-- Provider adapters: `adapters/rtc-*`
+- API contract inputs: `apis/app-api/communication` and `apis/backend-api/communication`
+- Rust service, SQLx repository, route adapters, and service host: `crates/`
+- Provider runtime plugins: `plugins/rtc-*`
+
+## Project Structure
+
+The repository follows the SDKWork project-root directory dictionary:
+
+- `apis/`: API authority inputs and contract materialization sources.
+- `crates/`: Rust service, repository, route adapter, host, and support crates.
+- `sdks/`: SDK family workspaces, route manifests, materialized OpenAPI copies, and generated SDK output.
+- `plugins/`: RTC runtime provider plugins.
+- `apps/sdkwork-rtc-pc/packages/`: PC React application-surface package family. Root-level `packages/` is not used.
+- `tools/`, `scripts/`, `tests/`, `docs/`, `configs/`, `deployments/`, `jobs/`, `examples/`, and `apps/`: standard project-root support directories.
 
 ## Provider Model
 

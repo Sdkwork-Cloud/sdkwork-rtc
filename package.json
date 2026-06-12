@@ -8,7 +8,7 @@
     "audit:migration": "node --test tests/rtc-migration-contract.test.mjs",
     "materialize:openapi": "node sdks/materialize-rtc-v3-openapi-boundaries.mjs",
     "sdk:check": "node tools/rtc_sdk_generate.mjs --check",
-    "test": "vitest run packages/pc-react/communication/sdkwork-rtc-pc-react/tests",
+    "test": "vitest run apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/tests",
     "test:rust": "cargo test --workspace",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run audit:migration && pnpm run materialize:openapi && pnpm run sdk:check && pnpm run typecheck && pnpm test && pnpm run test:rust"

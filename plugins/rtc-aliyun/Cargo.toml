@@ -1,0 +1,9 @@
+[package]
+name = "sdkwork-rtc-adapter-aliyun"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+sdkwork-communication-rtc-service.workspace = true
+serde_json.workspace = true

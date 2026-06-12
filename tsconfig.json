@@ -1,8 +1,8 @@
 {
   "extends": "./tsconfig.base.json",
   "include": [
-    "packages/**/*.ts",
-    "packages/**/*.tsx",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
     "sdks/**/*.ts",
     "tests/**/*.mjs",
     "vitest.config.ts",

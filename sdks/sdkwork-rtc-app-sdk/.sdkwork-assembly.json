@@ -3,6 +3,7 @@
   "workspace": "sdkwork-rtc-app-sdk",
   "sdkOwner": "sdkwork-rtc",
   "apiAuthority": "sdkwork-rtc-app-api",
+  "sourceAuthoritySpec": "../../apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
   "authoritySpec": "openapi/sdkwork-rtc-app-api.openapi.json",
   "generationInputSpec": "openapi/sdkwork-rtc-app-api.sdkgen.json",
   "derivedSpecs": {

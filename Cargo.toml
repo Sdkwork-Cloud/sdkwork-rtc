@@ -1,19 +1,19 @@
 [workspace]
 resolver = "2"
 members = [
-    "adapters/rtc-aliyun",
-    "adapters/rtc-agora",
-    "adapters/rtc-tencent",
-    "adapters/rtc-livekit",
-    "adapters/rtc-volcengine",
+    "plugins/rtc-aliyun",
+    "plugins/rtc-agora",
+    "plugins/rtc-tencent",
+    "plugins/rtc-livekit",
+    "plugins/rtc-volcengine",
     "crates/sdkwork-rtc-api-registry",
     "crates/sdkwork-rtc-app-context",
-    "crates/sdkwork-rtc-core",
+    "crates/sdkwork-communication-rtc-service",
     "crates/sdkwork-rtc-openapi",
-    "crates/sdkwork-rtc-storage-sqlx",
-    "services/sdkwork-routes-rtc-app-api",
-    "services/sdkwork-routes-rtc-backend-api",
-    "services/sdkwork-rtc-product",
+    "crates/sdkwork-communication-rtc-repository-sqlx",
+    "crates/sdkwork-router-rtc-app-api",
+    "crates/sdkwork-router-rtc-backend-api",
+    "crates/sdkwork-rtc-service-host",
 ]
 
 [workspace.package]
@@ -30,16 +30,23 @@ tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread", "net", "s
 tower = { version = "0.5.3", features = ["util"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio-rustls", "any", "sqlite", "postgres", "json"] }
 
 # SDKWork workspace members - declared once at workspace root
 sdkwork-rtc-api-registry = { path = "crates/sdkwork-rtc-api-registry" }
 sdkwork-rtc-app-context = { path = "crates/sdkwork-rtc-app-context" }
-sdkwork-rtc-core = { path = "crates/sdkwork-rtc-core" }
+sdkwork-communication-rtc-service = { path = "crates/sdkwork-communication-rtc-service" }
+sdkwork-communication-rtc-repository-sqlx = { path = "crates/sdkwork-communication-rtc-repository-sqlx" }
 sdkwork-rtc-openapi = { path = "crates/sdkwork-rtc-openapi" }
-sdkwork-rtc-adapter-agora = { path = "adapters/rtc-agora" }
-sdkwork-rtc-adapter-aliyun = { path = "adapters/rtc-aliyun" }
-sdkwork-rtc-adapter-livekit = { path = "adapters/rtc-livekit" }
-sdkwork-rtc-adapter-tencent = { path = "adapters/rtc-tencent" }
-sdkwork-rtc-adapter-volcengine = { path = "adapters/rtc-volcengine" }
-sdkwork-routes-rtc-app-api = { path = "services/sdkwork-routes-rtc-app-api" }
-sdkwork-routes-rtc-backend-api = { path = "services/sdkwork-routes-rtc-backend-api" }
+sdkwork-rtc-adapter-agora = { path = "plugins/rtc-agora" }
+sdkwork-rtc-adapter-aliyun = { path = "plugins/rtc-aliyun" }
+sdkwork-rtc-adapter-livekit = { path = "plugins/rtc-livekit" }
+sdkwork-rtc-adapter-tencent = { path = "plugins/rtc-tencent" }
+sdkwork-rtc-adapter-volcengine = { path = "plugins/rtc-volcengine" }
+sdkwork-router-rtc-app-api = { path = "crates/sdkwork-router-rtc-app-api" }
+sdkwork-router-rtc-backend-api = { path = "crates/sdkwork-router-rtc-backend-api" }
+sdkwork-rtc-service-host = { path = "crates/sdkwork-rtc-service-host" }
+sdkwork-drive-config = { path = "../sdkwork-drive/crates/sdkwork-drive-config" }
+sdkwork-drive-storage-contract = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-contract" }
+sdkwork-drive-storage-local = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-local" }
+sdkwork-drive-workspace-service = { path = "../sdkwork-drive/crates/sdkwork-drive-workspace-service" }

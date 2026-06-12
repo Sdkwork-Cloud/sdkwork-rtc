@@ -42,7 +42,7 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8(@types/node@25.9.2)(jsdom@29.1.1)(vite@8.0.16(@types/node@25.9.2))
 
-  packages/pc-react/communication/sdkwork-rtc-pc-react: {}
+  apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc: {}
 
   sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi:
     dependencies:

@@ -63,6 +63,9 @@ const client = new SdkworkBackendClient({
 
 - `client.rtcMediaArtifacts` - rtc_media_artifacts API
 - `client.rtcMediaSessions` - rtc_media_sessions API
+- `client.rtcProviderAccounts` - rtc_provider_accounts API
+- `client.rtcProviderApplications` - rtc_provider_applications API
+- `client.rtcProviderCredentials` - rtc_provider_credentials API
 - `client.rtcProviderProfiles` - rtc_provider_profiles API
 - `client.rtcProviderQueryJobs` - rtc_provider_query_jobs API
 - `client.rtcProviderRoutes` - rtc_provider_routes API
@@ -98,6 +101,36 @@ const params = {
   q: 'q',
 };
 const result = await client.rtcMediaSessions.rtc.mediaSessions.list(params);
+```
+
+### rtc_provider_accounts
+
+```typescript
+// Rtc provider Accounts list.
+const params = {
+  page: 1,
+  page_size: 2,
+  cursor: 'cursor',
+  sort: 'sort',
+  q: 'q',
+};
+const result = await client.rtcProviderAccounts.rtc.providerAccounts.list(params);
+```
+
+### rtc_provider_applications
+
+```typescript
+// Rtc provider Applications retrieve.
+const providerApplicationId = '1';
+const result = await client.rtcProviderApplications.rtc.providerApplications.retrieve(providerApplicationId);
+```
+
+### rtc_provider_credentials
+
+```typescript
+// Rtc provider Credentials retrieve.
+const providerCredentialId = '1';
+const result = await client.rtcProviderCredentials.rtc.providerCredentials.retrieve(providerCredentialId);
 ```
 
 ### rtc_provider_profiles

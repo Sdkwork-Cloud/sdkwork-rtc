@@ -8,7 +8,7 @@ const rtcRoot = resolve(__dirname, "..");
 
 const routeSources = [
   {
-    packageName: "sdkwork-routes-rtc-app-api",
+    packageName: "sdkwork-router-rtc-app-api",
     surface: "app-api",
     owner: "sdkwork-rtc",
     domain: "rtc",
@@ -23,14 +23,15 @@ const routeSources = [
     apiContext: "AppRequestContext",
     sdkType: "app",
     authMode: "dual-token",
-    path: resolve(rtcRoot, "services/sdkwork-routes-rtc-app-api/src/paths.rs"),
+    path: resolve(rtcRoot, "crates/sdkwork-router-rtc-app-api/src/paths.rs"),
     arrayName: "RTC_APP_ROUTES",
     routeType: "RtcAppRoute",
     manifestPath:
-      "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+      "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
+    sourceOpenapiPath: "apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
   },
   {
-    packageName: "sdkwork-routes-rtc-backend-api",
+    packageName: "sdkwork-router-rtc-backend-api",
     surface: "backend-api",
     owner: "sdkwork-rtc",
     domain: "rtc",
@@ -45,11 +46,12 @@ const routeSources = [
     apiContext: "BackendRequestContext",
     sdkType: "backend",
     authMode: "dual-token",
-    path: resolve(rtcRoot, "services/sdkwork-routes-rtc-backend-api/src/paths.rs"),
+    path: resolve(rtcRoot, "crates/sdkwork-router-rtc-backend-api/src/paths.rs"),
     arrayName: "RTC_BACKEND_ROUTES",
     routeType: "RtcBackendRoute",
     manifestPath:
-      "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+      "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+    sourceOpenapiPath: "apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json",
   },
 ];
 
@@ -234,13 +236,11 @@ async function writeSurfaceOpenApi(source, openapi) {
   const openapiRoot = resolve(familyRoot, "openapi");
   await mkdir(openapiRoot, { recursive: true });
   const content = `${JSON.stringify(openapi, null, 2)}\n`;
+  const sourceOpenapiPath = resolve(rtcRoot, source.sourceOpenapiPath);
+  await mkdir(dirname(sourceOpenapiPath), { recursive: true });
+  await writeFile(sourceOpenapiPath, content, "utf8");
   await writeFile(resolve(openapiRoot, `${source.authorityName}.openapi.json`), content, "utf8");
   await writeFile(resolve(openapiRoot, `${source.authorityName}.sdkgen.json`), content, "utf8");
-  await writeFile(
-    resolve(rtcRoot, "generated/openapi", `${source.domain}-${source.sdkType}-api.openapi.json`),
-    content,
-    "utf8",
-  );
 }
 
 function buildOpenApi(source, routes) {
@@ -1017,6 +1017,306 @@ function buildSchemas() {
     RtcMediaSessionCompletionRecordResponse: envelope({
       $ref: "#/components/schemas/RtcMediaSessionCompletionRecord",
     }),
+    RtcProviderAccount: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "tenantId",
+        "organizationId",
+        "provider",
+        "code",
+        "name",
+        "status",
+        "environment",
+        "version",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        provider: { type: "string" },
+        code: { type: "string" },
+        name: { type: "string" },
+        status: { type: "string", enum: ["active", "disabled", "archived"] },
+        environment: {
+          type: "string",
+          enum: ["production", "staging", "development", "test", "sandbox"],
+        },
+        externalTenantId: { type: ["string", "null"] },
+        cloudAccountId: { type: ["string", "null"] },
+        projectId: { type: ["string", "null"] },
+        resourceGroupId: { type: ["string", "null"] },
+        lastVerifiedAt: { type: ["string", "null"], format: "date-time" },
+        lastVerificationError: { type: ["string", "null"], maxLength: 1000 },
+        createdBy: { type: ["string", "null"] },
+        updatedBy: { type: ["string", "null"] },
+        createdAt: { type: ["string", "null"], format: "date-time" },
+        updatedAt: { type: ["string", "null"], format: "date-time" },
+        version: { type: "string", pattern: "^[0-9]+$" },
+        deletedAt: { type: ["string", "null"], format: "date-time" },
+        deletedBy: { type: ["string", "null"] },
+      },
+    },
+    RtcProviderAccountCommand: {
+      type: "object",
+      additionalProperties: false,
+      required: ["provider", "code", "name", "environment"],
+      properties: {
+        provider: { type: "string" },
+        code: { type: "string" },
+        name: { type: "string" },
+        status: { type: "string", enum: ["active", "disabled", "archived"] },
+        environment: {
+          type: "string",
+          enum: ["production", "staging", "development", "test", "sandbox"],
+        },
+        externalTenantId: { type: ["string", "null"] },
+        cloudAccountId: { type: ["string", "null"] },
+        projectId: { type: ["string", "null"] },
+        resourceGroupId: { type: ["string", "null"] },
+      },
+    },
+    RtcProviderAccountDisableRequest: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        reason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcProviderAccountListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderAccount" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderAccountResponse: envelope({
+      $ref: "#/components/schemas/RtcProviderAccount",
+    }),
+    RtcProviderApplication: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "tenantId",
+        "organizationId",
+        "providerAccountId",
+        "provider",
+        "code",
+        "name",
+        "status",
+        "environment",
+        "providerApplicationId",
+        "providerApplicationIdKind",
+        "configSnapshot",
+        "version",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        providerAccountId: { type: "string" },
+        provider: { type: "string" },
+        code: { type: "string" },
+        name: { type: "string" },
+        status: { type: "string", enum: ["active", "disabled", "archived"] },
+        environment: {
+          type: "string",
+          enum: ["production", "staging", "development", "test", "sandbox"],
+        },
+        region: { type: ["string", "null"] },
+        providerApplicationId: { type: "string" },
+        providerApplicationIdKind: {
+          type: "string",
+          enum: ["volcengine_app_id", "tencent_sdk_app_id", "provider_application_id"],
+        },
+        accessEndpoint: { type: ["string", "null"], format: "uri" },
+        apiEndpoint: { type: ["string", "null"], format: "uri" },
+        apiHost: { type: ["string", "null"] },
+        apiVersion: { type: ["string", "null"] },
+        webhookCallbackUrl: { type: ["string", "null"], format: "uri" },
+        configSnapshot: { type: "object", additionalProperties: true },
+        lastVerifiedAt: { type: ["string", "null"], format: "date-time" },
+        lastVerificationError: { type: ["string", "null"], maxLength: 1000 },
+        createdBy: { type: ["string", "null"] },
+        updatedBy: { type: ["string", "null"] },
+        createdAt: { type: ["string", "null"], format: "date-time" },
+        updatedAt: { type: ["string", "null"], format: "date-time" },
+        version: { type: "string", pattern: "^[0-9]+$" },
+        deletedAt: { type: ["string", "null"], format: "date-time" },
+        deletedBy: { type: ["string", "null"] },
+      },
+    },
+    RtcProviderApplicationCommand: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "code",
+        "name",
+        "environment",
+        "providerApplicationId",
+        "providerApplicationIdKind",
+        "configSnapshot",
+      ],
+      properties: {
+        code: { type: "string" },
+        name: { type: "string" },
+        status: { type: "string", enum: ["active", "disabled", "archived"] },
+        environment: {
+          type: "string",
+          enum: ["production", "staging", "development", "test", "sandbox"],
+        },
+        region: { type: ["string", "null"] },
+        providerApplicationId: { type: "string" },
+        providerApplicationIdKind: {
+          type: "string",
+          enum: ["volcengine_app_id", "tencent_sdk_app_id", "provider_application_id"],
+        },
+        accessEndpoint: { type: ["string", "null"], format: "uri" },
+        apiEndpoint: { type: ["string", "null"], format: "uri" },
+        apiHost: { type: ["string", "null"] },
+        apiVersion: { type: ["string", "null"] },
+        webhookCallbackUrl: { type: ["string", "null"], format: "uri" },
+        configSnapshot: { type: "object", additionalProperties: true },
+      },
+    },
+    RtcProviderApplicationDisableRequest: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        reason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcProviderApplicationListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderApplication" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderApplicationResponse: envelope({
+      $ref: "#/components/schemas/RtcProviderApplication",
+    }),
+    RtcProviderCredential: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "id",
+        "tenantId",
+        "organizationId",
+        "providerAccountId",
+        "providerApplicationId",
+        "provider",
+        "credentialRole",
+        "credentialLabel",
+        "credentialRef",
+        "status",
+        "version",
+      ],
+      properties: {
+        id: { type: "string" },
+        tenantId: { type: "string" },
+        organizationId: { type: "string" },
+        providerAccountId: { type: "string" },
+        providerApplicationId: { type: "string" },
+        provider: { type: "string" },
+        credentialRole: {
+          type: "string",
+          enum: [
+            "rtc_token_signing",
+            "open_api_signing",
+            "usersig_signing",
+            "cloud_api_signing",
+            "webhook_signing",
+          ],
+        },
+        credentialLabel: { type: "string" },
+        credentialRef: {
+          type: "string",
+          description:
+            "Reference to secret-managed provider credential material. Raw provider secrets are never returned by the RTC API.",
+        },
+        credentialFingerprint: { type: ["string", "null"] },
+        secretVersion: { type: ["string", "null"] },
+        status: {
+          type: "string",
+          enum: ["active", "pending", "disabled", "revoked", "expired"],
+        },
+        validFrom: { type: ["string", "null"], format: "date-time" },
+        expiresAt: { type: ["string", "null"], format: "date-time" },
+        rotationDueAt: { type: ["string", "null"], format: "date-time" },
+        rotatedAt: { type: ["string", "null"], format: "date-time" },
+        revokedAt: { type: ["string", "null"], format: "date-time" },
+        lastVerifiedAt: { type: ["string", "null"], format: "date-time" },
+        lastUsedAt: { type: ["string", "null"], format: "date-time" },
+        createdBy: { type: ["string", "null"] },
+        updatedBy: { type: ["string", "null"] },
+        createdAt: { type: ["string", "null"], format: "date-time" },
+        updatedAt: { type: ["string", "null"], format: "date-time" },
+        version: { type: "string", pattern: "^[0-9]+$" },
+      },
+    },
+    RtcProviderCredentialCommand: {
+      type: "object",
+      additionalProperties: false,
+      required: ["credentialRole", "credentialLabel", "credentialRef"],
+      properties: {
+        credentialRole: {
+          type: "string",
+          enum: [
+            "rtc_token_signing",
+            "open_api_signing",
+            "usersig_signing",
+            "cloud_api_signing",
+            "webhook_signing",
+          ],
+        },
+        credentialLabel: { type: "string" },
+        credentialRef: { type: "string" },
+        credentialFingerprint: { type: ["string", "null"] },
+        secretVersion: { type: ["string", "null"] },
+        status: {
+          type: "string",
+          enum: ["active", "pending", "disabled", "revoked", "expired"],
+        },
+        validFrom: { type: ["string", "null"], format: "date-time" },
+        expiresAt: { type: ["string", "null"], format: "date-time" },
+        rotationDueAt: { type: ["string", "null"], format: "date-time" },
+      },
+    },
+    RtcProviderCredentialRevokeRequest: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        reason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
+    RtcProviderCredentialListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderCredential" },
+        },
+        nextCursor: { type: ["string", "null"] },
+      },
+    }),
+    RtcProviderCredentialResponse: envelope({
+      $ref: "#/components/schemas/RtcProviderCredential",
+    }),
     RtcProviderProfile: {
       type: "object",
       additionalProperties: false,
@@ -1574,6 +1874,21 @@ function operationRequestSchemaName(route) {
       return "RtcCreateMediaSessionRequest";
     case "rtc.mediaSessions.close":
       return "RtcCloseMediaSessionRequest";
+    case "rtc.providerAccounts.create":
+    case "rtc.providerAccounts.update":
+      return "RtcProviderAccountCommand";
+    case "rtc.providerAccounts.disable":
+      return "RtcProviderAccountDisableRequest";
+    case "rtc.providerAccounts.applications.create":
+    case "rtc.providerApplications.update":
+      return "RtcProviderApplicationCommand";
+    case "rtc.providerApplications.disable":
+      return "RtcProviderApplicationDisableRequest";
+    case "rtc.providerApplications.credentials.create":
+    case "rtc.providerCredentials.update":
+      return "RtcProviderCredentialCommand";
+    case "rtc.providerCredentials.revoke":
+      return "RtcProviderCredentialRevokeRequest";
     case "rtc.providerProfiles.create":
     case "rtc.providerProfiles.update":
       return "RtcProviderProfileCommand";
@@ -1615,6 +1930,27 @@ function operationResponseSchemaName(route) {
       return "RtcMediaArtifactResponse";
     case "rtc.providerProfiles.active.list":
       return "RtcActiveProviderProfileListResponse";
+    case "rtc.providerAccounts.list":
+      return "RtcProviderAccountListResponse";
+    case "rtc.providerAccounts.create":
+    case "rtc.providerAccounts.retrieve":
+    case "rtc.providerAccounts.update":
+    case "rtc.providerAccounts.disable":
+      return "RtcProviderAccountResponse";
+    case "rtc.providerAccounts.applications.list":
+      return "RtcProviderApplicationListResponse";
+    case "rtc.providerAccounts.applications.create":
+    case "rtc.providerApplications.retrieve":
+    case "rtc.providerApplications.update":
+    case "rtc.providerApplications.disable":
+      return "RtcProviderApplicationResponse";
+    case "rtc.providerApplications.credentials.list":
+      return "RtcProviderCredentialListResponse";
+    case "rtc.providerApplications.credentials.create":
+    case "rtc.providerCredentials.retrieve":
+    case "rtc.providerCredentials.update":
+    case "rtc.providerCredentials.revoke":
+      return "RtcProviderCredentialResponse";
     case "rtc.providerProfiles.list":
       return "RtcProviderProfileListResponse";
     case "rtc.providerProfiles.create":

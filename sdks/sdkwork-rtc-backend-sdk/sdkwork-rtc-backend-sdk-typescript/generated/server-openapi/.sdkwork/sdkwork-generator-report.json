@@ -10,37 +10,163 @@
   },
   "status": "ok",
   "mode": "apply",
-  "hasChanges": false,
+  "hasChanges": true,
   "hasDestructiveChanges": false,
-  "changeFingerprint": "5fee71e941543eb5e73c0f2039c0dcaad0504371b8c76f238966ff064fe8ae4e",
+  "changeFingerprint": "aecb28b5379965b7b5b64d28f03fec84ea8b50a904e0ef8be795080389c9730e",
   "changeImpact": {
     "schemaVersion": 1,
-    "areas": [],
-    "details": [],
-    "requiresVerification": false,
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
+    "areas": [
+      "api-surface",
+      "models",
+      "runtime",
+      "documentation"
+    ],
+    "details": [
+      {
+        "area": "api-surface",
+        "paths": [
+          "src/api/index.ts",
+          "src/api/rtc-provider-accounts.ts",
+          "src/api/rtc-provider-applications.ts",
+          "src/api/rtc-provider-credentials.ts",
+          "src/http/client.ts",
+          "src/sdk.ts"
+        ]
+      },
+      {
+        "area": "models",
+        "paths": [
+          "src/types/index.ts",
+          "src/types/rtc-provider-account-command.ts",
+          "src/types/rtc-provider-account-disable-request.ts",
+          "src/types/rtc-provider-account-list-response.ts",
+          "src/types/rtc-provider-account-response.ts",
+          "src/types/rtc-provider-account.ts",
+          "src/types/rtc-provider-application-command.ts",
+          "src/types/rtc-provider-application-disable-request.ts",
+          "src/types/rtc-provider-application-list-response.ts",
+          "src/types/rtc-provider-application-response.ts",
+          "src/types/rtc-provider-application.ts",
+          "src/types/rtc-provider-credential-command.ts",
+          "src/types/rtc-provider-credential-list-response.ts",
+          "src/types/rtc-provider-credential-response.ts",
+          "src/types/rtc-provider-credential-revoke-request.ts",
+          "src/types/rtc-provider-credential.ts"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "src/http/client.ts"
+        ]
+      },
+      {
+        "area": "documentation",
+        "paths": [
+          "README.md"
+        ]
+      }
+    ],
+    "requiresVerification": true,
+    "summary": "Detected impact areas: api-surface, models, runtime, documentation. Verification is required."
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "low",
-    "nextAction": "skip",
+    "riskLevel": "high",
+    "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
-    "summary": "No actionable changes were detected. No apply or verification step is required.",
+    "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "no-actionable-changes"
+      "backed-up-generated-files",
+      "manual-review-required",
+      "verification-required"
     ]
   },
   "executionHandoff": {
     "schemaVersion": 1,
-    "summary": "No further commands are required.",
-    "steps": []
+    "summary": "Run the required verification commands now.",
+    "steps": [
+      {
+        "id": "verify-check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+      },
+      {
+        "id": "verify-build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+      }
+    ]
   },
   "verificationPlan": {
-    "shouldRun": false,
-    "runPhase": "skip",
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
-    "steps": []
+    "shouldRun": true,
+    "runPhase": "now",
+    "summary": "Detected impact areas: api-surface, models, runtime, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "steps": [
+      {
+        "id": "check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+      },
+      {
+        "id": "build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+      }
+    ]
   },
   "sdk": {
     "name": "sdkwork-rtc-backend-sdk",
@@ -56,24 +182,49 @@
     "localVersions": []
   },
   "stats": {
-    "totalFiles": 82,
-    "models": 51,
-    "apis": 8,
-    "types": 53
+    "totalFiles": 100,
+    "models": 66,
+    "apis": 11,
+    "types": 68
   },
   "warnings": [],
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 0,
+    "writtenFiles": 23,
     "skippedScaffoldFiles": 2,
-    "skippedUnchangedGeneratedFiles": 80,
+    "skippedUnchangedGeneratedFiles": 75,
     "deletedGeneratedFiles": 0,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "5fee71e941543eb5e73c0f2039c0dcaad0504371b8c76f238966ff064fe8ae4e",
+    "changeFingerprint": "aecb28b5379965b7b5b64d28f03fec84ea8b50a904e0ef8be795080389c9730e",
     "changes": {
-      "createdGeneratedFiles": [],
-      "updatedGeneratedFiles": [],
+      "createdGeneratedFiles": [
+        "src/api/rtc-provider-accounts.ts",
+        "src/api/rtc-provider-applications.ts",
+        "src/api/rtc-provider-credentials.ts",
+        "src/types/rtc-provider-account-command.ts",
+        "src/types/rtc-provider-account-disable-request.ts",
+        "src/types/rtc-provider-account-list-response.ts",
+        "src/types/rtc-provider-account-response.ts",
+        "src/types/rtc-provider-account.ts",
+        "src/types/rtc-provider-application-command.ts",
+        "src/types/rtc-provider-application-disable-request.ts",
+        "src/types/rtc-provider-application-list-response.ts",
+        "src/types/rtc-provider-application-response.ts",
+        "src/types/rtc-provider-application.ts",
+        "src/types/rtc-provider-credential-command.ts",
+        "src/types/rtc-provider-credential-list-response.ts",
+        "src/types/rtc-provider-credential-response.ts",
+        "src/types/rtc-provider-credential-revoke-request.ts",
+        "src/types/rtc-provider-credential.ts"
+      ],
+      "updatedGeneratedFiles": [
+        "README.md",
+        "src/api/index.ts",
+        "src/http/client.ts",
+        "src/sdk.ts",
+        "src/types/index.ts"
+      ],
       "unchangedGeneratedFiles": [
         "bin/publish-core.mjs",
         "bin/publish.ps1",
@@ -83,10 +234,8 @@
         "CHANGELOG.md",
         "LICENSE",
         "package.json",
-        "README.md",
         "sdkwork-sdk.json",
         "src/api/base.ts",
-        "src/api/index.ts",
         "src/api/paths.ts",
         "src/api/rtc-media-artifacts.ts",
         "src/api/rtc-media-sessions.ts",
@@ -97,13 +246,10 @@
         "src/api/rtc-quality-samples.ts",
         "src/api/rtc-rooms.ts",
         "src/auth/index.ts",
-        "src/http/client.ts",
         "src/http/index.ts",
         "src/index.ts",
-        "src/sdk.ts",
         "src/types/common.ts",
         "src/types/field-error.ts",
-        "src/types/index.ts",
         "src/types/media-access.ts",
         "src/types/media-checksum.ts",
         "src/types/media-kind.ts",
@@ -162,33 +308,126 @@
         "custom/build-runtime.mjs",
         "custom/README.md"
       ],
-      "backedUpFiles": []
+      "backedUpFiles": [
+        "src/http/client.ts"
+      ]
     },
     "impact": {
       "schemaVersion": 1,
-      "areas": [],
-      "details": [],
-      "requiresVerification": false,
-      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
+      "areas": [
+        "api-surface",
+        "models",
+        "runtime",
+        "documentation"
+      ],
+      "details": [
+        {
+          "area": "api-surface",
+          "paths": [
+            "src/api/index.ts",
+            "src/api/rtc-provider-accounts.ts",
+            "src/api/rtc-provider-applications.ts",
+            "src/api/rtc-provider-credentials.ts",
+            "src/http/client.ts",
+            "src/sdk.ts"
+          ]
+        },
+        {
+          "area": "models",
+          "paths": [
+            "src/types/index.ts",
+            "src/types/rtc-provider-account-command.ts",
+            "src/types/rtc-provider-account-disable-request.ts",
+            "src/types/rtc-provider-account-list-response.ts",
+            "src/types/rtc-provider-account-response.ts",
+            "src/types/rtc-provider-account.ts",
+            "src/types/rtc-provider-application-command.ts",
+            "src/types/rtc-provider-application-disable-request.ts",
+            "src/types/rtc-provider-application-list-response.ts",
+            "src/types/rtc-provider-application-response.ts",
+            "src/types/rtc-provider-application.ts",
+            "src/types/rtc-provider-credential-command.ts",
+            "src/types/rtc-provider-credential-list-response.ts",
+            "src/types/rtc-provider-credential-response.ts",
+            "src/types/rtc-provider-credential-revoke-request.ts",
+            "src/types/rtc-provider-credential.ts"
+          ]
+        },
+        {
+          "area": "runtime",
+          "paths": [
+            "src/http/client.ts"
+          ]
+        },
+        {
+          "area": "documentation",
+          "paths": [
+            "README.md"
+          ]
+        }
+      ],
+      "requiresVerification": true,
+      "summary": "Detected impact areas: api-surface, models, runtime, documentation. Verification is required."
     },
     "verificationPlan": {
-      "shouldRun": false,
-      "runPhase": "skip",
-      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
-      "steps": []
+      "shouldRun": true,
+      "runPhase": "now",
+      "summary": "Detected impact areas: api-surface, models, runtime, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+      "steps": [
+        {
+          "id": "check",
+          "title": "Unified package check",
+          "required": true,
+          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, documentation.",
+          "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
+          "command": "node",
+          "args": [
+            "./bin/publish-core.mjs",
+            "--language",
+            "typescript",
+            "--project-dir",
+            ".",
+            "--action",
+            "check"
+          ],
+          "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+        },
+        {
+          "id": "build",
+          "title": "Unified package build",
+          "required": true,
+          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, documentation.",
+          "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
+          "command": "node",
+          "args": [
+            "./bin/publish-core.mjs",
+            "--language",
+            "typescript",
+            "--project-dir",
+            ".",
+            "--action",
+            "build"
+          ],
+          "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+        }
+      ]
     },
     "executionDecision": {
       "schemaVersion": 1,
-      "riskLevel": "low",
-      "nextAction": "skip",
+      "riskLevel": "high",
+      "nextAction": "verify",
       "requiresManualReview": false,
       "applyRequiresExpectedFingerprint": false,
-      "summary": "No actionable changes were detected. No apply or verification step is required.",
+      "summary": "Changes have been applied. Run the required verification plan now.",
       "reasons": [
-        "no-actionable-changes"
+        "backed-up-generated-files",
+        "manual-review-required",
+        "verification-required"
       ]
     },
-    "backedUpFiles": [],
+    "backedUpFiles": [
+      "src/http/client.ts"
+    ],
     "preservedLegacyFiles": false
   }
 }

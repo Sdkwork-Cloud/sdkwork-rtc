@@ -43,11 +43,11 @@ Expected: failures identify the existing call/session/invitation and root provid
 ### Task 2: Rust Core And Storage Cleanup
 
 **Files:**
-- Modify: `crates/sdkwork-rtc-core/src/lib.rs`
-- Modify: `services/sdkwork-rtc-product/src/lib.rs`
-- Modify: `crates/sdkwork-rtc-storage-sqlx/src/lib.rs`
-- Modify: `crates/sdkwork-rtc-storage-sqlx/src/schema/postgres_rtc.sql`
-- Modify: `crates/sdkwork-rtc-storage-sqlx/src/schema/sqlite_rtc.sql`
+- Modify: `crates/sdkwork-communication-rtc-service/src/lib.rs`
+- Modify: `crates/sdkwork-rtc-service-host/src/lib.rs`
+- Modify: `crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs`
+- Modify: `crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql`
+- Modify: `crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql`
 
 - [ ] **Step 1: Rename public RTC media models**
 
@@ -79,7 +79,7 @@ Use `rtc_media_session`, `rtc_media_participant`, and `rtc_media_artifact`; remo
 Run:
 
 ```powershell
-cargo test -p sdkwork-rtc-core -p sdkwork-rtc-storage-sqlx -p sdkwork-rtc-product
+cargo test -p sdkwork-communication-rtc-service -p sdkwork-communication-rtc-repository-sqlx -p sdkwork-rtc-service-host
 ```
 
 Expected: pass after implementation.
@@ -87,10 +87,10 @@ Expected: pass after implementation.
 ### Task 3: Backend API And OpenAPI Materialization
 
 **Files:**
-- Modify: `services/sdkwork-routes-rtc-backend-api/src/lib.rs`
+- Modify: `crates/sdkwork-router-rtc-backend-api/src/lib.rs`
 - Modify: `sdks/materialize-rtc-v3-openapi-boundaries.mjs`
-- Regenerate: `sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json`
-- Regenerate: `generated/openapi/rtc-backend-api.openapi.json`
+- Regenerate: `sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json`
+- Regenerate: `apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json`
 - Regenerate: `sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.openapi.json`
 - Regenerate: `sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.sdkgen.json`
 - Modify/regenerate: `sdks/sdkwork-rtc-backend-sdk/specs/component.spec.json`
