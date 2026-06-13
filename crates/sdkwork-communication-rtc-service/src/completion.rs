@@ -612,7 +612,7 @@ mod tests {
             completion.artifacts[0].drive_node_version.as_deref(),
             Some("1")
         );
-        assert!(completion.completion_snapshot_hash.starts_with("fnv64:"));
+        assert!(completion.completion_snapshot_hash.starts_with("sha256:"));
 
         assert_eq!(
             completion.completion_snapshot["artifacts"][0]["driveSpaceType"],

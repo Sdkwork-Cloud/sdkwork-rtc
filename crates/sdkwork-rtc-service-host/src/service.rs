@@ -48,6 +48,8 @@ const RTC_PROVIDER_ROUTE_TYPE_REGION: &str = "region";
 pub struct RtcProductService {
     registry: RtcProviderPluginRegistry,
     persistence: Arc<dyn RtcPersistencePort>,
+    // std::sync::Mutex is used intentionally: all lock guards are dropped before
+    // any .await point, so this never blocks the async runtime executor.
     state: Arc<Mutex<RtcProductState>>,
 }
 
@@ -216,6 +218,16 @@ impl RtcProductService {
                 region: request.region,
             })
             .map_err(app_error_from_contract)?;
+        let initial_status = if handle.access_endpoint.is_some() {
+            RtcMediaSessionStatus::Active
+        } else {
+            RtcMediaSessionStatus::Preparing
+        };
+        let connected_at = if handle.access_endpoint.is_some() {
+            Some(now.clone())
+        } else {
+            None
+        };
         let session = RtcMediaSession {
             id: session_id,
             room_id: request.room_id,
@@ -223,11 +235,11 @@ impl RtcProductService {
             organization_id,
             owner_user_id: user_id,
             media_mode: request.media_mode,
-            status: RtcMediaSessionStatus::Active,
+            status: initial_status,
             provider_profile_id: Some(provider_profile_id),
             provider_session_id: Some(handle.provider_session_id),
-            started_at: Some(now.clone()),
-            connected_at: Some(now),
+            started_at: Some(now),
+            connected_at,
             ended_at: None,
             duration_ms: None,
             end_reason: None,

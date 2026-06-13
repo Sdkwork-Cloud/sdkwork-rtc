@@ -667,5 +667,5 @@ fn list_request(context: &AppContext, query: RtcBackendListQuery) -> RtcBackendL
 }
 
 fn deterministic_request_id() -> String {
-    "00000000-0000-0000-0000-000000000000".to_owned()
+    uuid::Uuid::new_v4().to_string()
 }

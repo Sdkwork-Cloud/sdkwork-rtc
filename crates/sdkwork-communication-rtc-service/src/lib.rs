@@ -6,6 +6,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value as JsonValue, json};
+use sha2::{Digest, Sha256};
 
 pub mod completion;
 pub mod persistence;
@@ -996,12 +997,10 @@ pub struct RtcProviderQueryResult {
 }
 
 pub fn rtc_provider_payload_hash(payload: &str) -> String {
-    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
-    for byte in payload.as_bytes() {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
-    }
-    format!("fnv64:{hash:016x}")
+    let mut hasher = Sha256::new();
+    hasher.update(payload.as_bytes());
+    let digest = hasher.finalize();
+    format!("sha256:{digest:x}")
 }
 
 pub trait RtcProviderPort: Send + Sync {
@@ -1162,7 +1161,7 @@ pub fn summarize_rtc_workspace(
             .count(),
         connected_sessions: sessions
             .iter()
-            .filter(|session| session.status == RtcMediaSessionStatus::Active)
+            .filter(|session| session.connected_at.is_some())
             .count(),
         ended_sessions: sessions
             .iter()
@@ -1193,7 +1192,7 @@ pub fn summarize_rtc_workspace(
 pub fn utc_now_rfc3339_millis() -> String {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap_or_default();
+        .expect("system clock is before UNIX epoch");
     format_unix_millis(now.as_millis() as i128)
 }
 
@@ -1486,7 +1485,7 @@ mod tests {
             summarize_rtc_workspace(&rooms, &sessions),
             RtcWorkspaceDigest {
                 active_sessions: 1,
-                connected_sessions: 1,
+                connected_sessions: 2,
                 ended_sessions: 1,
                 total_participants: 2,
                 total_rooms: 1,
