@@ -29,3 +29,18 @@ export interface ProviderConfigSchema {
   optionalCapabilities: string[];
   requiredCapabilities: string[];
 }
+
+export interface ProviderPluginDescriptor {
+  pluginId: string;
+  domain: string;
+  providerKind: string;
+  displayName: string;
+  interfaceVersion: string;
+  configSchemaRef: string;
+  defaultSelected: boolean;
+  tenantOverrideAllowed: boolean;
+  requiredCapabilities: string[];
+  optionalCapabilities: string[];
+  unsupportedFeatures: string[];
+  degradedBehaviors: string[];
+}

@@ -9,7 +9,7 @@ export class RoomService {
   async list(params?: RoomListParams): Promise<RoomListResponse> {
     const query = new URLSearchParams();
     if (params?.search) query.set("q", params.search);
-    if (params?.status && params.status !== "all") query.set("status", params.status);
+    if (params?.status) query.set("status", params.status);
     if (params?.ownerUserId) query.set("ownerUserId", params.ownerUserId);
     if (params?.cursor) query.set("cursor", params.cursor);
     if (params?.limit) query.set("limit", String(params.limit));
