@@ -1,33 +1,20 @@
-# RTC Application Surfaces
+# SDKWork RTC Apps
 
-## Purpose
+Application surfaces for SDKWork RTC.
 
-`apps/` stores RTC application surface roots. The current repository root is the primary RTC authority workspace; app packages must live under an app surface root, not at the repository root.
+## Application Roots
 
-## Owner
+| App Root | Architecture | Framework | Surface |
+|----------|-------------|-----------|---------|
+| `sdkwork-rtc-pc/` | PC | React/TypeScript | Browser + Desktop |
+| `sdkwork-rtc-h5/` | H5 | React/TypeScript | Mobile Browser + Capacitor |
+| `sdkwork-rtc-flutter-mobile/` | Flutter Mobile | Dart/Flutter | iOS + Android |
 
-sdkwork-rtc.
+## Cross-Client Alignment
 
-## Allowed Content
-
-- Future app surface roots with their own `sdkwork.app.config.json`.
-- `sdkwork-rtc-pc/` PC React application-surface packages for RTC media integration.
-- Runnable demos promoted to maintained app surfaces.
-- App shell documentation for secondary surfaces.
-
-## Forbidden Content
-
-- SDK family workspaces.
-- Generated SDK transport output.
-- Rust service, repository, route, or plugin crates that belong in `crates/` or `plugins/`.
-- Runtime-local user data or secrets.
-
-## Related Specs
-
-- `../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md`
-- `../sdkwork-specs/APPLICATION_SPEC.md`
-- `../sdkwork-specs/APP_MANIFEST_SPEC.md`
-
-## Verification
-
-Run `node --test tests/rtc-workspace-standard.test.mjs`.
+All three app roots share:
+- Same RTC app-api (`/app/v3/api/rtc/`)
+- Same generated RTC app SDK (`sdkwork-rtc-app-sdk`)
+- Same route identity (`rtc.rooms.*`, `rtc.mediaSessions.*`, etc.)
+- Same appbase IAM runtime integration
+- Same provider profile and media session domain model

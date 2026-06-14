@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-pc",
+    "displayName": "SDKWork RTC PC",
+    "version": "0.1.0",
+    "type": "pc-app-root",
+    "root": "apps/sdkwork-rtc-pc",
+    "domain": "rtc",
+    "capability": "rtc",
+    "surface": "app",
+    "languages": ["typescript"],
+    "generated": false,
+    "manifests": ["package.json", "sdkwork.app.config.json"]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "APP_PC_ARCHITECTURE_SPEC.md",
+      "path": "../../../../sdkwork-specs/APP_PC_ARCHITECTURE_SPEC.md",
+      "purpose": "PC application root architecture standard."
+    },
+    {
+      "file": "APP_SDK_INTEGRATION_SPEC.md",
+      "path": "../../../../sdkwork-specs/APP_SDK_INTEGRATION_SPEC.md",
+      "purpose": "SDK integration and TokenManager wiring."
+    }
+  ],
+  "contracts": {
+    "publicExports": ["src/main.tsx"],
+    "runtimeEntrypoints": ["package.json#scripts.dev"],
+    "sdkClients": [],
+    "sdkDependencies": ["sdkwork-rtc-app-sdk"],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": []
+  },
+  "verification": {
+    "commands": ["pnpm run typecheck", "pnpm run build"]
+  }
+}

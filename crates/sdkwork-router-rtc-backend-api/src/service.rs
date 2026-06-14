@@ -9,6 +9,7 @@ use sdkwork_communication_rtc_service::{
     RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest,
     RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord, RtcProviderQueryKind,
     RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord, RtcQualitySample, RtcRoom,
+    ProviderConfigSchema, ProviderPluginDescriptor,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -399,4 +400,34 @@ pub trait RtcBackendApiService: Send + Sync + 'static {
         cursor: Option<String>,
         limit: Option<u32>,
     ) -> RtcBackendApiFuture<RtcProviderQuerySnapshotListData>;
+
+    fn list_provider_config_schemas(&self) -> RtcBackendApiFuture<Vec<ProviderConfigSchema>>;
+
+    fn get_provider_config_schema(
+        &self,
+        provider: String,
+    ) -> RtcBackendApiFuture<ProviderConfigSchema>;
+
+    fn list_provider_plugins(&self) -> RtcBackendApiFuture<Vec<ProviderPluginDescriptor>>;
+
+    fn get_provider_plugin(
+        &self,
+        provider: String,
+    ) -> RtcBackendApiFuture<ProviderPluginDescriptor>;
+
+    fn configure_provider_capabilities(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        provider_profile_id: String,
+        request: RtcProviderCapabilityConfig,
+    ) -> RtcBackendApiFuture<RtcProviderProfile>;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcProviderCapabilityConfig {
+    pub enabled_capabilities: Vec<String>,
+    pub disabled_capabilities: Vec<String>,
 }

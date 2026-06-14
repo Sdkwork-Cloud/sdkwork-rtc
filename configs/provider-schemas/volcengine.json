@@ -1,0 +1,45 @@
+{
+  "provider": "volcengine",
+  "displayName": "火山引擎 RTC",
+  "description": "火山引擎实时音视频RTC提供方",
+  "accountFields": [
+    {"key": "externalTenantId", "label": "火山引擎账号ID", "type": "string", "required": false},
+    {"key": "cloudAccountId", "label": "云账号ID", "type": "string", "required": false},
+    {"key": "projectId", "label": "项目ID", "type": "string", "required": false}
+  ],
+  "applicationFields": [
+    {"key": "providerApplicationId", "label": "AppId", "type": "string", "required": true, "placeholder": "如 volc-app-001"},
+    {"key": "providerApplicationIdKind", "label": "应用ID类型", "type": "enum", "values": ["app_id"], "default": "app_id", "hidden": true},
+    {"key": "accessEndpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.volcengine.local/session", "required": false},
+    {"key": "apiEndpoint", "label": "API端点", "type": "string", "default": "https://rtc.volcengineapi.com"},
+    {"key": "apiHost", "label": "API主机", "type": "string", "default": "rtc.volcengineapi.com"},
+    {"key": "apiVersion", "label": "API版本", "type": "string", "default": "2023-11-01"}
+  ],
+  "credentialRoles": [
+    {
+      "role": "rtc_token_signing",
+      "label": "RTC Token签名",
+      "description": "用于生成参与者凭证(RTC Token)",
+      "fields": [
+        {"key": "credentialRef", "label": "App Key", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/volcengine/app-key"}
+      ]
+    },
+    {
+      "role": "open_api_signing",
+      "label": "OpenAPI签名",
+      "description": "用于调用火山引擎API(Active Query)",
+      "fields": [
+        {"key": "credentialRef", "label": "Access Key ID", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/volcengine/access-key-id"},
+        {"key": "credentialFingerprint", "label": "Secret Access Key", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/volcengine/secret-access-key"}
+      ]
+    }
+  ],
+  "profileFields": [
+    {"key": "providerAppId", "label": "AppId", "type": "string", "required": true},
+    {"key": "endpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.volcengine.local/session"},
+    {"key": "region", "label": "区域", "type": "enum", "values": ["cn-beijing", "cn-shanghai", "cn-guangzhou", "ap-southeast-1"], "default": "cn-beijing"},
+    {"key": "credentialTtlSeconds", "label": "凭证有效期(秒)", "type": "number", "default": 3600, "min": 300, "max": 86400}
+  ],
+  "optionalCapabilities": ["recording", "artifact", "screen-share", "cloud-mix", "provider.active-query"],
+  "requiredCapabilities": ["session", "credential", "provider.webhook", "health", "media.audio", "media.video", "live.broadcast", "live.audience", "provider.event-normalization"]
+}

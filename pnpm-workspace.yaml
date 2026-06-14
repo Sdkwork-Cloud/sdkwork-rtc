@@ -1,4 +1,5 @@
 packages:
+  - "apps/*"
   - "apps/*/packages/*"
   - "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript"
   - "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/providers/*"

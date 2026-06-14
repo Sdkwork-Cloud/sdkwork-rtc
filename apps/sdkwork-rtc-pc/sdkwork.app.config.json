@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.app.config",
+  "app": {
+    "id": "sdkwork-rtc-pc",
+    "displayName": "SDKWork RTC PC",
+    "version": "0.1.0",
+    "runtime": {
+      "family": "pc",
+      "framework": "react",
+      "surface": "browser"
+    }
+  }
+}

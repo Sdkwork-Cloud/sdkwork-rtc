@@ -61,6 +61,9 @@ pub const RTC_BACKEND_PROVIDER_QUERY_JOB_PATH: &str =
     "/backend/v3/api/rtc/provider_query_jobs/{providerQueryJobId}";
 pub const RTC_BACKEND_PROVIDER_QUERY_JOB_SNAPSHOTS_PATH: &str =
     "/backend/v3/api/rtc/provider_query_jobs/{providerQueryJobId}/snapshots";
+pub const RTC_BACKEND_PROVIDER_SCHEMAS_PATH: &str = "/backend/v3/api/rtc/provider_schemas";
+pub const RTC_BACKEND_PROVIDER_SCHEMA_PATH: &str =
+    "/backend/v3/api/rtc/provider_schemas/{provider}";
 
 pub const RTC_BACKEND_ROUTES: &[RtcBackendRoute] = &[
     RtcBackendRoute {
@@ -358,6 +361,22 @@ pub const RTC_BACKEND_ROUTES: &[RtcBackendRoute] = &[
         operation_id: "rtc.providerQueryJobs.snapshots.list",
         owner: RTC_OWNER,
         permission: "rtc.provider_query_jobs.read",
+    },
+    RtcBackendRoute {
+        method: "GET",
+        path: RTC_BACKEND_PROVIDER_SCHEMAS_PATH,
+        tag: "rtcProviderSchemas",
+        operation_id: "rtc.providerSchemas.list",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_schemas.read",
+    },
+    RtcBackendRoute {
+        method: "GET",
+        path: RTC_BACKEND_PROVIDER_SCHEMA_PATH,
+        tag: "rtcProviderSchemas",
+        operation_id: "rtc.providerSchemas.retrieve",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_schemas.read",
     },
 ];
 

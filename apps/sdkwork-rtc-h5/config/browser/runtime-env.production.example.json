@@ -1,0 +1,15 @@
+{
+  "rtc": {
+    "apiBaseUrl": "https://rtc.example.com/app/v3/api",
+    "backendApiBaseUrl": "https://rtc.example.com/backend/v3/api",
+    "defaultMediaMode": "video",
+    "providerSelection": "auto",
+    "mobile": {
+      "maxParticipants": 9,
+      "audioOnlyFallback": true
+    }
+  },
+  "appbase": {
+    "loginUrl": "https://rtc.example.com/app/v3/api/auth"
+  }
+}

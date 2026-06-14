@@ -283,7 +283,11 @@ function toTimestamp(value: Date | number | string | null | undefined): number {
 }
 
 function toIsoString(value: Date | number | string): string {
-  return new Date(value).toISOString();
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString();
+  }
+  return date.toISOString();
 }
 
 function toRoundedDurationSeconds(
@@ -473,10 +477,22 @@ export function sortRtcParticipants(
   });
 }
 
+const VALID_TRANSITIONS: Record<SdkworkRtcSessionStatus, Set<string>> = {
+  preparing: new Set(["active", "closing", "ended", "failed", "participant-joined", "participant-left", "active-speaker"]),
+  active: new Set(["closing", "ended", "failed", "participant-joined", "participant-left", "active-speaker"]),
+  closing: new Set(["ended", "failed"]),
+  ended: new Set([]),
+  failed: new Set([]),
+};
+
 export function transitionRtcSession(
   session: SdkworkRtcSession,
   event: SdkworkRtcSessionEvent,
 ): SdkworkRtcSession {
+  const allowed = VALID_TRANSITIONS[session.status];
+  if (allowed && !allowed.has(event.type)) {
+    return session;
+  }
   switch (event.type) {
     case "preparing":
       return {

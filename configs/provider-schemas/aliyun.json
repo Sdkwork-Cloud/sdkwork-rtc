@@ -1,0 +1,32 @@
+{
+  "provider": "aliyun",
+  "displayName": "阿里云 RTC",
+  "description": "阿里云实时音视频RTC提供方",
+  "accountFields": [
+    {"key": "externalTenantId", "label": "阿里云账号ID", "type": "string", "required": false},
+    {"key": "resourceGroupId", "label": "资源组ID", "type": "string", "required": false}
+  ],
+  "applicationFields": [
+    {"key": "providerApplicationId", "label": "AppId", "type": "string", "required": true, "placeholder": "如 aliyun-rtc-app-001"},
+    {"key": "providerApplicationIdKind", "label": "应用ID类型", "type": "enum", "values": ["app_id"], "default": "app_id", "hidden": true},
+    {"key": "accessEndpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.aliyun.local/session", "required": false}
+  ],
+  "credentialRoles": [
+    {
+      "role": "rtc_token_signing",
+      "label": "RTC Token签名",
+      "description": "用于生成参与者凭证",
+      "fields": [
+        {"key": "credentialRef", "label": "App Key", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/aliyun/app-key"}
+      ]
+    }
+  ],
+  "profileFields": [
+    {"key": "providerAppId", "label": "AppId", "type": "string", "required": true},
+    {"key": "endpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.aliyun.local/session"},
+    {"key": "region", "label": "区域", "type": "enum", "values": ["cn-shanghai", "cn-beijing", "cn-hangzhou", "ap-southeast-1"], "default": "cn-shanghai"},
+    {"key": "credentialTtlSeconds", "label": "凭证有效期(秒)", "type": "number", "default": 3600, "min": 300, "max": 86400}
+  ],
+  "optionalCapabilities": ["recording", "artifact", "screen-share", "cloud-mix", "provider.active-query"],
+  "requiredCapabilities": ["session", "credential", "provider.webhook", "health", "media.audio", "media.video", "live.broadcast", "live.audience", "provider.event-normalization"]
+}

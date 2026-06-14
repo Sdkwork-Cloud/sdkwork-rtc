@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.app.config",
+  "app": {
+    "id": "sdkwork-rtc-h5",
+    "displayName": "SDKWork RTC H5",
+    "version": "0.1.0",
+    "runtime": {
+      "family": "h5",
+      "framework": "react",
+      "surface": "mobile-browser"
+    }
+  }
+}

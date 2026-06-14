@@ -1,0 +1,7 @@
+{
+  "name": "@sdkwork/rtc-h5-rtc",
+  "private": true,
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

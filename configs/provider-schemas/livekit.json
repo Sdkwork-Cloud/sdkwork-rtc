@@ -1,0 +1,32 @@
+{
+  "provider": "livekit",
+  "displayName": "LiveKit RTC",
+  "description": "LiveKit开源实时音视频RTC提供方",
+  "accountFields": [
+    {"key": "externalTenantId", "label": "LiveKit项目ID", "type": "string", "required": false}
+  ],
+  "applicationFields": [
+    {"key": "providerApplicationId", "label": "API Key", "type": "string", "required": true, "placeholder": "如 APIxxxxxxxx"},
+    {"key": "providerApplicationIdKind", "label": "应用ID类型", "type": "enum", "values": ["api_key"], "default": "api_key", "hidden": true},
+    {"key": "accessEndpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.livekit.local/session", "required": false},
+    {"key": "apiEndpoint", "label": "API端点", "type": "string", "default": "https://livekit.local", "required": false}
+  ],
+  "credentialRoles": [
+    {
+      "role": "rtc_token_signing",
+      "label": "Token签名",
+      "description": "用于生成参与者凭证(LiveKit Token)",
+      "fields": [
+        {"key": "credentialRef", "label": "API Secret", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/livekit/api-secret"}
+      ]
+    }
+  ],
+  "profileFields": [
+    {"key": "providerAppId", "label": "API Key", "type": "string", "required": true},
+    {"key": "endpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.livekit.local/session"},
+    {"key": "region", "label": "区域", "type": "string", "default": "self-hosted"},
+    {"key": "credentialTtlSeconds", "label": "凭证有效期(秒)", "type": "number", "default": 3600, "min": 300, "max": 86400}
+  ],
+  "optionalCapabilities": ["recording", "artifact", "screen-share", "data-channel", "transcription", "e2ee", "provider.active-query"],
+  "requiredCapabilities": ["session", "credential", "provider.webhook", "health", "media.audio", "media.video", "live.broadcast", "live.audience", "provider.event-normalization"]
+}

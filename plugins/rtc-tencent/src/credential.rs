@@ -53,7 +53,7 @@ pub fn generate_tencent_user_sig(
 pub fn issued_at_unix_seconds() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
+        .expect("system clock is before UNIX epoch")
         .as_secs()
 }
 

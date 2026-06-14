@@ -70,6 +70,11 @@
       "name": "rtcRooms",
       "description": "Rtc Rooms API resources.",
       "x-sdk-nested-resource-surface": true
+    },
+    {
+      "name": "rtcProviderSchemas",
+      "description": "Rtc Provider Schemas API resources.",
+      "x-sdk-nested-resource-surface": true
     }
   ],
   "security": [
@@ -4562,6 +4567,130 @@
         "x-sdkwork-permission": "rtc.rooms.read",
         "x-sdkwork-auth-mode": "dual-token"
       }
+    },
+    "/backend/v3/api/rtc/provider_schemas": {
+      "get": {
+        "tags": [
+          "rtcProviderSchemas"
+        ],
+        "summary": "List all provider configuration schemas.",
+        "operationId": "rtc.providerSchemas.list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderSchemaListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerSchemas",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_schemas.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      }
+    },
+    "/backend/v3/api/rtc/provider_schemas/{provider}": {
+      "get": {
+        "tags": [
+          "rtcProviderSchemas"
+        ],
+        "summary": "Get provider configuration schema.",
+        "operationId": "rtc.providerSchemas.retrieve",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["tencent", "volcengine", "agora", "aliyun", "livekit"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcProviderSchemaResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-router-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.providerSchemas",
+        "x-sdkwork-request-context": "BackendRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.provider_schemas.read",
+        "x-sdkwork-auth-mode": "dual-token"
+      }
     }
   },
   "components": {
@@ -8294,6 +8423,96 @@
           "code": {
             "type": "string"
           }
+        }
+      },
+      "ProviderConfigSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["provider", "displayName", "description", "accountFields", "applicationFields", "credentialRoles", "profileFields", "optionalCapabilities", "requiredCapabilities"],
+        "properties": {
+          "provider": { "type": "string" },
+          "displayName": { "type": "string" },
+          "description": { "type": "string" },
+          "accountFields": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigFieldSchema" }
+          },
+          "applicationFields": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigFieldSchema" }
+          },
+          "credentialRoles": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CredentialRoleSchema" }
+          },
+          "profileFields": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigFieldSchema" }
+          },
+          "optionalCapabilities": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "requiredCapabilities": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "ConfigFieldSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label", "type"],
+        "properties": {
+          "key": { "type": "string" },
+          "label": { "type": "string" },
+          "type": { "type": "string", "enum": ["string", "number", "boolean", "enum", "secret_ref"] },
+          "required": { "type": "boolean", "default": false },
+          "default": {},
+          "placeholder": { "type": "string" },
+          "values": { "type": "array", "items": { "type": "string" } },
+          "min": { "type": "integer" },
+          "max": { "type": "integer" },
+          "hidden": { "type": "boolean", "default": false }
+        }
+      },
+      "CredentialRoleSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "label", "description", "fields"],
+        "properties": {
+          "role": { "type": "string" },
+          "label": { "type": "string" },
+          "description": { "type": "string" },
+          "fields": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigFieldSchema" }
+          }
+        }
+      },
+      "RtcProviderSchemaListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message", "requestId", "data"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "requestId": { "type": "string", "format": "uuid" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProviderConfigSchema" }
+          }
+        }
+      },
+      "RtcProviderSchemaResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message", "requestId", "data"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "requestId": { "type": "string", "format": "uuid" },
+          "data": { "$ref": "#/components/schemas/ProviderConfigSchema" }
         }
       }
     }

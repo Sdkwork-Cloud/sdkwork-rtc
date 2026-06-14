@@ -1,0 +1,11 @@
+name: sdkwork_rtc_flutter_mobile_commons
+description: SDKWork RTC Flutter Mobile Commons - shared domain-neutral widgets
+version: 0.1.0
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter

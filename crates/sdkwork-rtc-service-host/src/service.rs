@@ -3274,6 +3274,149 @@ impl RtcBackendApiService for RtcProductService {
             })
         })
     }
+
+    fn list_provider_config_schemas(
+        &self,
+    ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderConfigSchema>> {
+        Box::pin(async move {
+            Ok(sdkwork_communication_rtc_service::list_provider_config_schemas())
+        })
+    }
+
+    fn get_provider_config_schema(
+        &self,
+        provider: String,
+    ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::ProviderConfigSchema> {
+        Box::pin(async move {
+            sdkwork_communication_rtc_service::load_provider_config_schema(provider.as_str())
+                .ok_or_else(|| {
+                    RtcBackendApiError::NotFound(format!(
+                        "RTC provider config schema not found: {provider}"
+                    ))
+                })
+        })
+    }
+
+    fn list_provider_plugins(
+        &self,
+    ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderPluginDescriptor>> {
+        let registry = self.registry.clone();
+        Box::pin(async move { Ok(registry.descriptors()) })
+    }
+
+    fn get_provider_plugin(
+        &self,
+        provider: String,
+    ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::ProviderPluginDescriptor> {
+        let registry = self.registry.clone();
+        Box::pin(async move {
+            registry
+                .descriptor(provider.as_str())
+                .cloned()
+                .ok_or_else(|| {
+                    RtcBackendApiError::NotFound(format!(
+                        "RTC provider plugin not found: {provider}"
+                    ))
+                })
+        })
+    }
+
+    fn configure_provider_capabilities(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        provider_profile_id: String,
+        request: sdkwork_router_rtc_backend_api::service::RtcProviderCapabilityConfig,
+    ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::RtcProviderProfile> {
+        let service = self.clone();
+        Box::pin(async move {
+            let organization_id = organization_id.unwrap_or_else(|| "0".to_string());
+            let now = utc_now_rfc3339_millis();
+
+            // Validate capabilities against provider plugin before locking state
+            let provider_kind = {
+                let state = service.state.lock().expect("rtc product state lock");
+                let profile = scoped_provider_profile(
+                    &state,
+                    tenant_id.as_str(),
+                    organization_id.as_str(),
+                    provider_profile_id.as_str(),
+                )
+                .map_err(backend_error_from_product)?;
+                profile.provider.clone()
+            };
+
+            if let Some(descriptor) = service.registry.descriptor(provider_kind.as_str()) {
+                let all_supported: std::collections::HashSet<&str> = descriptor
+                    .required_capabilities
+                    .iter()
+                    .chain(descriptor.optional_capabilities.iter())
+                    .map(|s| s.as_str())
+                    .collect();
+                for cap in &request.enabled_capabilities {
+                    if !all_supported.contains(cap.as_str()) {
+                        return Err(RtcBackendApiError::BadRequest(format!(
+                            "Capability '{}' is not supported by provider '{}'",
+                            cap, provider_kind
+                        )));
+                    }
+                }
+            }
+
+            // Update profile in a short lock scope
+            let profile = {
+                let mut state = service.state.lock().expect("rtc product state lock");
+                let profile = state
+                    .provider_profiles
+                    .get_mut(provider_profile_id.as_str())
+                    .ok_or_else(|| {
+                        RtcBackendApiError::NotFound(format!(
+                            "RTC provider profile not found: {provider_profile_id}"
+                        ))
+                    })?;
+
+                for cap in &request.enabled_capabilities {
+                    match cap.as_str() {
+                        "audio" => profile.capabilities.audio = true,
+                        "video" => profile.capabilities.video = true,
+                        "live" => profile.capabilities.live = true,
+                        "screen-share" => profile.capabilities.screen_share = true,
+                        "recording" => profile.capabilities.recording = true,
+                        "webhook" => profile.capabilities.webhook = true,
+                        "active-query" => profile.capabilities.active_query = true,
+                        _ => {}
+                    }
+                }
+                for cap in &request.disabled_capabilities {
+                    match cap.as_str() {
+                        "audio" => profile.capabilities.audio = false,
+                        "video" => profile.capabilities.video = false,
+                        "live" => profile.capabilities.live = false,
+                        "screen-share" => profile.capabilities.screen_share = false,
+                        "recording" => profile.capabilities.recording = false,
+                        "webhook" => profile.capabilities.webhook = false,
+                        "active-query" => profile.capabilities.active_query = false,
+                        _ => {}
+                    }
+                }
+
+                profile.updated_by = Some(actor_id);
+                profile.updated_at = Some(now);
+                profile.version = next_version(Some(profile.version.as_str()));
+                profile.clone()
+            }; // lock dropped here
+
+            service
+                .persist_changes(RtcPersistenceChangeSet {
+                    provider_profiles: vec![profile.clone()],
+                    ..RtcPersistenceChangeSet::default()
+                })
+                .await
+                .map_err(backend_error_from_product)?;
+            Ok(profile)
+        })
+    }
 }
 
 #[derive(Default)]

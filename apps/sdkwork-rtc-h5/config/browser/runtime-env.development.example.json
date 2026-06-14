@@ -1,0 +1,15 @@
+{
+  "rtc": {
+    "apiBaseUrl": "http://127.0.0.1:18080/app/v3/api",
+    "backendApiBaseUrl": "http://127.0.0.1:18080/backend/v3/api",
+    "defaultMediaMode": "video",
+    "providerSelection": "auto",
+    "mobile": {
+      "maxParticipants": 9,
+      "audioOnlyFallback": true
+    }
+  },
+  "appbase": {
+    "loginUrl": "http://127.0.0.1:18080/app/v3/api/auth"
+  }
+}

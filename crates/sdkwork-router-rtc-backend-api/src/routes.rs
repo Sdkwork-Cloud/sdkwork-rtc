@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     Router,
-    routing::{get, post},
+    routing::{get, post, put},
 };
 
 use crate::{handlers, service::RtcBackendApiService};
@@ -118,6 +118,26 @@ pub fn build_sdkwork_rtc_backend_api_router(service: Arc<dyn RtcBackendApiServic
         .route(
             "/backend/v3/api/rtc/provider_query_jobs/{provider_query_job_id}/snapshots",
             get(handlers::list_provider_query_snapshots),
+        )
+        .route(
+            "/backend/v3/api/rtc/provider_schemas",
+            get(handlers::list_provider_config_schemas),
+        )
+        .route(
+            "/backend/v3/api/rtc/provider_schemas/{provider}",
+            get(handlers::get_provider_config_schema),
+        )
+        .route(
+            "/backend/v3/api/rtc/provider_plugins",
+            get(handlers::list_provider_plugins),
+        )
+        .route(
+            "/backend/v3/api/rtc/provider_plugins/{provider}",
+            get(handlers::get_provider_plugin),
+        )
+        .route(
+            "/backend/v3/api/rtc/provider_profiles/{provider_profile_id}/capabilities",
+            put(handlers::configure_provider_capabilities),
         )
         .with_state(service)
 }
@@ -614,6 +634,48 @@ mod tests {
             _limit: Option<u32>,
         ) -> RtcBackendApiFuture<RtcListData<RtcProviderQuerySnapshotRecord>> {
             self.record("list_provider_query_snapshots");
+            Self::unavailable()
+        }
+
+        fn list_provider_config_schemas(
+            &self,
+        ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderConfigSchema>> {
+            self.record("list_provider_config_schemas");
+            Self::unavailable()
+        }
+
+        fn get_provider_config_schema(
+            &self,
+            _provider: String,
+        ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::ProviderConfigSchema> {
+            self.record("get_provider_config_schema");
+            Self::unavailable()
+        }
+
+        fn list_provider_plugins(
+            &self,
+        ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderPluginDescriptor>> {
+            self.record("list_provider_plugins");
+            Self::unavailable()
+        }
+
+        fn get_provider_plugin(
+            &self,
+            _provider: String,
+        ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::ProviderPluginDescriptor> {
+            self.record("get_provider_plugin");
+            Self::unavailable()
+        }
+
+        fn configure_provider_capabilities(
+            &self,
+            _tenant_id: String,
+            _organization_id: Option<String>,
+            _actor_id: String,
+            _provider_profile_id: String,
+            _request: crate::service::RtcProviderCapabilityConfig,
+        ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::RtcProviderProfile> {
+            self.record("configure_provider_capabilities");
             Self::unavailable()
         }
     }

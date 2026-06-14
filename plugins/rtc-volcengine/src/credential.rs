@@ -46,7 +46,7 @@ pub fn generate_volcengine_rtc_token(
 pub fn issued_at_unix_seconds() -> u32 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
+        .expect("system clock is before UNIX epoch")
         .as_secs()
         .try_into()
         .unwrap_or(u32::MAX)

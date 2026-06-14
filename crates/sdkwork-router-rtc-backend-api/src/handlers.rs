@@ -12,7 +12,7 @@ use sdkwork_communication_rtc_service::{
     RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderProfile,
     RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest,
     RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord, RtcProviderWebhookEventRecord,
-    RtcQualitySample, RtcRoom,
+    RtcQualitySample, RtcRoom, ProviderConfigSchema, ProviderPluginDescriptor,
 };
 use sdkwork_rtc_app_context::AppContext;
 use serde::{Deserialize, Serialize};
@@ -634,6 +634,54 @@ pub async fn list_provider_query_snapshots(
             provider_query_job_id,
             query.cursor,
             query.limit,
+        )
+        .await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
+pub async fn list_provider_config_schemas(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+) -> Result<Json<RtcApiEnvelope<Vec<ProviderConfigSchema>>>, RtcBackendHandlerError> {
+    let result = service.list_provider_config_schemas().await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
+pub async fn get_provider_config_schema(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+    Path(provider): Path<String>,
+) -> Result<Json<RtcApiEnvelope<ProviderConfigSchema>>, RtcBackendHandlerError> {
+    let result = service.get_provider_config_schema(provider).await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
+pub async fn list_provider_plugins(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+) -> Result<Json<RtcApiEnvelope<Vec<ProviderPluginDescriptor>>>, RtcBackendHandlerError> {
+    let result = service.list_provider_plugins().await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
+pub async fn get_provider_plugin(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+    Path(provider): Path<String>,
+) -> Result<Json<RtcApiEnvelope<ProviderPluginDescriptor>>, RtcBackendHandlerError> {
+    let result = service.get_provider_plugin(provider).await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
+pub async fn configure_provider_capabilities(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+    Extension(context): Extension<AppContext>,
+    Path(provider_profile_id): Path<String>,
+    Json(body): Json<crate::service::RtcProviderCapabilityConfig>,
+) -> Result<Json<RtcApiEnvelope<RtcProviderProfile>>, RtcBackendHandlerError> {
+    let result = service
+        .configure_provider_capabilities(
+            context.tenant_id,
+            context.organization_id,
+            context.actor_id,
+            provider_profile_id,
+            body,
         )
         .await?;
     Ok(Json(RtcApiEnvelope::ok(result)))

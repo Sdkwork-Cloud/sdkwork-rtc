@@ -1,0 +1,54 @@
+{
+  "provider": "tencent",
+  "displayName": "腾讯云 TRTC",
+  "description": "腾讯云实时音视频(TRTC)提供方",
+  "accountFields": [
+    {"key": "externalTenantId", "label": "腾讯云主账号ID", "type": "string", "required": false, "placeholder": "如 100012345678"},
+    {"key": "cloudAccountId", "label": "云账号ID", "type": "string", "required": false},
+    {"key": "projectId", "label": "项目ID", "type": "string", "required": false}
+  ],
+  "applicationFields": [
+    {"key": "providerApplicationId", "label": "SDKAppId", "type": "number", "required": true, "placeholder": "如 1400000000"},
+    {"key": "providerApplicationIdKind", "label": "应用ID类型", "type": "enum", "values": ["sdk_app_id"], "default": "sdk_app_id", "hidden": true},
+    {"key": "accessEndpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.tencent.local/session", "required": false},
+    {"key": "apiEndpoint", "label": "API端点", "type": "string", "default": "https://trtc.tencentcloudapi.com"},
+    {"key": "apiHost", "label": "API主机", "type": "string", "default": "trtc.tencentcloudapi.com"},
+    {"key": "apiVersion", "label": "API版本", "type": "string", "default": "2019-07-22"},
+    {"key": "webhookCallbackUrl", "label": "Webhook回调URL", "type": "string", "required": false, "placeholder": "https://your-domain.com/webhook/trtc"}
+  ],
+  "credentialRoles": [
+    {
+      "role": "usersig_signing",
+      "label": "UserSig签名",
+      "description": "用于生成参与者凭证(UserSig)",
+      "fields": [
+        {"key": "credentialRef", "label": "SDK Secret Key", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/tencent/usersig-key"}
+      ]
+    },
+    {
+      "role": "cloud_api_signing",
+      "label": "云API签名",
+      "description": "用于调用腾讯云API(Active Query)",
+      "fields": [
+        {"key": "credentialRef", "label": "SecretId", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/tencent/secret-id"},
+        {"key": "credentialFingerprint", "label": "SecretKey", "type": "secret_ref", "required": true, "placeholder": "secret://rtc/tencent/secret-key"}
+      ]
+    },
+    {
+      "role": "webhook_signing",
+      "label": "Webhook签名",
+      "description": "用于验证Webhook回调签名",
+      "fields": [
+        {"key": "credentialRef", "label": "Webhook密钥", "type": "secret_ref", "required": false, "placeholder": "secret://rtc/tencent/webhook-key"}
+      ]
+    }
+  ],
+  "profileFields": [
+    {"key": "providerAppId", "label": "SDKAppId", "type": "string", "required": true},
+    {"key": "endpoint", "label": "接入端点", "type": "string", "default": "wss://rtc.tencent.local/session"},
+    {"key": "region", "label": "区域", "type": "enum", "values": ["ap-guangzhou", "ap-shanghai", "ap-beijing", "ap-hongkong", "na-siliconvalley", "eu-frankfurt"], "default": "ap-guangzhou"},
+    {"key": "credentialTtlSeconds", "label": "凭证有效期(秒)", "type": "number", "default": 3600, "min": 300, "max": 86400}
+  ],
+  "optionalCapabilities": ["recording", "artifact", "screen-share", "cdn-relay", "provider.active-query"],
+  "requiredCapabilities": ["session", "credential", "provider.webhook", "health", "media.audio", "media.video", "live.broadcast", "live.audience", "provider.event-normalization"]
+}

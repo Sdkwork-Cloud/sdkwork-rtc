@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.app.config",
+  "app": {
+    "id": "sdkwork-rtc-flutter-mobile",
+    "displayName": "SDKWork RTC Mobile",
+    "version": "0.1.0",
+    "runtime": {
+      "family": "mobile",
+      "framework": "flutter",
+      "surface": "app"
+    }
+  }
+}

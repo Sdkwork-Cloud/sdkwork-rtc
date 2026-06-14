@@ -1,32 +1,16 @@
-# SDKWork RTC PC Surface
+# SDKWork RTC PC Application
 
-## Purpose
+PC browser/desktop application for SDKWork RTC. Supports rooms, media sessions, participant credentials, provider profiles, and recording artifacts.
 
-`apps/sdkwork-rtc-pc/` contains PC React application-surface packages for RTC media integration.
-The repository root remains the RTC authority workspace; root-level `packages/` is intentionally not used.
+## Architecture
 
-## Owner
+- Root: `APP_PC_ARCHITECTURE_SPEC.md`
+- SDK: `sdkwork-rtc-app-sdk` (generated)
+- Packages: `sdkwork-rtc-pc-core`, `sdkwork-rtc-pc-commons`, `sdkwork-rtc-pc-shell`, `sdkwork-rtc-pc-rtc`
 
-sdkwork-rtc.
+## Development
 
-## Allowed Content
-
-- `packages/sdkwork-rtc-pc-rtc/` app-side PC React RTC media package.
-- App-surface documentation and package-level tests.
-
-## Forbidden Content
-
-- Repository-root package collections.
-- SDK family workspaces or generated SDK transport output.
-- Rust crates or provider plugins that belong in `crates/` or `plugins/`.
-- Runtime-local user data or secrets.
-
-## Related Specs
-
-- `../../../sdkwork-specs/APP_PC_ARCHITECTURE_SPEC.md`
-- `../../../sdkwork-specs/APP_PC_REACT_UI_SPEC.md`
-- `../../../sdkwork-specs/UI_ARCHITECTURE_SPEC.md`
-
-## Verification
-
-Run `pnpm test`, `pnpm run typecheck`, and `node --test tests/rtc-workspace-standard.test.mjs` from the repository root.
+```powershell
+pnpm install
+pnpm run dev
+```
