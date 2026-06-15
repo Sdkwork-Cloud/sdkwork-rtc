@@ -6,7 +6,7 @@ import test from "node:test";
 
 const rtcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const appbaseRoot = path.resolve(rtcRoot, "..", "sdkwork-appbase");
-const crawChatRoot = path.resolve(rtcRoot, "..", "craw-chat");
+const SdkworkImRoot = path.resolve(rtcRoot, "..", "sdkwork-im");
 const sdkworkCoreRoot = path.resolve(rtcRoot, "..", "sdkwork-core");
 
 const requiredRtcPaths = [
@@ -39,7 +39,7 @@ const forbiddenAppbasePatterns = [
   /sdkwork-rtc-pc-rtc/,
   /sdkwork-rtc-sdk/,
   /sdkwork-space[\\/]sdkwork-rtc/,
-  /\.\.\/craw-chat\/sdks\/sdkwork-rtc-sdk/,
+  /\.\.\/sdkwork-im\/sdks\/sdkwork-rtc-sdk/,
   /sdkwork-react-backend-rtc/,
 ];
 
@@ -49,30 +49,30 @@ const allowedAppbaseBoundaryFiles = new Set([
   "packages/mobile-react/foundation/sdkwork-appbase-mobile-react/tests/catalog.test.ts",
 ]);
 
-const forbiddenCrawChatPaths = [
+const forbiddenSdkworkImPaths = [
   "plugins/rtc-aliyun",
   "plugins/rtc-tencent",
   "plugins/rtc-volcengine",
-  "crates/craw-chat-contract-rtc",
+  "crates/sdkwork-im-contract-rtc",
   "sdks/sdkwork-rtc-sdk",
   "services/rtc-signaling-service",
 ];
 
-const forbiddenCrawChatPatterns = [
+const forbiddenSdkworkImPatterns = [
   /read\(['"]sdkwork-rtc-sdk\//,
   /(?:^|[\s"'`=:([{])(?:\.\.\/)+sdks\/sdkwork-rtc-sdk\b/m,
   /(?:^|[\s"'`=:([{])(?:\.\.\\)+sdks\\sdkwork-rtc-sdk\b/m,
-  /link:[^\r\n]*craw-chat\/sdks\/sdkwork-rtc-sdk/,
-  /link:[^\r\n]*craw-chat\\sdks\\sdkwork-rtc-sdk/,
+  /link:[^\r\n]*sdkwork-im\/sdks\/sdkwork-rtc-sdk/,
+  /link:[^\r\n]*sdkwork-im\\sdks\\sdkwork-rtc-sdk/,
 ];
 
 const forbiddenSdkworkCorePatterns = [
   /@sdkwork\/rtc-sdk/,
   /sdkwork-space[\\/]sdkwork-rtc/,
-  /craw-chat\/sdks\/sdkwork-rtc-sdk/,
-  /craw-chat\\sdks\\sdkwork-rtc-sdk/,
-  /link:[^\r\n]*craw-chat\/sdks\/sdkwork-rtc-sdk/,
-  /link:[^\r\n]*craw-chat\\sdks\\sdkwork-rtc-sdk/,
+  /sdkwork-im\/sdks\/sdkwork-rtc-sdk/,
+  /sdkwork-im\\sdks\\sdkwork-rtc-sdk/,
+  /link:[^\r\n]*sdkwork-im\/sdks\/sdkwork-rtc-sdk/,
+  /link:[^\r\n]*sdkwork-im\\sdks\\sdkwork-rtc-sdk/,
 ];
 
 function workspacePath(root, relativePath) {
@@ -370,9 +370,9 @@ test("appbase metadata and lockfile do not aggregate the RTC SDK", () => {
   assert.equal(packageJson.pnpm?.overrides?.["@sdkwork/rtc-sdk"], undefined);
 });
 
-test("craw-chat PC app consumes the RTC SDK from sdkwork-rtc", () => {
+test("sdkwork-im PC app consumes the RTC SDK from sdkwork-rtc", () => {
   const packageJson = readFileSync(
-    workspacePath(crawChatRoot, "apps/sdkwork-chat-pc/package.json"),
+    workspacePath(SdkworkImRoot, "apps/sdkwork-chat-pc/package.json"),
     "utf8",
   );
   const packageManifest = JSON.parse(packageJson);
@@ -381,7 +381,7 @@ test("craw-chat PC app consumes the RTC SDK from sdkwork-rtc", () => {
   const workspace = readFileSync(workspacePath(appbaseRoot, "pnpm-workspace.yaml"), "utf8");
   assert.doesNotMatch(workspace, /sdkwork-space\/sdkwork-rtc/);
   const chatWorkspace = readFileSync(
-    workspacePath(crawChatRoot, "apps/sdkwork-chat-pc/pnpm-workspace.yaml"),
+    workspacePath(SdkworkImRoot, "apps/sdkwork-chat-pc/pnpm-workspace.yaml"),
     "utf8",
   );
   assert.match(
@@ -390,10 +390,10 @@ test("craw-chat PC app consumes the RTC SDK from sdkwork-rtc", () => {
   );
 });
 
-test("craw-chat PC call service routes call signaling through IM calls and keeps RTC SDK out of signaling", () => {
+test("sdkwork-im PC call service routes call signaling through IM calls and keeps RTC SDK out of signaling", () => {
   const callService = readFileSync(
     workspacePath(
-      crawChatRoot,
+      SdkworkImRoot,
       "apps/sdkwork-chat-pc/packages/sdkwork-clawchat-pc-chat/src/services/CallService.ts",
     ),
     "utf8",
@@ -411,24 +411,24 @@ test("craw-chat PC call service routes call signaling through IM calls and keeps
   assert.doesNotMatch(callService, /\.rtc\.retrieve\s*\(/);
 });
 
-test("craw-chat Rust runtime consumes RTC media/provider crates but not RTC signaling service", () => {
+test("sdkwork-im Rust runtime consumes RTC media/provider crates but not RTC signaling service", () => {
   const manifests = [
     "crates/im-domain-core/Cargo.toml",
     "crates/im-platform-contracts/Cargo.toml",
     "services/local-minimal-node/Cargo.toml",
   ];
-  const workspaceManifest = readFileSync(workspacePath(crawChatRoot, "Cargo.toml"), "utf8");
+  const workspaceManifest = readFileSync(workspacePath(SdkworkImRoot, "Cargo.toml"), "utf8");
   assert.match(
     workspaceManifest,
     /sdkwork-communication-rtc-service = \{ path = "\.\.\/sdkwork-rtc\/crates\/sdkwork-communication-rtc-service" \}/,
   );
   for (const manifest of manifests) {
-    const manifestSource = readFileSync(workspacePath(crawChatRoot, manifest), "utf8");
+    const manifestSource = readFileSync(workspacePath(SdkworkImRoot, manifest), "utf8");
     assert.match(manifestSource, /sdkwork-communication-rtc-service\.workspace = true/);
   }
 
   const localMinimalNode = readFileSync(
-    workspacePath(crawChatRoot, "services/local-minimal-node/Cargo.toml"),
+    workspacePath(SdkworkImRoot, "services/local-minimal-node/Cargo.toml"),
     "utf8",
   );
   assert.doesNotMatch(localMinimalNode, /sdkwork-rtc-state-store/);
@@ -436,20 +436,20 @@ test("craw-chat Rust runtime consumes RTC media/provider crates but not RTC sign
   assert.doesNotMatch(localMinimalNode, /sdkwork-rtc-signaling-service/);
 
   const imCallStateStore = readFileSync(
-    workspacePath(crawChatRoot, "services/local-minimal-node/src/node/im_calls/state_store.rs"),
+    workspacePath(SdkworkImRoot, "services/local-minimal-node/src/node/im_calls/state_store.rs"),
     "utf8",
   );
   assert.match(imCallStateStore, /FileImCallStateStore/);
   assert.match(imCallStateStore, /im call state store/);
 });
 
-test("sdkwork-rtc Rust services do not depend back on craw-chat crates", () => {
+test("sdkwork-rtc Rust services do not depend back on sdkwork-im crates", () => {
   const textFiles = listTextFiles(rtcRoot, "").filter((relativePath) =>
     /^(Cargo\.toml|services\/|crates\/|adapters\/)/.test(relativePath.replaceAll("\\", "/")),
   );
   const matches = findPatternMatches(rtcRoot, textFiles, [
-    /craw-chat-api-registry/,
-    /craw-chat-openapi/,
+    /sdkwork-im-api-registry/,
+    /sdkwork-im-openapi/,
     /im-app-context/,
     /craw_chat_api_registry/,
     /craw_chat_openapi/,
@@ -576,28 +576,28 @@ test("sdkwork-rtc HTTP surfaces expose RTC media capabilities without signaling"
     assert.match(appRouteSource, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 
-  const crawChatGateway = "services/web-gateway/src/lib.rs";
-  const crawChatGatewayContent = readFileSync(workspacePath(crawChatRoot, crawChatGateway), "utf8");
-  assert.doesNotMatch(crawChatGatewayContent, /\/im\/v3\/api\/rtc/);
+  const SdkworkImGateway = "services/web-gateway/src/lib.rs";
+  const SdkworkImGatewayContent = readFileSync(workspacePath(SdkworkImRoot, SdkworkImGateway), "utf8");
+  assert.doesNotMatch(SdkworkImGatewayContent, /\/im\/v3\/api\/rtc/);
   assert.doesNotMatch(
-    crawChatGatewayContent,
+    SdkworkImGatewayContent,
     /sdkwork-rtc-signaling-service[\s\S]{0,240}SdkTarget::SdkworkImSdk/,
   );
-  assert.match(crawChatGatewayContent, /\/im\/v3\/api\/calls\/\{\*path\}/);
-  assert.doesNotMatch(crawChatGatewayContent, /\/app\/v3\/api\/rtc\/\{\*path\}/);
+  assert.match(SdkworkImGatewayContent, /\/im\/v3\/api\/calls\/\{\*path\}/);
+  assert.doesNotMatch(SdkworkImGatewayContent, /\/app\/v3\/api\/rtc\/\{\*path\}/);
 });
 
-test("craw-chat local-minimal-node does not expose RTC through IM API prefixes", () => {
-  const localMinimalTextFiles = listTextFiles(crawChatRoot, "services/local-minimal-node").filter(
+test("sdkwork-im local-minimal-node does not expose RTC through IM API prefixes", () => {
+  const localMinimalTextFiles = listTextFiles(SdkworkImRoot, "services/local-minimal-node").filter(
     (relativePath) => /\.(rs|md|toml|json|yaml|yml)$/.test(relativePath),
   );
-  const localMinimalMatches = findPatternMatches(crawChatRoot, localMinimalTextFiles, [
+  const localMinimalMatches = findPatternMatches(SdkworkImRoot, localMinimalTextFiles, [
     /\/im\/v3\/api\/rtc/,
   ]);
   assert.deepEqual(localMinimalMatches, []);
 
   const buildSource = readFileSync(
-    workspacePath(crawChatRoot, "services/local-minimal-node/src/node/build.rs"),
+    workspacePath(SdkworkImRoot, "services/local-minimal-node/src/node/build.rs"),
     "utf8",
   );
   assert.doesNotMatch(
@@ -630,11 +630,11 @@ test("sdkwork-rtc OpenAPI helpers do not publish WebSocket signaling metadata", 
   assert.deepEqual(matches, []);
 });
 
-test("craw-chat IM SDK family no longer generates or composes RTC APIs", () => {
-  const imSdkTextFiles = listTextFiles(crawChatRoot, "sdks/sdkwork-im-sdk").filter(
+test("sdkwork-im IM SDK family no longer generates or composes RTC APIs", () => {
+  const imSdkTextFiles = listTextFiles(SdkworkImRoot, "sdks/sdkwork-im-sdk").filter(
     (relativePath) => /\.(cs|dart|go|java|json|kt|kts|md|mjs|py|rs|swift|toml|ts|yaml|yml)$/.test(relativePath),
   );
-  const imSdkMatches = findPatternMatches(crawChatRoot, imSdkTextFiles, [
+  const imSdkMatches = findPatternMatches(SdkworkImRoot, imSdkTextFiles, [
     /\/im\/v3\/api\/rtc/,
     /\bRtcApi\b/,
     /\bsdk\.rtc\b/,
@@ -653,19 +653,19 @@ test("craw-chat IM SDK family no longer generates or composes RTC APIs", () => {
   assert.deepEqual(imSdkMatches, []);
 
   const imFamilyTest = readFileSync(
-    workspacePath(crawChatRoot, "sdks/test/verify-im-v3-sdk-family-contract.test.mjs"),
+    workspacePath(SdkworkImRoot, "sdks/test/verify-im-v3-sdk-family-contract.test.mjs"),
     "utf8",
   );
   assert.doesNotMatch(imFamilyTest, /\/im\/v3\/api\/rtc/);
   assert.doesNotMatch(imFamilyTest, /\/app\/v3\/api\/rtc/);
 });
 
-test("craw-chat IM app SDK generated transport no longer owns RTC APIs", () => {
-  const imAppGeneratedFiles = listTextFiles(crawChatRoot, "sdks/sdkwork-im-app-sdk").filter((relativePath) =>
+test("sdkwork-im IM app SDK generated transport no longer owns RTC APIs", () => {
+  const imAppGeneratedFiles = listTextFiles(SdkworkImRoot, "sdks/sdkwork-im-app-sdk").filter((relativePath) =>
     /(?:^|\/)(generated\/server-openapi|composed)\//.test(relativePath.replaceAll("\\", "/"))
     && /\.(cs|dart|go|java|json|kt|kts|md|mjs|py|rs|swift|toml|ts|yaml|yml)$/.test(relativePath),
   );
-  const imAppMatches = findPatternMatches(crawChatRoot, imAppGeneratedFiles, [
+  const imAppMatches = findPatternMatches(SdkworkImRoot, imAppGeneratedFiles, [
     /\/app\/v3\/api\/rtc/,
     /(?:^|["'`(])\/rtc\/provider_(?:callbacks|health)\b/,
     /\bRtcApi\b/,
@@ -676,13 +676,13 @@ test("craw-chat IM app SDK generated transport no longer owns RTC APIs", () => {
   assert.deepEqual(imAppMatches, []);
 });
 
-test("craw-chat active scripts and published docs no longer point RTC at IM APIs", () => {
+test("sdkwork-im active scripts and published docs no longer point RTC at IM APIs", () => {
   const activeRtcDocsAndScripts = [
     "bin",
     "docs/sites",
     "docs/部署",
-  ].flatMap((relativePath) => listTextFiles(crawChatRoot, relativePath));
-  const matches = findPatternMatches(crawChatRoot, activeRtcDocsAndScripts, [
+  ].flatMap((relativePath) => listTextFiles(SdkworkImRoot, relativePath));
+  const matches = findPatternMatches(SdkworkImRoot, activeRtcDocsAndScripts, [
     /\/im\/v3\/api\/rtc/,
     /@sdkwork\/im-sdk[\s\S]{0,120}\bsdk\.rtc\b/,
     /\bsdk\.rtc\b/,
@@ -690,16 +690,16 @@ test("craw-chat active scripts and published docs no longer point RTC at IM APIs
   assert.deepEqual(matches, []);
 });
 
-test("craw-chat no longer owns the RTC SDK workspace source", () => {
-  assert.equal(exists(crawChatRoot, "sdks/sdkwork-rtc-sdk"), false);
+test("sdkwork-im no longer owns the RTC SDK workspace source", () => {
+  assert.equal(exists(SdkworkImRoot, "sdks/sdkwork-rtc-sdk"), false);
 });
 
-test("craw-chat no longer owns RTC runtime source packages or local RTC SDK paths", () => {
-  const remainingPaths = forbiddenCrawChatPaths.filter((relativePath) => exists(crawChatRoot, relativePath));
+test("sdkwork-im no longer owns RTC runtime source packages or local RTC SDK paths", () => {
+  const remainingPaths = forbiddenSdkworkImPaths.filter((relativePath) => exists(SdkworkImRoot, relativePath));
   assert.deepEqual(remainingPaths, []);
 
-  const textFiles = listTextFiles(crawChatRoot, "");
-  const matches = findPatternMatches(crawChatRoot, textFiles, forbiddenCrawChatPatterns);
+  const textFiles = listTextFiles(SdkworkImRoot, "");
+  const matches = findPatternMatches(SdkworkImRoot, textFiles, forbiddenSdkworkImPatterns);
   assert.deepEqual(matches, []);
 });
 

@@ -1,1 +1,0 @@
-{"version":3,"file":"rtc-drive-reference.d.ts","sourceRoot":"","sources":["../../src/types/rtc-drive-reference.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,iBAAiB;IAChC,QAAQ,EAAE,MAAM,CAAC;IACjB,OAAO,EAAE,MAAM,CAAC;IAChB,kFAAkF;IAClF,SAAS,EAAE,KAAK,CAAC;IACjB,MAAM,EAAE,MAAM,CAAC;IACf,WAAW,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;CAC7B"}

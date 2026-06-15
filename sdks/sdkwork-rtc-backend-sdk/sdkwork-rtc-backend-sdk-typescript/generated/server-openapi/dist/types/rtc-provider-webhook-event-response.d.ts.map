@@ -1,1 +1,0 @@
-{"version":3,"file":"rtc-provider-webhook-event-response.d.ts","sourceRoot":"","sources":["../../src/types/rtc-provider-webhook-event-response.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,uBAAuB,EAAE,MAAM,8BAA8B,CAAC;AAE5E,MAAM,WAAW,+BAA+B;IAC9C,IAAI,EAAE,MAAM,CAAC;IACb,OAAO,EAAE,MAAM,CAAC;IAChB,2CAA2C;IAC3C,SAAS,EAAE,MAAM,CAAC;IAClB,IAAI,EAAE,uBAAuB,CAAC;CAC/B"}

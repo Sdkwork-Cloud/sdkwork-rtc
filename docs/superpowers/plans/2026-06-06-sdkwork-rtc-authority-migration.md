@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. The user explicitly forbids subagent execution for this task.
 
-**Goal:** Move RTC provider/media runtime SDK, backend provider management API, Rust provider/storage contracts, and UI capability code into `sdkwork-rtc`, then remove RTC authority from `sdkwork-appbase` and duplicate RTC SDK authority from `craw-chat`. IM/call signaling remains owned by Craw Chat IM.
+**Goal:** Move RTC provider/media runtime SDK, backend provider management API, Rust provider/storage contracts, and UI capability code into `sdkwork-rtc`, then remove RTC authority from `sdkwork-appbase` and duplicate RTC SDK authority from `sdkwork-im`. IM/call signaling remains owned by Craw Chat IM.
 
-**Architecture:** `sdkwork-rtc` becomes the RTC provider/media runtime authority. The provider/runtime RTC SDK from `craw-chat/sdks/sdkwork-rtc-sdk` is copied to `sdks/sdkwork-rtc-sdk`; backend/admin HTTP SDK families are generated from RTC backend route/OpenAPI authorities; Rust crates own RTC provider, storage, and backend API contracts. User-facing call signaling, invite/accept/reject/end, participant call lifecycle, WebSocket business protocol, and `/im/v3/api/calls/*` remain in Craw Chat IM. `sdkwork-appbase` keeps no RTC package, catalog item, or direct workspace alias.
+**Architecture:** `sdkwork-rtc` becomes the RTC provider/media runtime authority. The provider/runtime RTC SDK from `sdkwork-im/sdks/sdkwork-rtc-sdk` is copied to `sdks/sdkwork-rtc-sdk`; backend/admin HTTP SDK families are generated from RTC backend route/OpenAPI authorities; Rust crates own RTC provider, storage, and backend API contracts. User-facing call signaling, invite/accept/reject/end, participant call lifecycle, WebSocket business protocol, and `/im/v3/api/calls/*` remain in Craw Chat IM. `sdkwork-appbase` keeps no RTC package, catalog item, or direct workspace alias.
 
 **Tech Stack:** Node test runner, Vitest, TypeScript, Rust 2024, SQLx-style schema crates, OpenAPI 3.1.2, SDKWork `sdkgen`.
 
@@ -17,14 +17,14 @@
 - Create: `package.json`
 - Create: `README.md`
 
-- [ ] Write a failing Node audit test that asserts `sdkwork-rtc` owns RTC SDK/UI/Rust/OpenAPI files and appbase/craw-chat do not retain RTC authority sources.
+- [ ] Write a failing Node audit test that asserts `sdkwork-rtc` owns RTC SDK/UI/Rust/OpenAPI files and appbase/sdkwork-im do not retain RTC authority sources.
 - [ ] Run `node --test tests/rtc-migration-contract.test.mjs` and confirm it fails because `sdkwork-rtc` is empty.
 - [ ] Add root package scripts for audit, typecheck, Rust tests, SDK check, and full verify.
 
 ### Task 2: Migrate RTC Provider SDK
 
 **Files:**
-- Copy: `<workspace-root>\craw-chat\sdks\sdkwork-rtc-sdk` to `sdks/sdkwork-rtc-sdk`
+- Copy: `<workspace-root>\sdkwork-im\sdks\sdkwork-rtc-sdk` to `sdks/sdkwork-rtc-sdk`
 - Modify: `sdks/sdkwork-rtc-sdk/README.md`
 
 - [ ] Copy the active RTC SDK workspace into `sdkwork-rtc`.
@@ -78,15 +78,15 @@
 - Modify: `sdkwork-appbase/README.md`
 
 - [ ] Remove RTC package and catalog authority from appbase.
-- [ ] Remove direct workspace aliases to craw-chat RTC SDK.
+- [ ] Remove direct workspace aliases to sdkwork-im RTC SDK.
 - [ ] Update tests/scripts that expected appbase-owned RTC packages.
 
 ### Task 7: Remove Craw Chat RTC SDK Authority
 
 **Files:**
-- Delete or replace: `craw-chat/sdks/sdkwork-rtc-sdk`
+- Delete or replace: `sdkwork-im/sdks/sdkwork-rtc-sdk`
 
-- [ ] Remove the SDK source from craw-chat as an authority.
+- [ ] Remove the SDK source from sdkwork-im as an authority.
 - [ ] Leave no package/build entrypoint that can publish a second RTC SDK source.
 
 ### Task 8: Verification Loop
@@ -99,4 +99,4 @@
 - [ ] Run `pnpm test`.
 - [ ] Run `cargo test --workspace`.
 - [ ] Run SDK/OpenAPI checks.
-- [ ] Search `sdkwork-appbase` and `craw-chat` for RTC authority leftovers and remove any remaining dead code.
+- [ ] Search `sdkwork-appbase` and `sdkwork-im` for RTC authority leftovers and remove any remaining dead code.
