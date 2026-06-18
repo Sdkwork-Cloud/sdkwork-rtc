@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'app.dart';
 import 'bootstrap/runtime.dart';
 
-void main() {
-  bootstrap();
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await bootstrap();
   runApp(const RtcApp());
 }

@@ -1,4 +1,6 @@
+import { AdminRoutes } from "@sdkwork/rtc-h5-admin-shell";
+import { createRtcAppRoutes } from "@sdkwork/rtc-h5-shell";
+
 export function createRoutes() {
-  // TODO: Assemble RTC route contributions from packages
-  return [];
+  return [...createRtcAppRoutes(), ...AdminRoutes().routes];
 }

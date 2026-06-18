@@ -4,7 +4,7 @@ use sdkwork_communication_rtc_service::{
     RtcMediaSessionCompletionRecord, RtcPersistenceChangeSet, RtcPersistenceError,
     RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind, RtcProviderQueryJobRecord,
     RtcProviderQueryKind, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
-    utc_now_rfc3339_millis,
+    RtcRuntimeLoadRequest, utc_now_rfc3339_millis,
 };
 use sqlx::{PgPool, SqlitePool};
 
@@ -168,6 +168,60 @@ impl RtcSqlitePersistencePort {
 
         Ok(())
     }
+
+    async fn load_runtime_snapshot_inner(
+        &self,
+        request: RtcRuntimeLoadRequest,
+    ) -> RtcStorageResult<RtcPersistenceChangeSet> {
+        let tenant_id = request.tenant_id.as_str();
+        let organization_id = request.organization_id.as_str();
+        let provider_accounts = self
+            .provider_accounts
+            .list_provider_accounts(tenant_id, organization_id, None, None)
+            .await?;
+        let mut provider_applications = Vec::new();
+        let mut provider_credentials = Vec::new();
+        for account in &provider_accounts {
+            let applications = self
+                .provider_accounts
+                .list_provider_applications(
+                    tenant_id,
+                    organization_id,
+                    Some(account.id.as_str()),
+                    None,
+                )
+                .await?;
+            for application in &applications {
+                let credentials = self
+                    .provider_accounts
+                    .list_provider_credentials(
+                        tenant_id,
+                        organization_id,
+                        Some(application.id.as_str()),
+                        None,
+                    )
+                    .await?;
+                provider_credentials.extend(credentials);
+            }
+            provider_applications.extend(applications);
+        }
+        let provider_profiles = self
+            .provider_profiles
+            .list_provider_profiles(tenant_id, organization_id, None)
+            .await?;
+        let provider_routes = self
+            .provider_routes
+            .list_provider_routes(tenant_id, organization_id, None)
+            .await?;
+        Ok(RtcPersistenceChangeSet {
+            provider_accounts,
+            provider_applications,
+            provider_credentials,
+            provider_profiles,
+            provider_routes,
+            ..RtcPersistenceChangeSet::default()
+        })
+    }
 }
 
 impl RtcPersistencePort for RtcSqlitePersistencePort {
@@ -177,6 +231,17 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
     ) -> RtcPersistenceFuture<'a, ()> {
         Box::pin(async move {
             self.persist_changes_inner(changes)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn load_runtime_snapshot<'a>(
+        &'a self,
+        request: RtcRuntimeLoadRequest,
+    ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet> {
+        Box::pin(async move {
+            self.load_runtime_snapshot_inner(request)
                 .await
                 .map_err(storage_to_persistence_error)
         })
@@ -334,6 +399,60 @@ impl RtcPostgresPersistencePort {
 
         Ok(())
     }
+
+    async fn load_runtime_snapshot_inner(
+        &self,
+        request: RtcRuntimeLoadRequest,
+    ) -> RtcStorageResult<RtcPersistenceChangeSet> {
+        let tenant_id = request.tenant_id.as_str();
+        let organization_id = request.organization_id.as_str();
+        let provider_accounts = self
+            .provider_accounts
+            .list_provider_accounts(tenant_id, organization_id, None, None)
+            .await?;
+        let mut provider_applications = Vec::new();
+        let mut provider_credentials = Vec::new();
+        for account in &provider_accounts {
+            let applications = self
+                .provider_accounts
+                .list_provider_applications(
+                    tenant_id,
+                    organization_id,
+                    Some(account.id.as_str()),
+                    None,
+                )
+                .await?;
+            for application in &applications {
+                let credentials = self
+                    .provider_accounts
+                    .list_provider_credentials(
+                        tenant_id,
+                        organization_id,
+                        Some(application.id.as_str()),
+                        None,
+                    )
+                    .await?;
+                provider_credentials.extend(credentials);
+            }
+            provider_applications.extend(applications);
+        }
+        let provider_profiles = self
+            .provider_profiles
+            .list_provider_profiles(tenant_id, organization_id, None)
+            .await?;
+        let provider_routes = self
+            .provider_routes
+            .list_provider_routes(tenant_id, organization_id, None)
+            .await?;
+        Ok(RtcPersistenceChangeSet {
+            provider_accounts,
+            provider_applications,
+            provider_credentials,
+            provider_profiles,
+            provider_routes,
+            ..RtcPersistenceChangeSet::default()
+        })
+    }
 }
 
 impl RtcPersistencePort for RtcPostgresPersistencePort {
@@ -343,6 +462,17 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
     ) -> RtcPersistenceFuture<'a, ()> {
         Box::pin(async move {
             self.persist_changes_inner(changes)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn load_runtime_snapshot<'a>(
+        &'a self,
+        request: RtcRuntimeLoadRequest,
+    ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet> {
+        Box::pin(async move {
+            self.load_runtime_snapshot_inner(request)
                 .await
                 .map_err(storage_to_persistence_error)
         })

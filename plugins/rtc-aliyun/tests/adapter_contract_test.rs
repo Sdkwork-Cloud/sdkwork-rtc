@@ -17,6 +17,7 @@ fn test_aliyun_rtc_provider_factory_creates_standard_provider_plugin() {
     let factory = create_aliyun_rtc_provider_plugin_factory(AliyunRtcProviderConfig {
         access_endpoint: "wss://rtc.aliyun.local/session".into(),
         region: "cn-shanghai".into(),
+        ..Default::default()
     });
 
     let descriptor = factory.descriptor();
@@ -40,6 +41,7 @@ fn test_aliyun_rtc_provider_implements_contract_surface() {
     let provider = AliyunRtcProvider::new(AliyunRtcProviderConfig {
         access_endpoint: "wss://rtc.aliyun.local/session".into(),
         region: "cn-shanghai".into(),
+        ..Default::default()
     });
 
     let descriptor = provider.descriptor();
@@ -101,7 +103,7 @@ fn test_aliyun_rtc_provider_implements_contract_surface() {
     );
 
     let credential = provider
-        .issue_participant_credential("t_demo", "rtc_demo", "u_peer")
+        .issue_participant_credential("t_demo", "rtc_demo", "u_peer", None)
         .expect("aliyun rtc credential should succeed");
     assert_eq!(credential.credential, "aliyun-token:t_demo:rtc_demo:u_peer");
 
@@ -118,11 +120,29 @@ fn test_aliyun_rtc_provider_implements_contract_surface() {
 }
 
 #[test]
+fn test_aliyun_rtc_provider_issues_signed_token_when_credentials_configured() {
+    let provider = AliyunRtcProvider::new(AliyunRtcProviderConfig {
+        access_endpoint: "wss://rtc.aliyun.local/session".into(),
+        region: "cn-shanghai".into(),
+        app_id: Some("aliyun-app-id".into()),
+        app_key: Some("aliyun-app-key".into()),
+        credential_ttl_seconds: 3_600,
+    });
+
+    let credential = provider
+        .issue_participant_credential("t_demo", "room_demo", "u_host", None)
+        .expect("aliyun signed credential should be generated");
+    assert!(!credential.credential.contains("aliyun-token:"));
+    assert!(!credential.credential.contains("aliyun-app-key"));
+}
+
+#[test]
 fn test_aliyun_rtc_recording_export_uses_injected_drive_importer() {
     let importer = Arc::new(FakeRecordingImporter::default());
     let provider = AliyunRtcProvider::new(AliyunRtcProviderConfig {
         access_endpoint: "wss://rtc.aliyun.local/session".into(),
         region: "cn-shanghai".into(),
+        ..Default::default()
     })
     .with_recording_importer(importer.clone());
 
@@ -149,6 +169,7 @@ fn test_aliyun_rtc_provider_implements_webhook_and_active_query_surface() {
     let provider = AliyunRtcProvider::new(AliyunRtcProviderConfig {
         access_endpoint: "wss://rtc.aliyun.local/session".into(),
         region: "cn-shanghai".into(),
+        ..Default::default()
     });
 
     let parsed = provider
@@ -255,6 +276,7 @@ fn test_aliyun_rtc_provider_implements_webhook_and_active_query_surface() {
     let provider = AliyunRtcProvider::new(AliyunRtcProviderConfig {
         access_endpoint: "wss://rtc.aliyun.local/session".into(),
         region: "cn-shanghai".into(),
+        ..Default::default()
     })
     .with_open_api_executor(executor.clone());
     let query = provider

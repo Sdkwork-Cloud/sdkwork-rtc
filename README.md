@@ -5,7 +5,19 @@ audio/video, voice session, live/broadcast, room, media participant, credential,
 active provider query, quality sample, and Drive-backed recording artifact contracts.
 
 It does not own signaling, call invitation, ringing, accept/reject, conversation, IM message, or
-WebSocket call workflow behavior. Those workflows remain in Craw Chat.
+WebSocket call workflow behavior. Those workflows remain in `sdkwork-im`.
+
+## IM Boundary
+
+Dependency direction is one-way: **`sdkwork-im` depends on `sdkwork-rtc`; `sdkwork-rtc` must not depend on `sdkwork-im`.**
+
+| Repository | Role |
+|------------|------|
+| `sdkwork-rtc` | Provider encapsulation, media sessions, call data, recording metadata, Drive-backed artifacts |
+| `sdkwork-im` | Call signaling (`/im/v3/api/calls/*`), invite/accept/reject workflow, WebSocket call protocol |
+| `sdkwork-drive` | Binary storage for recording files referenced by RTC `RtcDriveReference` |
+
+See [docs/rtc-im-boundary.md](docs/rtc-im-boundary.md) for API ownership, client integration pattern, and IM migration checklist.
 
 ## Owned Surfaces
 
@@ -88,6 +100,21 @@ does not persist provider bucket, object key, signed URL, or presigned upload st
 ```powershell
 pnpm run verify
 ```
+
+## Local Development (Topology)
+
+Default dev profile: `self-hosted.split-services.development`
+
+```powershell
+pnpm rtc:dev          # PC admin UI + RTC API server
+pnpm rtc:dev:h5       # H5 admin UI + RTC API server
+pnpm rtc:dev:flutter  # Flutter mobile + RTC API server
+pnpm rtc:dev:cloud    # cloud-hosted profile with platform API gateway
+pnpm rtc:dev:server   # RTC API server only
+```
+
+Topology authority: `specs/topology.spec.json`, profiles under `configs/topology/`.
+Human summary: [docs/topology-standard.md](docs/topology-standard.md).
 
 Provider adapter checks:
 

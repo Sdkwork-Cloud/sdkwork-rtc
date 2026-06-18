@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-h5-shell",
+    "displayName": "SDKWork RTC H5 Shell",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-shell",
+    "domain": "communication",
+    "declaredDomain": "communication",
+    "capability": "shell",
+    "status": "ready",
+    "languages": ["typescript"],
+    "generated": false,
+    "private": true,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": ["."]
+  }
+}

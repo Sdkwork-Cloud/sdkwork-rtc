@@ -5,9 +5,11 @@ export { RtcMediaSessionsApi, createRtcMediaSessionsApi } from './rtc-media-sess
 export { RtcProviderAccountsApi, createRtcProviderAccountsApi } from './rtc-provider-accounts';
 export { RtcProviderApplicationsApi, createRtcProviderApplicationsApi } from './rtc-provider-applications';
 export { RtcProviderCredentialsApi, createRtcProviderCredentialsApi } from './rtc-provider-credentials';
+export { RtcProviderPluginsApi, createRtcProviderPluginsApi } from './rtc-provider-plugins';
 export { RtcProviderProfilesApi, createRtcProviderProfilesApi } from './rtc-provider-profiles';
 export { RtcProviderQueryJobsApi, createRtcProviderQueryJobsApi } from './rtc-provider-query-jobs';
 export { RtcProviderRoutesApi, createRtcProviderRoutesApi } from './rtc-provider-routes';
+export { RtcProviderSchemasApi, createRtcProviderSchemasApi } from './rtc-provider-schemas';
 export { RtcProviderWebhooksApi, createRtcProviderWebhooksApi } from './rtc-provider-webhooks';
 export { RtcQualitySamplesApi, createRtcQualitySamplesApi } from './rtc-quality-samples';
 export { RtcRoomsApi, createRtcRoomsApi } from './rtc-rooms';

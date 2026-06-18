@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use axum::{
-    Router,
+    Router, middleware,
     routing::{get, post, put},
 };
 
-use crate::{handlers, service::RtcBackendApiService};
+use crate::{handlers, middleware::enforce_backend_route_auth, service::RtcBackendApiService};
 
 pub fn build_sdkwork_rtc_backend_api_router(service: Arc<dyn RtcBackendApiService>) -> Router {
     Router::new()
@@ -70,6 +70,14 @@ pub fn build_sdkwork_rtc_backend_api_router(service: Arc<dyn RtcBackendApiServic
         .route(
             "/backend/v3/api/rtc/provider_routes",
             get(handlers::list_provider_routes).post(handlers::create_provider_route),
+        )
+        .route(
+            "/backend/v3/api/rtc/provider_routes/{provider_route_id}",
+            get(handlers::retrieve_provider_route).patch(handlers::update_provider_route),
+        )
+        .route(
+            "/backend/v3/api/rtc/provider_routes/{provider_route_id}/disable",
+            post(handlers::disable_provider_route),
         )
         .route(
             "/backend/v3/api/rtc/media_sessions",
@@ -139,6 +147,7 @@ pub fn build_sdkwork_rtc_backend_api_router(service: Arc<dyn RtcBackendApiServic
             "/backend/v3/api/rtc/provider_profiles/{provider_profile_id}/capabilities",
             put(handlers::configure_provider_capabilities),
         )
+        .layer(middleware::from_fn(enforce_backend_route_auth))
         .with_state(service)
 }
 
@@ -165,9 +174,10 @@ mod tests {
 
     use super::*;
     use crate::service::{
-        RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListRequest,
-        RtcCloseMediaSessionRequest, RtcListData, RtcProviderQueryJobCreateRequest,
-        RtcProviderRoute, RtcProviderRouteCommand, RtcProviderWebhookReceiveRequest,
+        RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListQuery,
+        RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcListData,
+        RtcProviderQueryJobCreateRequest, RtcProviderRoute, RtcProviderRouteCommand,
+        RtcProviderRouteDisableRequest, RtcProviderWebhookReceiveRequest,
     };
 
     #[tokio::test]
@@ -304,8 +314,7 @@ mod tests {
             _tenant_id: String,
             _organization_id: Option<String>,
             _provider_account_id: String,
-            _cursor: Option<String>,
-            _limit: Option<u32>,
+            _query: RtcBackendListQuery,
         ) -> RtcBackendApiFuture<RtcListData<RtcProviderApplication>> {
             self.record("list_provider_applications");
             Self::unavailable()
@@ -362,8 +371,7 @@ mod tests {
             _tenant_id: String,
             _organization_id: Option<String>,
             _provider_application_id: String,
-            _cursor: Option<String>,
-            _limit: Option<u32>,
+            _query: RtcBackendListQuery,
         ) -> RtcBackendApiFuture<RtcListData<RtcProviderCredential>> {
             self.record("list_provider_credentials");
             Self::unavailable()
@@ -499,6 +507,40 @@ mod tests {
             Self::unavailable()
         }
 
+        fn retrieve_provider_route(
+            &self,
+            _tenant_id: String,
+            _organization_id: Option<String>,
+            _provider_route_id: String,
+        ) -> RtcBackendApiFuture<RtcProviderRoute> {
+            self.record("retrieve_provider_route");
+            Self::unavailable()
+        }
+
+        fn update_provider_route(
+            &self,
+            _tenant_id: String,
+            _organization_id: Option<String>,
+            _actor_id: String,
+            _provider_route_id: String,
+            _request: RtcProviderRouteCommand,
+        ) -> RtcBackendApiFuture<RtcProviderRoute> {
+            self.record("update_provider_route");
+            Self::unavailable()
+        }
+
+        fn disable_provider_route(
+            &self,
+            _tenant_id: String,
+            _organization_id: Option<String>,
+            _actor_id: String,
+            _provider_route_id: String,
+            _request: RtcProviderRouteDisableRequest,
+        ) -> RtcBackendApiFuture<RtcProviderRoute> {
+            self.record("disable_provider_route");
+            Self::unavailable()
+        }
+
         fn list_media_sessions(
             &self,
             _request: RtcBackendListRequest,
@@ -630,8 +672,7 @@ mod tests {
             _tenant_id: String,
             _organization_id: Option<String>,
             _provider_query_job_id: String,
-            _cursor: Option<String>,
-            _limit: Option<u32>,
+            _query: RtcBackendListQuery,
         ) -> RtcBackendApiFuture<RtcListData<RtcProviderQuerySnapshotRecord>> {
             self.record("list_provider_query_snapshots");
             Self::unavailable()
@@ -639,7 +680,8 @@ mod tests {
 
         fn list_provider_config_schemas(
             &self,
-        ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderConfigSchema>> {
+        ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderConfigSchema>>
+        {
             self.record("list_provider_config_schemas");
             Self::unavailable()
         }
@@ -654,7 +696,8 @@ mod tests {
 
         fn list_provider_plugins(
             &self,
-        ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderPluginDescriptor>> {
+        ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderPluginDescriptor>>
+        {
             self.record("list_provider_plugins");
             Self::unavailable()
         }
@@ -662,7 +705,8 @@ mod tests {
         fn get_provider_plugin(
             &self,
             _provider: String,
-        ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::ProviderPluginDescriptor> {
+        ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::ProviderPluginDescriptor>
+        {
             self.record("get_provider_plugin");
             Self::unavailable()
         }

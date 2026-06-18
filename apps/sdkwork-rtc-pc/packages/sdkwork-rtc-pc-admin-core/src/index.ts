@@ -4,6 +4,14 @@ export { ProviderApplicationService } from "./services/providerApplicationServic
 export { ProviderCredentialService } from "./services/providerCredentialService";
 export { ProviderProfileService } from "./services/providerProfileService";
 export { ProviderRouteService } from "./services/providerRouteService";
+export { ProviderPluginService } from "./services/providerPluginService";
+export { ProviderWebhookService } from "./services/providerWebhookService";
+export { ProviderQueryJobService } from "./services/providerQueryJobService";
+export { persistProviderWizard } from "./services/persistProviderWizard";
+export type {
+  PersistProviderWizardResult,
+  PersistProviderWizardServices,
+} from "./services/persistProviderWizard";
 export { RoomService } from "./services/roomService";
 
 export { ProviderSchemaForm, validateSchemaFields } from "./components/ProviderSchemaForm";
@@ -22,14 +30,23 @@ export type { ProviderWizardResult } from "./components/ProviderConfigWizard";
 export { ProviderHealthDashboard } from "./components/ProviderHealthDashboard";
 export { ProviderPluginList } from "./components/ProviderPluginList";
 export { ProviderCapabilityConfig } from "./components/ProviderCapabilityConfig";
+export { ProviderWebhookEventList } from "./components/ProviderWebhookEventList";
+export { ProviderQueryJobPanel } from "./components/ProviderQueryJobPanel";
 export { RoomList } from "./components/RoomList";
 export { RoomFilter, DEFAULT_ROOM_FILTER, filterRooms } from "./components/RoomFilter";
 export { RoomBatchActions } from "./components/RoomBatchActions";
+
+export {
+  mapPluginCapabilityToBackend,
+  mapPluginCapabilitiesToBackend,
+  profileCapabilitiesToBackendKeys,
+} from "./utils/capabilityMapper";
 
 export type {
   ProviderConfigSchema,
   ConfigFieldSchema,
   CredentialRoleSchema,
+  ProviderPluginDescriptor,
 } from "./types/providerSchema";
 
 export type {
@@ -56,6 +73,14 @@ export type {
   ProviderRoute,
   ProviderRouteCommand,
 } from "./types/providerRoute";
+
+export type { ProviderWebhookEvent } from "./types/providerWebhookEvent";
+
+export type {
+  ProviderQueryJob,
+  ProviderQueryJobCreateCommand,
+  ProviderQuerySnapshot,
+} from "./types/providerQueryJob";
 
 export type {
   Room,

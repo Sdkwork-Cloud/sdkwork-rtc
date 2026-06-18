@@ -3,5 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "main": "src/index.ts",
-  "types": "src/index.ts"
+  "types": "src/index.ts",
+  "dependencies": {
+    "@sdkwork/rtc-h5-core": "workspace:*",
+    "@sdkwork/rtc-sdk": "workspace:*",
+    "@sdkwork/rtc-sdk-provider-volcengine": "workspace:*",
+    "react": "catalog:",
+    "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
+  }
 }

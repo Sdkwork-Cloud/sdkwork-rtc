@@ -110,7 +110,10 @@
     "events": [],
     "configKeys": [
       "SDKWORK_RTC_ALIYUN_ACCESS_ENDPOINT",
-      "SDKWORK_RTC_ALIYUN_REGION"
+      "SDKWORK_RTC_ALIYUN_REGION",
+      "SDKWORK_RTC_ALIYUN_APP_ID",
+      "SDKWORK_RTC_ALIYUN_APP_KEY",
+      "SDKWORK_RTC_ALIYUN_CREDENTIAL_TTL_SECONDS"
     ],
     "providerPlugin": {
       "pluginId": "rtc-aliyun",

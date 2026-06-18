@@ -6,33 +6,26 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use sdkwork_communication_rtc_service::{
-    RtcMediaArtifact, RtcMediaSession, RtcMediaSessionCompletionRecord, RtcProviderAccount,
-    RtcProviderAccountCommand, RtcProviderAccountDisableRequest, RtcProviderApplication,
-    RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest, RtcProviderCredential,
-    RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderProfile,
-    RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest,
+    ProviderConfigSchema, ProviderPluginDescriptor, RtcMediaArtifact, RtcMediaSession,
+    RtcMediaSessionCompletionRecord, RtcProviderAccount, RtcProviderAccountCommand,
+    RtcProviderAccountDisableRequest, RtcProviderApplication, RtcProviderApplicationCommand,
+    RtcProviderApplicationDisableRequest, RtcProviderCredential, RtcProviderCredentialCommand,
+    RtcProviderCredentialRevokeRequest, RtcProviderProfile, RtcProviderProfileCommand,
+    RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest,
     RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord, RtcProviderWebhookEventRecord,
-    RtcQualitySample, RtcRoom, ProviderConfigSchema, ProviderPluginDescriptor,
+    RtcQualitySample, RtcRoom,
 };
 use sdkwork_rtc_app_context::AppContext;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::{Value as JsonValue, json};
 
 use crate::service::{
-    RtcBackendApiError, RtcBackendApiService, RtcBackendListRequest, RtcCloseMediaSessionRequest,
-    RtcListData, RtcMediaArtifactListData, RtcMediaSessionListData,
+    RtcBackendApiError, RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest,
+    RtcCloseMediaSessionRequest, RtcListData, RtcMediaArtifactListData, RtcMediaSessionListData,
     RtcProviderQueryJobCreateRequest, RtcProviderQuerySnapshotListData, RtcProviderRoute,
-    RtcProviderRouteCommand, RtcProviderRouteListData, RtcProviderWebhookReceiveRequest,
+    RtcProviderRouteCommand, RtcProviderRouteDisableRequest, RtcProviderRouteListData,
+    RtcProviderWebhookReceiveRequest,
 };
-
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcBackendListQuery {
-    pub provider: Option<String>,
-    pub status: Option<String>,
-    pub cursor: Option<String>,
-    pub limit: Option<u32>,
-}
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -189,8 +182,7 @@ pub async fn list_provider_applications(
             context.tenant_id,
             context.organization_id,
             provider_account_id,
-            query.cursor,
-            query.limit,
+            query,
         )
         .await?;
     Ok(Json(RtcApiEnvelope::ok(result)))
@@ -276,8 +268,7 @@ pub async fn list_provider_credentials(
             context.tenant_id,
             context.organization_id,
             provider_application_id,
-            query.cursor,
-            query.limit,
+            query,
         )
         .await?;
     Ok(Json(RtcApiEnvelope::ok(result)))
@@ -475,6 +466,57 @@ pub async fn create_provider_route(
     Ok(Json(RtcApiEnvelope::ok(result)))
 }
 
+pub async fn retrieve_provider_route(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+    Extension(context): Extension<AppContext>,
+    Path(provider_route_id): Path<String>,
+) -> Result<Json<RtcApiEnvelope<RtcProviderRoute>>, RtcBackendHandlerError> {
+    let result = service
+        .retrieve_provider_route(
+            context.tenant_id,
+            context.organization_id,
+            provider_route_id,
+        )
+        .await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
+pub async fn update_provider_route(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+    Extension(context): Extension<AppContext>,
+    Path(provider_route_id): Path<String>,
+    Json(body): Json<RtcProviderRouteCommand>,
+) -> Result<Json<RtcApiEnvelope<RtcProviderRoute>>, RtcBackendHandlerError> {
+    let result = service
+        .update_provider_route(
+            context.tenant_id,
+            context.organization_id,
+            context.actor_id,
+            provider_route_id,
+            body,
+        )
+        .await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
+pub async fn disable_provider_route(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+    Extension(context): Extension<AppContext>,
+    Path(provider_route_id): Path<String>,
+    Json(body): Json<RtcProviderRouteDisableRequest>,
+) -> Result<Json<RtcApiEnvelope<RtcProviderRoute>>, RtcBackendHandlerError> {
+    let result = service
+        .disable_provider_route(
+            context.tenant_id,
+            context.organization_id,
+            context.actor_id,
+            provider_route_id,
+            body,
+        )
+        .await?;
+    Ok(Json(RtcApiEnvelope::ok(result)))
+}
+
 pub async fn list_media_sessions(
     State(service): State<Arc<dyn RtcBackendApiService>>,
     Extension(context): Extension<AppContext>,
@@ -632,8 +674,7 @@ pub async fn list_provider_query_snapshots(
             context.tenant_id,
             context.organization_id,
             provider_query_job_id,
-            query.cursor,
-            query.limit,
+            query,
         )
         .await?;
     Ok(Json(RtcApiEnvelope::ok(result)))
@@ -709,8 +750,12 @@ fn list_request(context: &AppContext, query: RtcBackendListQuery) -> RtcBackendL
         organization_id: context.organization_id.clone(),
         provider: query.provider,
         status: query.status,
+        page: query.page,
+        page_size: query.page_size,
         cursor: query.cursor,
         limit: query.limit,
+        q: query.q,
+        sort: query.sort,
     }
 }
 

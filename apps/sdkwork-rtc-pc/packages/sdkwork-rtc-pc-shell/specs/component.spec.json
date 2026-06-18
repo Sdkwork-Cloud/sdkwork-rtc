@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-pc-shell",
+    "displayName": "SDKWork RTC PC Shell",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": "sdkwork-rtc/apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-shell",
+    "domain": "communication",
+    "declaredDomain": "communication",
+    "capability": "shell",
+    "status": "ready",
+    "languages": ["typescript"],
+    "generated": false,
+    "private": true,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": ["."]
+  }
+}

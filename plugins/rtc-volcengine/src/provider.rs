@@ -4,7 +4,8 @@ use std::sync::Arc;
 use sdkwork_communication_rtc_service::{
     ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor,
     RTC_PROVIDER_REQUIRED_CAPABILITIES, RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES,
-    RtcContractError, RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcProviderPort,
+    RtcActiveSessionTracker, RtcContractError, RtcCreateMediaSessionRequest,
+    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
     RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
     RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture, RtcSessionHandle,
@@ -20,11 +21,18 @@ use crate::{query, recording, webhook};
 
 pub const VOLCENGINE_RTC_PLUGIN_ID: &str = "rtc-volcengine";
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct VolcengineRtcProvider {
     config: VolcengineRtcProviderConfig,
     open_api_executor: Option<Arc<dyn VolcengineRtcOpenApiExecutor>>,
     recording_importer: Option<Arc<dyn RtcRecordingArtifactImportPort>>,
+    active_sessions: RtcActiveSessionTracker,
+}
+
+impl Default for VolcengineRtcProvider {
+    fn default() -> Self {
+        Self::new(VolcengineRtcProviderConfig::default())
+    }
 }
 
 impl VolcengineRtcProvider {
@@ -33,6 +41,7 @@ impl VolcengineRtcProvider {
             config,
             open_api_executor: None,
             recording_importer: None,
+            active_sessions: RtcActiveSessionTracker::default(),
         }
     }
 
@@ -63,6 +72,25 @@ impl VolcengineRtcProvider {
         .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
         .with_optional_capabilities(RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES)
     }
+
+    fn effective_config(
+        &self,
+        context: Option<&RtcParticipantCredentialContext>,
+    ) -> VolcengineRtcProviderConfig {
+        let Some(context) = context else {
+            return self.config.clone();
+        };
+        VolcengineRtcProviderConfig {
+            app_id: context.merge_app_id(&self.config.app_id),
+            app_key: context.merge_signing_secret(&self.config.app_key),
+            credential_ttl_seconds: context.merge_ttl(self.config.credential_ttl_seconds),
+            ..self.config.clone()
+        }
+    }
+
+    fn signing_configured(config: &VolcengineRtcProviderConfig) -> bool {
+        config.app_id.is_some() && config.app_key.is_some()
+    }
 }
 
 impl RtcProviderPort for VolcengineRtcProvider {
@@ -78,6 +106,8 @@ impl RtcProviderPort for VolcengineRtcProvider {
             .region
             .filter(|region| !region.trim().is_empty())
             .unwrap_or_else(|| self.config.region.clone());
+        self.active_sessions
+            .open(request.tenant_id.as_str(), request.rtc_session_id.as_str());
         Ok(RtcSessionHandle {
             tenant_id: request.tenant_id,
             rtc_session_id: request.rtc_session_id.clone(),
@@ -89,10 +119,10 @@ impl RtcProviderPort for VolcengineRtcProvider {
 
     fn close_session(
         &self,
-        _tenant_id: &str,
-        _rtc_session_id: &str,
+        tenant_id: &str,
+        rtc_session_id: &str,
     ) -> Result<bool, RtcContractError> {
-        Ok(true)
+        Ok(self.active_sessions.close(tenant_id, rtc_session_id))
     }
 
     fn issue_participant_credential(
@@ -100,15 +130,13 @@ impl RtcProviderPort for VolcengineRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        if self.config.app_id.is_some() && self.config.app_key.is_some() {
+        let config = self.effective_config(context);
+        if Self::signing_configured(&config) {
             let issued_at = issued_at_unix_seconds();
-            let (credential, expire_at) = generate_volcengine_rtc_token(
-                &self.config,
-                rtc_session_id,
-                participant_id,
-                issued_at,
-            )?;
+            let (credential, expire_at) =
+                generate_volcengine_rtc_token(&config, rtc_session_id, participant_id, issued_at)?;
             return Ok(RtcParticipantCredential {
                 tenant_id: tenant_id.into(),
                 rtc_session_id: rtc_session_id.into(),
@@ -132,8 +160,9 @@ impl RtcProviderPort for VolcengineRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id)
+        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id, context)
     }
 
     fn parse_provider_webhook(
@@ -184,7 +213,7 @@ impl RtcProviderPort for VolcengineRtcProvider {
         details.insert("region".into(), self.config.region.clone());
         details.insert(
             "credentialMode".into(),
-            if self.config.app_id.is_some() && self.config.app_key.is_some() {
+            if Self::signing_configured(&self.config) {
                 "signed-token"
             } else {
                 "development-placeholder"
@@ -212,8 +241,7 @@ impl RtcProviderPort for VolcengineRtcProvider {
             }
             .into(),
         );
-        let signed_credentials_configured =
-            self.config.app_id.is_some() && self.config.app_key.is_some();
+        let signed_credentials_configured = Self::signing_configured(&self.config);
         let signed_open_api_configured = self.open_api_executor.is_some()
             && self.config.access_key_id.is_some()
             && self.config.secret_access_key.is_some();

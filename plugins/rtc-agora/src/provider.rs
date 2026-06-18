@@ -3,8 +3,9 @@ use std::sync::Arc;
 
 use sdkwork_communication_rtc_service::{
     ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor,
-    RTC_PROVIDER_AGORA_OPTIONAL_CAPABILITIES, RTC_PROVIDER_REQUIRED_CAPABILITIES, RtcContractError,
-    RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcProviderPort,
+    RTC_PROVIDER_AGORA_OPTIONAL_CAPABILITIES, RTC_PROVIDER_REQUIRED_CAPABILITIES,
+    RtcActiveSessionTracker, RtcContractError, RtcCreateMediaSessionRequest,
+    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
     RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
     RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture, RtcSessionHandle,
@@ -12,16 +13,26 @@ use sdkwork_communication_rtc_service::{
 };
 
 use crate::config::AgoraRtcProviderConfig;
+use crate::credential::{
+    format_unix_seconds_rfc3339, generate_agora_rtc_token, issued_at_unix_seconds,
+};
 use crate::open_api::AgoraRtcOpenApiExecutor;
 use crate::{query, recording, webhook};
 
 pub const AGORA_RTC_PLUGIN_ID: &str = "rtc-agora";
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct AgoraRtcProvider {
     config: AgoraRtcProviderConfig,
     open_api_executor: Option<Arc<dyn AgoraRtcOpenApiExecutor>>,
     recording_importer: Option<Arc<dyn RtcRecordingArtifactImportPort>>,
+    active_sessions: RtcActiveSessionTracker,
+}
+
+impl Default for AgoraRtcProvider {
+    fn default() -> Self {
+        Self::new(AgoraRtcProviderConfig::default())
+    }
 }
 
 impl AgoraRtcProvider {
@@ -30,6 +41,7 @@ impl AgoraRtcProvider {
             config,
             open_api_executor: None,
             recording_importer: None,
+            active_sessions: RtcActiveSessionTracker::default(),
         }
     }
 
@@ -56,6 +68,25 @@ impl AgoraRtcProvider {
         .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
         .with_optional_capabilities(RTC_PROVIDER_AGORA_OPTIONAL_CAPABILITIES)
     }
+
+    fn effective_config(
+        &self,
+        context: Option<&RtcParticipantCredentialContext>,
+    ) -> AgoraRtcProviderConfig {
+        let Some(context) = context else {
+            return self.config.clone();
+        };
+        AgoraRtcProviderConfig {
+            app_id: context.merge_app_id(&self.config.app_id),
+            app_certificate: context.merge_signing_secret(&self.config.app_certificate),
+            credential_ttl_seconds: context.merge_ttl(self.config.credential_ttl_seconds),
+            ..self.config.clone()
+        }
+    }
+
+    fn signing_configured(config: &AgoraRtcProviderConfig) -> bool {
+        config.app_id.is_some() && config.app_certificate.is_some()
+    }
 }
 
 impl RtcProviderPort for AgoraRtcProvider {
@@ -71,6 +102,8 @@ impl RtcProviderPort for AgoraRtcProvider {
             .region
             .filter(|region| !region.trim().is_empty())
             .unwrap_or_else(|| self.config.region.clone());
+        self.active_sessions
+            .open(request.tenant_id.as_str(), request.rtc_session_id.as_str());
         Ok(RtcSessionHandle {
             tenant_id: request.tenant_id,
             rtc_session_id: request.rtc_session_id.clone(),
@@ -82,10 +115,10 @@ impl RtcProviderPort for AgoraRtcProvider {
 
     fn close_session(
         &self,
-        _tenant_id: &str,
-        _rtc_session_id: &str,
+        tenant_id: &str,
+        rtc_session_id: &str,
     ) -> Result<bool, RtcContractError> {
-        Ok(true)
+        Ok(self.active_sessions.close(tenant_id, rtc_session_id))
     }
 
     fn issue_participant_credential(
@@ -93,7 +126,22 @@ impl RtcProviderPort for AgoraRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
+        let config = self.effective_config(context);
+        if Self::signing_configured(&config) {
+            let issued_at = issued_at_unix_seconds();
+            let (credential, expire_at) =
+                generate_agora_rtc_token(&config, rtc_session_id, participant_id, issued_at)?;
+            return Ok(RtcParticipantCredential {
+                tenant_id: tenant_id.into(),
+                rtc_session_id: rtc_session_id.into(),
+                participant_id: participant_id.into(),
+                credential,
+                expires_at: format_unix_seconds_rfc3339(expire_at),
+            });
+        }
+
         Ok(RtcParticipantCredential {
             tenant_id: tenant_id.into(),
             rtc_session_id: rtc_session_id.into(),
@@ -108,8 +156,9 @@ impl RtcProviderPort for AgoraRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id)
+        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id, context)
     }
 
     fn parse_provider_webhook(
@@ -159,6 +208,15 @@ impl RtcProviderPort for AgoraRtcProvider {
         details.insert("accessEndpoint".into(), self.config.access_endpoint.clone());
         details.insert("region".into(), self.config.region.clone());
         details.insert(
+            "credentialMode".into(),
+            if Self::signing_configured(&self.config) {
+                "signed-token"
+            } else {
+                "development-placeholder"
+            }
+            .into(),
+        );
+        details.insert(
             "activeQueryMode".into(),
             if self.open_api_executor.is_some() {
                 "open-api-executor"
@@ -178,7 +236,10 @@ impl RtcProviderPort for AgoraRtcProvider {
         );
         ProviderHealthSnapshot {
             plugin_id: AGORA_RTC_PLUGIN_ID.into(),
-            status: if self.open_api_executor.is_some() && self.recording_importer.is_some() {
+            status: if Self::signing_configured(&self.config)
+                && self.open_api_executor.is_some()
+                && self.recording_importer.is_some()
+            {
                 "healthy"
             } else {
                 "degraded"

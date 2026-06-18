@@ -1,0 +1,25 @@
+{
+  "scheme": "sdkworkrtc",
+  "host": "auth",
+  "path": "/callback",
+  "returnUrl": "sdkworkrtc://auth/callback",
+  "android": {
+    "intentFilter": {
+      "action": "android.intent.action.VIEW",
+      "category": ["android.intent.category.DEFAULT", "android.intent.category.BROWSABLE"],
+      "data": {
+        "scheme": "sdkworkrtc",
+        "host": "auth",
+        "pathPrefix": "/callback"
+      }
+    }
+  },
+  "ios": {
+    "cfBundleURLTypes": [
+      {
+        "CFBundleURLName": "sdkwork.rtc.auth",
+        "CFBundleURLSchemes": ["sdkworkrtc"]
+      }
+    ]
+  }
+}

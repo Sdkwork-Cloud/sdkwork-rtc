@@ -12,18 +12,27 @@ use sdkwork_communication_rtc_service::{
     RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole, RtcProviderCredentialStatus,
     RtcProviderEventKind, RtcProviderPluginFactory, RtcProviderPort, RtcProviderQueryKind,
     RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
-    RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
-    RtcRecordingArtifactsFuture, RtcSessionHandle,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
+    RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture, RtcRuntimeLoadRequest,
+    RtcSessionHandle, verify_hmac_sha256_payload,
 };
 use sdkwork_router_rtc_app_api::service::{
-    RtcAppApiService, RtcCreateAppMediaSessionRequest, RtcIssueParticipantCredentialRequest,
-    RtcListRequest,
+    RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
+    RtcIssueParticipantCredentialRequest, RtcListRequest,
 };
 use sdkwork_router_rtc_backend_api::service::{
-    RtcBackendApiError, RtcBackendApiService, RtcBackendListRequest,
-    RtcProviderQueryJobCreateRequest, RtcProviderRouteCommand, RtcProviderWebhookReceiveRequest,
+    RtcBackendApiError, RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest,
+    RtcProviderQueryJobCreateRequest, RtcProviderRouteCommand, RtcProviderRouteDisableRequest,
+    RtcProviderWebhookReceiveRequest,
 };
-use sdkwork_rtc_service_host::{RtcProductService, RtcProviderPluginRegistry};
+use sdkwork_rtc_service_host::{
+    MapRtcSecretResolver, RtcProductService, RtcProviderPluginRegistry,
+};
+
+fn test_rtc_service(registry: RtcProviderPluginRegistry) -> RtcProductService {
+    RtcProductService::new(registry)
+        .with_secret_resolver(Arc::new(MapRtcSecretResolver::test_defaults()))
+}
 
 #[tokio::test]
 async fn product_registry_registers_provider_plugins_through_standard_factory_spi() {
@@ -48,7 +57,7 @@ async fn product_registry_registers_provider_plugins_through_standard_factory_sp
         .expect("factory-created provider should be retrievable");
     assert_eq!(provider.descriptor().plugin_id, "rtc-acme");
 
-    let service = RtcProductService::new(registry).seed_default_room("600", "601", "602");
+    let service = test_rtc_service(registry).seed_default_room("600", "601", "602");
     let session = service
         .create_media_session(
             "600".into(),
@@ -84,14 +93,18 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
         .expect("acme provider should register")
         .with_provider(Arc::new(FakeProvider::new("backup", false)))
         .expect("backup provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("900", "901", "902");
+    let service = test_rtc_service(registry).seed_default_room("900", "901", "902");
 
     let active_profiles = service
         .list_active_provider_profiles(RtcListRequest {
             tenant_id: "900".into(),
             organization_id: Some("901".into()),
+            page: None,
+            page_size: None,
             cursor: None,
             limit: None,
+            q: None,
+            sort: None,
         })
         .await
         .expect("active provider profiles should list");
@@ -215,8 +228,7 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
             "900".into(),
             Some("901".into()),
             session.id.clone(),
-            None,
-            None,
+            RtcAppListQuery::default(),
         )
         .await
         .expect("recording artifacts should list");
@@ -270,7 +282,7 @@ async fn product_service_exports_recordings_with_drive_import_context() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(provider))
         .expect("context provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("960", "961", "962");
+    let service = test_rtc_service(registry).seed_default_room("960", "961", "962");
 
     let session = service
         .create_media_session(
@@ -335,7 +347,12 @@ async fn product_service_exports_recordings_with_drive_import_context() {
     );
 
     let artifacts = service
-        .list_recording_artifacts("960".into(), Some("961".into()), session.id, None, None)
+        .list_recording_artifacts(
+            "960".into(),
+            Some("961".into()),
+            session.id,
+            RtcAppListQuery::default(),
+        )
         .await
         .expect("recording artifacts should list after contextual export");
     assert_eq!(artifacts.items.len(), 1);
@@ -356,7 +373,7 @@ async fn product_service_selects_only_active_provider_profiles_within_current_sc
         .expect("acme provider should register")
         .with_provider(Arc::new(FakeProvider::new("backup", false)))
         .expect("backup provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("910", "911", "912");
+    let service = test_rtc_service(registry).seed_default_room("910", "911", "912");
 
     let acme_default = provider_profile_command("acme", "default", true, 10);
     let backup_default = provider_profile_command("backup", "default", true, 5);
@@ -475,7 +492,7 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
         .expect("acme provider should register")
         .with_provider(Arc::new(FakeProvider::new("backup", false)))
         .expect("backup provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("920", "921", "922");
+    let service = test_rtc_service(registry).seed_default_room("920", "921", "922");
 
     service
         .create_provider_profile(
@@ -584,12 +601,93 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
 }
 
 #[tokio::test]
+async fn product_service_retrieves_updates_and_disables_provider_route() {
+    let registry = RtcProviderPluginRegistry::new()
+        .with_provider(Arc::new(FakeProvider::new("acme", true)))
+        .expect("acme provider should register");
+    let service = test_rtc_service(registry).seed_default_room("930", "931", "932");
+
+    service
+        .create_provider_profile(
+            "930".into(),
+            Some("931".into()),
+            "932".into(),
+            provider_profile_command("acme", "default", true, 10),
+        )
+        .await
+        .expect("provider profile should be created");
+
+    let created = service
+        .create_provider_route(
+            "930".into(),
+            Some("931".into()),
+            "932".into(),
+            RtcProviderRouteCommand {
+                provider_profile_id: "profile-930-931-acme-default".into(),
+                route_type: "region".into(),
+                region: Some("cn-north".into()),
+                priority: 10,
+                status: Some(
+                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Active,
+                ),
+            },
+        )
+        .await
+        .expect("provider route should be created");
+
+    let retrieved = service
+        .retrieve_provider_route("930".into(), Some("931".into()), created.id.clone())
+        .await
+        .expect("provider route should be retrieved");
+    assert_eq!(retrieved.id, created.id);
+    assert_eq!(retrieved.region.as_deref(), Some("cn-north"));
+
+    let updated = service
+        .update_provider_route(
+            "930".into(),
+            Some("931".into()),
+            "932".into(),
+            created.id.clone(),
+            RtcProviderRouteCommand {
+                provider_profile_id: "profile-930-931-acme-default".into(),
+                route_type: "region".into(),
+                region: Some("cn-south".into()),
+                priority: 5,
+                status: Some(
+                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Active,
+                ),
+            },
+        )
+        .await
+        .expect("provider route should be updated");
+    assert_eq!(updated.region.as_deref(), Some("cn-south"));
+    assert_eq!(updated.priority, 5);
+
+    let disabled = service
+        .disable_provider_route(
+            "930".into(),
+            Some("931".into()),
+            "932".into(),
+            created.id.clone(),
+            RtcProviderRouteDisableRequest {
+                reason: Some("rollout rollback".into()),
+            },
+        )
+        .await
+        .expect("provider route should be disabled");
+    assert_eq!(
+        disabled.status,
+        sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Disabled
+    );
+}
+
+#[tokio::test]
 async fn product_service_manages_volcengine_account_application_and_credential_roles() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("volcengine", true)))
         .expect("volcengine provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry).with_persistence(persistence.clone());
+    let service = test_rtc_service(registry).with_persistence(persistence.clone());
 
     let account = service
         .create_provider_account(
@@ -670,8 +768,7 @@ async fn product_service_manages_volcengine_account_application_and_credential_r
             "980".into(),
             Some("981".into()),
             application.id.clone(),
-            None,
-            None,
+            RtcBackendListQuery::default(),
         )
         .await
         .expect("credentials should list");
@@ -708,7 +805,7 @@ async fn product_service_requires_tencent_usersig_and_cloud_api_credentials() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -776,7 +873,7 @@ async fn product_service_rejects_provider_credential_mutation_when_account_is_di
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("volcengine", true)))
         .expect("volcengine provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -858,7 +955,7 @@ async fn product_service_records_provider_credential_rotation_when_secret_materi
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -927,7 +1024,7 @@ async fn product_service_keeps_revoked_provider_credentials_terminal() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1009,7 +1106,7 @@ async fn product_service_rejects_raw_provider_credential_refs() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1054,7 +1151,7 @@ async fn product_service_rejects_provider_credential_upsert_with_revoked_status(
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1099,7 +1196,7 @@ async fn product_service_preserves_provider_management_creation_audit_on_update(
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("volcengine", true)))
         .expect("volcengine provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1185,7 +1282,7 @@ async fn product_service_increments_provider_management_versions_on_update() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1268,7 +1365,7 @@ async fn product_service_increments_provider_management_versions_on_lifecycle_st
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("volcengine", true)))
         .expect("volcengine provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1384,7 +1481,7 @@ async fn product_service_rejects_provider_account_provider_identity_changes() {
         .expect("volcengine provider should register")
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1416,7 +1513,7 @@ async fn product_service_rejects_provider_credential_role_label_identity_changes
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("tencent", true)))
         .expect("tencent provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1468,7 +1565,7 @@ async fn product_service_rejects_provider_account_and_application_code_changes()
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("volcengine", true)))
         .expect("volcengine provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1527,7 +1624,7 @@ async fn product_service_rejects_provider_application_external_identity_changes(
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("volcengine", true)))
         .expect("volcengine provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let account = service
         .create_provider_account(
@@ -1588,7 +1685,7 @@ async fn product_service_preserves_provider_profile_audit_and_versions() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let profile = service
         .create_provider_profile(
@@ -1645,7 +1742,7 @@ async fn product_service_rejects_provider_profile_identity_changes() {
         .expect("acme provider should register")
         .with_provider(Arc::new(FakeProvider::new("backup", true)))
         .expect("backup provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let profile = service
         .create_provider_profile(
@@ -1691,7 +1788,7 @@ async fn product_service_rejects_duplicate_provider_profile_identity_in_same_sco
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("930", "931", "932");
+    let service = test_rtc_service(registry).seed_default_room("930", "931", "932");
 
     let profile = service
         .create_provider_profile(
@@ -1750,7 +1847,7 @@ async fn product_service_rejects_raw_provider_profile_secret_refs() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry);
+    let service = test_rtc_service(registry);
 
     let mut raw_credential = provider_profile_command("acme", "raw-credential", false, 10);
     raw_credential.credential_ref = Some("raw-provider-secret".into());
@@ -1785,7 +1882,7 @@ async fn product_service_rejects_provider_webhook_when_provider_mismatches_sessi
         .expect("acme provider should register")
         .with_provider(Arc::new(FakeProvider::new("backup", false)))
         .expect("backup provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("940", "941", "942");
+    let service = test_rtc_service(registry).seed_default_room("940", "941", "942");
 
     let session = service
         .create_media_session(
@@ -1843,7 +1940,7 @@ async fn product_service_rejects_provider_query_when_profile_does_not_match_sess
         .expect("acme provider should register")
         .with_provider(Arc::new(FakeProvider::new("backup", false)))
         .expect("backup provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("950", "951", "952");
+    let service = test_rtc_service(registry).seed_default_room("950", "951", "952");
 
     let session = service
         .create_media_session(
@@ -1901,7 +1998,7 @@ async fn product_service_resolves_provider_query_target_from_provider_session_be
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("955", "956", "957");
+    let service = test_rtc_service(registry).seed_default_room("955", "956", "957");
 
     let session = service
         .create_media_session(
@@ -1944,7 +2041,12 @@ async fn product_service_resolves_provider_query_target_from_provider_session_be
         Some(session.id.as_str())
     );
     let artifacts = service
-        .list_recording_artifacts("955".into(), Some("956".into()), session.id, None, None)
+        .list_recording_artifacts(
+            "955".into(),
+            Some("956".into()),
+            session.id,
+            RtcAppListQuery::default(),
+        )
         .await
         .expect("recording artifacts should list after provider-session-only query");
     assert_eq!(artifacts.items.len(), 1);
@@ -1959,7 +2061,7 @@ async fn product_service_rejects_recording_query_when_provider_session_cannot_re
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("958", "959", "960");
+    let service = test_rtc_service(registry).seed_default_room("958", "959", "960");
 
     let unknown_provider_session_id = "acme:unknown-session";
     let rejected_query = service
@@ -2002,7 +2104,7 @@ async fn product_service_rejects_provider_route_when_profile_is_outside_current_
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("960", "961", "962");
+    let service = test_rtc_service(registry).seed_default_room("960", "961", "962");
 
     service
         .create_provider_profile(
@@ -2042,7 +2144,7 @@ async fn product_service_records_completion_from_provider_room_ended_webhook() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("700", "701", "702");
+    let service = test_rtc_service(registry).seed_default_room("700", "701", "702");
 
     let session = service
         .create_media_session(
@@ -2137,7 +2239,12 @@ async fn product_service_records_completion_from_provider_room_ended_webhook() {
     assert_eq!(completion.participant_count, 1);
 
     let artifacts = service
-        .list_recording_artifacts("700".into(), Some("701".into()), session.id, None, None)
+        .list_recording_artifacts(
+            "700".into(),
+            Some("701".into()),
+            session.id,
+            RtcAppListQuery::default(),
+        )
         .await
         .expect("webhook-exported recording artifacts should list");
     assert_eq!(artifacts.items.len(), 1);
@@ -2159,7 +2266,7 @@ async fn product_service_persists_completion_change_set_after_manual_close() {
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("730", "731", "732");
 
@@ -2252,7 +2359,7 @@ async fn product_service_persists_webhook_completion_change_set() {
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("740", "741", "742");
 
@@ -2352,7 +2459,7 @@ async fn product_service_persists_active_session_participant_and_provider_config
         .with_provider(Arc::new(FakeProvider::new("backup", false)))
         .expect("backup provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("750", "751", "752");
 
@@ -2455,7 +2562,7 @@ async fn product_service_persists_provider_profile_disable_and_verify_changes() 
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("760", "761", "762");
 
@@ -2556,7 +2663,7 @@ async fn product_service_fails_provider_profile_verification_when_timeout_is_exc
         ))
         .expect("acme provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("763", "764", "765");
 
@@ -2625,7 +2732,7 @@ async fn product_service_persists_provider_profile_verification_failure_reason()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("765", "766", "767");
 
@@ -2693,7 +2800,7 @@ async fn product_service_truncates_provider_profile_verification_failure_reason_
         ))
         .expect("acme provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("768", "769", "770");
 
@@ -2756,7 +2863,7 @@ async fn product_service_persists_active_provider_query_jobs_snapshots_and_artif
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
     let persistence = Arc::new(RecordingPersistence::default());
-    let service = RtcProductService::new(registry)
+    let service = test_rtc_service(registry)
         .with_persistence(persistence.clone())
         .seed_default_room("770", "771", "772");
 
@@ -2843,7 +2950,7 @@ async fn product_service_resolves_provider_room_ended_webhook_by_active_room_ses
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("710", "711", "712");
+    let service = test_rtc_service(registry).seed_default_room("710", "711", "712");
 
     let session = service
         .create_media_session(
@@ -2908,7 +3015,7 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
     let registry = RtcProviderPluginRegistry::new()
         .with_provider(Arc::new(FakeProvider::new("acme", true)))
         .expect("acme provider should register");
-    let service = RtcProductService::new(registry).seed_default_room("720", "721", "722");
+    let service = test_rtc_service(registry).seed_default_room("720", "721", "722");
 
     let session = service
         .create_media_session(
@@ -2973,16 +3080,24 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
         organization_id: Some("721".into()),
         provider: None,
         status: None,
+        page: None,
+        page_size: None,
         cursor: None,
         limit: None,
+        q: None,
+        sort: None,
     };
     let wrong_scope = RtcBackendListRequest {
         tenant_id: "720".into(),
         organization_id: Some("wrong-organization".into()),
         provider: None,
         status: None,
+        page: None,
+        page_size: None,
         cursor: None,
         limit: None,
+        q: None,
+        sort: None,
     };
 
     let visible_artifacts = RtcBackendApiService::list_media_artifacts(&service, correct_scope)
@@ -3038,8 +3153,7 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
         "720".into(),
         Some("wrong-organization".into()),
         query_job.id,
-        None,
-        None,
+        RtcBackendListQuery::default(),
     )
     .await
     .expect("wrong organization should not fail list provider query snapshots");
@@ -3110,6 +3224,13 @@ impl RtcPersistencePort for RecordingPersistence {
                 .push(changes);
             Ok(())
         })
+    }
+
+    fn load_runtime_snapshot<'a>(
+        &'a self,
+        _request: RtcRuntimeLoadRequest,
+    ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet> {
+        Box::pin(async { Ok(RtcPersistenceChangeSet::default()) })
     }
 }
 
@@ -3193,9 +3314,10 @@ impl RtcProviderPort for ContextRecordingProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&sdkwork_communication_rtc_service::RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
         self.inner
-            .issue_participant_credential(tenant_id, rtc_session_id, participant_id)
+            .issue_participant_credential(tenant_id, rtc_session_id, participant_id, context)
     }
 
     fn refresh_participant_credential(
@@ -3203,9 +3325,14 @@ impl RtcProviderPort for ContextRecordingProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&sdkwork_communication_rtc_service::RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        self.inner
-            .refresh_participant_credential(tenant_id, rtc_session_id, participant_id)
+        self.inner.refresh_participant_credential(
+            tenant_id,
+            rtc_session_id,
+            participant_id,
+            context,
+        )
     }
 
     fn parse_provider_webhook(
@@ -3213,6 +3340,13 @@ impl RtcProviderPort for ContextRecordingProvider {
         request: RtcProviderWebhookParseRequest,
     ) -> Result<RtcProviderWebhookEvent, RtcContractError> {
         self.inner.parse_provider_webhook(request)
+    }
+
+    fn verify_provider_webhook_signature(
+        &self,
+        request: RtcProviderWebhookVerifyRequest,
+    ) -> Result<(), RtcContractError> {
+        self.inner.verify_provider_webhook_signature(request)
     }
 
     fn query_provider_state(
@@ -3305,6 +3439,7 @@ impl RtcProviderPort for FakeProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        _context: Option<&sdkwork_communication_rtc_service::RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
         Ok(RtcParticipantCredential {
             tenant_id: tenant_id.into(),
@@ -3323,8 +3458,9 @@ impl RtcProviderPort for FakeProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&sdkwork_communication_rtc_service::RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id)
+        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id, context)
     }
 
     fn parse_provider_webhook(
@@ -3333,6 +3469,11 @@ impl RtcProviderPort for FakeProvider {
     ) -> Result<RtcProviderWebhookEvent, RtcContractError> {
         let payload: serde_json::Value = serde_json::from_str(&request.raw_payload)
             .map_err(|error| RtcContractError::Conflict(error.to_string()))?;
+        let signature_header = header_value(
+            request.headers.as_slice(),
+            &["X-Acme-Signature", "X-Test-Signature"],
+        )
+        .or(Some("sig-1".into()));
         Ok(RtcProviderWebhookEvent {
             provider: self.provider.clone(),
             provider_profile_id: request.provider_profile_id,
@@ -3368,7 +3509,7 @@ impl RtcProviderPort for FakeProvider {
             payload_hash: sdkwork_communication_rtc_service::rtc_provider_payload_hash(
                 &request.raw_payload,
             ),
-            signature_header: Some("sig-1".into()),
+            signature_header,
             raw_payload: request.raw_payload,
             normalized_event_json: serde_json::json!({
                 "provider": self.provider,
@@ -3376,6 +3517,21 @@ impl RtcProviderPort for FakeProvider {
             })
             .to_string(),
         })
+    }
+
+    fn verify_provider_webhook_signature(
+        &self,
+        request: RtcProviderWebhookVerifyRequest,
+    ) -> Result<(), RtcContractError> {
+        let signature = request.signature_header.as_deref().unwrap_or_default();
+        if signature.starts_with("sig-") {
+            return Ok(());
+        }
+        verify_hmac_sha256_payload(
+            request.webhook_secret.as_str(),
+            request.raw_payload.as_str(),
+            signature,
+        )
     }
 
     fn query_provider_state(
@@ -3427,6 +3583,15 @@ impl RtcProviderPort for FakeProvider {
             details: Default::default(),
         }
     }
+}
+
+fn header_value(headers: &[(String, String)], names: &[&str]) -> Option<String> {
+    headers.iter().find_map(|(key, value)| {
+        names
+            .iter()
+            .any(|candidate| key.eq_ignore_ascii_case(candidate))
+            .then(|| value.clone())
+    })
 }
 
 fn provider_profile_command(

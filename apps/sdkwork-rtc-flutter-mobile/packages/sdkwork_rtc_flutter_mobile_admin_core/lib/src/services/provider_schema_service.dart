@@ -1,18 +1,25 @@
-import 'dart:convert';
 import '../models/provider_schema.dart';
+import 'backend_api_client.dart';
 
 class ProviderSchemaService {
-  final String baseUrl;
+  final BackendApiClient _client;
 
-  ProviderSchemaService({required this.baseUrl});
+  ProviderSchemaService(this._client);
 
   Future<List<ProviderConfigSchema>> listSchemas() async {
-    // TODO: Implement HTTP call to backend API
-    return [];
+    final data = await _client.getJson('/rtc/provider_schemas');
+    final items = data['items'];
+    if (items is! List<dynamic>) return [];
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(ProviderConfigSchema.fromJson)
+        .toList();
   }
 
   Future<ProviderConfigSchema?> getSchema(String provider) async {
-    // TODO: Implement HTTP call to backend API
-    return null;
+    final data = await _client.getJson(
+      '/rtc/provider_schemas/${Uri.encodeComponent(provider)}',
+    );
+    return ProviderConfigSchema.fromJson(data);
   }
 }

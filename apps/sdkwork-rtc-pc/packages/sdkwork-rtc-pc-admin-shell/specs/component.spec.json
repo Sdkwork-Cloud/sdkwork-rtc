@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-pc-admin-shell",
+    "displayName": "SDKWork RTC PC Admin Shell",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": "sdkwork-rtc/apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-shell",
+    "domain": "communication",
+    "declaredDomain": "communication",
+    "capability": "admin-shell",
+    "status": "ready",
+    "languages": ["typescript"],
+    "generated": false,
+    "private": true,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": ["."]
+  }
+}

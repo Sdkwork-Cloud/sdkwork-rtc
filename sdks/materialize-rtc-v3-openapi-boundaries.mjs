@@ -272,7 +272,7 @@ function buildOpenApi(source, routes) {
     },
     servers: [
       {
-        url: "http://127.0.0.1:18080",
+        url: "http://127.0.0.1:18088",
         description: "Local sdkwork-rtc runtime",
       },
     ],
@@ -1581,6 +1581,13 @@ function buildSchemas() {
         status: { type: "string", enum: ["active", "disabled"] },
       },
     },
+    RtcProviderRouteDisableRequest: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        reason: { type: ["string", "null"], maxLength: 500 },
+      },
+    },
     RtcProviderRouteListResponse: envelope({
       type: "object",
       additionalProperties: false,
@@ -1897,7 +1904,10 @@ function operationRequestSchemaName(route) {
     case "rtc.providerProfiles.verify":
       return "RtcProviderProfileVerifyRequest";
     case "rtc.providerRoutes.create":
+    case "rtc.providerRoutes.update":
       return "RtcProviderRouteCommand";
+    case "rtc.providerRoutes.disable":
+      return "RtcProviderRouteDisableRequest";
     case "rtc.providerWebhooks.events.receive":
       return "RtcProviderWebhookReceiveRequest";
     case "rtc.providerQueryJobs.create":
@@ -1963,6 +1973,9 @@ function operationResponseSchemaName(route) {
     case "rtc.providerRoutes.list":
       return "RtcProviderRouteListResponse";
     case "rtc.providerRoutes.create":
+    case "rtc.providerRoutes.retrieve":
+    case "rtc.providerRoutes.update":
+    case "rtc.providerRoutes.disable":
       return "RtcProviderRouteResponse";
     case "rtc.qualitySamples.list":
       return "RtcQualitySampleListResponse";

@@ -61,8 +61,9 @@ export function ProviderCapabilityConfig({
     supportedCapabilities.includes(cap.key)
   ).reduce(
     (acc, cap) => {
-      if (!acc[cap.category]) acc[cap.category] = [];
-      acc[cap.category].push(cap);
+      const bucket = acc[cap.category] ?? [];
+      bucket.push(cap);
+      acc[cap.category] = bucket;
       return acc;
     },
     {} as Record<string, ProviderCapability[]>

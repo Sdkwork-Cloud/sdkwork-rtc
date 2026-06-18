@@ -10,7 +10,7 @@ await runRtcSdkGenerator({
   routeManifest:
     "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
   sourceOpenapi: "apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
-  defaultBaseUrl: "http://127.0.0.1:18080",
+  defaultBaseUrl: "http://127.0.0.1:18088",
   sdkDependencies: [
     {
       workspace: "sdkwork-rtc-sdk",

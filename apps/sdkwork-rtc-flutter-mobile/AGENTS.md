@@ -27,3 +27,5 @@ flutter pub get
 flutter analyze
 flutter test
 ```
+
+Deep link callback URL: `sdkworkrtc://auth/callback` (see `config/app/deep-link.development.example.json`).

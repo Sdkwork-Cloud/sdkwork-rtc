@@ -1,0 +1,9 @@
+<view class="container">
+  <view class="card">
+    <text class="title">RTC App Sign In</text>
+    <text class="subtitle">Provide app-api credentials for media session access.</text>
+    <input class="field" placeholder="Access Token" value="{{accessToken}}" bindinput="onAccessTokenInput" />
+    <input class="field" placeholder="User ID" value="{{userId}}" bindinput="onUserIdInput" />
+    <button class="primary" bindtap="onSubmit">Continue</button>
+  </view>
+</view>

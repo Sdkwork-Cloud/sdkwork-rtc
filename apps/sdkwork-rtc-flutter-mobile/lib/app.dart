@@ -12,13 +12,7 @@ class RtcApp extends StatelessWidget {
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
-      home: const AuthGate(
-        child: Scaffold(
-          body: Center(
-            child: Text('SDKWork RTC'),
-          ),
-        ),
-      ),
+      home: const AuthGate(),
     );
   }
 }

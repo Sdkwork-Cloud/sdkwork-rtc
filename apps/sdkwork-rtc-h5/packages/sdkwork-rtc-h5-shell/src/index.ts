@@ -1,2 +1,2 @@
-// RTC H5 Shell - mobile layout, tab navigation, AuthGate
-export {};
+export { AppLayout } from "./AppLayout";
+export { createRtcAppRoutes, type AppRouteDefinition } from "./rtcRoutes";

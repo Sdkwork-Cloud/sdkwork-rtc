@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="toolbar">
+    <text>Signed in as {{userId}}</text>
+    <button size="mini" bindtap="onSignOut">Sign out</button>
+  </view>
+
+  <view class="card">
+    <text class="title">Create Media Session</text>
+    <input class="field" placeholder="Room ID" value="{{roomId}}" bindinput="onRoomIdInput" />
+    <picker mode="selector" range="{{mediaModes}}" bindchange="onMediaModeChange">
+      <view class="picker">Media mode: {{mediaMode}}</view>
+    </picker>
+    <button class="primary" bindtap="onCreateSession" loading="{{creating}}">Create Session</button>
+  </view>
+
+  <view class="card">
+    <text class="title">Media Sessions</text>
+    <button class="primary" bindtap="onRefresh" loading="{{loading}}">Refresh</button>
+    <text wx:if="{{error}}" class="error">{{error}}</text>
+    <block wx:if="{{sessions.length}}">
+      <view
+        class="session"
+        wx:for="{{sessions}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onOpenSession"
+      >
+        <view>
+          <text class="session-title">{{item.title}}</text>
+          <text class="session-mode">{{item.mediaMode}}</text>
+        </view>
+        <text class="status">{{item.status}}</text>
+      </view>
+    </block>
+    <text wx:elif="{{!loading}}" class="empty">No media sessions found.</text>
+  </view>
+</view>

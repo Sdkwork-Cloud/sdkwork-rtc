@@ -1,3 +1,11 @@
+import { createIamRuntime } from "./iamRuntime";
+import { registerHostAdapters } from "./hostAdapters";
+import { createRoutes } from "./routes";
+import { bootstrapSdkClients } from "./sdkClients";
+
 export function bootstrap() {
-  // TODO: Initialize RTC SDK clients, IAM runtime, route assembly
+  createIamRuntime();
+  registerHostAdapters();
+  bootstrapSdkClients();
+  createRoutes();
 }

@@ -1,8 +1,22 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileListResponse, RtcProviderProfileResponse, RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResultResponse } from '../types';
+import type { RtcApiResult, RtcOperationCommand, RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileListResponse, RtcProviderProfileResponse, RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResultResponse } from '../types';
 
+
+export class RtcProviderProfilesRtcProviderProfilesCapabilitiesApi {
+  private client: HttpClient;
+
+  constructor(client: HttpClient) {
+    this.client = client;
+  }
+
+
+/** Rtc provider Profiles capabilities configure. */
+  async configure(providerProfileId: string, body: RtcOperationCommand): Promise<RtcApiResult> {
+    return this.client.put<RtcApiResult>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/capabilities`), body, undefined, undefined, 'application/json');
+  }
+}
 
 export interface RtcProviderProfilesRtcProviderProfilesListParams {
   page?: number;
@@ -14,9 +28,11 @@ export interface RtcProviderProfilesRtcProviderProfilesListParams {
 
 export class RtcProviderProfilesRtcProviderProfilesApi {
   private client: HttpClient;
+  public readonly capabilities: RtcProviderProfilesRtcProviderProfilesCapabilitiesApi;
 
   constructor(client: HttpClient) {
     this.client = client;
+    this.capabilities = new RtcProviderProfilesRtcProviderProfilesCapabilitiesApi(client);
   }
 
 

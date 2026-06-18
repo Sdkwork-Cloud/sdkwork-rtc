@@ -4,7 +4,8 @@ use std::sync::Arc;
 use sdkwork_communication_rtc_service::{
     ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor,
     RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES, RTC_PROVIDER_REQUIRED_CAPABILITIES,
-    RtcContractError, RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcProviderPort,
+    RtcActiveSessionTracker, RtcContractError, RtcCreateMediaSessionRequest,
+    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
     RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
     RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture, RtcSessionHandle,
@@ -12,16 +13,26 @@ use sdkwork_communication_rtc_service::{
 };
 
 use crate::config::LivekitRtcProviderConfig;
+use crate::credential::{
+    format_unix_seconds_rfc3339, generate_livekit_rtc_token, issued_at_unix_seconds,
+};
 use crate::open_api::LivekitRtcOpenApiExecutor;
 use crate::{query, recording, webhook};
 
 pub const LIVEKIT_RTC_PLUGIN_ID: &str = "rtc-livekit";
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct LivekitRtcProvider {
     config: LivekitRtcProviderConfig,
     open_api_executor: Option<Arc<dyn LivekitRtcOpenApiExecutor>>,
     recording_importer: Option<Arc<dyn RtcRecordingArtifactImportPort>>,
+    active_sessions: RtcActiveSessionTracker,
+}
+
+impl Default for LivekitRtcProvider {
+    fn default() -> Self {
+        Self::new(LivekitRtcProviderConfig::default())
+    }
 }
 
 impl LivekitRtcProvider {
@@ -30,6 +41,7 @@ impl LivekitRtcProvider {
             config,
             open_api_executor: None,
             recording_importer: None,
+            active_sessions: RtcActiveSessionTracker::default(),
         }
     }
 
@@ -56,6 +68,25 @@ impl LivekitRtcProvider {
         .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
         .with_optional_capabilities(RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES)
     }
+
+    fn effective_config(
+        &self,
+        context: Option<&RtcParticipantCredentialContext>,
+    ) -> LivekitRtcProviderConfig {
+        let Some(context) = context else {
+            return self.config.clone();
+        };
+        LivekitRtcProviderConfig {
+            api_key: context.merge_app_id(&self.config.api_key),
+            api_secret: context.merge_signing_secret(&self.config.api_secret),
+            credential_ttl_seconds: context.merge_ttl(self.config.credential_ttl_seconds),
+            ..self.config.clone()
+        }
+    }
+
+    fn signing_configured(config: &LivekitRtcProviderConfig) -> bool {
+        config.api_key.is_some() && config.api_secret.is_some()
+    }
 }
 
 impl RtcProviderPort for LivekitRtcProvider {
@@ -71,6 +102,8 @@ impl RtcProviderPort for LivekitRtcProvider {
             .region
             .filter(|region| !region.trim().is_empty())
             .unwrap_or_else(|| self.config.region.clone());
+        self.active_sessions
+            .open(request.tenant_id.as_str(), request.rtc_session_id.as_str());
         Ok(RtcSessionHandle {
             tenant_id: request.tenant_id,
             rtc_session_id: request.rtc_session_id.clone(),
@@ -82,10 +115,10 @@ impl RtcProviderPort for LivekitRtcProvider {
 
     fn close_session(
         &self,
-        _tenant_id: &str,
-        _rtc_session_id: &str,
+        tenant_id: &str,
+        rtc_session_id: &str,
     ) -> Result<bool, RtcContractError> {
-        Ok(true)
+        Ok(self.active_sessions.close(tenant_id, rtc_session_id))
     }
 
     fn issue_participant_credential(
@@ -93,7 +126,22 @@ impl RtcProviderPort for LivekitRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
+        let config = self.effective_config(context);
+        if Self::signing_configured(&config) {
+            let issued_at = issued_at_unix_seconds();
+            let (credential, expire_at) =
+                generate_livekit_rtc_token(&config, rtc_session_id, participant_id, issued_at)?;
+            return Ok(RtcParticipantCredential {
+                tenant_id: tenant_id.into(),
+                rtc_session_id: rtc_session_id.into(),
+                participant_id: participant_id.into(),
+                credential,
+                expires_at: format_unix_seconds_rfc3339(expire_at),
+            });
+        }
+
         Ok(RtcParticipantCredential {
             tenant_id: tenant_id.into(),
             rtc_session_id: rtc_session_id.into(),
@@ -108,8 +156,9 @@ impl RtcProviderPort for LivekitRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id)
+        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id, context)
     }
 
     fn parse_provider_webhook(
@@ -159,6 +208,15 @@ impl RtcProviderPort for LivekitRtcProvider {
         details.insert("accessEndpoint".into(), self.config.access_endpoint.clone());
         details.insert("region".into(), self.config.region.clone());
         details.insert(
+            "credentialMode".into(),
+            if Self::signing_configured(&self.config) {
+                "signed-jwt"
+            } else {
+                "development-placeholder"
+            }
+            .into(),
+        );
+        details.insert(
             "activeQueryMode".into(),
             if self.open_api_executor.is_some() {
                 "open-api-executor"
@@ -178,7 +236,10 @@ impl RtcProviderPort for LivekitRtcProvider {
         );
         ProviderHealthSnapshot {
             plugin_id: LIVEKIT_RTC_PLUGIN_ID.into(),
-            status: if self.open_api_executor.is_some() && self.recording_importer.is_some() {
+            status: if Self::signing_configured(&self.config)
+                && self.open_api_executor.is_some()
+                && self.recording_importer.is_some()
+            {
                 "healthy"
             } else {
                 "degraded"

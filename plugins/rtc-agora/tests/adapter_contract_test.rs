@@ -16,6 +16,7 @@ fn test_agora_rtc_provider_factory_creates_standard_provider_plugin() {
     let factory = create_agora_rtc_provider_plugin_factory(AgoraRtcProviderConfig {
         access_endpoint: "wss://rtc.agora.local/session".into(),
         region: "global".into(),
+        ..Default::default()
     });
 
     let descriptor = factory.descriptor();
@@ -39,6 +40,7 @@ fn test_agora_rtc_provider_implements_contract_surface() {
     let provider = AgoraRtcProvider::new(AgoraRtcProviderConfig {
         access_endpoint: "wss://rtc.agora.local/session".into(),
         region: "global".into(),
+        ..Default::default()
     });
 
     let descriptor = provider.descriptor();
@@ -103,7 +105,7 @@ fn test_agora_rtc_provider_implements_contract_surface() {
     );
 
     let credential = provider
-        .issue_participant_credential("t_demo", "rtc_demo", "u_peer")
+        .issue_participant_credential("t_demo", "rtc_demo", "u_peer", None)
         .expect("agora rtc credential should succeed");
     assert_eq!(credential.credential, "agora-token:t_demo:rtc_demo:u_peer");
 
@@ -120,11 +122,30 @@ fn test_agora_rtc_provider_implements_contract_surface() {
 }
 
 #[test]
+fn test_agora_rtc_provider_issues_signed_token_when_credentials_configured() {
+    let provider = AgoraRtcProvider::new(AgoraRtcProviderConfig {
+        access_endpoint: "wss://rtc.agora.local/session".into(),
+        region: "global".into(),
+        app_id: Some("agora-app-id".into()),
+        app_certificate: Some("agora-app-cert".into()),
+        credential_ttl_seconds: 3_600,
+    });
+
+    let credential = provider
+        .issue_participant_credential("t_demo", "room_demo", "u_host", None)
+        .expect("agora signed credential should be generated");
+    assert!(credential.credential.starts_with("006agora-app-id"));
+    assert!(!credential.credential.contains("agora-token:"));
+    assert!(!credential.credential.contains("agora-app-cert"));
+}
+
+#[test]
 fn test_agora_rtc_recording_export_uses_injected_drive_importer() {
     let importer = Arc::new(FakeRecordingImporter::default());
     let provider = AgoraRtcProvider::new(AgoraRtcProviderConfig {
         access_endpoint: "wss://rtc.agora.local/session".into(),
         region: "global".into(),
+        ..Default::default()
     })
     .with_recording_importer(importer.clone());
 
@@ -151,6 +172,7 @@ fn test_agora_rtc_provider_implements_webhook_and_active_query_surface() {
     let provider = AgoraRtcProvider::new(AgoraRtcProviderConfig {
         access_endpoint: "wss://rtc.agora.local/session".into(),
         region: "global".into(),
+        ..Default::default()
     });
 
     let parsed = provider
@@ -257,6 +279,7 @@ fn test_agora_rtc_provider_implements_webhook_and_active_query_surface() {
     let provider = AgoraRtcProvider::new(AgoraRtcProviderConfig {
         access_endpoint: "wss://rtc.agora.local/session".into(),
         region: "global".into(),
+        ..Default::default()
     })
     .with_open_api_executor(executor.clone());
     let query = provider

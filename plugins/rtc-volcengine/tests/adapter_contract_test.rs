@@ -334,7 +334,7 @@ fn test_volcengine_active_query_builds_signed_open_api_request_when_credentials_
     assert!(!query.result_snapshot_json.contains("volc-secret-value"));
 
     let credential = provider
-        .issue_participant_credential("t_demo", "room_demo", "u_host")
+        .issue_participant_credential("t_demo", "room_demo", "u_host", None)
         .expect("volcengine signed credential should be generated");
     assert!(credential.credential.starts_with("001volc-app-id"));
     assert!(!credential.credential.contains("volcengine-token:"));

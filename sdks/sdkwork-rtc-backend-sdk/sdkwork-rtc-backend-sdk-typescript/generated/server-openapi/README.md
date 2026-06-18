@@ -18,7 +18,7 @@ pnpm add sdkwork-rtc-backend-sdk-generated-typescript
 import { SdkworkBackendClient } from 'sdkwork-rtc-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://127.0.0.1:18080',
+  baseUrl: 'http://127.0.0.1:18088',
   timeout: 30000,
 });
 
@@ -51,7 +51,7 @@ Access-Token: <accessToken>
 import { SdkworkBackendClient } from 'sdkwork-rtc-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://127.0.0.1:18080',
+  baseUrl: 'http://127.0.0.1:18088',
   timeout: 30000, // Request timeout in ms
   headers: {      // Custom headers
     'X-Custom-Header': 'value',
@@ -66,9 +66,11 @@ const client = new SdkworkBackendClient({
 - `client.rtcProviderAccounts` - rtc_provider_accounts API
 - `client.rtcProviderApplications` - rtc_provider_applications API
 - `client.rtcProviderCredentials` - rtc_provider_credentials API
+- `client.rtcProviderPlugins` - rtc_provider_plugins API
 - `client.rtcProviderProfiles` - rtc_provider_profiles API
 - `client.rtcProviderQueryJobs` - rtc_provider_query_jobs API
 - `client.rtcProviderRoutes` - rtc_provider_routes API
+- `client.rtcProviderSchemas` - rtc_provider_schemas API
 - `client.rtcProviderWebhooks` - rtc_provider_webhooks API
 - `client.rtcQualitySamples` - rtc_quality_samples API
 - `client.rtcRooms` - rtc_rooms API
@@ -133,6 +135,20 @@ const providerCredentialId = '1';
 const result = await client.rtcProviderCredentials.rtc.providerCredentials.retrieve(providerCredentialId);
 ```
 
+### rtc_provider_plugins
+
+```typescript
+// Rtc provider Plugins list.
+const params = {
+  page: 1,
+  page_size: 2,
+  cursor: 'cursor',
+  sort: 'sort',
+  q: 'q',
+};
+const result = await client.rtcProviderPlugins.rtc.providerPlugins.list(params);
+```
+
 ### rtc_provider_profiles
 
 ```typescript
@@ -175,6 +191,20 @@ const params = {
   q: 'q',
 };
 const result = await client.rtcProviderRoutes.rtc.providerRoutes.list(params);
+```
+
+### rtc_provider_schemas
+
+```typescript
+// Rtc provider Schemas list.
+const params = {
+  page: 1,
+  page_size: 2,
+  cursor: 'cursor',
+  sort: 'sort',
+  q: 'q',
+};
+const result = await client.rtcProviderSchemas.rtc.providerSchemas.list(params);
 ```
 
 ### rtc_provider_webhooks

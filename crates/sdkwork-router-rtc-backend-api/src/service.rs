@@ -2,20 +2,21 @@ use std::future::Future;
 use std::pin::Pin;
 
 use sdkwork_communication_rtc_service::{
-    RtcMediaArtifact, RtcMediaSession, RtcMediaSessionCompletionRecord, RtcProviderAccount,
-    RtcProviderAccountCommand, RtcProviderAccountDisableRequest, RtcProviderApplication,
-    RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest, RtcProviderCredential,
-    RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderProfile,
-    RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest,
+    ProviderConfigSchema, ProviderPluginDescriptor, RtcMediaArtifact, RtcMediaSession,
+    RtcMediaSessionCompletionRecord, RtcProviderAccount, RtcProviderAccountCommand,
+    RtcProviderAccountDisableRequest, RtcProviderApplication, RtcProviderApplicationCommand,
+    RtcProviderApplicationDisableRequest, RtcProviderCredential, RtcProviderCredentialCommand,
+    RtcProviderCredentialRevokeRequest, RtcProviderProfile, RtcProviderProfileCommand,
+    RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest,
     RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord, RtcProviderQueryKind,
     RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord, RtcQualitySample, RtcRoom,
-    ProviderConfigSchema, ProviderPluginDescriptor,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
 pub use sdkwork_communication_rtc_service::{
-    RtcProviderRoute, RtcProviderRouteCommand, RtcProviderRouteStatus,
+    RtcProviderRoute, RtcProviderRouteCommand, RtcProviderRouteDisableRequest,
+    RtcProviderRouteStatus,
 };
 
 pub type RtcBackendApiFuture<T> =
@@ -28,8 +29,51 @@ pub struct RtcBackendListRequest {
     pub organization_id: Option<String>,
     pub provider: Option<String>,
     pub status: Option<String>,
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
+    pub q: Option<String>,
+    pub sort: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RtcBackendListQuery {
+    pub provider: Option<String>,
+    pub status: Option<String>,
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
+    pub cursor: Option<String>,
+    pub limit: Option<u32>,
+    pub q: Option<String>,
+    pub sort: Option<String>,
+}
+
+impl From<&RtcBackendListQuery> for sdkwork_communication_rtc_service::RtcListWindowParams {
+    fn from(query: &RtcBackendListQuery) -> Self {
+        Self {
+            page: query.page,
+            page_size: query.page_size,
+            cursor: query.cursor.clone(),
+            limit: query.limit,
+            q: query.q.clone(),
+            sort: query.sort.clone(),
+        }
+    }
+}
+
+impl From<&RtcBackendListRequest> for sdkwork_communication_rtc_service::RtcListWindowParams {
+    fn from(request: &RtcBackendListRequest) -> Self {
+        Self {
+            page: request.page,
+            page_size: request.page_size,
+            cursor: request.cursor.clone(),
+            limit: request.limit,
+            q: request.q.clone(),
+            sort: request.sort.clone(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -180,8 +224,7 @@ pub trait RtcBackendApiService: Send + Sync + 'static {
         tenant_id: String,
         organization_id: Option<String>,
         provider_account_id: String,
-        cursor: Option<String>,
-        limit: Option<u32>,
+        query: RtcBackendListQuery,
     ) -> RtcBackendApiFuture<RtcProviderApplicationListData>;
 
     fn create_provider_application(
@@ -223,8 +266,7 @@ pub trait RtcBackendApiService: Send + Sync + 'static {
         tenant_id: String,
         organization_id: Option<String>,
         provider_application_id: String,
-        cursor: Option<String>,
-        limit: Option<u32>,
+        query: RtcBackendListQuery,
     ) -> RtcBackendApiFuture<RtcProviderCredentialListData>;
 
     fn create_provider_credential(
@@ -321,6 +363,31 @@ pub trait RtcBackendApiService: Send + Sync + 'static {
         request: RtcProviderRouteCommand,
     ) -> RtcBackendApiFuture<RtcProviderRoute>;
 
+    fn retrieve_provider_route(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        provider_route_id: String,
+    ) -> RtcBackendApiFuture<RtcProviderRoute>;
+
+    fn update_provider_route(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        provider_route_id: String,
+        request: RtcProviderRouteCommand,
+    ) -> RtcBackendApiFuture<RtcProviderRoute>;
+
+    fn disable_provider_route(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        provider_route_id: String,
+        request: RtcProviderRouteDisableRequest,
+    ) -> RtcBackendApiFuture<RtcProviderRoute>;
+
     fn list_media_sessions(
         &self,
         request: RtcBackendListRequest,
@@ -397,8 +464,7 @@ pub trait RtcBackendApiService: Send + Sync + 'static {
         tenant_id: String,
         organization_id: Option<String>,
         provider_query_job_id: String,
-        cursor: Option<String>,
-        limit: Option<u32>,
+        query: RtcBackendListQuery,
     ) -> RtcBackendApiFuture<RtcProviderQuerySnapshotListData>;
 
     fn list_provider_config_schemas(&self) -> RtcBackendApiFuture<Vec<ProviderConfigSchema>>;

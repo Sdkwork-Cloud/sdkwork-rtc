@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-mp-core",
+    "displayName": "SDKWork RTC MP Core",
+    "version": "0.1.0",
+    "type": "mini-program-package",
+    "root": "sdkwork-rtc/apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core",
+    "domain": "communication",
+    "declaredDomain": "communication",
+    "capability": "core",
+    "status": "ready",
+    "languages": ["typescript"],
+    "generated": false,
+    "private": true,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": ["."],
+    "sdkClients": ["sdkwork-rtc-app-sdk-generated-typescript"]
+  }
+}

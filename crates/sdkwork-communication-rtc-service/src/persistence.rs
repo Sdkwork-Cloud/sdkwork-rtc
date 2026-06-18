@@ -71,11 +71,22 @@ impl fmt::Display for RtcPersistenceError {
 
 impl Error for RtcPersistenceError {}
 
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RtcRuntimeLoadRequest {
+    pub tenant_id: String,
+    pub organization_id: String,
+}
+
 pub trait RtcPersistencePort: Send + Sync {
     fn persist_changes<'a>(
         &'a self,
         changes: RtcPersistenceChangeSet,
     ) -> RtcPersistenceFuture<'a, ()>;
+
+    fn load_runtime_snapshot<'a>(
+        &'a self,
+        request: RtcRuntimeLoadRequest,
+    ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet>;
 }
 
 #[derive(Clone, Debug, Default)]
@@ -87,5 +98,12 @@ impl RtcPersistencePort for NoopRtcPersistencePort {
         _changes: RtcPersistenceChangeSet,
     ) -> RtcPersistenceFuture<'a, ()> {
         Box::pin(async { Ok(()) })
+    }
+
+    fn load_runtime_snapshot<'a>(
+        &'a self,
+        _request: RtcRuntimeLoadRequest,
+    ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet> {
+        Box::pin(async { Ok(RtcPersistenceChangeSet::default()) })
     }
 }

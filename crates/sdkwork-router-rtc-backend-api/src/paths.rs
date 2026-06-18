@@ -41,6 +41,10 @@ pub const RTC_BACKEND_PROVIDER_PROFILE_DISABLE_PATH: &str =
 pub const RTC_BACKEND_PROVIDER_PROFILE_VERIFY_PATH: &str =
     "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/verify";
 pub const RTC_BACKEND_PROVIDER_ROUTES_PATH: &str = "/backend/v3/api/rtc/provider_routes";
+pub const RTC_BACKEND_PROVIDER_ROUTE_PATH: &str =
+    "/backend/v3/api/rtc/provider_routes/{providerRouteId}";
+pub const RTC_BACKEND_PROVIDER_ROUTE_DISABLE_PATH: &str =
+    "/backend/v3/api/rtc/provider_routes/{providerRouteId}/disable";
 pub const RTC_BACKEND_MEDIA_SESSIONS_PATH: &str = "/backend/v3/api/rtc/media_sessions";
 pub const RTC_BACKEND_MEDIA_SESSION_PATH: &str =
     "/backend/v3/api/rtc/media_sessions/{mediaSessionId}";
@@ -64,6 +68,11 @@ pub const RTC_BACKEND_PROVIDER_QUERY_JOB_SNAPSHOTS_PATH: &str =
 pub const RTC_BACKEND_PROVIDER_SCHEMAS_PATH: &str = "/backend/v3/api/rtc/provider_schemas";
 pub const RTC_BACKEND_PROVIDER_SCHEMA_PATH: &str =
     "/backend/v3/api/rtc/provider_schemas/{provider}";
+pub const RTC_BACKEND_PROVIDER_PLUGINS_PATH: &str = "/backend/v3/api/rtc/provider_plugins";
+pub const RTC_BACKEND_PROVIDER_PLUGIN_PATH: &str =
+    "/backend/v3/api/rtc/provider_plugins/{provider}";
+pub const RTC_BACKEND_PROVIDER_PROFILE_CAPABILITIES_PATH: &str =
+    "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/capabilities";
 
 pub const RTC_BACKEND_ROUTES: &[RtcBackendRoute] = &[
     RtcBackendRoute {
@@ -268,6 +277,30 @@ pub const RTC_BACKEND_ROUTES: &[RtcBackendRoute] = &[
     },
     RtcBackendRoute {
         method: "GET",
+        path: RTC_BACKEND_PROVIDER_ROUTE_PATH,
+        tag: "rtcProviderRoutes",
+        operation_id: "rtc.providerRoutes.retrieve",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_routes.read",
+    },
+    RtcBackendRoute {
+        method: "PATCH",
+        path: RTC_BACKEND_PROVIDER_ROUTE_PATH,
+        tag: "rtcProviderRoutes",
+        operation_id: "rtc.providerRoutes.update",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_routes.write",
+    },
+    RtcBackendRoute {
+        method: "POST",
+        path: RTC_BACKEND_PROVIDER_ROUTE_DISABLE_PATH,
+        tag: "rtcProviderRoutes",
+        operation_id: "rtc.providerRoutes.disable",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_routes.write",
+    },
+    RtcBackendRoute {
+        method: "GET",
         path: RTC_BACKEND_MEDIA_SESSIONS_PATH,
         tag: "rtcMediaSessions",
         operation_id: "rtc.mediaSessions.list",
@@ -377,6 +410,30 @@ pub const RTC_BACKEND_ROUTES: &[RtcBackendRoute] = &[
         operation_id: "rtc.providerSchemas.retrieve",
         owner: RTC_OWNER,
         permission: "rtc.provider_schemas.read",
+    },
+    RtcBackendRoute {
+        method: "GET",
+        path: RTC_BACKEND_PROVIDER_PLUGINS_PATH,
+        tag: "rtcProviderPlugins",
+        operation_id: "rtc.providerPlugins.list",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_plugins.read",
+    },
+    RtcBackendRoute {
+        method: "GET",
+        path: RTC_BACKEND_PROVIDER_PLUGIN_PATH,
+        tag: "rtcProviderPlugins",
+        operation_id: "rtc.providerPlugins.retrieve",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_plugins.read",
+    },
+    RtcBackendRoute {
+        method: "PUT",
+        path: RTC_BACKEND_PROVIDER_PROFILE_CAPABILITIES_PATH,
+        tag: "rtcProviderProfiles",
+        operation_id: "rtc.providerProfiles.capabilities.configure",
+        owner: RTC_OWNER,
+        permission: "rtc.provider_profiles.write",
     },
 ];
 

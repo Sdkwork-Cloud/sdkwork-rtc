@@ -15,6 +15,8 @@ export interface RoomListParams {
   ownerUserId?: string;
   cursor?: string;
   limit?: number;
+  page?: number;
+  sort?: string;
 }
 
 export interface RoomListResponse {

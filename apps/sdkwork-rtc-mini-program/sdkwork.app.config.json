@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.app.config",
+  "app": {
+    "id": "sdkwork-rtc-mini-program",
+    "displayName": "SDKWork RTC Mini Program",
+    "version": "0.1.0",
+    "runtime": {
+      "family": "mini-program",
+      "framework": "mp-weixin",
+      "surface": "weixin"
+    },
+    "publish": {
+      "platforms": ["MP_WEIXIN"]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-h5-core",
+    "displayName": "SDKWork RTC H5 Core",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core",
+    "domain": "communication",
+    "declaredDomain": "communication",
+    "capability": "core",
+    "status": "ready",
+    "languages": ["typescript"],
+    "generated": false,
+    "private": true,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": ["."],
+    "sdkClients": ["sdkwork-rtc-app-sdk-generated-typescript"]
+  }
+}

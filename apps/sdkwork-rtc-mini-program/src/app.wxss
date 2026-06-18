@@ -1,0 +1,14 @@
+page {
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.container {
+  padding: 24rpx;
+}
+
+.primary {
+  background: #0f766e;
+  color: #ffffff;
+}

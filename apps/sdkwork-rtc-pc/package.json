@@ -5,13 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc -p tsconfig.app.json && vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@sdkwork/rtc-pc-admin-core": "workspace:*",
+    "@sdkwork/rtc-pc-admin-shell": "workspace:*",
+    "@sdkwork/rtc-pc-core": "workspace:*",
+    "@sdkwork/rtc-pc-rtc": "workspace:*",
+    "@sdkwork/rtc-pc-shell": "workspace:*",
+    "@sdkwork/sdk-common": "^1.0.2",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "@sdkwork/rtc-pc-admin-core": "workspace:*"
+    "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "catalog:",

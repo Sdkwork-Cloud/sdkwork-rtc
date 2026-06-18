@@ -1,4 +1,6 @@
 export * from './common';
+export type { RtcApiResult } from './rtc-api-result';
+export type { RtcOperationCommand } from './rtc-operation-command';
 export type { MediaKind } from './media-kind';
 export type { MediaSource } from './media-source';
 export type { MediaChecksum } from './media-checksum';
@@ -50,6 +52,7 @@ export type { RtcProviderProfileResponse } from './rtc-provider-profile-response
 export type { RtcProviderProfileVerifyResultResponse } from './rtc-provider-profile-verify-result-response';
 export type { RtcProviderRoute } from './rtc-provider-route';
 export type { RtcProviderRouteCommand } from './rtc-provider-route-command';
+export type { RtcProviderRouteDisableRequest } from './rtc-provider-route-disable-request';
 export type { RtcProviderRouteListResponse } from './rtc-provider-route-list-response';
 export type { RtcProviderRouteResponse } from './rtc-provider-route-response';
 export type { RtcQualitySample } from './rtc-quality-sample';

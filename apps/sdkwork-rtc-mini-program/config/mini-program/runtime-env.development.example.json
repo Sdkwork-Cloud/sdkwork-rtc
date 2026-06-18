@@ -1,0 +1,9 @@
+{
+  "rtc": {
+    "apiBaseUrl": "http://127.0.0.1:18088/app/v3/api",
+    "defaultMediaMode": "video"
+  },
+  "appbase": {
+    "loginUrl": "http://127.0.0.1:3900"
+  }
+}

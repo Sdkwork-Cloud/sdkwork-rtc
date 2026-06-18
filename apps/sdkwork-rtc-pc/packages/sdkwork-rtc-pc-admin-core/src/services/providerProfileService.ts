@@ -1,58 +1,113 @@
+import type { AuthTokenManager } from "@sdkwork/sdk-common";
+
 import type { ProviderProfile, ProviderProfileCommand } from "../types/providerProfile";
+import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
 
 interface ListResponse {
   items: ProviderProfile[];
-  nextCursor?: string;
+  nextCursor?: string | null;
 }
 
 export class ProviderProfileService {
-  constructor(
-    private readonly baseUrl: string,
-    private readonly getToken?: () => string | undefined,
-  ) {}
+  private readonly client;
 
-  async list(params?: { provider?: string }): Promise<ListResponse> {
-    const query = new URLSearchParams();
-    if (params?.provider) query.set("provider", params.provider);
-    return this.request("GET", `/provider_profiles?${query}`);
+  constructor(
+    baseUrl: string,
+    tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
+  ) {
+    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+  }
+
+  async list(params?: {
+    provider?: string;
+    page?: number;
+    limit?: number;
+    cursor?: string;
+    search?: string;
+    sort?: string;
+  }): Promise<ListResponse> {
+    const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.list({
+      page: params?.page,
+      pageSize: params?.limit,
+      cursor: params?.cursor,
+      q: params?.search,
+      sort: params?.sort,
+    });
+    return {
+      items: (response.data?.items ?? []) as ProviderProfile[],
+      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+    };
   }
 
   async get(id: string): Promise<ProviderProfile> {
-    return this.request("GET", `/provider_profiles/${id}`);
+    const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.retrieve(id);
+    if (!response.data) {
+      throw new Error(`RTC provider profile not found: ${id}`);
+    }
+    return response.data as ProviderProfile;
   }
 
   async create(command: ProviderProfileCommand): Promise<ProviderProfile> {
-    return this.request("POST", "/provider_profiles", command);
+    const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.create(
+      command as Parameters<
+        typeof this.client.rtcProviderProfiles.rtc.providerProfiles.create
+      >[0],
+    );
+    if (!response.data) {
+      throw new Error("Invalid response: missing provider profile data");
+    }
+    return response.data as ProviderProfile;
   }
 
   async update(id: string, command: ProviderProfileCommand): Promise<ProviderProfile> {
-    return this.request("PATCH", `/provider_profiles/${id}`, command);
+    const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.update(
+      id,
+      command as Parameters<
+        typeof this.client.rtcProviderProfiles.rtc.providerProfiles.update
+      >[1],
+    );
+    if (!response.data) {
+      throw new Error("Invalid response: missing provider profile data");
+    }
+    return response.data as ProviderProfile;
   }
 
   async disable(id: string, reason?: string): Promise<ProviderProfile> {
-    return this.request("POST", `/provider_profiles/${id}/disable`, { reason });
+    const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.disable(id, {
+      reason,
+    });
+    if (!response.data) {
+      throw new Error("Invalid response: missing provider profile data");
+    }
+    return response.data as ProviderProfile;
   }
 
   async verify(id: string, queryKind: string, timeoutMs?: number): Promise<unknown> {
-    return this.request("POST", `/provider_profiles/${id}/verify`, { queryKind, timeoutMs });
+    const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.verify(id, {
+      queryKind: queryKind as Parameters<
+        typeof this.client.rtcProviderProfiles.rtc.providerProfiles.verify
+      >[1]["queryKind"],
+      timeoutMs,
+    });
+    return response.data;
   }
 
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    const token = this.getToken?.();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => null);
-      const message = errorBody?.message ?? `HTTP ${response.status}`;
-      throw new Error(message);
+  async configureCapabilities(
+    id: string,
+    enabledCapabilities: string[],
+    disabledCapabilities: string[],
+  ): Promise<ProviderProfile> {
+    const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.capabilities.configure(
+      id,
+      {
+        enabledCapabilities,
+        disabledCapabilities,
+      },
+    );
+    const data = response.data as unknown as ProviderProfile | undefined;
+    if (!data) {
+      throw new Error("Invalid response: missing provider profile data");
     }
-    const data = await response.json();
-    if (data?.data === undefined) throw new Error("Invalid response: missing data field");
-    return data.data;
+    return data;
   }
 }

@@ -12,6 +12,7 @@ sdkwork-rtc.
 
 - Config schemas.
 - Development, test, staging, and production examples without secrets.
+- Topology profiles under `topology/` and cloud gateway bundles under `sdkwork-api-gateway.sdkwork-rtc.*.toml`.
 - Provider config templates using placeholder values.
 
 ## Forbidden Content
@@ -28,4 +29,8 @@ sdkwork-rtc.
 
 ## Verification
 
-Run `node --test tests/rtc-workspace-standard.test.mjs`.
+```powershell
+node --test tests/rtc-workspace-standard.test.mjs
+pnpm run test:topology-validate
+pnpm run gateway:cloud:matrix
+```

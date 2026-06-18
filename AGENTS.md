@@ -22,6 +22,13 @@ Do not copy root standard text into this repository. If these relative paths do 
 
 No `sdkwork.app.config.json` is present at this root. This repository is the RTC authority workspace with Rust crates, provider plugins, API contracts, and SDK families. If a runnable app surface is added later, place its app root under `apps/` or add a root manifest according to `APP_MANIFEST_SPEC.md`.
 
+## IM Dependency Boundary
+
+- `sdkwork-rtc` is the RTC authority: providers, media runtime, call data, recording metadata, Drive references, `/app/v3/api/rtc/*`, `/backend/v3/api/rtc/*`.
+- `sdkwork-im` owns call signaling only (`/im/v3/api/calls/*`) and may depend on this repository's crates, plugins, and `@sdkwork/rtc-sdk`.
+- **Never** add `sdkwork-im` crate, SDK, API, or signaling dependencies into this repository.
+- Canonical boundary reference: `docs/rtc-im-boundary.md`.
+
 ## Local Dictionary Structure
 
 - `AGENTS.md`: local agent entrypoint and relative SDKWORK spec index.
@@ -30,7 +37,7 @@ No `sdkwork.app.config.json` is present at this root. This repository is the RTC
 - `CODEX.md`: Codex compatibility shim that points to `AGENTS.md` and must not duplicate rules.
 - `.sdkwork/`: repository-local skills, plugins, manifests, and AI workspace metadata only.
 - `apis/`: RTC API authority inputs under canonical domain directory `communication/`.
-- `apps/`: reserved for future independently runnable RTC app surfaces.
+- `apps/`: runnable RTC client application roots (`sdkwork-rtc-pc`, `sdkwork-rtc-h5`, `sdkwork-rtc-flutter-mobile`).
 - `crates/`: Rust service, repository, route, host, and support crates.
 - `sdks/`: SDK family workspaces, OpenAPI materialization, route manifests, and generated SDK output.
 - `jobs/`: job definitions, schedules, queues, and maintenance runbooks.
@@ -78,7 +85,12 @@ node --test tests/rtc-workspace-standard.test.mjs
 pnpm run audit:migration
 pnpm run materialize:openapi
 pnpm run sdk:check
-cargo fmt --all --check
+pnpm run test:topology-validate
+pnpm run test:topology-contract
+pnpm run test:topology-baggage
+pnpm run test:topology-packaging
+pnpm run test:flutter-analyze
+pnpm run test:rust-fmt
 cargo test --workspace
 pnpm run verify
 ```

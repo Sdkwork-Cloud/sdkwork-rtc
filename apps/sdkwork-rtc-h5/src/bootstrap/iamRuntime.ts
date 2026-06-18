@@ -1,3 +1,8 @@
+import { bootstrapAppAuth, consumeAppbaseCallbackSession } from "./appAuth";
+
 export function createIamRuntime() {
-  // TODO: Wire appbase IAM runtime
+  consumeAppbaseCallbackSession();
+  return {
+    session: bootstrapAppAuth(),
+  };
 }

@@ -1,0 +1,24 @@
+{
+  "name": "@sdkwork/rtc-mini-program",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-runtime.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@sdkwork/rtc-mp-core": "workspace:*",
+    "@sdkwork/rtc-mp-host": "workspace:*",
+    "@sdkwork/rtc-mp-rtc": "workspace:*",
+    "@sdkwork/rtc-mp-shell": "workspace:*",
+    "@sdkwork/sdk-common": "^1.0.2",
+    "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "esbuild": "^0.25.10",
+    "miniprogram-api-typings": "^4.1.0",
+    "typescript": "catalog:"
+  }
+}

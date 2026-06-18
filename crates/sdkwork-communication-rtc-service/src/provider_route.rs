@@ -29,3 +29,9 @@ pub struct RtcProviderRouteCommand {
     pub priority: i32,
     pub status: Option<RtcProviderRouteStatus>,
 }
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcProviderRouteDisableRequest {
+    pub reason: Option<String>,
+}

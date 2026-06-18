@@ -9,17 +9,28 @@ use serde_json::{Value as JsonValue, json};
 use sha2::{Digest, Sha256};
 
 pub mod completion;
+pub mod list_window;
 pub mod persistence;
 pub mod provider_account;
 pub mod provider_event;
 pub mod provider_profile;
 pub mod provider_route;
+pub mod session_tracker;
+pub mod webhook_signature;
 pub use completion::*;
+pub use list_window::{
+    DEFAULT_LIST_PAGE_SIZE, MAX_LIST_PAGE_SIZE, RtcListWindow, RtcListWindowError,
+    RtcListWindowParams, apply_list_window, matches_query_tokens,
+};
 pub use persistence::*;
 pub use provider_account::*;
 pub use provider_event::*;
 pub use provider_profile::*;
 pub use provider_route::*;
+pub use session_tracker::RtcActiveSessionTracker;
+pub use webhook_signature::{
+    RtcProviderWebhookVerifyRequest, sign_hmac_sha256_payload_hex, verify_hmac_sha256_payload,
+};
 
 pub const RTC_OWNER: &str = "sdkwork-rtc";
 pub const RTC_DOMAIN: &str = "rtc";
@@ -346,11 +357,12 @@ impl ProviderPluginDescriptor {
         display_name: impl Into<String>,
     ) -> Self {
         let plugin_id = plugin_id.into();
+        let provider_kind = provider_kind.into();
         Self {
-            config_schema_ref: format!("providers/{plugin_id}.schema.json"),
+            config_schema_ref: format!("configs/provider-schemas/{provider_kind}.json"),
             plugin_id,
             domain,
-            provider_kind: provider_kind.into(),
+            provider_kind,
             display_name: display_name.into(),
             interface_version: "v1".into(),
             default_selected: false,
@@ -654,6 +666,27 @@ pub struct RtcParticipantCredential {
     pub participant_id: String,
     pub credential: String,
     pub expires_at: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct RtcParticipantCredentialContext {
+    pub provider_app_id: Option<String>,
+    pub signing_secret: Option<String>,
+    pub credential_ttl_seconds: Option<u32>,
+}
+
+impl RtcParticipantCredentialContext {
+    pub fn merge_app_id<'a>(&'a self, current: &'a Option<String>) -> Option<String> {
+        self.provider_app_id.clone().or_else(|| current.clone())
+    }
+
+    pub fn merge_signing_secret<'a>(&'a self, current: &'a Option<String>) -> Option<String> {
+        self.signing_secret.clone().or_else(|| current.clone())
+    }
+
+    pub fn merge_ttl(&self, current: u32) -> u32 {
+        self.credential_ttl_seconds.unwrap_or(current)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1019,12 +1052,14 @@ pub trait RtcProviderPort: Send + Sync {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError>;
     fn refresh_participant_credential(
         &self,
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError>;
     fn parse_provider_webhook(
         &self,
@@ -1034,6 +1069,21 @@ pub trait RtcProviderPort: Send + Sync {
             "{} provider webhook parsing is not implemented",
             request.provider
         )))
+    }
+    fn verify_provider_webhook_signature(
+        &self,
+        request: RtcProviderWebhookVerifyRequest,
+    ) -> Result<(), RtcContractError> {
+        let signature = request.signature_header.ok_or_else(|| {
+            RtcContractError::Conflict(
+                "RTC provider webhook signature header is missing".to_string(),
+            )
+        })?;
+        verify_hmac_sha256_payload(
+            request.webhook_secret.as_str(),
+            request.raw_payload.as_str(),
+            signature.as_str(),
+        )
     }
     fn query_provider_state(
         &self,

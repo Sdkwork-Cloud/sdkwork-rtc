@@ -1,0 +1,28 @@
+[package]
+name = "sdkwork-rtc-api-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "sdkwork-rtc-api-server"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.98"
+axum.workspace = true
+sdkwork-communication-rtc-repository-sqlx.workspace = true
+sdkwork-communication-rtc-service.workspace = true
+sdkwork-rtc-adapter-agora.workspace = true
+sdkwork-rtc-adapter-aliyun.workspace = true
+sdkwork-rtc-adapter-livekit.workspace = true
+sdkwork-rtc-adapter-tencent.workspace = true
+sdkwork-rtc-adapter-volcengine.workspace = true
+sdkwork-router-rtc-app-api.workspace = true
+sdkwork-router-rtc-backend-api.workspace = true
+sdkwork-rtc-service-host.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tower.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

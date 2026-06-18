@@ -9,34 +9,12 @@
     "protocol": "http",
     "packageName": "sdkwork-rtc-backend-sdk-generated-typescript"
   },
-  "changeFingerprint": "aecb28b5379965b7b5b64d28f03fec84ea8b50a904e0ef8be795080389c9730e",
+  "changeFingerprint": "6a2136e39a2c06fc6672e161dde7cb7f9a120284f525a4f806db69d5551df89b",
   "changes": {
-    "createdGeneratedFiles": [
-      "src/api/rtc-provider-accounts.ts",
-      "src/api/rtc-provider-applications.ts",
-      "src/api/rtc-provider-credentials.ts",
-      "src/types/rtc-provider-account-command.ts",
-      "src/types/rtc-provider-account-disable-request.ts",
-      "src/types/rtc-provider-account-list-response.ts",
-      "src/types/rtc-provider-account-response.ts",
-      "src/types/rtc-provider-account.ts",
-      "src/types/rtc-provider-application-command.ts",
-      "src/types/rtc-provider-application-disable-request.ts",
-      "src/types/rtc-provider-application-list-response.ts",
-      "src/types/rtc-provider-application-response.ts",
-      "src/types/rtc-provider-application.ts",
-      "src/types/rtc-provider-credential-command.ts",
-      "src/types/rtc-provider-credential-list-response.ts",
-      "src/types/rtc-provider-credential-response.ts",
-      "src/types/rtc-provider-credential-revoke-request.ts",
-      "src/types/rtc-provider-credential.ts"
-    ],
+    "createdGeneratedFiles": [],
     "updatedGeneratedFiles": [
       "README.md",
-      "src/api/index.ts",
-      "src/http/client.ts",
-      "src/sdk.ts",
-      "src/types/index.ts"
+      "src/http/client.ts"
     ],
     "unchangedGeneratedFiles": [
       "bin/publish-core.mjs",
@@ -49,26 +27,35 @@
       "package.json",
       "sdkwork-sdk.json",
       "src/api/base.ts",
+      "src/api/index.ts",
       "src/api/paths.ts",
       "src/api/rtc-media-artifacts.ts",
       "src/api/rtc-media-sessions.ts",
+      "src/api/rtc-provider-accounts.ts",
+      "src/api/rtc-provider-applications.ts",
+      "src/api/rtc-provider-credentials.ts",
+      "src/api/rtc-provider-plugins.ts",
       "src/api/rtc-provider-profiles.ts",
       "src/api/rtc-provider-query-jobs.ts",
       "src/api/rtc-provider-routes.ts",
+      "src/api/rtc-provider-schemas.ts",
       "src/api/rtc-provider-webhooks.ts",
       "src/api/rtc-quality-samples.ts",
       "src/api/rtc-rooms.ts",
       "src/auth/index.ts",
       "src/http/index.ts",
       "src/index.ts",
+      "src/sdk.ts",
       "src/types/common.ts",
       "src/types/field-error.ts",
+      "src/types/index.ts",
       "src/types/media-access.ts",
       "src/types/media-checksum.ts",
       "src/types/media-kind.ts",
       "src/types/media-resource.ts",
       "src/types/media-source.ts",
       "src/types/problem-detail.ts",
+      "src/types/rtc-api-result.ts",
       "src/types/rtc-close-media-session-request.ts",
       "src/types/rtc-drive-reference.ts",
       "src/types/rtc-media-artifact-list-response.ts",
@@ -85,7 +72,23 @@
       "src/types/rtc-media-session-list-response.ts",
       "src/types/rtc-media-session-response.ts",
       "src/types/rtc-media-session.ts",
+      "src/types/rtc-operation-command.ts",
+      "src/types/rtc-provider-account-command.ts",
+      "src/types/rtc-provider-account-disable-request.ts",
+      "src/types/rtc-provider-account-list-response.ts",
+      "src/types/rtc-provider-account-response.ts",
+      "src/types/rtc-provider-account.ts",
+      "src/types/rtc-provider-application-command.ts",
+      "src/types/rtc-provider-application-disable-request.ts",
+      "src/types/rtc-provider-application-list-response.ts",
+      "src/types/rtc-provider-application-response.ts",
+      "src/types/rtc-provider-application.ts",
       "src/types/rtc-provider-capability-snapshot.ts",
+      "src/types/rtc-provider-credential-command.ts",
+      "src/types/rtc-provider-credential-list-response.ts",
+      "src/types/rtc-provider-credential-response.ts",
+      "src/types/rtc-provider-credential-revoke-request.ts",
+      "src/types/rtc-provider-credential.ts",
       "src/types/rtc-provider-profile-command.ts",
       "src/types/rtc-provider-profile-disable-request.ts",
       "src/types/rtc-provider-profile-list-response.ts",
@@ -101,6 +104,7 @@
       "src/types/rtc-provider-query-snapshot-list-response.ts",
       "src/types/rtc-provider-query-snapshot.ts",
       "src/types/rtc-provider-route-command.ts",
+      "src/types/rtc-provider-route-disable-request.ts",
       "src/types/rtc-provider-route-list-response.ts",
       "src/types/rtc-provider-route-response.ts",
       "src/types/rtc-provider-route.ts",
@@ -129,7 +133,6 @@
     "schemaVersion": 1,
     "areas": [
       "api-surface",
-      "models",
       "runtime",
       "documentation"
     ],
@@ -137,33 +140,7 @@
       {
         "area": "api-surface",
         "paths": [
-          "src/api/index.ts",
-          "src/api/rtc-provider-accounts.ts",
-          "src/api/rtc-provider-applications.ts",
-          "src/api/rtc-provider-credentials.ts",
-          "src/http/client.ts",
-          "src/sdk.ts"
-        ]
-      },
-      {
-        "area": "models",
-        "paths": [
-          "src/types/index.ts",
-          "src/types/rtc-provider-account-command.ts",
-          "src/types/rtc-provider-account-disable-request.ts",
-          "src/types/rtc-provider-account-list-response.ts",
-          "src/types/rtc-provider-account-response.ts",
-          "src/types/rtc-provider-account.ts",
-          "src/types/rtc-provider-application-command.ts",
-          "src/types/rtc-provider-application-disable-request.ts",
-          "src/types/rtc-provider-application-list-response.ts",
-          "src/types/rtc-provider-application-response.ts",
-          "src/types/rtc-provider-application.ts",
-          "src/types/rtc-provider-credential-command.ts",
-          "src/types/rtc-provider-credential-list-response.ts",
-          "src/types/rtc-provider-credential-response.ts",
-          "src/types/rtc-provider-credential-revoke-request.ts",
-          "src/types/rtc-provider-credential.ts"
+          "src/http/client.ts"
         ]
       },
       {
@@ -180,18 +157,18 @@
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models, runtime, documentation. Verification is required."
+    "summary": "Detected impact areas: api-surface, runtime, documentation. Verification is required."
   },
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models, runtime, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, runtime, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, documentation.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, runtime, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -209,7 +186,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, documentation.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, runtime, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [

@@ -1,2 +1,2 @@
-// RTC PC Shell - layout, router assembly, AuthGate integration
-export {};
+export { AppLayout } from "./AppLayout";
+export { createRtcAppRoutes, type AppRouteDefinition } from "./rtcRoutes";

@@ -17,6 +17,7 @@ fn test_livekit_rtc_provider_factory_creates_standard_provider_plugin() {
     let factory = create_livekit_rtc_provider_plugin_factory(LivekitRtcProviderConfig {
         access_endpoint: "wss://rtc.livekit.local/session".into(),
         region: "self-hosted".into(),
+        ..Default::default()
     });
 
     let descriptor = factory.descriptor();
@@ -40,6 +41,7 @@ fn test_livekit_rtc_provider_implements_contract_surface() {
     let provider = LivekitRtcProvider::new(LivekitRtcProviderConfig {
         access_endpoint: "wss://rtc.livekit.local/session".into(),
         region: "self-hosted".into(),
+        ..Default::default()
     });
 
     let descriptor = provider.descriptor();
@@ -103,7 +105,7 @@ fn test_livekit_rtc_provider_implements_contract_surface() {
     );
 
     let credential = provider
-        .issue_participant_credential("t_demo", "rtc_demo", "u_peer")
+        .issue_participant_credential("t_demo", "rtc_demo", "u_peer", None)
         .expect("livekit rtc credential should succeed");
     assert_eq!(
         credential.credential,
@@ -123,11 +125,31 @@ fn test_livekit_rtc_provider_implements_contract_surface() {
 }
 
 #[test]
+fn test_livekit_rtc_provider_issues_signed_token_when_credentials_configured() {
+    let provider = LivekitRtcProvider::new(LivekitRtcProviderConfig {
+        access_endpoint: "wss://rtc.livekit.local/session".into(),
+        region: "self-hosted".into(),
+        api_endpoint: "https://livekit.local".into(),
+        api_key: Some("livekit-api-key".into()),
+        api_secret: Some("livekit-api-secret".into()),
+        credential_ttl_seconds: 3_600,
+    });
+
+    let credential = provider
+        .issue_participant_credential("t_demo", "room_demo", "u_host", None)
+        .expect("livekit signed credential should be generated");
+    assert!(credential.credential.matches('.').count() >= 2);
+    assert!(!credential.credential.contains("livekit-token:"));
+    assert!(!credential.credential.contains("livekit-api-secret"));
+}
+
+#[test]
 fn test_livekit_rtc_recording_export_uses_injected_drive_importer() {
     let importer = Arc::new(FakeRecordingImporter::default());
     let provider = LivekitRtcProvider::new(LivekitRtcProviderConfig {
         access_endpoint: "wss://rtc.livekit.local/session".into(),
         region: "self-hosted".into(),
+        ..Default::default()
     })
     .with_recording_importer(importer.clone());
 
@@ -154,6 +176,7 @@ fn test_livekit_rtc_provider_implements_webhook_and_active_query_surface() {
     let provider = LivekitRtcProvider::new(LivekitRtcProviderConfig {
         access_endpoint: "wss://rtc.livekit.local/session".into(),
         region: "self-hosted".into(),
+        ..Default::default()
     });
 
     let parsed = provider
@@ -270,6 +293,7 @@ fn test_livekit_rtc_provider_implements_webhook_and_active_query_surface() {
     let provider = LivekitRtcProvider::new(LivekitRtcProviderConfig {
         access_endpoint: "wss://rtc.livekit.local/session".into(),
         region: "self-hosted".into(),
+        ..Default::default()
     })
     .with_open_api_executor(executor.clone());
     let query = provider

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-class AuthGate extends StatelessWidget {
-  final Widget child;
+import 'app_auth_gate.dart';
 
-  const AuthGate({super.key, required this.child});
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Wire appbase IAM auth gate
-    return child;
+    return const AppAuthGate();
   }
 }

@@ -36,7 +36,8 @@ class RoomFilterWidget extends StatelessWidget {
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: filter.status,
+                key: ValueKey('status-${filter.status}'),
+                initialValue: filter.status,
                 decoration: const InputDecoration(
                   labelText: 'Status',
                   border: OutlineInputBorder(),
@@ -53,7 +54,8 @@ class RoomFilterWidget extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: filter.dateRange,
+                key: ValueKey('date-${filter.dateRange}'),
+                initialValue: filter.dateRange,
                 decoration: const InputDecoration(
                   labelText: 'Date Range',
                   border: OutlineInputBorder(),

@@ -4,7 +4,8 @@ use std::sync::Arc;
 use sdkwork_communication_rtc_service::{
     ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor,
     RTC_PROVIDER_REQUIRED_CAPABILITIES, RTC_PROVIDER_TENCENT_OPTIONAL_CAPABILITIES,
-    RtcContractError, RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcProviderPort,
+    RtcActiveSessionTracker, RtcContractError, RtcCreateMediaSessionRequest,
+    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
     RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
     RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture, RtcSessionHandle,
@@ -20,11 +21,18 @@ use crate::{query, recording, webhook};
 
 pub const TENCENT_RTC_PLUGIN_ID: &str = "rtc-tencent";
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct TencentRtcProvider {
     config: TencentRtcProviderConfig,
     open_api_executor: Option<Arc<dyn TencentRtcOpenApiExecutor>>,
     recording_importer: Option<Arc<dyn RtcRecordingArtifactImportPort>>,
+    active_sessions: RtcActiveSessionTracker,
+}
+
+impl Default for TencentRtcProvider {
+    fn default() -> Self {
+        Self::new(TencentRtcProviderConfig::default())
+    }
 }
 
 impl TencentRtcProvider {
@@ -33,6 +41,7 @@ impl TencentRtcProvider {
             config,
             open_api_executor: None,
             recording_importer: None,
+            active_sessions: RtcActiveSessionTracker::default(),
         }
     }
 
@@ -59,6 +68,25 @@ impl TencentRtcProvider {
         .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
         .with_optional_capabilities(RTC_PROVIDER_TENCENT_OPTIONAL_CAPABILITIES)
     }
+
+    fn effective_config(
+        &self,
+        context: Option<&RtcParticipantCredentialContext>,
+    ) -> TencentRtcProviderConfig {
+        let Some(context) = context else {
+            return self.config.clone();
+        };
+        TencentRtcProviderConfig {
+            sdk_app_id: context.merge_app_id(&self.config.sdk_app_id),
+            sdk_secret_key: context.merge_signing_secret(&self.config.sdk_secret_key),
+            credential_ttl_seconds: context.merge_ttl(self.config.credential_ttl_seconds),
+            ..self.config.clone()
+        }
+    }
+
+    fn signing_configured(config: &TencentRtcProviderConfig) -> bool {
+        config.sdk_app_id.is_some() && config.sdk_secret_key.is_some()
+    }
 }
 
 impl RtcProviderPort for TencentRtcProvider {
@@ -74,6 +102,8 @@ impl RtcProviderPort for TencentRtcProvider {
             .region
             .filter(|region| !region.trim().is_empty())
             .unwrap_or_else(|| self.config.region.clone());
+        self.active_sessions
+            .open(request.tenant_id.as_str(), request.rtc_session_id.as_str());
         Ok(RtcSessionHandle {
             tenant_id: request.tenant_id,
             rtc_session_id: request.rtc_session_id.clone(),
@@ -85,10 +115,10 @@ impl RtcProviderPort for TencentRtcProvider {
 
     fn close_session(
         &self,
-        _tenant_id: &str,
-        _rtc_session_id: &str,
+        tenant_id: &str,
+        rtc_session_id: &str,
     ) -> Result<bool, RtcContractError> {
-        Ok(true)
+        Ok(self.active_sessions.close(tenant_id, rtc_session_id))
     }
 
     fn issue_participant_credential(
@@ -96,11 +126,13 @@ impl RtcProviderPort for TencentRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        if self.config.sdk_app_id.is_some() && self.config.sdk_secret_key.is_some() {
+        let config = self.effective_config(context);
+        if Self::signing_configured(&config) {
             let issued_at = issued_at_unix_seconds();
             let (credential, expire_at) =
-                generate_tencent_user_sig(&self.config, participant_id, issued_at)?;
+                generate_tencent_user_sig(&config, participant_id, issued_at)?;
             return Ok(RtcParticipantCredential {
                 tenant_id: tenant_id.into(),
                 rtc_session_id: rtc_session_id.into(),
@@ -124,8 +156,9 @@ impl RtcProviderPort for TencentRtcProvider {
         tenant_id: &str,
         rtc_session_id: &str,
         participant_id: &str,
+        context: Option<&RtcParticipantCredentialContext>,
     ) -> Result<RtcParticipantCredential, RtcContractError> {
-        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id)
+        self.issue_participant_credential(tenant_id, rtc_session_id, participant_id, context)
     }
 
     fn parse_provider_webhook(
@@ -176,7 +209,7 @@ impl RtcProviderPort for TencentRtcProvider {
         details.insert("region".into(), self.config.region.clone());
         details.insert(
             "credentialMode".into(),
-            if self.config.sdk_app_id.is_some() && self.config.sdk_secret_key.is_some() {
+            if Self::signing_configured(&self.config) {
                 "signed-usersig"
             } else {
                 "development-placeholder"
@@ -204,8 +237,7 @@ impl RtcProviderPort for TencentRtcProvider {
             }
             .into(),
         );
-        let signed_credentials_configured =
-            self.config.sdk_app_id.is_some() && self.config.sdk_secret_key.is_some();
+        let signed_credentials_configured = Self::signing_configured(&self.config);
         let signed_open_api_configured = self.open_api_executor.is_some()
             && self.config.secret_id.is_some()
             && self.config.secret_key.is_some();

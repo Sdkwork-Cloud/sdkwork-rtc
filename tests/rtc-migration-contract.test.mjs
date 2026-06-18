@@ -9,6 +9,46 @@ const appbaseRoot = path.resolve(rtcRoot, "..", "sdkwork-appbase");
 const SdkworkImRoot = path.resolve(rtcRoot, "..", "sdkwork-im");
 const sdkworkCoreRoot = path.resolve(rtcRoot, "..", "sdkwork-core");
 
+function workspacePath(root, relativePath) {
+  return path.join(root, ...relativePath.split("/"));
+}
+
+function resolveImRelativePath(candidates) {
+  for (const relativePath of candidates) {
+    if (existsSync(workspacePath(SdkworkImRoot, relativePath))) {
+      return relativePath;
+    }
+  }
+  return null;
+}
+
+const sdkworkImPcAppRoot = resolveImRelativePath([
+  "apps/sdkwork-im-pc",
+  "apps/sdkwork-chat-pc",
+]);
+const sdkworkImPcChatPackage = resolveImRelativePath([
+  "apps/sdkwork-im-pc/packages/sdkwork-im-pc-chat",
+  "apps/sdkwork-chat-pc/packages/sdkwork-clawchat-pc-chat",
+]);
+const sdkworkImGatewayPath = resolveImRelativePath([
+  "services/sdkwork-im-gateway/src/lib.rs",
+  "services/web-gateway/src/lib.rs",
+]);
+
+const sdkworkImCheckoutAvailable = existsSync(path.join(SdkworkImRoot, "Cargo.toml"));
+const sdkworkImAppCheckoutAvailable = sdkworkImPcAppRoot !== null;
+const sdkworkImGatewayAvailable = sdkworkImGatewayPath !== null;
+const skipWithoutSdkworkImAppCheckout = sdkworkImAppCheckoutAvailable
+  ? false
+  : "requires sibling repo sdkwork-im app checkout (sdkwork-im-pc or sdkwork-chat-pc)";
+const skipWithoutSdkworkImGateway = sdkworkImGatewayAvailable
+  ? false
+  : "requires sibling repo sdkwork-im gateway checkout";
+const skipWithoutSdkworkImMigrationCheckout =
+  sdkworkImCheckoutAvailable && sdkworkImAppCheckoutAvailable && sdkworkImGatewayAvailable
+    ? false
+    : "requires complete sibling repo sdkwork-im migration checkout";
+
 const requiredRtcPaths = [
   "sdks/sdkwork-rtc-sdk/README.md",
   "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/package.json",
@@ -74,10 +114,6 @@ const forbiddenSdkworkCorePatterns = [
   /link:[^\r\n]*sdkwork-im\/sdks\/sdkwork-rtc-sdk/,
   /link:[^\r\n]*sdkwork-im\\sdks\\sdkwork-rtc-sdk/,
 ];
-
-function workspacePath(root, relativePath) {
-  return path.join(root, ...relativePath.split("/"));
-}
 
 function exists(root, relativePath) {
   return existsSync(workspacePath(root, relativePath));
@@ -370,9 +406,9 @@ test("appbase metadata and lockfile do not aggregate the RTC SDK", () => {
   assert.equal(packageJson.pnpm?.overrides?.["@sdkwork/rtc-sdk"], undefined);
 });
 
-test("sdkwork-im PC app consumes the RTC SDK from sdkwork-rtc", () => {
+test("sdkwork-im PC app consumes the RTC SDK from sdkwork-rtc", { skip: skipWithoutSdkworkImAppCheckout }, () => {
   const packageJson = readFileSync(
-    workspacePath(SdkworkImRoot, "apps/sdkwork-chat-pc/package.json"),
+    workspacePath(SdkworkImRoot, `${sdkworkImPcAppRoot}/package.json`),
     "utf8",
   );
   const packageManifest = JSON.parse(packageJson);
@@ -381,7 +417,7 @@ test("sdkwork-im PC app consumes the RTC SDK from sdkwork-rtc", () => {
   const workspace = readFileSync(workspacePath(appbaseRoot, "pnpm-workspace.yaml"), "utf8");
   assert.doesNotMatch(workspace, /sdkwork-space\/sdkwork-rtc/);
   const chatWorkspace = readFileSync(
-    workspacePath(SdkworkImRoot, "apps/sdkwork-chat-pc/pnpm-workspace.yaml"),
+    workspacePath(SdkworkImRoot, `${sdkworkImPcAppRoot}/pnpm-workspace.yaml`),
     "utf8",
   );
   assert.match(
@@ -390,11 +426,14 @@ test("sdkwork-im PC app consumes the RTC SDK from sdkwork-rtc", () => {
   );
 });
 
-test("sdkwork-im PC call service routes call signaling through IM calls and keeps RTC SDK out of signaling", () => {
+test(
+  "sdkwork-im PC call service routes call signaling through IM calls and keeps RTC SDK out of signaling",
+  { skip: skipWithoutSdkworkImAppCheckout },
+  () => {
   const callService = readFileSync(
     workspacePath(
       SdkworkImRoot,
-      "apps/sdkwork-chat-pc/packages/sdkwork-clawchat-pc-chat/src/services/CallService.ts",
+      `${sdkworkImPcChatPackage}/src/services/CallService.ts`,
     ),
     "utf8",
   );
@@ -411,36 +450,59 @@ test("sdkwork-im PC call service routes call signaling through IM calls and keep
   assert.doesNotMatch(callService, /\.rtc\.retrieve\s*\(/);
 });
 
-test("sdkwork-im Rust runtime consumes RTC media/provider crates but not RTC signaling service", () => {
+test(
+  "sdkwork-im PC media service consumes RTC SDK for join/publish and not IM signaling APIs",
+  { skip: skipWithoutSdkworkImAppCheckout },
+  () => {
+  const rtcMediaService = readFileSync(
+    workspacePath(
+      SdkworkImRoot,
+      `${sdkworkImPcChatPackage}/src/services/RtcMediaService.ts`,
+    ),
+    "utf8",
+  );
+
+  assert.match(rtcMediaService, /@sdkwork\/rtc-sdk/);
+  assert.match(rtcMediaService, /\bjoin\s*\(/);
+  assert.match(rtcMediaService, /\bpublish\s*\(/);
+  assert.doesNotMatch(rtcMediaService, /@sdkwork\/im-sdk/);
+  assert.doesNotMatch(rtcMediaService, /\.calls\./);
+});
+
+test(
+  "sdkwork-im Rust runtime consumes RTC media/provider crates but not RTC signaling service",
+  { skip: skipWithoutSdkworkImAppCheckout },
+  () => {
   const manifests = [
     "crates/im-domain-core/Cargo.toml",
     "crates/im-platform-contracts/Cargo.toml",
-    "services/local-minimal-node/Cargo.toml",
   ];
   const workspaceManifest = readFileSync(workspacePath(SdkworkImRoot, "Cargo.toml"), "utf8");
+  assert.doesNotMatch(workspaceManifest, /sdkwork-rtc-im-compat/);
+  assert.doesNotMatch(
+    workspaceManifest,
+    /sdkwork-rtc-core\s*=\s*\{\s*path\s*=\s*"\.\.\/sdkwork-rtc(?:-im-compat)?\/crates\/sdkwork-rtc-core"/,
+  );
   assert.match(
     workspaceManifest,
     /sdkwork-communication-rtc-service = \{ path = "\.\.\/sdkwork-rtc\/crates\/sdkwork-communication-rtc-service" \}/,
+  );
+  assert.match(
+    workspaceManifest,
+    /sdkwork-rtc-adapter-volcengine = \{ path = "\.\.\/sdkwork-rtc\/plugins\/rtc-volcengine" \}/,
   );
   for (const manifest of manifests) {
     const manifestSource = readFileSync(workspacePath(SdkworkImRoot, manifest), "utf8");
     assert.match(manifestSource, /sdkwork-communication-rtc-service\.workspace = true/);
   }
 
-  const localMinimalNode = readFileSync(
-    workspacePath(SdkworkImRoot, "services/local-minimal-node/Cargo.toml"),
+  const gatewayManifest = readFileSync(
+    workspacePath(SdkworkImRoot, "services/sdkwork-im-gateway/Cargo.toml"),
     "utf8",
   );
-  assert.doesNotMatch(localMinimalNode, /sdkwork-rtc-state-store/);
-  assert.match(localMinimalNode, /sdkwork-rtc-adapter-volcengine\.workspace = true/);
-  assert.doesNotMatch(localMinimalNode, /sdkwork-rtc-signaling-service/);
-
-  const imCallStateStore = readFileSync(
-    workspacePath(SdkworkImRoot, "services/local-minimal-node/src/node/im_calls/state_store.rs"),
-    "utf8",
-  );
-  assert.match(imCallStateStore, /FileImCallStateStore/);
-  assert.match(imCallStateStore, /im call state store/);
+  assert.doesNotMatch(gatewayManifest, /sdkwork-rtc-state-store/);
+  assert.doesNotMatch(gatewayManifest, /sdkwork-rtc-core\.workspace = true/);
+  assert.doesNotMatch(gatewayManifest, /sdkwork-rtc-signaling-service/);
 });
 
 test("sdkwork-rtc Rust services do not depend back on sdkwork-im crates", () => {
@@ -576,37 +638,34 @@ test("sdkwork-rtc HTTP surfaces expose RTC media capabilities without signaling"
     assert.match(appRouteSource, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 
-  const SdkworkImGateway = "services/web-gateway/src/lib.rs";
-  const SdkworkImGatewayContent = readFileSync(workspacePath(SdkworkImRoot, SdkworkImGateway), "utf8");
-  assert.doesNotMatch(SdkworkImGatewayContent, /\/im\/v3\/api\/rtc/);
-  assert.doesNotMatch(
-    SdkworkImGatewayContent,
-    /sdkwork-rtc-signaling-service[\s\S]{0,240}SdkTarget::SdkworkImSdk/,
-  );
-  assert.match(SdkworkImGatewayContent, /\/im\/v3\/api\/calls\/\{\*path\}/);
-  assert.doesNotMatch(SdkworkImGatewayContent, /\/app\/v3\/api\/rtc\/\{\*path\}/);
+  const SdkworkImGateway = sdkworkImGatewayPath;
+  if (sdkworkImGatewayAvailable) {
+    const SdkworkImGatewayContent = readFileSync(workspacePath(SdkworkImRoot, SdkworkImGateway), "utf8");
+    assert.doesNotMatch(SdkworkImGatewayContent, /\/im\/v3\/api\/rtc/);
+    assert.doesNotMatch(
+      SdkworkImGatewayContent,
+      /sdkwork-rtc-signaling-service[\s\S]{0,240}SdkTarget::SdkworkImSdk/,
+    );
+    assert.match(SdkworkImGatewayContent, /\/im\/v3\/api\/calls\/\{\*path\}/);
+    assert.doesNotMatch(SdkworkImGatewayContent, /\/app\/v3\/api\/rtc\/\{\*path\}/);
+  }
 });
 
-test("sdkwork-im local-minimal-node does not expose RTC through IM API prefixes", () => {
-  const localMinimalTextFiles = listTextFiles(SdkworkImRoot, "services/local-minimal-node").filter(
+test("sdkwork-im gateway does not expose RTC through IM API prefixes", {
+  skip: skipWithoutSdkworkImGateway,
+}, () => {
+  const gatewayTextFiles = listTextFiles(SdkworkImRoot, "services/sdkwork-im-gateway").filter(
     (relativePath) => /\.(rs|md|toml|json|yaml|yml)$/.test(relativePath),
   );
-  const localMinimalMatches = findPatternMatches(SdkworkImRoot, localMinimalTextFiles, [
+  const gatewayMatches = findPatternMatches(SdkworkImRoot, gatewayTextFiles, [
     /\/im\/v3\/api\/rtc/,
   ]);
-  assert.deepEqual(localMinimalMatches, []);
+  assert.deepEqual(gatewayMatches, []);
 
-  const buildSource = readFileSync(
-    workspacePath(SdkworkImRoot, "services/local-minimal-node/src/node/build.rs"),
-    "utf8",
-  );
-  assert.doesNotMatch(
-    buildSource,
-    /\.nest\("\/im\/v3\/api",\s*im_standard_api_routes\(\)\)[\s\S]*\.route\("\/rtc\/sessions"/,
-  );
-  assert.match(buildSource, /\.nest\("\/calls",\s*im_calls_routes\(\)\)/);
-  assert.match(buildSource, /fn\s+im_calls_routes\(\)\s*->\s*Router<AppState>/);
-  assert.doesNotMatch(buildSource, /rtc_app_api_routes\(\)/);
+  const gatewaySource = readFileSync(workspacePath(SdkworkImRoot, sdkworkImGatewayPath), "utf8");
+  assert.match(gatewaySource, /\/im\/v3\/api\/calls\/\{\*path\}/);
+  assert.doesNotMatch(gatewaySource, /\/app\/v3\/api\/rtc\/\{\*path\}/);
+  assert.doesNotMatch(gatewaySource, /rtc_app_api_routes\(\)/);
 });
 
 test("sdkwork-rtc OpenAPI helpers do not publish WebSocket signaling metadata", () => {
@@ -690,11 +749,14 @@ test("sdkwork-im active scripts and published docs no longer point RTC at IM API
   assert.deepEqual(matches, []);
 });
 
-test("sdkwork-im no longer owns the RTC SDK workspace source", () => {
+test("sdkwork-im no longer owns the RTC SDK workspace source", { skip: skipWithoutSdkworkImMigrationCheckout }, () => {
   assert.equal(exists(SdkworkImRoot, "sdks/sdkwork-rtc-sdk"), false);
 });
 
-test("sdkwork-im no longer owns RTC runtime source packages or local RTC SDK paths", () => {
+test(
+  "sdkwork-im no longer owns RTC runtime source packages or local RTC SDK paths",
+  { skip: skipWithoutSdkworkImMigrationCheckout },
+  () => {
   const remainingPaths = forbiddenSdkworkImPaths.filter((relativePath) => exists(SdkworkImRoot, relativePath));
   assert.deepEqual(remainingPaths, []);
 
@@ -1889,6 +1951,8 @@ test("sdkwork-rtc app and backend APIs cover room, credential, artifact, webhook
     "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/disable",
     "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/verify",
     "/backend/v3/api/rtc/provider_routes",
+    "/backend/v3/api/rtc/provider_routes/{providerRouteId}",
+    "/backend/v3/api/rtc/provider_routes/{providerRouteId}/disable",
     "/backend/v3/api/rtc/media_sessions",
     "/backend/v3/api/rtc/media_sessions/{mediaSessionId}/completion_record",
     "/backend/v3/api/rtc/media_artifacts",
@@ -1941,6 +2005,9 @@ test("sdkwork-rtc app and backend APIs cover room, credential, artifact, webhook
     "rtc.providerProfiles.verify",
     "rtc.providerRoutes.list",
     "rtc.providerRoutes.create",
+    "rtc.providerRoutes.retrieve",
+    "rtc.providerRoutes.update",
+    "rtc.providerRoutes.disable",
   ]) {
     assert.ok(
       backendOperations.some((operation) => operation.operationId === requiredOperationId),
@@ -2477,6 +2544,27 @@ test("sdkwork-rtc app and backend APIs expose typed operation DTOs for generated
       operationId: "rtc.providerCredentials.revoke",
       requestRef: "#/components/schemas/RtcProviderCredentialRevokeRequest",
       responseRef: "#/components/schemas/RtcProviderCredentialResponse",
+    },
+    {
+      method: "get",
+      path: "/backend/v3/api/rtc/provider_routes/{providerRouteId}",
+      operationId: "rtc.providerRoutes.retrieve",
+      requestRef: undefined,
+      responseRef: "#/components/schemas/RtcProviderRouteResponse",
+    },
+    {
+      method: "patch",
+      path: "/backend/v3/api/rtc/provider_routes/{providerRouteId}",
+      operationId: "rtc.providerRoutes.update",
+      requestRef: "#/components/schemas/RtcProviderRouteCommand",
+      responseRef: "#/components/schemas/RtcProviderRouteResponse",
+    },
+    {
+      method: "post",
+      path: "/backend/v3/api/rtc/provider_routes/{providerRouteId}/disable",
+      operationId: "rtc.providerRoutes.disable",
+      requestRef: "#/components/schemas/RtcProviderRouteDisableRequest",
+      responseRef: "#/components/schemas/RtcProviderRouteResponse",
     },
   ];
   const providerManagementOperations = [];
@@ -3147,7 +3235,13 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
       ],
       factoryExport: "AgoraRtcProviderPluginFactory",
       factoryFunction: "create_agora_rtc_provider_plugin_factory",
-      configKeys: ["SDKWORK_RTC_AGORA_ACCESS_ENDPOINT", "SDKWORK_RTC_AGORA_REGION"],
+      configKeys: [
+        "SDKWORK_RTC_AGORA_ACCESS_ENDPOINT",
+        "SDKWORK_RTC_AGORA_REGION",
+        "SDKWORK_RTC_AGORA_APP_ID",
+        "SDKWORK_RTC_AGORA_APP_CERTIFICATE",
+        "SDKWORK_RTC_AGORA_CREDENTIAL_TTL_SECONDS",
+      ],
     },
     aliyun: {
       exports: [
@@ -3162,7 +3256,13 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
       ],
       factoryExport: "AliyunRtcProviderPluginFactory",
       factoryFunction: "create_aliyun_rtc_provider_plugin_factory",
-      configKeys: ["SDKWORK_RTC_ALIYUN_ACCESS_ENDPOINT", "SDKWORK_RTC_ALIYUN_REGION"],
+      configKeys: [
+        "SDKWORK_RTC_ALIYUN_ACCESS_ENDPOINT",
+        "SDKWORK_RTC_ALIYUN_REGION",
+        "SDKWORK_RTC_ALIYUN_APP_ID",
+        "SDKWORK_RTC_ALIYUN_APP_KEY",
+        "SDKWORK_RTC_ALIYUN_CREDENTIAL_TTL_SECONDS",
+      ],
     },
     livekit: {
       exports: [
@@ -3177,7 +3277,14 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
       ],
       factoryExport: "LivekitRtcProviderPluginFactory",
       factoryFunction: "create_livekit_rtc_provider_plugin_factory",
-      configKeys: ["SDKWORK_RTC_LIVEKIT_ACCESS_ENDPOINT", "SDKWORK_RTC_LIVEKIT_REGION"],
+      configKeys: [
+        "SDKWORK_RTC_LIVEKIT_ACCESS_ENDPOINT",
+        "SDKWORK_RTC_LIVEKIT_REGION",
+        "SDKWORK_RTC_LIVEKIT_API_ENDPOINT",
+        "SDKWORK_RTC_LIVEKIT_API_KEY",
+        "SDKWORK_RTC_LIVEKIT_API_SECRET",
+        "SDKWORK_RTC_LIVEKIT_CREDENTIAL_TTL_SECONDS",
+      ],
     },
     tencent: {
       exports: [

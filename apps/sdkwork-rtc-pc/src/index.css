@@ -13,12 +13,6 @@ body {
   min-height: 100vh;
 }
 
-.admin-app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
 .admin-header {
   background: white;
   border-bottom: 1px solid #dee2e6;
@@ -68,4 +62,41 @@ body {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
+}
+
+.rtc-app-auth-login,
+.rtc-app-auth-shell {
+  min-height: 100vh;
+}
+
+.rtc-app-auth-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #eef4ff;
+  border-bottom: 1px solid #dbe3ef;
+}
+
+.rtc-app-auth-form {
+  max-width: 420px;
+  margin: 48px auto;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.rtc-app-auth-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.rtc-app-auth-divider {
+  margin: 16px 0;
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
 }

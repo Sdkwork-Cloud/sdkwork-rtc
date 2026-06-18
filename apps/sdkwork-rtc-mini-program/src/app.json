@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "pages/login/index",
+    "pages/media-sessions/index",
+    "pages/media-session-room/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "SDKWork RTC",
+    "navigationBarBackgroundColor": "#0f766e",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8fafc"
+  }
+}

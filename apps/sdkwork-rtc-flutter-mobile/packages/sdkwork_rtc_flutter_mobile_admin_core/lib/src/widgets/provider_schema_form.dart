@@ -50,7 +50,8 @@ class ProviderSchemaForm extends StatelessWidget {
           const SizedBox(height: 4),
           if (field.type == 'enum' && field.values != null)
             DropdownButtonFormField<String>(
-              value: values[field.key] as String? ?? field.defaultValue as String?,
+              key: ValueKey('${field.key}-${values[field.key]}'),
+              initialValue: values[field.key] as String? ?? field.defaultValue as String?,
               items: field.values!
                   .map((v) => DropdownMenuItem(value: v, child: Text(v)))
                   .toList(),

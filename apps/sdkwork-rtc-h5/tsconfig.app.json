@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": [
+    "src",
+    "packages/sdkwork-rtc-h5-core/src",
+    "packages/sdkwork-rtc-h5-shell/src",
+    "packages/sdkwork-rtc-h5-rtc/src",
+    "packages/sdkwork-rtc-h5-admin-core/src",
+    "packages/sdkwork-rtc-h5-admin-shell/src"
+  ]
+}

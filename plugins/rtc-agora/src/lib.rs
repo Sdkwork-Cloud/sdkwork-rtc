@@ -1,4 +1,5 @@
 mod config;
+mod credential;
 mod open_api;
 mod plugin;
 mod provider;

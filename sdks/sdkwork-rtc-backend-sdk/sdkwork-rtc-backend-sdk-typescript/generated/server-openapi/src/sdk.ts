@@ -7,9 +7,11 @@ import { RtcMediaSessionsApi, createRtcMediaSessionsApi } from './api/rtc-media-
 import { RtcProviderAccountsApi, createRtcProviderAccountsApi } from './api/rtc-provider-accounts';
 import { RtcProviderApplicationsApi, createRtcProviderApplicationsApi } from './api/rtc-provider-applications';
 import { RtcProviderCredentialsApi, createRtcProviderCredentialsApi } from './api/rtc-provider-credentials';
+import { RtcProviderPluginsApi, createRtcProviderPluginsApi } from './api/rtc-provider-plugins';
 import { RtcProviderProfilesApi, createRtcProviderProfilesApi } from './api/rtc-provider-profiles';
 import { RtcProviderQueryJobsApi, createRtcProviderQueryJobsApi } from './api/rtc-provider-query-jobs';
 import { RtcProviderRoutesApi, createRtcProviderRoutesApi } from './api/rtc-provider-routes';
+import { RtcProviderSchemasApi, createRtcProviderSchemasApi } from './api/rtc-provider-schemas';
 import { RtcProviderWebhooksApi, createRtcProviderWebhooksApi } from './api/rtc-provider-webhooks';
 import { RtcQualitySamplesApi, createRtcQualitySamplesApi } from './api/rtc-quality-samples';
 import { RtcRoomsApi, createRtcRoomsApi } from './api/rtc-rooms';
@@ -22,9 +24,11 @@ export class SdkworkBackendClient {
   public readonly rtcProviderAccounts: RtcProviderAccountsApi;
   public readonly rtcProviderApplications: RtcProviderApplicationsApi;
   public readonly rtcProviderCredentials: RtcProviderCredentialsApi;
+  public readonly rtcProviderPlugins: RtcProviderPluginsApi;
   public readonly rtcProviderProfiles: RtcProviderProfilesApi;
   public readonly rtcProviderQueryJobs: RtcProviderQueryJobsApi;
   public readonly rtcProviderRoutes: RtcProviderRoutesApi;
+  public readonly rtcProviderSchemas: RtcProviderSchemasApi;
   public readonly rtcProviderWebhooks: RtcProviderWebhooksApi;
   public readonly rtcQualitySamples: RtcQualitySamplesApi;
   public readonly rtcRooms: RtcRoomsApi;
@@ -41,11 +45,15 @@ export class SdkworkBackendClient {
 
     this.rtcProviderCredentials = createRtcProviderCredentialsApi(this.httpClient);
 
+    this.rtcProviderPlugins = createRtcProviderPluginsApi(this.httpClient);
+
     this.rtcProviderProfiles = createRtcProviderProfilesApi(this.httpClient);
 
     this.rtcProviderQueryJobs = createRtcProviderQueryJobsApi(this.httpClient);
 
     this.rtcProviderRoutes = createRtcProviderRoutesApi(this.httpClient);
+
+    this.rtcProviderSchemas = createRtcProviderSchemasApi(this.httpClient);
 
     this.rtcProviderWebhooks = createRtcProviderWebhooksApi(this.httpClient);
 

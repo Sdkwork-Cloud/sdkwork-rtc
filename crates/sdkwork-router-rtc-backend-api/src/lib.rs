@@ -1,6 +1,7 @@
 //! SDKWork RTC backend-api route manifest and executable router exports.
 
 pub mod handlers;
+pub mod middleware;
 pub mod paths;
 pub mod routes;
 pub mod service;

@@ -10,6 +10,10 @@
   ],
   "exclude": [
     "sdks/sdkwork-rtc-app-sdk/**/generated/server-openapi/**",
-    "sdks/sdkwork-rtc-backend-sdk/**/generated/server-openapi/**"
+    "sdks/sdkwork-rtc-backend-sdk/**/generated/server-openapi/**",
+    "apps/sdkwork-rtc-pc/src/**",
+    "apps/sdkwork-rtc-h5/src/**",
+    "apps/sdkwork-rtc-h5/vite.config.ts",
+    "apps/sdkwork-rtc-mini-program/src/**"
   ]
 }

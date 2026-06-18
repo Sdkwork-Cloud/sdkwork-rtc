@@ -72,7 +72,10 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
     if (!validateCurrentStep()) return;
     const nextIndex = stepIndex + 1;
     if (nextIndex < STEPS.length) {
-      setCurrentStep(STEPS[nextIndex]);
+      const nextStep = STEPS[nextIndex];
+      if (nextStep) {
+        setCurrentStep(nextStep);
+      }
       setErrors({});
     }
   };
@@ -80,7 +83,10 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
   const handleBack = () => {
     const prevIndex = stepIndex - 1;
     if (prevIndex >= 0) {
-      setCurrentStep(STEPS[prevIndex]);
+      const previousStep = STEPS[prevIndex];
+      if (previousStep) {
+        setCurrentStep(previousStep);
+      }
       setErrors({});
     }
   };

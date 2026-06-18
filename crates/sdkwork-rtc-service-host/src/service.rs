@@ -4,43 +4,46 @@ use std::time::Instant;
 
 use sdkwork_communication_rtc_service::{
     NoopRtcPersistencePort, ProviderHealthSnapshot, RtcContractError, RtcCreateMediaSessionRequest,
-    RtcMediaArtifact, RtcMediaArtifactDescriptor, RtcMediaParticipant, RtcMediaSession,
-    RtcMediaSessionCompletionInput, RtcMediaSessionCompletionRecord, RtcMediaSessionEndSource,
-    RtcMediaSessionStatus, RtcParticipantCredential, RtcParticipantRole, RtcParticipantState,
-    RtcPersistenceChangeSet, RtcPersistenceError, RtcPersistencePort, RtcProviderAccount,
-    RtcProviderAccountCommand, RtcProviderAccountDisableRequest, RtcProviderAccountStatus,
-    RtcProviderApplication, RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest,
-    RtcProviderApplicationStatus, RtcProviderCapabilitySnapshot, RtcProviderCredential,
-    RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole,
-    RtcProviderCredentialStatus, RtcProviderEventKind, RtcProviderHealthStatus, RtcProviderProfile,
-    RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileStatus,
-    RtcProviderProfileVerification, RtcProviderProfileVerifyCheck,
-    RtcProviderProfileVerifyCheckStatus, RtcProviderProfileVerifyKind,
-    RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord,
-    RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult,
-    RtcProviderQuerySnapshotRecord, RtcProviderWebhookEvent, RtcProviderWebhookEventRecord,
-    RtcProviderWebhookParseRequest, RtcQualitySample, RtcRecordingArtifactExportRequest,
-    RtcRecordingArtifactKind, RtcRecordingArtifactStatus, RtcRoom, RtcRoomStatus,
+    RtcListWindow, RtcListWindowParams, RtcMediaArtifact, RtcMediaArtifactDescriptor,
+    RtcMediaParticipant, RtcMediaSession, RtcMediaSessionCompletionInput,
+    RtcMediaSessionCompletionRecord, RtcMediaSessionEndSource, RtcMediaSessionStatus,
+    RtcParticipantCredential, RtcParticipantCredentialContext, RtcParticipantRole,
+    RtcParticipantState, RtcPersistenceChangeSet, RtcPersistenceError, RtcPersistencePort,
+    RtcProviderAccount, RtcProviderAccountCommand, RtcProviderAccountDisableRequest,
+    RtcProviderAccountStatus, RtcProviderApplication, RtcProviderApplicationCommand,
+    RtcProviderApplicationDisableRequest, RtcProviderApplicationStatus,
+    RtcProviderCapabilitySnapshot, RtcProviderCredential, RtcProviderCredentialCommand,
+    RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole, RtcProviderCredentialStatus,
+    RtcProviderEventKind, RtcProviderHealthStatus, RtcProviderProfile, RtcProviderProfileCommand,
+    RtcProviderProfileDisableRequest, RtcProviderProfileStatus, RtcProviderProfileVerification,
+    RtcProviderProfileVerifyCheck, RtcProviderProfileVerifyCheckStatus,
+    RtcProviderProfileVerifyKind, RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResult,
+    RtcProviderQueryJobRecord, RtcProviderQueryKind, RtcProviderQueryRequest,
+    RtcProviderQueryResult, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEvent,
+    RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest,
+    RtcQualitySample, RtcRecordingArtifactExportRequest, RtcRecordingArtifactKind,
+    RtcRecordingArtifactStatus, RtcRoom, RtcRoomStatus, RtcRuntimeLoadRequest, apply_list_window,
     utc_now_rfc3339_millis,
 };
 use sdkwork_router_rtc_app_api::service::{
     RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture, RtcAppApiService,
-    RtcCreateAppMediaSessionRequest, RtcIssueParticipantCredentialRequest, RtcListRequest,
-    RtcMediaArtifactListData as RtcAppMediaArtifactListData, RtcMediaSessionListData,
-    RtcRoomListData,
+    RtcAppListQuery, RtcCreateAppMediaSessionRequest, RtcIssueParticipantCredentialRequest,
+    RtcListRequest, RtcMediaArtifactListData as RtcAppMediaArtifactListData,
+    RtcMediaSessionListData, RtcRoomListData,
 };
 use sdkwork_router_rtc_backend_api::service::{
-    RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListRequest,
-    RtcCloseMediaSessionRequest, RtcListData, RtcMediaArtifactListData,
+    RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListQuery,
+    RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcListData, RtcMediaArtifactListData,
     RtcMediaSessionListData as RtcBackendMediaSessionListData, RtcProviderAccountListData,
     RtcProviderApplicationListData, RtcProviderCredentialListData, RtcProviderProfileListData,
     RtcProviderQueryJobCreateRequest, RtcProviderQuerySnapshotListData, RtcProviderRoute,
-    RtcProviderRouteCommand, RtcProviderRouteListData, RtcProviderRouteStatus,
-    RtcProviderWebhookEventListData, RtcProviderWebhookReceiveRequest, RtcQualitySampleListData,
-    RtcRoomListData as RtcBackendRoomListData,
+    RtcProviderRouteCommand, RtcProviderRouteDisableRequest, RtcProviderRouteListData,
+    RtcProviderRouteStatus, RtcProviderWebhookEventListData, RtcProviderWebhookReceiveRequest,
+    RtcQualitySampleListData, RtcRoomListData as RtcBackendRoomListData,
 };
 
 use crate::plugin_registry::{RtcProviderPluginRegistry, RtcProviderPluginRegistryError};
+use crate::secret_resolver::{EnvRtcSecretResolver, SharedRtcSecretResolver};
 
 const RTC_PROVIDER_ROUTE_TYPE_REGION: &str = "region";
 
@@ -48,6 +51,7 @@ const RTC_PROVIDER_ROUTE_TYPE_REGION: &str = "region";
 pub struct RtcProductService {
     registry: RtcProviderPluginRegistry,
     persistence: Arc<dyn RtcPersistencePort>,
+    secret_resolver: SharedRtcSecretResolver,
     // std::sync::Mutex is used intentionally: all lock guards are dropped before
     // any .await point, so this never blocks the async runtime executor.
     state: Arc<Mutex<RtcProductState>>,
@@ -58,6 +62,7 @@ impl RtcProductService {
         Self {
             registry,
             persistence: Arc::new(NoopRtcPersistencePort),
+            secret_resolver: Arc::new(EnvRtcSecretResolver),
             state: Arc::new(Mutex::new(RtcProductState::default())),
         }
     }
@@ -65,6 +70,82 @@ impl RtcProductService {
     pub fn with_persistence(mut self, persistence: Arc<dyn RtcPersistencePort>) -> Self {
         self.persistence = persistence;
         self
+    }
+
+    pub fn with_secret_resolver(mut self, secret_resolver: SharedRtcSecretResolver) -> Self {
+        self.secret_resolver = secret_resolver;
+        self
+    }
+
+    pub async fn hydrate_from_persistence(
+        &self,
+        tenant_id: String,
+        organization_id: String,
+    ) -> Result<(), RtcPersistenceError> {
+        let snapshot = self
+            .persistence
+            .load_runtime_snapshot(RtcRuntimeLoadRequest {
+                tenant_id,
+                organization_id,
+            })
+            .await?;
+        if snapshot.is_empty() {
+            return Ok(());
+        }
+        let mut state = self.state.lock().expect("rtc product state lock");
+        for room in snapshot.rooms {
+            state.rooms.insert(room.id.clone(), room);
+        }
+        for session in snapshot.media_sessions {
+            state.sessions.insert(session.id.clone(), session);
+        }
+        for participant in snapshot.media_participants {
+            state
+                .participants
+                .insert(participant.id.clone(), participant);
+        }
+        for artifact in snapshot.media_artifacts {
+            state.artifacts.insert(artifact.id.clone(), artifact);
+        }
+        for sample in snapshot.quality_samples {
+            state.quality_samples.insert(sample.id.clone(), sample);
+        }
+        for completion in snapshot.completion_records {
+            state
+                .completion_records
+                .insert(completion.id.clone(), completion);
+        }
+        for account in snapshot.provider_accounts {
+            state.provider_accounts.insert(account.id.clone(), account);
+        }
+        for application in snapshot.provider_applications {
+            state
+                .provider_applications
+                .insert(application.id.clone(), application);
+        }
+        for credential in snapshot.provider_credentials {
+            state
+                .provider_credentials
+                .insert(credential.id.clone(), credential);
+        }
+        for profile in snapshot.provider_profiles {
+            state.provider_profiles.insert(profile.id.clone(), profile);
+        }
+        for route in snapshot.provider_routes {
+            state.provider_routes.insert(route.id.clone(), route);
+        }
+        for event in snapshot.webhook_events {
+            state.webhook_events.insert(event.id.clone(), event);
+        }
+        for job in snapshot.provider_query_jobs {
+            state.query_jobs.insert(job.id.clone(), job);
+        }
+        for snapshot_record in snapshot.provider_query_snapshots {
+            state
+                .query_snapshots
+                .insert(snapshot_record.id.clone(), snapshot_record);
+        }
+        Ok(())
     }
 
     pub fn seed_default_room(
@@ -94,20 +175,37 @@ impl RtcProductService {
 
     fn list_rooms_impl(&self, request: RtcListRequest) -> Result<RtcRoomListData, RtcAppApiError> {
         let state = self.state.lock().expect("rtc product state lock");
+        let items = state
+            .rooms
+            .values()
+            .filter(|room| {
+                room.tenant_id == request.tenant_id
+                    && organization_matches(
+                        &room.organization_id,
+                        request.organization_id.as_deref(),
+                    )
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        let window = paginate_app_list(
+            items,
+            &RtcListWindowParams::from(&request),
+            |room| {
+                vec![
+                    room.id.clone(),
+                    room.title.clone(),
+                    format!("{:?}", room.status),
+                ]
+            },
+            |room, field| match field {
+                "title" => room.title.clone(),
+                "status" => format!("{:?}", room.status),
+                _ => room.id.clone(),
+            },
+        )?;
         Ok(RtcRoomListData {
-            items: state
-                .rooms
-                .values()
-                .filter(|room| {
-                    room.tenant_id == request.tenant_id
-                        && organization_matches(
-                            &room.organization_id,
-                            request.organization_id.as_deref(),
-                        )
-                })
-                .cloned()
-                .collect(),
-            next_cursor: None,
+            items: window.items,
+            next_cursor: window.next_cursor,
         })
     }
 
@@ -135,22 +233,41 @@ impl RtcProductService {
     ) -> Result<RtcActiveProviderProfileListData, RtcAppApiError> {
         self.ensure_runtime_profiles(&request.tenant_id, request.organization_id.as_deref());
         let state = self.state.lock().expect("rtc product state lock");
+        let items = state
+            .provider_profiles
+            .values()
+            .filter(|profile| {
+                profile.tenant_id == request.tenant_id
+                    && organization_matches(
+                        &profile.organization_id,
+                        request.organization_id.as_deref(),
+                    )
+                    && profile.status == RtcProviderProfileStatus::Active
+                    && profile.deleted_at.is_none()
+            })
+            .map(RtcProviderProfile::active_projection)
+            .collect::<Vec<_>>();
+        let window = paginate_app_list(
+            items,
+            &RtcListWindowParams::from(&request),
+            |profile| {
+                vec![
+                    profile.id.clone(),
+                    profile.code.clone(),
+                    profile.name.clone(),
+                    profile.provider.clone(),
+                ]
+            },
+            |profile, field| match field {
+                "name" => profile.name.clone(),
+                "code" => profile.code.clone(),
+                "provider" => profile.provider.clone(),
+                _ => profile.id.clone(),
+            },
+        )?;
         Ok(RtcActiveProviderProfileListData {
-            items: state
-                .provider_profiles
-                .values()
-                .filter(|profile| {
-                    profile.tenant_id == request.tenant_id
-                        && organization_matches(
-                            &profile.organization_id,
-                            request.organization_id.as_deref(),
-                        )
-                        && profile.status == RtcProviderProfileStatus::Active
-                        && profile.deleted_at.is_none()
-                })
-                .map(RtcProviderProfile::active_projection)
-                .collect(),
-            next_cursor: None,
+            items: window.items,
+            next_cursor: window.next_cursor,
         })
     }
 
@@ -159,20 +276,41 @@ impl RtcProductService {
         request: RtcListRequest,
     ) -> Result<RtcMediaSessionListData, RtcAppApiError> {
         let state = self.state.lock().expect("rtc product state lock");
+        let items = state
+            .sessions
+            .values()
+            .filter(|session| {
+                session.tenant_id == request.tenant_id
+                    && organization_matches(
+                        &session.organization_id,
+                        request.organization_id.as_deref(),
+                    )
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        let window = paginate_app_list(
+            items,
+            &RtcListWindowParams::from(&request),
+            |session| {
+                vec![
+                    session.id.clone(),
+                    session.room_id.clone(),
+                    session.provider_profile_id.clone().unwrap_or_default(),
+                    format!("{:?}", session.status),
+                ]
+            },
+            |session, field| match field {
+                "roomId" | "room_id" => session.room_id.clone(),
+                "provider" | "providerProfileId" | "provider_profile_id" => {
+                    session.provider_profile_id.clone().unwrap_or_default()
+                }
+                "status" => format!("{:?}", session.status),
+                _ => session.id.clone(),
+            },
+        )?;
         Ok(RtcMediaSessionListData {
-            items: state
-                .sessions
-                .values()
-                .filter(|session| {
-                    session.tenant_id == request.tenant_id
-                        && organization_matches(
-                            &session.organization_id,
-                            request.organization_id.as_deref(),
-                        )
-                })
-                .cloned()
-                .collect(),
-            next_cursor: None,
+            items: window.items,
+            next_cursor: window.next_cursor,
         })
     }
 
@@ -329,8 +467,22 @@ impl RtcProductService {
             .registry
             .provider(provider_key.as_str())
             .map_err(app_error_from_registry)?;
+        let credential_context = {
+            let state = self.state.lock().expect("rtc product state lock");
+            let profile = session
+                .provider_profile_id
+                .as_deref()
+                .and_then(|profile_id| state.provider_profiles.get(profile_id));
+            build_participant_credential_context(profile, self.secret_resolver.as_ref())
+                .map_err(app_error_from_product)?
+        };
         let credential = provider
-            .issue_participant_credential(&tenant_id, &session.id, &request.participant_id)
+            .issue_participant_credential(
+                &tenant_id,
+                &session.id,
+                &request.participant_id,
+                credential_context.as_ref(),
+            )
             .map_err(app_error_from_contract)?;
         let now = utc_now_rfc3339_millis();
         let (participant, stored_session_snapshot) = {
@@ -380,28 +532,48 @@ impl RtcProductService {
         tenant_id: String,
         organization_id: Option<String>,
         media_session_id: String,
+        query: RtcAppListQuery,
     ) -> Result<RtcAppMediaArtifactListData, RtcAppApiError> {
         let state = self.state.lock().expect("rtc product state lock");
+        let items = state
+            .artifacts
+            .values()
+            .filter(|artifact| {
+                artifact.tenant_id == tenant_id
+                    && artifact.rtc_session_id == media_session_id
+                    && state
+                        .sessions
+                        .get(media_session_id.as_str())
+                        .is_some_and(|session| {
+                            organization_matches(
+                                &session.organization_id,
+                                organization_id.as_deref(),
+                            )
+                        })
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        let window = paginate_app_list(
+            items,
+            &RtcListWindowParams::from(&query),
+            |artifact| {
+                vec![
+                    artifact.id.clone(),
+                    artifact.rtc_session_id.clone(),
+                    format!("{:?}", artifact.artifact_kind),
+                    format!("{:?}", artifact.artifact_status),
+                ]
+            },
+            |artifact, field| match field {
+                "kind" | "artifactKind" => format!("{:?}", artifact.artifact_kind),
+                "status" | "artifactStatus" => format!("{:?}", artifact.artifact_status),
+                "sessionId" | "session_id" => artifact.rtc_session_id.clone(),
+                _ => artifact.id.clone(),
+            },
+        )?;
         Ok(RtcAppMediaArtifactListData {
-            items: state
-                .artifacts
-                .values()
-                .filter(|artifact| {
-                    artifact.tenant_id == tenant_id
-                        && artifact.rtc_session_id == media_session_id
-                        && state
-                            .sessions
-                            .get(media_session_id.as_str())
-                            .is_some_and(|session| {
-                                organization_matches(
-                                    &session.organization_id,
-                                    organization_id.as_deref(),
-                                )
-                            })
-                })
-                .cloned()
-                .collect(),
-            next_cursor: None,
+            items: window.items,
+            next_cursor: window.next_cursor,
         })
     }
 
@@ -411,25 +583,40 @@ impl RtcProductService {
     ) -> Result<RtcProviderProfileListData, RtcBackendApiError> {
         self.ensure_runtime_profiles(&request.tenant_id, request.organization_id.as_deref());
         let state = self.state.lock().expect("rtc product state lock");
-        Ok(RtcProviderProfileListData {
-            items: state
-                .provider_profiles
-                .values()
-                .filter(|profile| {
-                    profile.tenant_id == request.tenant_id
-                        && organization_matches(
-                            &profile.organization_id,
-                            request.organization_id.as_deref(),
-                        )
-                        && request
-                            .provider
-                            .as_deref()
-                            .map_or(true, |provider| profile.provider == provider)
-                })
-                .cloned()
-                .collect(),
-            next_cursor: None,
-        })
+        let items = state
+            .provider_profiles
+            .values()
+            .filter(|profile| {
+                profile.tenant_id == request.tenant_id
+                    && organization_matches(
+                        &profile.organization_id,
+                        request.organization_id.as_deref(),
+                    )
+                    && request
+                        .provider
+                        .as_deref()
+                        .map_or(true, |provider| profile.provider == provider)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        Ok(into_backend_list_data(paginate_backend_list(
+            items,
+            &RtcListWindowParams::from(&request),
+            |profile| {
+                vec![
+                    profile.id.clone(),
+                    profile.code.clone(),
+                    profile.name.clone(),
+                    profile.provider.clone(),
+                ]
+            },
+            |profile, field| match field {
+                "name" => profile.name.clone(),
+                "code" => profile.code.clone(),
+                "provider" => profile.provider.clone(),
+                _ => profile.id.clone(),
+            },
+        )?))
     }
 
     fn list_provider_accounts_impl(
@@ -437,29 +624,46 @@ impl RtcProductService {
         request: RtcBackendListRequest,
     ) -> Result<RtcProviderAccountListData, RtcBackendApiError> {
         let state = self.state.lock().expect("rtc product state lock");
-        Ok(RtcProviderAccountListData {
-            items: state
-                .provider_accounts
-                .values()
-                .filter(|account| {
-                    account.tenant_id == request.tenant_id
-                        && organization_matches(
-                            &account.organization_id,
-                            request.organization_id.as_deref(),
-                        )
-                        && account.deleted_at.is_none()
-                        && request
-                            .provider
-                            .as_deref()
-                            .map_or(true, |provider| account.provider == provider)
-                        && request.status.as_deref().map_or(true, |status| {
-                            provider_account_status_key(&account.status) == status
-                        })
-                })
-                .cloned()
-                .collect(),
-            next_cursor: None,
-        })
+        let items = state
+            .provider_accounts
+            .values()
+            .filter(|account| {
+                account.tenant_id == request.tenant_id
+                    && organization_matches(
+                        &account.organization_id,
+                        request.organization_id.as_deref(),
+                    )
+                    && account.deleted_at.is_none()
+                    && request
+                        .provider
+                        .as_deref()
+                        .map_or(true, |provider| account.provider == provider)
+                    && request.status.as_deref().map_or(true, |status| {
+                        provider_account_status_key(&account.status) == status
+                    })
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        Ok(into_backend_list_data(paginate_backend_list(
+            items,
+            &RtcListWindowParams::from(&request),
+            |account| {
+                vec![
+                    account.id.clone(),
+                    account.code.clone(),
+                    account.name.clone(),
+                    account.provider.clone(),
+                    provider_account_status_key(&account.status).to_string(),
+                ]
+            },
+            |account, field| match field {
+                "name" => account.name.clone(),
+                "code" => account.code.clone(),
+                "provider" => account.provider.clone(),
+                "status" => provider_account_status_key(&account.status).to_string(),
+                _ => account.id.clone(),
+            },
+        )?))
     }
 
     async fn upsert_provider_account_impl(
@@ -647,6 +851,7 @@ impl RtcProductService {
         tenant_id: String,
         organization_id: Option<String>,
         provider_account_id: String,
+        query: RtcBackendListQuery,
     ) -> Result<RtcProviderApplicationListData, RtcBackendApiError> {
         let state = self.state.lock().expect("rtc product state lock");
         let account = scoped_provider_account(
@@ -656,18 +861,34 @@ impl RtcProductService {
             provider_account_id.as_str(),
         )
         .map_err(backend_error_from_product)?;
-        Ok(RtcProviderApplicationListData {
-            items: state
-                .provider_applications
-                .values()
-                .filter(|application| {
-                    application.provider_account_id == account.id
-                        && application.deleted_at.is_none()
-                })
-                .cloned()
-                .collect(),
-            next_cursor: None,
-        })
+        let items = state
+            .provider_applications
+            .values()
+            .filter(|application| {
+                application.provider_account_id == account.id && application.deleted_at.is_none()
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        Ok(into_backend_list_data(paginate_backend_list(
+            items,
+            &RtcListWindowParams::from(&query),
+            |application| {
+                vec![
+                    application.id.clone(),
+                    application.code.clone(),
+                    application.name.clone(),
+                    application.provider_application_id.clone(),
+                ]
+            },
+            |application, field| match field {
+                "name" => application.name.clone(),
+                "code" => application.code.clone(),
+                "providerApplicationId" | "provider_application_id" => {
+                    application.provider_application_id.clone()
+                }
+                _ => application.id.clone(),
+            },
+        )?))
     }
 
     async fn upsert_provider_application_impl(
@@ -917,6 +1138,7 @@ impl RtcProductService {
         tenant_id: String,
         organization_id: Option<String>,
         provider_application_id: String,
+        query: RtcBackendListQuery,
     ) -> Result<RtcProviderCredentialListData, RtcBackendApiError> {
         let state = self.state.lock().expect("rtc product state lock");
         let application = scoped_provider_application(
@@ -926,15 +1148,30 @@ impl RtcProductService {
             provider_application_id.as_str(),
         )
         .map_err(backend_error_from_product)?;
-        Ok(RtcProviderCredentialListData {
-            items: state
-                .provider_credentials
-                .values()
-                .filter(|credential| credential.provider_application_id == application.id)
-                .cloned()
-                .collect(),
-            next_cursor: None,
-        })
+        let items = state
+            .provider_credentials
+            .values()
+            .filter(|credential| credential.provider_application_id == application.id)
+            .cloned()
+            .collect::<Vec<_>>();
+        Ok(into_backend_list_data(paginate_backend_list(
+            items,
+            &RtcListWindowParams::from(&query),
+            |credential| {
+                vec![
+                    credential.id.clone(),
+                    credential.credential_label.clone(),
+                    format!("{:?}", credential.credential_role),
+                    format!("{:?}", credential.status),
+                ]
+            },
+            |credential, field| match field {
+                "label" | "credentialLabel" => credential.credential_label.clone(),
+                "role" | "credentialRole" => format!("{:?}", credential.credential_role),
+                "status" => format!("{:?}", credential.status),
+                _ => credential.id.clone(),
+            },
+        )?))
     }
 
     async fn upsert_provider_credential_impl(
@@ -1552,6 +1789,49 @@ impl RtcProductService {
                 parsed.provider, provider_key
             )));
         }
+        let (webhook_secret_ref, signature_header) = {
+            let state = self.state.lock().expect("rtc product state lock");
+            let media_session_id = resolve_webhook_media_session_id(&state, &parsed);
+            let provider_profile_id = validate_provider_webhook_event_binding(
+                &state,
+                &parsed,
+                media_session_id.as_deref(),
+            )
+            .map_err(backend_error_from_product)?;
+            let profile_id = provider_profile_id
+                .or(parsed.provider_profile_id.clone())
+                .ok_or_else(|| {
+                    RtcBackendApiError::BadRequest(
+                        "RTC provider webhook requires provider profile binding".to_string(),
+                    )
+                })?;
+            let profile = provider_profile_by_id(&state, profile_id.as_str())
+                .map_err(backend_error_from_product)?;
+            let webhook_secret_ref = profile
+                .webhook_secret_ref
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .ok_or_else(|| {
+                    RtcBackendApiError::BadRequest(
+                        "RTC provider profile webhook secret ref is not configured".to_string(),
+                    )
+                })?
+                .to_owned();
+            let signature_header = parsed.signature_header.clone();
+            (webhook_secret_ref, signature_header)
+        };
+        let webhook_secret = self
+            .secret_resolver
+            .resolve_secret(webhook_secret_ref.as_str())
+            .map_err(|error| RtcBackendApiError::BadRequest(error.message))?;
+        provider
+            .verify_provider_webhook_signature(RtcProviderWebhookVerifyRequest {
+                headers: headers_from_json(&request.headers),
+                raw_payload: parsed.raw_payload.clone(),
+                signature_header,
+                webhook_secret,
+            })
+            .map_err(backend_error_from_contract)?;
         let record = self.record_webhook_event(parsed)?;
         self.process_provider_webhook_record(&record)
             .await
@@ -1648,27 +1928,34 @@ impl RtcProductService {
         let mut session = self
             .get_session(&tenant_id, organization_id.as_deref(), &media_session_id)
             .map_err(backend_error_from_product)?;
+        let already_ended = session.status == RtcMediaSessionStatus::Ended;
         let provider_key = self
             .provider_for_session(&session)
             .map_err(backend_error_from_product)?;
-        let provider = self
-            .registry
-            .provider(provider_key.as_str())
-            .map_err(backend_error_from_registry)?;
-        provider
-            .close_session(&tenant_id, &media_session_id)
-            .map_err(backend_error_from_contract)?;
-        let now = utc_now_rfc3339_millis();
-        session.status = RtcMediaSessionStatus::Ended;
-        session.ended_at = Some(now.clone());
-        session.completion_recorded_at = Some(now.clone());
-        session.end_reason = request.reason;
-        session.end_source = Some(RtcMediaSessionEndSource::ManualClose);
-        self.state
-            .lock()
-            .expect("rtc product state lock")
-            .sessions
-            .insert(media_session_id.clone(), session.clone());
+        if !already_ended {
+            let provider = self
+                .registry
+                .provider(provider_key.as_str())
+                .map_err(backend_error_from_registry)?;
+            provider
+                .close_session(&tenant_id, &media_session_id)
+                .map_err(backend_error_from_contract)?;
+            let now = utc_now_rfc3339_millis();
+            session.status = RtcMediaSessionStatus::Ended;
+            session.ended_at = Some(now.clone());
+            session.completion_recorded_at = Some(now.clone());
+            session.end_reason = request.reason;
+            session.end_source = Some(RtcMediaSessionEndSource::ManualClose);
+            self.state
+                .lock()
+                .expect("rtc product state lock")
+                .sessions
+                .insert(media_session_id.clone(), session.clone());
+        }
+        let now = session
+            .ended_at
+            .clone()
+            .unwrap_or_else(utc_now_rfc3339_millis);
         let query_result = RtcProviderQueryResult {
             provider: provider_key,
             provider_profile_id: session.provider_profile_id.clone(),
@@ -2067,6 +2354,17 @@ impl RtcProductService {
         }
         let scope = resolve_webhook_event_scope(&state, &event, media_session_id.as_deref())
             .map_err(backend_error_from_product)?;
+        if let Some(external_event_id) = event.external_event_id.as_deref() {
+            let duplicate = state.webhook_events.values().any(|existing| {
+                existing.provider == event.provider
+                    && existing.external_event_id.as_deref() == Some(external_event_id)
+            });
+            if duplicate {
+                return Err(RtcBackendApiError::BadRequest(format!(
+                    "RTC provider webhook external event already processed: {external_event_id}"
+                )));
+            }
+        }
         let id = state.next_webhook_event_id();
         let record = RtcProviderWebhookEventRecord {
             id: id.clone(),
@@ -2111,7 +2409,7 @@ impl RtcProductService {
                 "RTC room ended webhook requires media session id".to_string(),
             )
         })?;
-        let (owner_user_id, room_id, provider_session_id) = {
+        let (owner_user_id, room_id, provider_session_id, already_ended) = {
             let mut state = self.state.lock().expect("rtc product state lock");
             let session = state.sessions.get_mut(media_session_id).ok_or_else(|| {
                 RtcProductError::NotFound(format!(
@@ -2126,12 +2424,15 @@ impl RtcProductService {
                 ));
             }
 
-            session.status = RtcMediaSessionStatus::Ended;
-            session.ended_at = Some(record.received_at.clone());
-            session.completion_recorded_at = Some(record.received_at.clone());
-            session.end_source = Some(RtcMediaSessionEndSource::ProviderWebhook);
-            if session.end_reason.is_none() {
-                session.end_reason = Some(record.event_type.clone());
+            let already_ended = session.status == RtcMediaSessionStatus::Ended;
+            if !already_ended {
+                session.status = RtcMediaSessionStatus::Ended;
+                session.ended_at = Some(record.received_at.clone());
+                session.completion_recorded_at = Some(record.received_at.clone());
+                session.end_source = Some(RtcMediaSessionEndSource::ProviderWebhook);
+                if session.end_reason.is_none() {
+                    session.end_reason = Some(record.event_type.clone());
+                }
             }
             session.last_provider_webhook_event_id = Some(record.id.clone());
 
@@ -2139,8 +2440,18 @@ impl RtcProductService {
                 session.owner_user_id.clone(),
                 session.room_id.clone(),
                 session.provider_session_id.clone(),
+                already_ended,
             )
         };
+
+        if already_ended {
+            self.persist_changes(RtcPersistenceChangeSet {
+                webhook_events: vec![record.clone()],
+                ..RtcPersistenceChangeSet::default()
+            })
+            .await?;
+            return Ok(());
+        }
 
         self.export_recording_artifacts_from_provider(
             &record.tenant_id,
@@ -2393,6 +2704,146 @@ impl RtcProductService {
             },
         ))
     }
+
+    fn retrieve_provider_route_impl(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        provider_route_id: String,
+    ) -> Result<RtcProviderRoute, RtcBackendApiError> {
+        let state = self.state.lock().expect("rtc product state lock");
+        state
+            .provider_routes
+            .get(provider_route_id.as_str())
+            .filter(|route| {
+                route.tenant_id == tenant_id
+                    && organization_matches(&route.organization_id, organization_id.as_deref())
+            })
+            .cloned()
+            .ok_or_else(|| {
+                RtcBackendApiError::NotFound(format!(
+                    "RTC provider route not found: {provider_route_id}"
+                ))
+            })
+    }
+
+    fn validated_provider_route_command(
+        request: &RtcProviderRouteCommand,
+        default_status: RtcProviderRouteStatus,
+    ) -> Result<(String, Option<String>, RtcProviderRouteStatus), RtcBackendApiError> {
+        let route_type = request.route_type.trim().to_string();
+        if route_type.is_empty() {
+            return Err(RtcBackendApiError::BadRequest(
+                "RTC provider route type is required".to_string(),
+            ));
+        }
+        if route_type != RTC_PROVIDER_ROUTE_TYPE_REGION {
+            return Err(RtcBackendApiError::BadRequest(format!(
+                "Unsupported RTC provider route type: {route_type}"
+            )));
+        }
+        let region = normalized_optional_string(request.region.as_deref());
+        if region.is_none() {
+            return Err(RtcBackendApiError::BadRequest(
+                "RTC provider region route requires region".to_string(),
+            ));
+        }
+        Ok((
+            route_type,
+            region,
+            request.status.clone().unwrap_or(default_status),
+        ))
+    }
+
+    async fn update_provider_route_impl(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        _actor_id: String,
+        provider_route_id: String,
+        request: RtcProviderRouteCommand,
+    ) -> Result<RtcProviderRoute, RtcBackendApiError> {
+        let route = {
+            let mut state = self.state.lock().expect("rtc product state lock");
+            let organization_id = organization_id.unwrap_or_else(|| "0".to_string());
+            let existing = state
+                .provider_routes
+                .get(provider_route_id.as_str())
+                .filter(|route| {
+                    route.tenant_id == tenant_id && route.organization_id == organization_id
+                })
+                .cloned()
+                .ok_or_else(|| {
+                    RtcBackendApiError::NotFound(format!(
+                        "RTC provider route not found: {provider_route_id}"
+                    ))
+                })?;
+            let (route_type, region, status) =
+                Self::validated_provider_route_command(&request, existing.status.clone())?;
+            let profile = scoped_provider_profile(
+                &state,
+                tenant_id.as_str(),
+                organization_id.as_str(),
+                request.provider_profile_id.as_str(),
+            )
+            .map_err(backend_error_from_product)?;
+            if !provider_profile_is_selectable(profile) {
+                return Err(RtcBackendApiError::Unavailable(format!(
+                    "RTC provider profile is not active: {}",
+                    profile.id
+                )));
+            }
+            let route = RtcProviderRoute {
+                id: existing.id,
+                tenant_id: existing.tenant_id,
+                organization_id: existing.organization_id,
+                provider_profile_id: request.provider_profile_id,
+                route_type,
+                region,
+                priority: request.priority,
+                status,
+            };
+            state
+                .provider_routes
+                .insert(provider_route_id, route.clone());
+            route
+        };
+        self.persist_changes(RtcPersistenceChangeSet {
+            provider_routes: vec![route.clone()],
+            ..RtcPersistenceChangeSet::default()
+        })
+        .await
+        .map_err(backend_error_from_product)?;
+        Ok(route)
+    }
+
+    async fn disable_provider_route_impl(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        _actor_id: String,
+        provider_route_id: String,
+        _request: RtcProviderRouteDisableRequest,
+    ) -> Result<RtcProviderRoute, RtcBackendApiError> {
+        let mut route = self.retrieve_provider_route_impl(
+            tenant_id,
+            organization_id,
+            provider_route_id.clone(),
+        )?;
+        route.status = RtcProviderRouteStatus::Disabled;
+        self.state
+            .lock()
+            .expect("rtc product state lock")
+            .provider_routes
+            .insert(provider_route_id, route.clone());
+        self.persist_changes(RtcPersistenceChangeSet {
+            provider_routes: vec![route.clone()],
+            ..RtcPersistenceChangeSet::default()
+        })
+        .await
+        .map_err(backend_error_from_product)?;
+        Ok(route)
+    }
 }
 
 impl RtcAppApiService for RtcProductService {
@@ -2486,12 +2937,16 @@ impl RtcAppApiService for RtcProductService {
         tenant_id: String,
         organization_id: Option<String>,
         media_session_id: String,
-        _cursor: Option<String>,
-        _limit: Option<u32>,
+        query: RtcAppListQuery,
     ) -> RtcAppApiFuture<RtcAppMediaArtifactListData> {
         let service = self.clone();
         Box::pin(async move {
-            service.list_recording_artifacts_impl(tenant_id, organization_id, media_session_id)
+            service.list_recording_artifacts_impl(
+                tenant_id,
+                organization_id,
+                media_session_id,
+                query,
+            )
         })
     }
 }
@@ -2508,8 +2963,12 @@ impl RtcBackendApiService for RtcProductService {
                 RtcListRequest {
                     tenant_id: request.tenant_id,
                     organization_id: request.organization_id,
+                    page: request.page,
+                    page_size: request.page_size,
                     cursor: request.cursor,
                     limit: request.limit,
+                    q: request.q,
+                    sort: request.sort,
                 },
             )
             .await
@@ -2619,12 +3078,16 @@ impl RtcBackendApiService for RtcProductService {
         tenant_id: String,
         organization_id: Option<String>,
         provider_account_id: String,
-        _cursor: Option<String>,
-        _limit: Option<u32>,
+        query: RtcBackendListQuery,
     ) -> RtcBackendApiFuture<RtcProviderApplicationListData> {
         let service = self.clone();
         Box::pin(async move {
-            service.list_provider_applications_impl(tenant_id, organization_id, provider_account_id)
+            service.list_provider_applications_impl(
+                tenant_id,
+                organization_id,
+                provider_account_id,
+                query,
+            )
         })
     }
 
@@ -2717,8 +3180,7 @@ impl RtcBackendApiService for RtcProductService {
         tenant_id: String,
         organization_id: Option<String>,
         provider_application_id: String,
-        _cursor: Option<String>,
-        _limit: Option<u32>,
+        query: RtcBackendListQuery,
     ) -> RtcBackendApiFuture<RtcProviderCredentialListData> {
         let service = self.clone();
         Box::pin(async move {
@@ -2726,6 +3188,7 @@ impl RtcBackendApiService for RtcProductService {
                 tenant_id,
                 organization_id,
                 provider_application_id,
+                query,
             )
         })
     }
@@ -2921,21 +3384,38 @@ impl RtcBackendApiService for RtcProductService {
         let service = self.clone();
         Box::pin(async move {
             let state = service.state.lock().expect("rtc product state lock");
-            Ok(RtcProviderRouteListData {
-                items: state
-                    .provider_routes
-                    .values()
-                    .filter(|route| {
-                        route.tenant_id == request.tenant_id
-                            && organization_matches(
-                                &route.organization_id,
-                                request.organization_id.as_deref(),
-                            )
-                    })
-                    .cloned()
-                    .collect(),
-                next_cursor: None,
-            })
+            let items = state
+                .provider_routes
+                .values()
+                .filter(|route| {
+                    route.tenant_id == request.tenant_id
+                        && organization_matches(
+                            &route.organization_id,
+                            request.organization_id.as_deref(),
+                        )
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            Ok(into_backend_list_data(paginate_backend_list(
+                items,
+                &RtcListWindowParams::from(&request),
+                |route| {
+                    vec![
+                        route.id.clone(),
+                        route.provider_profile_id.clone(),
+                        route.route_type.clone(),
+                        route.region.clone().unwrap_or_default(),
+                    ]
+                },
+                |route, field| match field {
+                    "providerProfileId" | "provider_profile_id" => {
+                        route.provider_profile_id.clone()
+                    }
+                    "routeType" | "route_type" => route.route_type.clone(),
+                    "region" => route.region.clone().unwrap_or_default(),
+                    _ => route.id.clone(),
+                },
+            )?))
         })
     }
 
@@ -2948,24 +3428,10 @@ impl RtcBackendApiService for RtcProductService {
     ) -> RtcBackendApiFuture<RtcProviderRoute> {
         let service = self.clone();
         Box::pin(async move {
-            let route_type = request.route_type.trim().to_string();
-            if route_type.is_empty() {
-                return Err(RtcBackendApiError::BadRequest(
-                    "RTC provider route type is required".to_string(),
-                ));
-            }
-            if route_type != RTC_PROVIDER_ROUTE_TYPE_REGION {
-                return Err(RtcBackendApiError::BadRequest(format!(
-                    "Unsupported RTC provider route type: {route_type}"
-                )));
-            }
-            let region = normalized_optional_string(request.region.as_deref());
-            if region.is_none() {
-                return Err(RtcBackendApiError::BadRequest(
-                    "RTC provider region route requires region".to_string(),
-                ));
-            }
-            let status = request.status.unwrap_or(RtcProviderRouteStatus::Active);
+            let (route_type, region, status) = RtcProductService::validated_provider_route_command(
+                &request,
+                RtcProviderRouteStatus::Active,
+            )?;
             let route = {
                 let mut state = service.state.lock().expect("rtc product state lock");
                 let organization_id = organization_id.unwrap_or_else(|| "0".to_string());
@@ -3007,6 +3473,62 @@ impl RtcBackendApiService for RtcProductService {
         })
     }
 
+    fn retrieve_provider_route(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        provider_route_id: String,
+    ) -> RtcBackendApiFuture<RtcProviderRoute> {
+        let service = self.clone();
+        Box::pin(async move {
+            service.retrieve_provider_route_impl(tenant_id, organization_id, provider_route_id)
+        })
+    }
+
+    fn update_provider_route(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        provider_route_id: String,
+        request: RtcProviderRouteCommand,
+    ) -> RtcBackendApiFuture<RtcProviderRoute> {
+        let service = self.clone();
+        Box::pin(async move {
+            service
+                .update_provider_route_impl(
+                    tenant_id,
+                    organization_id,
+                    actor_id,
+                    provider_route_id,
+                    request,
+                )
+                .await
+        })
+    }
+
+    fn disable_provider_route(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        provider_route_id: String,
+        request: RtcProviderRouteDisableRequest,
+    ) -> RtcBackendApiFuture<RtcProviderRoute> {
+        let service = self.clone();
+        Box::pin(async move {
+            service
+                .disable_provider_route_impl(
+                    tenant_id,
+                    organization_id,
+                    actor_id,
+                    provider_route_id,
+                    request,
+                )
+                .await
+        })
+    }
+
     fn list_media_sessions(
         &self,
         request: RtcBackendListRequest,
@@ -3017,8 +3539,12 @@ impl RtcBackendApiService for RtcProductService {
                 .list_media_sessions_impl(RtcListRequest {
                     tenant_id: request.tenant_id,
                     organization_id: request.organization_id,
+                    page: request.page,
+                    page_size: request.page_size,
                     cursor: request.cursor,
                     limit: request.limit,
+                    q: request.q,
+                    sort: request.sort,
                 })
                 .map_err(backend_error_from_app)
                 .map(|result| RtcListData {
@@ -3085,22 +3611,37 @@ impl RtcBackendApiService for RtcProductService {
         let service = self.clone();
         Box::pin(async move {
             let state = service.state.lock().expect("rtc product state lock");
-            Ok(RtcMediaArtifactListData {
-                items: state
-                    .artifacts
-                    .values()
-                    .filter(|artifact| {
-                        media_artifact_matches_scope(
-                            &state,
-                            artifact,
-                            &request.tenant_id,
-                            request.organization_id.as_deref(),
-                        )
-                    })
-                    .cloned()
-                    .collect(),
-                next_cursor: None,
-            })
+            let items = state
+                .artifacts
+                .values()
+                .filter(|artifact| {
+                    media_artifact_matches_scope(
+                        &state,
+                        artifact,
+                        &request.tenant_id,
+                        request.organization_id.as_deref(),
+                    )
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            Ok(into_backend_list_data(paginate_backend_list(
+                items,
+                &RtcListWindowParams::from(&request),
+                |artifact| {
+                    vec![
+                        artifact.id.clone(),
+                        artifact.rtc_session_id.clone(),
+                        format!("{:?}", artifact.artifact_kind),
+                        format!("{:?}", artifact.artifact_status),
+                    ]
+                },
+                |artifact, field| match field {
+                    "kind" | "artifactKind" => format!("{:?}", artifact.artifact_kind),
+                    "status" | "artifactStatus" => format!("{:?}", artifact.artifact_status),
+                    "sessionId" | "session_id" => artifact.rtc_session_id.clone(),
+                    _ => artifact.id.clone(),
+                },
+            )?))
         })
     }
 
@@ -3140,26 +3681,41 @@ impl RtcBackendApiService for RtcProductService {
         let service = self.clone();
         Box::pin(async move {
             let state = service.state.lock().expect("rtc product state lock");
-            Ok(RtcQualitySampleListData {
-                items: state
-                    .quality_samples
-                    .values()
-                    .filter(|sample| {
-                        state
-                            .sessions
-                            .get(sample.session_id.as_str())
-                            .is_some_and(|session| {
-                                session.tenant_id == request.tenant_id
-                                    && organization_matches(
-                                        &session.organization_id,
-                                        request.organization_id.as_deref(),
-                                    )
-                            })
-                    })
-                    .cloned()
-                    .collect(),
-                next_cursor: None,
-            })
+            let items = state
+                .quality_samples
+                .values()
+                .filter(|sample| {
+                    state
+                        .sessions
+                        .get(sample.session_id.as_str())
+                        .is_some_and(|session| {
+                            session.tenant_id == request.tenant_id
+                                && organization_matches(
+                                    &session.organization_id,
+                                    request.organization_id.as_deref(),
+                                )
+                        })
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            Ok(into_backend_list_data(paginate_backend_list(
+                items,
+                &RtcListWindowParams::from(&request),
+                |sample| {
+                    vec![
+                        sample.id.clone(),
+                        sample.session_id.clone(),
+                        sample.participant_id.clone().unwrap_or_default(),
+                    ]
+                },
+                |sample, field| match field {
+                    "sessionId" | "session_id" => sample.session_id.clone(),
+                    "participantId" | "participant_id" => {
+                        sample.participant_id.clone().unwrap_or_default()
+                    }
+                    _ => sample.id.clone(),
+                },
+            )?))
         })
     }
 
@@ -3170,25 +3726,42 @@ impl RtcBackendApiService for RtcProductService {
         let service = self.clone();
         Box::pin(async move {
             let state = service.state.lock().expect("rtc product state lock");
-            Ok(RtcProviderWebhookEventListData {
-                items: state
-                    .webhook_events
-                    .values()
-                    .filter(|event| {
-                        event.tenant_id == request.tenant_id
-                            && organization_matches(
-                                &event.organization_id,
-                                request.organization_id.as_deref(),
-                            )
-                            && request
-                                .provider
-                                .as_deref()
-                                .map_or(true, |provider| event.provider == provider)
-                    })
-                    .cloned()
-                    .collect(),
-                next_cursor: None,
-            })
+            let items = state
+                .webhook_events
+                .values()
+                .filter(|event| {
+                    event.tenant_id == request.tenant_id
+                        && organization_matches(
+                            &event.organization_id,
+                            request.organization_id.as_deref(),
+                        )
+                        && request
+                            .provider
+                            .as_deref()
+                            .map_or(true, |provider| event.provider == provider)
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            Ok(into_backend_list_data(paginate_backend_list(
+                items,
+                &RtcListWindowParams::from(&request),
+                |event| {
+                    vec![
+                        event.id.clone(),
+                        event.provider.clone(),
+                        event.event_type.clone(),
+                        event.external_event_id.clone().unwrap_or_default(),
+                    ]
+                },
+                |event, field| match field {
+                    "provider" => event.provider.clone(),
+                    "eventType" | "event_type" => event.event_type.clone(),
+                    "externalEventId" | "external_event_id" => {
+                        event.external_event_id.clone().unwrap_or_default()
+                    }
+                    _ => event.id.clone(),
+                },
+            )?))
         })
     }
 
@@ -3250,37 +3823,49 @@ impl RtcBackendApiService for RtcProductService {
         tenant_id: String,
         organization_id: Option<String>,
         provider_query_job_id: String,
-        _cursor: Option<String>,
-        _limit: Option<u32>,
+        query: RtcBackendListQuery,
     ) -> RtcBackendApiFuture<RtcProviderQuerySnapshotListData> {
         let service = self.clone();
         Box::pin(async move {
             let state = service.state.lock().expect("rtc product state lock");
-            Ok(RtcProviderQuerySnapshotListData {
-                items: state
-                    .query_snapshots
-                    .values()
-                    .filter(|snapshot| {
-                        snapshot.tenant_id == tenant_id
-                            && snapshot.provider_query_job_id == provider_query_job_id
-                            && organization_matches(
-                                &snapshot.organization_id,
-                                organization_id.as_deref(),
-                            )
-                    })
-                    .cloned()
-                    .collect(),
-                next_cursor: None,
-            })
+            let items = state
+                .query_snapshots
+                .values()
+                .filter(|snapshot| {
+                    snapshot.tenant_id == tenant_id
+                        && snapshot.provider_query_job_id == provider_query_job_id
+                        && organization_matches(
+                            &snapshot.organization_id,
+                            organization_id.as_deref(),
+                        )
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            Ok(into_backend_list_data(paginate_backend_list(
+                items,
+                &RtcListWindowParams::from(&query),
+                |snapshot| {
+                    vec![
+                        snapshot.id.clone(),
+                        snapshot.provider_query_job_id.clone(),
+                        format!("{:?}", snapshot.query_kind),
+                    ]
+                },
+                |snapshot, field| match field {
+                    "queryKind" | "query_kind" => format!("{:?}", snapshot.query_kind),
+                    "jobId" | "job_id" => snapshot.provider_query_job_id.clone(),
+                    _ => snapshot.id.clone(),
+                },
+            )?))
         })
     }
 
     fn list_provider_config_schemas(
         &self,
     ) -> RtcBackendApiFuture<Vec<sdkwork_communication_rtc_service::ProviderConfigSchema>> {
-        Box::pin(async move {
-            Ok(sdkwork_communication_rtc_service::list_provider_config_schemas())
-        })
+        Box::pin(
+            async move { Ok(sdkwork_communication_rtc_service::list_provider_config_schemas()) },
+        )
     }
 
     fn get_provider_config_schema(
@@ -3625,6 +4210,33 @@ fn ensure_secret_reference(field: &str, value: &str) -> Result<(), RtcBackendApi
     Err(RtcBackendApiError::BadRequest(format!(
         "{field} must be a secret reference managed by secure storage"
     )))
+}
+
+fn paginate_app_list<T>(
+    items: Vec<T>,
+    params: &RtcListWindowParams,
+    searchable: impl Fn(&T) -> Vec<String>,
+    sortable: impl Fn(&T, &str) -> String,
+) -> Result<RtcListWindow<T>, RtcAppApiError> {
+    apply_list_window(items, params, searchable, sortable)
+        .map_err(|error| RtcAppApiError::BadRequest(error.to_string()))
+}
+
+fn paginate_backend_list<T>(
+    items: Vec<T>,
+    params: &RtcListWindowParams,
+    searchable: impl Fn(&T) -> Vec<String>,
+    sortable: impl Fn(&T, &str) -> String,
+) -> Result<RtcListWindow<T>, RtcBackendApiError> {
+    apply_list_window(items, params, searchable, sortable)
+        .map_err(|error| RtcBackendApiError::BadRequest(error.to_string()))
+}
+
+fn into_backend_list_data<T>(window: RtcListWindow<T>) -> RtcListData<T> {
+    RtcListData {
+        items: window.items,
+        next_cursor: window.next_cursor,
+    }
 }
 
 fn provider_account_status_key(status: &RtcProviderAccountStatus) -> &'static str {
@@ -4444,7 +5056,11 @@ fn profile_from_descriptor(
         endpoint: None,
         credential_ref: None,
         credential_fingerprint: None,
-        webhook_secret_ref: None,
+        webhook_secret_ref: descriptor
+            .required_capabilities
+            .iter()
+            .any(|item| item == "provider.webhook")
+            .then(|| format!("secret://rtc/{}/webhook", descriptor.provider_kind)),
         webhook_secret_fingerprint: None,
         capabilities: RtcProviderCapabilitySnapshot {
             audio: descriptor
@@ -4709,6 +5325,61 @@ fn provider_profile_verify_check(
 
 fn non_empty_optional(value: Option<&str>) -> bool {
     value.map(str::trim).is_some_and(|value| !value.is_empty())
+}
+
+fn credential_ttl_from_config_snapshot(config_snapshot: &serde_json::Value) -> Option<u32> {
+    config_snapshot
+        .get("credentialTtlSeconds")
+        .or_else(|| config_snapshot.get("credential_ttl_seconds"))
+        .and_then(|value| {
+            value.as_u64().or_else(|| {
+                value
+                    .as_i64()
+                    .and_then(|seconds| u64::try_from(seconds).ok())
+            })
+        })
+        .and_then(|seconds| u32::try_from(seconds).ok())
+        .filter(|seconds| *seconds > 0)
+}
+
+fn build_participant_credential_context(
+    profile: Option<&RtcProviderProfile>,
+    secret_resolver: &dyn crate::secret_resolver::RtcSecretResolver,
+) -> Result<Option<RtcParticipantCredentialContext>, RtcProductError> {
+    let Some(profile) = profile else {
+        return Ok(None);
+    };
+
+    let signing_secret = profile
+        .credential_ref
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+        .map(|credential_ref| {
+            secret_resolver
+                .resolve_secret(credential_ref)
+                .map_err(|error| {
+                    RtcProductError::Unavailable(format!(
+                        "unable to resolve provider credential ref: {}",
+                        error.message
+                    ))
+                })
+        })
+        .transpose()?;
+
+    let context = RtcParticipantCredentialContext {
+        provider_app_id: profile.provider_app_id.clone(),
+        signing_secret,
+        credential_ttl_seconds: credential_ttl_from_config_snapshot(&profile.config_snapshot),
+    };
+
+    if context.provider_app_id.is_none()
+        && context.signing_secret.is_none()
+        && context.credential_ttl_seconds.is_none()
+    {
+        Ok(None)
+    } else {
+        Ok(Some(context))
+    }
 }
 
 fn headers_from_json(headers: &serde_json::Value) -> Vec<(String, String)> {

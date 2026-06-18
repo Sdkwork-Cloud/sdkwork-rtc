@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": [
+    "src",
+    "packages/sdkwork-rtc-pc-core/src",
+    "packages/sdkwork-rtc-pc-shell/src",
+    "packages/sdkwork-rtc-pc-rtc/src",
+    "packages/sdkwork-rtc-pc-admin-core/src",
+    "packages/sdkwork-rtc-pc-admin-shell/src"
+  ]
+}

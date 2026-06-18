@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-mp-host",
+    "displayName": "SDKWork RTC MP Host",
+    "version": "0.1.0",
+    "type": "mini-program-package",
+    "root": "sdkwork-rtc/apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-host",
+    "domain": "communication",
+    "declaredDomain": "communication",
+    "capability": "host",
+    "status": "ready",
+    "languages": ["typescript"],
+    "generated": false,
+    "private": true,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": ["."]
+  }
+}

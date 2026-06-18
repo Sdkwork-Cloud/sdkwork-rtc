@@ -1,0 +1,12 @@
+{
+  "miniprogramRoot": "src/",
+  "projectname": "sdkwork-rtc-mini-program",
+  "description": "SDKWork RTC WeChat Mini Program",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "minified": true
+  },
+  "compileType": "miniprogram"
+}

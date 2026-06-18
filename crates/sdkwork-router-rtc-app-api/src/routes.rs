@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use axum::{
-    Router,
+    Router, middleware,
     routing::{get, post},
 };
 
-use crate::{handlers, service::RtcAppApiService};
+use crate::{handlers, middleware::enforce_app_route_auth, service::RtcAppApiService};
 
 pub fn build_sdkwork_rtc_app_api_router(service: Arc<dyn RtcAppApiService>) -> Router {
     Router::new()
@@ -38,6 +38,7 @@ pub fn build_sdkwork_rtc_app_api_router(service: Arc<dyn RtcAppApiService>) -> R
             "/app/v3/api/rtc/media_sessions/{media_session_id}/recording_artifacts",
             get(handlers::list_recording_artifacts),
         )
+        .layer(middleware::from_fn(enforce_app_route_auth))
         .with_state(service)
 }
 
@@ -64,7 +65,7 @@ mod tests {
 
     use super::*;
     use crate::service::{
-        RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture,
+        RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture, RtcAppListQuery,
         RtcCreateAppMediaSessionRequest, RtcIssueParticipantCredentialRequest, RtcListRequest,
         RtcMediaArtifactListData, RtcMediaSessionListData, RtcRoomListData,
     };
@@ -231,8 +232,7 @@ mod tests {
             _tenant_id: String,
             _organization_id: Option<String>,
             _media_session_id: String,
-            _cursor: Option<String>,
-            _limit: Option<u32>,
+            _query: RtcAppListQuery,
         ) -> RtcAppApiFuture<RtcMediaArtifactListData> {
             self.record("list_recording_artifacts");
             Box::pin(async move {

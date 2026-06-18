@@ -1,6 +1,7 @@
 name: sdkwork_rtc_flutter_mobile
 description: SDKWork RTC Flutter Mobile Application
 version: 0.1.0
+publish_to: none
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -9,6 +10,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  app_links: ^6.4.0
+  shared_preferences: ^2.5.3
+  url_launcher: ^6.3.1
+  sdkwork_rtc_flutter_mobile_admin_core:
+    path: packages/sdkwork_rtc_flutter_mobile_admin_core
+  sdkwork_rtc_flutter_mobile_core:
+    path: packages/sdkwork_rtc_flutter_mobile_core
+  sdkwork_rtc_flutter_mobile_rtc:
+    path: packages/sdkwork_rtc_flutter_mobile_rtc
 
 dev_dependencies:
   flutter_test:

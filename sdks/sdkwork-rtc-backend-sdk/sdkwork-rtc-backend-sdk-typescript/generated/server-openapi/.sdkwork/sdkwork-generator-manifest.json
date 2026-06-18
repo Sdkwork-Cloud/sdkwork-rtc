@@ -44,7 +44,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "78dc0237da24993c35860434895402cce9494aad38264594f3553c8de5f167d4"
+      "sha256": "7724a1a9789bc99a9ecc10d0eb34d70f00953a40977cb6f210826791431d78dc"
     },
     {
       "path": "sdkwork-sdk.json",
@@ -56,7 +56,7 @@
     },
     {
       "path": "src/api/index.ts",
-      "sha256": "ecad0931e395eb223e0e575c2fce23f1fd60992e271826d73d2a196ad2f11ec9"
+      "sha256": "e175a56819699e58ecb824ab3b83fec09320661755e5ec312f324cd5f6a75f35"
     },
     {
       "path": "src/api/paths.ts",
@@ -83,8 +83,12 @@
       "sha256": "7b07363a675d3633677f6673db54343caf46e902dd740fb1e00c2667c6ad8438"
     },
     {
+      "path": "src/api/rtc-provider-plugins.ts",
+      "sha256": "68676a78110e1f0828dcb73f9cc343350dcb25829fafc80b815b3710a56f386a"
+    },
+    {
       "path": "src/api/rtc-provider-profiles.ts",
-      "sha256": "6a95691d66497047fd2bb796969502ac1ee92569dbe72fc52bf56a9fb40a6d95"
+      "sha256": "d47d3c7ef32ea0efb408ab10bd0047873f265b4c8993e2c8a1ca21dbef49e647"
     },
     {
       "path": "src/api/rtc-provider-query-jobs.ts",
@@ -92,7 +96,11 @@
     },
     {
       "path": "src/api/rtc-provider-routes.ts",
-      "sha256": "726609be10523315488317780f18cb15f032052b8752510bbcb94949526f12da"
+      "sha256": "d7d87debb3b5c192725ef195750d67f25d7ba9afa45790b724ded19924a2dd94"
+    },
+    {
+      "path": "src/api/rtc-provider-schemas.ts",
+      "sha256": "8d732558d65c3f2d9eaf89e6e90dcb6c35659fd343a2df75673bfd727feb3e19"
     },
     {
       "path": "src/api/rtc-provider-webhooks.ts",
@@ -124,7 +132,7 @@
     },
     {
       "path": "src/sdk.ts",
-      "sha256": "3b30eff8130c76b4c700d946725f824bf27a986f86b5e9ad2e535fa2935e69d8"
+      "sha256": "386863b317cae3075e7dfde1906fee8309407422479de029aa199b6f0e8990b8"
     },
     {
       "path": "src/types/common.ts",
@@ -136,7 +144,7 @@
     },
     {
       "path": "src/types/index.ts",
-      "sha256": "e4bfb75471697adc755ab64e52d47c52c9a9578937132785030063f8337e7fa8"
+      "sha256": "74d4adf8b5ad62f462c7703a11e531ae1947ea5fb38a4d2fac8f0d2ed65d02d2"
     },
     {
       "path": "src/types/media-access.ts",
@@ -161,6 +169,10 @@
     {
       "path": "src/types/problem-detail.ts",
       "sha256": "7801e79cab9a1ccace62b2a0ba2119f835b41e4e22f858b10490ffd638b7f3a6"
+    },
+    {
+      "path": "src/types/rtc-api-result.ts",
+      "sha256": "e3a9358dbc66f7a1688f330befb2e0618ddd81deabaf192f1d81f35287788e8c"
     },
     {
       "path": "src/types/rtc-close-media-session-request.ts",
@@ -225,6 +237,10 @@
     {
       "path": "src/types/rtc-media-session.ts",
       "sha256": "fb213873a563d0a09a152c889db7f15e52af7002ff3628da696579de72c4bfaa"
+    },
+    {
+      "path": "src/types/rtc-operation-command.ts",
+      "sha256": "f0aac2d59f560a7c90f7b4e105df540394e439861843e48a4d6da51454b6daea"
     },
     {
       "path": "src/types/rtc-provider-account-command.ts",
@@ -349,6 +365,10 @@
     {
       "path": "src/types/rtc-provider-route-command.ts",
       "sha256": "392dde76fdb3a5abe1b56f7f61abfc2ff2b747fa987951b3b04646d11056a36e"
+    },
+    {
+      "path": "src/types/rtc-provider-route-disable-request.ts",
+      "sha256": "a1a80d4793b6fdb9e2a795a48891bb5c8ab4e55aa6ba5ca7682ca044b4e28b85"
     },
     {
       "path": "src/types/rtc-provider-route-list-response.ts",

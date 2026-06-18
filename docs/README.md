@@ -8,6 +8,10 @@
 
 sdkwork-rtc.
 
+## Key Documents
+
+- [rtc-im-boundary.md](rtc-im-boundary.md) — dependency direction and API ownership between `sdkwork-rtc` and `sdkwork-im`.
+
 ## Allowed Content
 
 - Architecture and migration notes.

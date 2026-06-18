@@ -8,10 +8,31 @@
     "audit:migration": "node --test tests/rtc-migration-contract.test.mjs",
     "materialize:openapi": "node sdks/materialize-rtc-v3-openapi-boundaries.mjs",
     "sdk:check": "node tools/rtc_sdk_generate.mjs --check",
+    "rtc:dev": "node scripts/rtc-dev.mjs --hosting self-hosted --service-layout split-services --target pc",
+    "rtc:dev:cloud": "node scripts/rtc-dev.mjs --hosting cloud-hosted --service-layout split-services --target pc",
+    "rtc:dev:h5": "node scripts/rtc-dev.mjs --hosting self-hosted --service-layout split-services --target h5",
+    "rtc:dev:flutter": "node scripts/rtc-dev.mjs --hosting self-hosted --service-layout split-services --target flutter",
+    "rtc:dev:server": "node scripts/rtc-dev.mjs --hosting self-hosted --service-layout split-services --target server",
+    "test:workspace-standard": "node --test tests/rtc-workspace-standard.test.mjs",
     "test": "vitest run apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/tests",
     "test:rust": "cargo test --workspace",
+    "test:flutter-analyze": "cd apps/sdkwork-rtc-flutter-mobile && flutter analyze",
+    "test:flutter": "cd apps/sdkwork-rtc-flutter-mobile && flutter test",
+    "test:mini-program": "cd apps/sdkwork-rtc-mini-program && pnpm run build && pnpm run typecheck && node --test tests/rtc-mp-runtime.test.mjs",
+    "test:rust-fmt": "cargo fmt --check",
+    "test:topology-validate": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs validate --root . --spec specs/topology.spec.json",
+    "test:topology-contract": "node --test tests/rtc-topology-contract.test.mjs",
+    "test:topology-baggage": "node --test tests/rtc-topology-baggage.test.mjs",
+    "test:topology-packaging": "node scripts/gateway-cloud-bundle.mjs bundle --version 0.0.0-test && node scripts/gateway-cloud-bundle.mjs validate --version 0.0.0-test",
+    "gateway:cloud:bundle": "node scripts/gateway-cloud-bundle.mjs bundle",
+    "gateway:cloud:bundle:validate": "node scripts/gateway-cloud-bundle.mjs validate",
+    "gateway:cloud:matrix": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs print-matrix --root . --spec specs/topology.spec.json --profile platform-config-bundle",
+    "gateway:matrix": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs print-matrix --root . --spec specs/topology.spec.json --profile all",
     "typecheck": "tsc --noEmit",
-    "verify": "pnpm run audit:migration && pnpm run materialize:openapi && pnpm run sdk:check && pnpm run typecheck && pnpm test && pnpm run test:rust"
+    "verify": "pnpm run test:workspace-standard && pnpm run audit:migration && pnpm run materialize:openapi && pnpm run sdk:check && pnpm run test:topology-validate && pnpm run test:topology-contract && pnpm run test:topology-baggage && pnpm run test:topology-packaging && pnpm run typecheck && pnpm test && pnpm run test:mini-program && pnpm run test:flutter-analyze && pnpm run test:flutter && pnpm run test:rust-fmt && pnpm run test:rust"
+  },
+  "dependencies": {
+    "@sdkwork/app-topology": "file:../sdkwork-app-topology"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

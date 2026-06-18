@@ -1,3 +1,3 @@
-void createIamRuntime() {
-  // TODO: Wire appbase Flutter IAM runtime wrapper
-}
+import 'app_auth.dart';
+
+RtcAppSession? createIamRuntime() => bootstrapAppAuth();

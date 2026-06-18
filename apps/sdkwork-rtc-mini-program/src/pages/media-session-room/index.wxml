@@ -1,0 +1,23 @@
+<view class="container">
+  <view wx:if="{{loading}}" class="hint">Loading media session...</view>
+  <view wx:elif="{{error}}" class="error">{{error}}</view>
+  <block wx:else>
+    <view class="card">
+      <text class="title">{{session.title}}</text>
+      <text class="meta">Status: {{session.status}}</text>
+      <text class="meta">Mode: {{session.mediaMode}}</text>
+      <text class="meta">Room: {{session.roomId}}</text>
+      <text class="meta">Participants: {{session.participantCount}}</text>
+      <text class="meta">Provider App ID: {{session.providerAppId || "unavailable"}}</text>
+    </view>
+
+    <view class="card">
+      <text class="section-title">Join Session</text>
+      <input class="field" placeholder="Participant ID" value="{{participantId}}" bindinput="onParticipantInput" />
+      <button class="primary" bindtap="onIssueCredential" loading="{{issuing}}">Issue Join Credential</button>
+      <text wx:if="{{joinMessage}}" class="join-message">{{joinMessage}}</text>
+      <button wx:if="{{joinCredential}}" class="secondary" bindtap="onCopyCredential">Copy Join Credential</button>
+      <text wx:if="{{joinCredential}}" class="credential-preview">{{joinCredential}}</text>
+    </view>
+  </block>
+</view>

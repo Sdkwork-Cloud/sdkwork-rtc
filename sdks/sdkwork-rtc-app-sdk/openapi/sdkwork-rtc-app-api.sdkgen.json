@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:18080",
+      "url": "http://127.0.0.1:18088",
       "description": "Local sdkwork-rtc runtime"
     }
   ],

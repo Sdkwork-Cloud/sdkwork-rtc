@@ -116,7 +116,7 @@ fn test_tencent_rtc_provider_implements_contract_surface() {
     );
 
     let credential = provider
-        .issue_participant_credential("t_demo", "rtc_demo", "u_peer")
+        .issue_participant_credential("t_demo", "rtc_demo", "u_peer", None)
         .expect("tencent rtc credential should succeed");
     assert_eq!(
         credential.credential,
@@ -381,7 +381,7 @@ fn test_tencent_active_query_builds_signed_open_api_request_when_credentials_are
     assert!(!query.result_snapshot_json.contains("tencent-secret-value"));
 
     let credential = provider
-        .issue_participant_credential("t_demo", "room_demo", "u_guest")
+        .issue_participant_credential("t_demo", "room_demo", "u_guest", None)
         .expect("tencent signed credential should be generated");
     assert!(!credential.credential.contains("tencent-token:"));
     assert!(!credential.credential.contains("tencent-usersig-secret"));

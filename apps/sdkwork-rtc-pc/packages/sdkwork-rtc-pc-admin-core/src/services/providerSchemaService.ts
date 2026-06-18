@@ -1,31 +1,40 @@
+import type { AuthTokenManager } from "@sdkwork/sdk-common";
+
 import type { ProviderConfigSchema } from "../types/providerSchema";
+import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
+
+interface ApiEnvelope<T> {
+  data?: T;
+  message?: string;
+}
 
 export class ProviderSchemaService {
+  private readonly client;
+
   constructor(
-    private readonly baseUrl: string,
-    private readonly getToken?: () => string | undefined,
-  ) {}
+    baseUrl: string,
+    tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
+  ) {
+    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+  }
 
   async listSchemas(): Promise<ProviderConfigSchema[]> {
-    return this.request("GET", "/provider_schemas");
+    const response = await this.client.http.get<ApiEnvelope<ProviderConfigSchema[]>>(
+      "/backend/v3/api/rtc/provider_schemas",
+    );
+    if (!response.data) {
+      throw new Error("Invalid response: missing provider schema data");
+    }
+    return response.data;
   }
 
   async getSchema(provider: string): Promise<ProviderConfigSchema> {
-    return this.request("GET", `/provider_schemas/${provider}`);
-  }
-
-  private async request<T>(method: string, path: string): Promise<T> {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    const token = this.getToken?.();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const response = await fetch(`${this.baseUrl}${path}`, { method, headers });
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => null);
-      const message = errorBody?.message ?? `HTTP ${response.status}`;
-      throw new Error(message);
+    const response = await this.client.http.get<ApiEnvelope<ProviderConfigSchema>>(
+      `/backend/v3/api/rtc/provider_schemas/${encodeURIComponent(provider)}`,
+    );
+    if (!response.data) {
+      throw new Error(`RTC provider schema not found: ${provider}`);
     }
-    const data = await response.json();
-    if (data?.data === undefined) throw new Error("Invalid response: missing data field");
-    return data.data;
+    return response.data;
   }
 }

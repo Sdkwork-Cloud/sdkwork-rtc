@@ -1,0 +1,11 @@
+{
+  "name": "@sdkwork/rtc-mp-rtc",
+  "private": true,
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@sdkwork/rtc-mp-core": "workspace:*",
+    "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
+  }
+}

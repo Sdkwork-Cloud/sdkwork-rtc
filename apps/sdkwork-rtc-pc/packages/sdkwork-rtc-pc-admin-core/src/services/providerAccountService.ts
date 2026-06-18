@@ -1,55 +1,85 @@
+import type { AuthTokenManager } from "@sdkwork/sdk-common";
+
 import type { ProviderAccount, ProviderAccountCommand } from "../types/providerAccount";
+import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
 
 interface ListResponse {
   items: ProviderAccount[];
-  nextCursor?: string;
+  nextCursor?: string | null;
 }
 
 export class ProviderAccountService {
-  constructor(
-    private readonly baseUrl: string,
-    private readonly getToken?: () => string | undefined,
-  ) {}
+  private readonly client;
 
-  async list(params?: { provider?: string; status?: string }): Promise<ListResponse> {
-    const query = new URLSearchParams();
-    if (params?.provider) query.set("provider", params.provider);
-    if (params?.status) query.set("status", params.status);
-    return this.request("GET", `/provider_accounts?${query}`);
+  constructor(
+    baseUrl: string,
+    tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
+  ) {
+    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+  }
+
+  async list(params?: {
+    provider?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    cursor?: string;
+    search?: string;
+    sort?: string;
+  }): Promise<ListResponse> {
+    const response = await this.client.rtcProviderAccounts.rtc.providerAccounts.list({
+      page: params?.page,
+      pageSize: params?.limit,
+      cursor: params?.cursor,
+      q: params?.search,
+      sort: params?.sort,
+    });
+    return {
+      items: (response.data?.items ?? []) as ProviderAccount[],
+      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+    };
   }
 
   async get(id: string): Promise<ProviderAccount> {
-    return this.request("GET", `/provider_accounts/${id}`);
+    const response = await this.client.rtcProviderAccounts.rtc.providerAccounts.retrieve(id);
+    if (!response.data) {
+      throw new Error(`RTC provider account not found: ${id}`);
+    }
+    return response.data as ProviderAccount;
   }
 
   async create(command: ProviderAccountCommand): Promise<ProviderAccount> {
-    return this.request("POST", "/provider_accounts", command);
+    const response = await this.client.rtcProviderAccounts.rtc.providerAccounts.create(
+      command as Parameters<
+        typeof this.client.rtcProviderAccounts.rtc.providerAccounts.create
+      >[0],
+    );
+    if (!response.data) {
+      throw new Error("Invalid response: missing provider account data");
+    }
+    return response.data as ProviderAccount;
   }
 
   async update(id: string, command: ProviderAccountCommand): Promise<ProviderAccount> {
-    return this.request("PATCH", `/provider_accounts/${id}`, command);
+    const response = await this.client.rtcProviderAccounts.rtc.providerAccounts.update(
+      id,
+      command as Parameters<
+        typeof this.client.rtcProviderAccounts.rtc.providerAccounts.update
+      >[1],
+    );
+    if (!response.data) {
+      throw new Error("Invalid response: missing provider account data");
+    }
+    return response.data as ProviderAccount;
   }
 
   async disable(id: string, reason?: string): Promise<ProviderAccount> {
-    return this.request("POST", `/provider_accounts/${id}/disable`, { reason });
-  }
-
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    const token = this.getToken?.();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
+    const response = await this.client.rtcProviderAccounts.rtc.providerAccounts.disable(id, {
+      reason,
     });
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => null);
-      const message = errorBody?.message ?? `HTTP ${response.status}`;
-      throw new Error(message);
+    if (!response.data) {
+      throw new Error("Invalid response: missing provider account data");
     }
-    const data = await response.json();
-    if (data?.data === undefined) throw new Error("Invalid response: missing data field");
-    return data.data;
+    return response.data as ProviderAccount;
   }
 }

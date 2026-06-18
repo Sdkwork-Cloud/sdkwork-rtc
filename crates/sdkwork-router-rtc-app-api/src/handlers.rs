@@ -12,17 +12,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value as JsonValue, json};
 
 use crate::service::{
-    RtcAppApiError, RtcAppApiService, RtcCreateAppMediaSessionRequest,
+    RtcAppApiError, RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
     RtcIssueParticipantCredentialRequest, RtcListRequest, RtcMediaArtifactListData,
     RtcMediaSessionListData, RtcRoomListData,
 };
-
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcAppListQuery {
-    pub cursor: Option<String>,
-    pub limit: Option<u32>,
-}
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -221,8 +214,7 @@ pub async fn list_recording_artifacts(
             context.tenant_id,
             context.organization_id,
             media_session_id,
-            query.cursor,
-            query.limit,
+            query,
         )
         .await?;
     Ok(Json(RtcApiEnvelope::ok(result)))
@@ -248,8 +240,12 @@ fn list_request(context: &AppContext, query: RtcAppListQuery) -> RtcListRequest 
     RtcListRequest {
         tenant_id: context.tenant_id.clone(),
         organization_id: context.organization_id.clone(),
+        page: query.page,
+        page_size: query.page_size,
         cursor: query.cursor,
         limit: query.limit,
+        q: query.q,
+        sort: query.sort,
     }
 }
 

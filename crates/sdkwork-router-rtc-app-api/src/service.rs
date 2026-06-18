@@ -1,6 +1,7 @@
 use std::future::Future;
 use std::pin::Pin;
 
+use sdkwork_communication_rtc_service::RtcListWindowParams;
 use sdkwork_communication_rtc_service::{
     RtcActiveProviderProfile, RtcMediaArtifact, RtcMediaSession, RtcMediaSessionCompletionRecord,
     RtcMediaSessionMode, RtcParticipantCredential, RtcRoom,
@@ -15,8 +16,49 @@ pub type RtcAppApiFuture<T> = Pin<Box<dyn Future<Output = Result<T, RtcAppApiErr
 pub struct RtcListRequest {
     pub tenant_id: String,
     pub organization_id: Option<String>,
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
+    pub q: Option<String>,
+    pub sort: Option<String>,
+}
+
+impl From<&RtcListRequest> for RtcListWindowParams {
+    fn from(request: &RtcListRequest) -> Self {
+        Self {
+            page: request.page,
+            page_size: request.page_size,
+            cursor: request.cursor.clone(),
+            limit: request.limit,
+            q: request.q.clone(),
+            sort: request.sort.clone(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RtcAppListQuery {
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
+    pub cursor: Option<String>,
+    pub limit: Option<u32>,
+    pub q: Option<String>,
+    pub sort: Option<String>,
+}
+
+impl From<&RtcAppListQuery> for RtcListWindowParams {
+    fn from(query: &RtcAppListQuery) -> Self {
+        Self {
+            page: query.page,
+            page_size: query.page_size,
+            cursor: query.cursor.clone(),
+            limit: query.limit,
+            q: query.q.clone(),
+            sort: query.sort.clone(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -166,7 +208,6 @@ pub trait RtcAppApiService: Send + Sync + 'static {
         tenant_id: String,
         organization_id: Option<String>,
         media_session_id: String,
-        cursor: Option<String>,
-        limit: Option<u32>,
+        query: RtcAppListQuery,
     ) -> RtcAppApiFuture<RtcMediaArtifactListData>;
 }

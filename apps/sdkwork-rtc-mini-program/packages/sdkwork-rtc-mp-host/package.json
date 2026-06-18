@@ -1,0 +1,10 @@
+{
+  "name": "@sdkwork/rtc-mp-host",
+  "private": true,
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "devDependencies": {
+    "miniprogram-api-typings": "^4.1.0"
+  }
+}

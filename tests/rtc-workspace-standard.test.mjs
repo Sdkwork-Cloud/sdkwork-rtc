@@ -39,10 +39,66 @@ test("sdkwork-rtc keeps app packages under app surface roots", () => {
     false,
     "root packages/ must not exist in the RTC authority workspace; app packages belong under apps/<app-root>/packages/",
   );
+  for (const packagePath of [
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/package.json",
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-shell/package.json",
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/package.json",
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-core/package.json",
+    "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-shell/package.json",
+    "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/package.json",
+    "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-shell/package.json",
+    "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-rtc/package.json",
+    "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/package.json",
+    "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-shell/package.json",
+    "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-rtc/package.json",
+    "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-host/package.json",
+    "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc/pubspec.yaml",
+  ]) {
+    assert.ok(exists(packagePath), `${packagePath} must exist`);
+  }
+});
+
+test("sdkwork-rtc mini program root exposes user RTC surface packages", () => {
+  const appRoot = "apps/sdkwork-rtc-mini-program";
+  assert.ok(exists(`${appRoot}/sdkwork.app.config.json`), `${appRoot}/sdkwork.app.config.json must exist`);
+  assert.ok(exists(`${appRoot}/src/app.json`), `${appRoot}/src/app.json must exist`);
+  const appJson = JSON.parse(read(`${appRoot}/src/app.json`));
   assert.ok(
-    exists("apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/package.json"),
-    "RTC PC package must live under apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/",
+    appJson.pages?.includes("pages/media-session-room/index"),
+    `${appRoot}/src/app.json must include media session room page`,
   );
+  const appConfig = JSON.parse(read(`${appRoot}/sdkwork.app.config.json`));
+  assert.equal(appConfig.app?.runtime?.family, "mini-program");
+  const rtcPackageSource = read(`${appRoot}/packages/sdkwork-rtc-mp-rtc/package.json`);
+  assert.match(rtcPackageSource, /sdkwork-rtc-app-sdk-generated-typescript/u, "sdkwork-rtc-mp-rtc must depend on the generated app SDK");
+});
+
+test("sdkwork-rtc flutter mobile exposes app auth deep link surfaces", () => {
+  const appRoot = "apps/sdkwork-rtc-flutter-mobile";
+  assert.ok(exists(`${appRoot}/android/app/src/main/AndroidManifest.xml`), `${appRoot} must include Android platform manifest`);
+  assert.ok(exists(`${appRoot}/ios/Runner/Info.plist`), `${appRoot} must include iOS Info.plist`);
+  const androidManifest = read(`${appRoot}/android/app/src/main/AndroidManifest.xml`);
+  assert.match(androidManifest, /sdkworkrtc/u, "Android manifest must register sdkworkrtc deep link scheme");
+  assert.match(androidManifest, /auth/u, "Android manifest must register auth callback host");
+  const iosPlist = read(`${appRoot}/ios/Runner/Info.plist`);
+  assert.match(iosPlist, /CFBundleURLSchemes/u, "iOS Info.plist must register URL schemes");
+  assert.match(iosPlist, /sdkworkrtc/u, "iOS Info.plist must register sdkworkrtc deep link scheme");
+  const appAuthGate = read(`${appRoot}/lib/app_auth_gate.dart`);
+  assert.match(appAuthGate, /AppLinks/u, "Flutter app auth gate must listen for deep link callbacks");
+});
+
+test("sdkwork-rtc app roots expose dual app and admin surfaces", () => {
+  for (const [appRoot, rtcPackage] of [
+    ["apps/sdkwork-rtc-pc", "sdkwork-rtc-pc-rtc"],
+    ["apps/sdkwork-rtc-h5", "sdkwork-rtc-h5-rtc"],
+  ]) {
+    const appSource = read(`${appRoot}/src/App.tsx`);
+    assert.match(appSource, /RtcApp/u, `${appRoot}/src/App.tsx must compose the user RTC surface`);
+    assert.match(appSource, /AdminApp/u, `${appRoot}/src/App.tsx must compose the admin surface`);
+    assert.match(appSource, /\/rtc\/media-sessions/u, `${appRoot}/src/App.tsx must default to user RTC routes`);
+    const rtcPackageSource = read(`${appRoot}/packages/${rtcPackage}/package.json`);
+    assert.match(rtcPackageSource, /sdkwork-rtc-app-sdk-generated-typescript/u, `${rtcPackage} must depend on the generated app SDK`);
+  }
 });
 
 test("sdkwork-rtc keeps API authority inputs under apis", () => {
