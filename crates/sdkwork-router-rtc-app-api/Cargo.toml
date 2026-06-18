@@ -3,14 +3,23 @@ name = "sdkwork-router-rtc-app-api"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+build = "build.rs"
 
 [dependencies]
 axum.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true
+sdkwork-iam-web-adapter.workspace = true
 sdkwork-rtc-app-context.workspace = true
 sdkwork-communication-rtc-service.workspace = true
+sdkwork-web-axum.workspace = true
+sdkwork-web-contract.workspace = true
+sdkwork-web-core.workspace = true
+
+[build-dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
 
 [dev-dependencies]
 http-body-util.workspace = true

@@ -1,8 +1,12 @@
-use axum::{Router, routing::get};
+use axum::Router;
+use sdkwork_web_bootstrap::{ServiceRouterConfig, service_router};
+use std::sync::Arc;
 use tracing::info;
 
 mod bootstrap;
-use bootstrap::{build_builtin_provider_registry, build_product_service};
+mod readiness;
+use bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap};
+use readiness::RtcDatabaseReadinessCheck;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -11,12 +15,31 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let registry = build_builtin_provider_registry()?;
-    let service = build_product_service(registry).await?;
-    let app = Router::new()
-        .route("/health", get(health))
-        .route("/ready", get(ready))
-        .merge(sdkwork_router_rtc_app_api::build_sdkwork_rtc_app_api_router(service.clone()))
-        .merge(sdkwork_router_rtc_backend_api::build_sdkwork_rtc_backend_api_router(service));
+    let bootstrap = build_rtc_api_bootstrap(registry).await?;
+    let service = bootstrap.service;
+
+    let app_router = sdkwork_router_rtc_app_api::wrap_router_with_web_framework_from_env(
+        sdkwork_router_rtc_app_api::build_sdkwork_rtc_app_api_router(service.clone()),
+    )
+    .await;
+    let backend_router = sdkwork_router_rtc_backend_api::wrap_router_with_web_framework_from_env(
+        sdkwork_router_rtc_backend_api::build_sdkwork_rtc_backend_api_router(service),
+    )
+    .await;
+
+    let service_router_config = if let Some(pool) = bootstrap.database_pool {
+        ServiceRouterConfig {
+            readiness: Some(Arc::new(RtcDatabaseReadinessCheck::new(pool))),
+            metrics: None,
+        }
+    } else {
+        ServiceRouterConfig::default().with_always_ready()
+    };
+
+    let app = service_router(
+        Router::new().merge(app_router).merge(backend_router),
+        service_router_config,
+    );
 
     let bind_addr = std::env::var("SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND")
         .unwrap_or_else(|_| "127.0.0.1:18088".into());
@@ -28,14 +51,6 @@ async fn main() -> anyhow::Result<()> {
         .await?;
     info!("sdkwork-rtc-api-server stopped");
     Ok(())
-}
-
-async fn health() -> &'static str {
-    "ok"
-}
-
-async fn ready() -> &'static str {
-    "ok"
 }
 
 async fn shutdown_signal() {

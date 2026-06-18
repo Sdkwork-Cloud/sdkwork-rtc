@@ -31,4 +31,6 @@ sdkwork-rtc.
 
 ## Verification
 
-Run `cargo fmt --all --check`, `cargo test --workspace`, and `node --test tests/rtc-workspace-standard.test.mjs`.
+Run `cargo fmt --all --check`, `cargo test --workspace`, `node --test tests/rtc-workspace-standard.test.mjs`, and `pnpm run materialize:rust-component-specs:check`.
+
+Rust crate `specs/component.spec.json` files are materialized from `tools/materialize-rtc-rust-component-specs.mjs`.

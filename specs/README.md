@@ -11,6 +11,7 @@ sdkwork-rtc.
 ## Allowed Content
 
 - `topology.spec.json` — runtime topology authority (`schemaVersion: 2`).
+- `component.spec.json` — repository-level RTC authority workspace component contract.
 - Component and integration specs referenced by crates, plugins, SDK families, and app roots.
 
 ## Related Specs

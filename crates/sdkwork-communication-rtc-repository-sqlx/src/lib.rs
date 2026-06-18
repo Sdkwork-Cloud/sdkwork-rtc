@@ -2,6 +2,7 @@ pub const POSTGRES_SCHEMA: &str = include_str!("schema/postgres_rtc.sql");
 pub const SQLITE_SCHEMA: &str = include_str!("schema/sqlite_rtc.sql");
 
 pub mod completion_record;
+pub mod database;
 pub mod media_session;
 pub mod persistence;
 pub mod provider_account;
@@ -11,6 +12,10 @@ pub mod provider_route;
 pub use completion_record::{
     RtcPostgresCompletionRecordRepository, RtcSqliteCompletionRecordRepository, RtcStorageError,
     RtcStorageResult,
+};
+pub use database::{
+    RtcPersistenceBootstrap, check_rtc_database_health, connect_rtc_persistence_bootstrap_from_env,
+    connect_rtc_persistence_from_env, is_rtc_database_healthy, persistence_from_database_pool,
 };
 pub use media_session::{RtcPostgresMediaSessionRepository, RtcSqliteMediaSessionRepository};
 pub use persistence::{RtcPostgresPersistencePort, RtcSqlitePersistencePort};

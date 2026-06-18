@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-workspace",
+    "displayName": "SDKWork RTC Authority Workspace",
+    "version": "0.1.0",
+    "type": "app",
+    "root": "sdkwork-rtc",
+    "domain": "communication",
+    "declaredDomain": null,
+    "capability": "rtc",
+    "status": "ACTIVE",
+    "languages": [
+      "javascript",
+      "rust",
+      "typescript"
+    ],
+    "generated": false,
+    "private": true,
+    "manifests": [
+      "package.json",
+      "Cargo.toml",
+      "sdkwork.workflow.json",
+      "specs/topology.spec.json"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "SDKWORK_WORKSPACE_SPEC.md",
+      "path": "../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md",
+      "purpose": "Repository root directory dictionary, .sdkwork workspace, and agent discovery rules."
+    },
+    {
+      "file": "COMPONENT_SPEC.md",
+      "path": "../sdkwork-specs/COMPONENT_SPEC.md",
+      "purpose": "Local component specs directory and manifest rules."
+    },
+    {
+      "file": "API_SPEC.md",
+      "path": "../sdkwork-specs/API_SPEC.md",
+      "purpose": "HTTP API authority, OpenAPI materialization, and route manifest rules."
+    },
+    {
+      "file": "SDK_SPEC.md",
+      "path": "../sdkwork-specs/SDK_SPEC.md",
+      "purpose": "SDK family ownership, generation, and consumer integration rules."
+    },
+    {
+      "file": "DOMAIN_SPEC.md",
+      "path": "../sdkwork-specs/DOMAIN_SPEC.md",
+      "purpose": "Canonical domain ownership and naming."
+    },
+    {
+      "file": "WEB_FRAMEWORK_SPEC.md",
+      "path": "../sdkwork-specs/WEB_FRAMEWORK_SPEC.md",
+      "purpose": "Mandatory sdkwork-web-framework integration for HTTP gateway and API runtimes."
+    },
+    {
+      "file": "WEB_BACKEND_SPEC.md",
+      "path": "../sdkwork-specs/WEB_BACKEND_SPEC.md",
+      "purpose": "HTTP handler, service, repository, and request-context layering."
+    },
+    {
+      "file": "DATABASE_SPEC.md",
+      "path": "../sdkwork-specs/DATABASE_SPEC.md",
+      "purpose": "Database table naming, schema registry, and persistence bootstrap rules."
+    },
+    {
+      "file": "GITHUB_WORKFLOW_SPEC.md",
+      "path": "../sdkwork-specs/GITHUB_WORKFLOW_SPEC.md",
+      "purpose": "sdkwork.workflow.json packaging, release, and GitHub Actions integration."
+    },
+    {
+      "file": "APP_RUNTIME_TOPOLOGY_SPEC.md",
+      "path": "../sdkwork-specs/APP_RUNTIME_TOPOLOGY_SPEC.md",
+      "purpose": "Runtime topology profiles, gateway surfaces, and packaging matrices."
+    },
+    {
+      "file": "TEST_SPEC.md",
+      "path": "../sdkwork-specs/TEST_SPEC.md",
+      "purpose": "Verification and contract testing expectations."
+    },
+    {
+      "file": "INTEGRATION_SPEC.md",
+      "path": "../sdkwork-specs/INTEGRATION_SPEC.md",
+      "purpose": "Provider plugin and external integration rules."
+    },
+    {
+      "file": "SECURITY_SPEC.md",
+      "path": "../sdkwork-specs/SECURITY_SPEC.md",
+      "purpose": "Auth, secrets, and webhook ingress rules."
+    }
+  ],
+  "contracts": {
+    "publicExports": [
+      "sdks/sdkwork-rtc-sdk",
+      "sdks/sdkwork-rtc-app-sdk",
+      "sdks/sdkwork-rtc-backend-sdk"
+    ],
+    "runtimeEntrypoints": [
+      "crates/sdkwork-rtc-api-server/src/main.rs",
+      "package.json#scripts.verify"
+    ],
+    "routeManifest": [
+      "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
+      "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json"
+    ],
+    "sdkClients": [
+      "sdks/sdkwork-rtc-app-sdk",
+      "sdks/sdkwork-rtc-backend-sdk",
+      "sdks/sdkwork-rtc-sdk"
+    ],
+    "sdkDependencies": [
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "role": "drive-media-resource-app-capability",
+        "apiAuthority": "sdkwork-drive-app-api",
+        "apiPrefix": "/app/v3/api/drive"
+      }
+    ],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [
+      {
+        "workspace": "sdkwork-rtc-app-sdk",
+        "sdkFamily": "sdkwork-rtc-app-sdk",
+        "apiAuthority": "sdkwork-rtc-app-api",
+        "surface": "app-api",
+        "apiPrefix": "/app/v3/api/rtc"
+      },
+      {
+        "workspace": "sdkwork-rtc-backend-sdk",
+        "sdkFamily": "sdkwork-rtc-backend-sdk",
+        "apiAuthority": "sdkwork-rtc-backend-api",
+        "surface": "backend-api",
+        "apiPrefix": "/backend/v3/api/rtc"
+      }
+    ],
+    "events": [],
+    "configKeys": [
+      "SDKWORK_RTC_DATABASE_URL",
+      "SDKWORK_RTC_HOSTING",
+      "SDKWORK_RTC_SERVICE_LAYOUT",
+      "SDKWORK_RTC_ENVIRONMENT",
+      "SDKWORK_RTC_PROFILE_ID",
+      "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL"
+    ],
+    "topologySpec": "specs/topology.spec.json"
+  },
+  "verification": {
+    "commands": [
+      "pnpm run test:workspace-standard",
+      "pnpm run audit:migration",
+      "pnpm run materialize:openapi",
+      "pnpm run materialize:rust-component-specs:check",
+      "pnpm run sdk:check",
+      "pnpm run test:topology-validate",
+      "pnpm run test:topology-contract",
+      "pnpm run test:topology-baggage",
+      "pnpm run test:topology-packaging",
+      "pnpm run typecheck",
+      "pnpm test",
+      "pnpm run test:mini-program",
+      "pnpm run test:flutter-analyze",
+      "pnpm run test:flutter",
+      "pnpm run test:rust-fmt",
+      "cargo test --workspace",
+      "pnpm run verify"
+    ]
+  },
+  "metadata": {
+    "managedBy": "specs/component.spec.json",
+    "standardVersion": "2026-06-18",
+    "notes": "RTC authority workspace without root sdkwork.app.config.json; runnable app surfaces live under apps/."
+  }
+}

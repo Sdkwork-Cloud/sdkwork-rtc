@@ -1,8 +1,10 @@
 # SDKWork Workspace
 
-This .sdkwork/ directory is source-controlled workspace metadata for $name.
+This `.sdkwork/` directory is source-controlled workspace metadata for
+`sdkwork-rtc`.
 
-It is governed by $specPath/SDKWORK_WORKSPACE_SPEC.md and follows the standards entrypoint at $specPath/README.md.
+It is governed by `../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md` and follows the
+standards entrypoint at `../sdkwork-specs/README.md`.
 
 Authoritative local entries:
 
@@ -11,7 +13,9 @@ Authoritative local entries:
 - plugins/README.md: repository or application plugin contribution guidance.
 - package and language manifests: repository component discovery.
 
-This directory is not runtime state. Do not store generated SDK transport output, secrets, local credentials, runtime databases, cache, logs, or user-private files here.
+This directory is not runtime state. Do not store generated SDK transport
+output, secrets, local credentials, runtime databases, cache, logs, or
+user-private files here.
 
 ## Execution References
 

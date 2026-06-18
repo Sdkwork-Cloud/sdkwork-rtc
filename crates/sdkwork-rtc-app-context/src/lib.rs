@@ -283,3 +283,56 @@ fn parse_truthy_env_flag(raw: Option<String>) -> bool {
         )
     })
 }
+
+/// Maps a framework-resolved [`WebRequestContext`] into the RTC domain [`AppContext`].
+pub fn app_context_from_web_request(
+    context: &sdkwork_web_core::WebRequestContext,
+) -> Option<AppContext> {
+    let principal = context.principal.as_ref()?;
+    Some(app_context_from_web_principal(principal))
+}
+
+pub fn app_context_from_web_principal(
+    principal: &sdkwork_web_core::WebRequestPrincipal,
+) -> AppContext {
+    use sdkwork_web_core::{WebAuthLevel, WebDeploymentMode, WebEnvironment, WebSubjectType};
+
+    let environment = match principal.app.environment {
+        WebEnvironment::Dev => Some("dev".to_owned()),
+        WebEnvironment::Test => Some("test".to_owned()),
+        WebEnvironment::Prod => Some("prod".to_owned()),
+    };
+    let deployment_mode = match principal.app.deployment_mode {
+        WebDeploymentMode::Saas => Some("saas".to_owned()),
+        WebDeploymentMode::Local => Some("local".to_owned()),
+        WebDeploymentMode::Private => Some("private".to_owned()),
+    };
+    let auth_level = match principal.auth.auth_level {
+        WebAuthLevel::Anonymous => Some("anonymous".to_owned()),
+        WebAuthLevel::Password => Some("password".to_owned()),
+        WebAuthLevel::Mfa => Some("mfa".to_owned()),
+        WebAuthLevel::System | WebAuthLevel::ApiKey => Some("system".to_owned()),
+    };
+    let actor_kind = match principal.subject.subject_type {
+        WebSubjectType::User => "user".to_owned(),
+        WebSubjectType::Service => "service".to_owned(),
+        WebSubjectType::System => "system".to_owned(),
+        WebSubjectType::ApiKey => "api_key".to_owned(),
+    };
+
+    AppContext {
+        tenant_id: principal.tenant_id().to_owned(),
+        organization_id: principal.organization_id().map(str::to_owned),
+        user_id: principal.user_id().to_owned(),
+        session_id: principal.session_id().map(str::to_owned),
+        app_id: Some(principal.app_id().to_owned()),
+        environment,
+        deployment_mode,
+        auth_level,
+        data_scope: principal.scopes.data_scope.iter().cloned().collect(),
+        permission_scope: principal.scopes.permission_scope.iter().cloned().collect(),
+        actor_id: principal.user_id().to_owned(),
+        actor_kind,
+        device_id: None,
+    }
+}

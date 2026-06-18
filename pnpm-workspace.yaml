@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "apps/*/packages/*"
+  - "../sdkwork-appbase/packages/common/iam/sdkwork-iam-contracts"
   - "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript"
   - "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/providers/*"
   - "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi"

@@ -84,7 +84,7 @@ const forbiddenAppbasePatterns = [
 ];
 
 const allowedAppbaseBoundaryFiles = new Set([
-  "scripts/appbase-rtc-extraction-boundary.test.mjs",
+  "tests/static/governance/appbase-rtc-extraction-boundary.test.mjs",
   "packages/pc-react/foundation/sdkwork-appbase-pc-react/tests/catalog.test.ts",
   "packages/mobile-react/foundation/sdkwork-appbase-mobile-react/tests/catalog.test.ts",
 ]);

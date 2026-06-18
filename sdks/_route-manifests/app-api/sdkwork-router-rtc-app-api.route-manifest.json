@@ -21,6 +21,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -53,6 +55,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -85,6 +89,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -117,6 +123,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -149,6 +157,8 @@
       "tags": [
         "rtcParticipantCredentials"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -181,6 +191,8 @@
       "tags": [
         "rtcRecordingArtifacts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -213,6 +225,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -245,6 +259,8 @@
       "tags": [
         "rtcRooms"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -277,6 +293,8 @@
       "tags": [
         "rtcRooms"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api",
       "auth": {
         "mode": "dual-token",
         "required": true,

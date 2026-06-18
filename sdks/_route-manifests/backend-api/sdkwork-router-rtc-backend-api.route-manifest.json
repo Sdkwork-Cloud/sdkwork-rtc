@@ -21,6 +21,8 @@
       "tags": [
         "rtcMediaArtifacts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -53,6 +55,8 @@
       "tags": [
         "rtcMediaArtifacts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -85,6 +89,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -117,6 +123,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -149,6 +157,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -181,6 +191,8 @@
       "tags": [
         "rtcMediaSessions"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -213,6 +225,8 @@
       "tags": [
         "rtcProviderAccounts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -245,6 +259,8 @@
       "tags": [
         "rtcProviderAccounts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -277,6 +293,8 @@
       "tags": [
         "rtcProviderAccounts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -309,6 +327,8 @@
       "tags": [
         "rtcProviderAccounts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -341,6 +361,8 @@
       "tags": [
         "rtcProviderApplications"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -373,6 +395,8 @@
       "tags": [
         "rtcProviderApplications"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -405,6 +429,8 @@
       "tags": [
         "rtcProviderAccounts"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -437,6 +463,8 @@
       "tags": [
         "rtcProviderApplications"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -469,6 +497,8 @@
       "tags": [
         "rtcProviderApplications"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -501,6 +531,8 @@
       "tags": [
         "rtcProviderCredentials"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -533,6 +565,8 @@
       "tags": [
         "rtcProviderCredentials"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -565,6 +599,8 @@
       "tags": [
         "rtcProviderApplications"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -597,6 +633,8 @@
       "tags": [
         "rtcProviderCredentials"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -629,6 +667,8 @@
       "tags": [
         "rtcProviderCredentials"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -661,6 +701,8 @@
       "tags": [
         "rtcProviderCredentials"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -693,6 +735,8 @@
       "tags": [
         "rtcProviderPlugins"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -725,6 +769,8 @@
       "tags": [
         "rtcProviderPlugins"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -757,6 +803,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -789,6 +837,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -821,6 +871,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -853,6 +905,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -885,6 +939,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -917,6 +973,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -949,6 +1007,8 @@
       "tags": [
         "rtcProviderProfiles"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -981,6 +1041,8 @@
       "tags": [
         "rtcProviderQueryJobs"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1013,6 +1075,8 @@
       "tags": [
         "rtcProviderQueryJobs"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1045,6 +1109,8 @@
       "tags": [
         "rtcProviderQueryJobs"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1077,6 +1143,8 @@
       "tags": [
         "rtcProviderRoutes"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1109,6 +1177,8 @@
       "tags": [
         "rtcProviderRoutes"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1141,6 +1211,8 @@
       "tags": [
         "rtcProviderRoutes"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1173,6 +1245,8 @@
       "tags": [
         "rtcProviderRoutes"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1205,6 +1279,8 @@
       "tags": [
         "rtcProviderRoutes"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1237,6 +1313,8 @@
       "tags": [
         "rtcProviderSchemas"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1269,6 +1347,8 @@
       "tags": [
         "rtcProviderSchemas"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1301,6 +1381,8 @@
       "tags": [
         "rtcProviderWebhooks"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "public",
         "required": true,
@@ -1318,6 +1400,7 @@
         "response": "RtcProviderWebhookEventResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -1334,6 +1417,8 @@
       "tags": [
         "rtcProviderWebhooks"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1366,6 +1451,8 @@
       "tags": [
         "rtcQualitySamples"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1398,6 +1485,8 @@
       "tags": [
         "rtcRooms"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,
@@ -1430,6 +1519,8 @@
       "tags": [
         "rtcRooms"
       ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
       "auth": {
         "mode": "dual-token",
         "required": true,

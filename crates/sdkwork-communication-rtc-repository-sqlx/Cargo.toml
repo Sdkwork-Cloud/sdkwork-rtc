@@ -6,6 +6,7 @@ license.workspace = true
 
 [dependencies]
 sdkwork-database-config = { path = "../../../sdkwork-database/crates/sdkwork-database-config" }
+sdkwork-database-repository = { path = "../../../sdkwork-database/crates/sdkwork-database-repository" }
 sdkwork-database-sqlx = { path = "../../../sdkwork-database/crates/sdkwork-database-sqlx" }
 sdkwork-communication-rtc-service.workspace = true
 serde.workspace = true

@@ -196,6 +196,8 @@ function buildRouteManifest(source, routes) {
       path: route.path,
       operationId: route.operationId,
       tags: [route.tag],
+      requestContext: "WebRequestContext",
+      apiSurface: source.surface,
       auth: {
         mode: "dual-token",
         required: true,
@@ -368,7 +370,8 @@ function buildOperation(source, route) {
     "x-sdkwork-source-route-crate": source.packageName,
     "x-sdkwork-domain": source.domain,
     "x-sdkwork-resource": route.operationId.split(".").slice(0, -1).join("."),
-    "x-sdkwork-request-context": source.apiContext,
+    "x-sdkwork-request-context": "WebRequestContext",
+    "x-sdkwork-api-surface": source.surface,
     "x-sdkwork-server-request-id": true,
     "x-sdkwork-permission": route.permission,
     "x-sdkwork-auth-mode": operationAuth.authMode,
@@ -380,6 +383,10 @@ function buildOperation(source, route) {
       PROVIDER_WEBHOOK_SIGNATURE_HEADERS;
     operation["x-sdkwork-request-context"] = "ProviderWebhookRequestContext";
     operation["x-sdkwork-forbid-credential-headers"] = true;
+  }
+
+  if (operationAuth.rateLimitTier) {
+    operation["x-sdkwork-rate-limit-tier"] = operationAuth.rateLimitTier;
   }
 
   if (usesJsonBody(method)) {
@@ -416,6 +423,7 @@ function operationAuthMetadata(source, route) {
       authMode: "anonymous",
       providerWebhookSignature: true,
       security: [],
+      rateLimitTier: "openApiDefault",
     };
   }
 
@@ -429,6 +437,7 @@ function operationAuthMetadata(source, route) {
 function routeAuthManifest(route) {
   if (route.operationId === PROVIDER_WEBHOOK_RECEIVE_OPERATION_ID) {
     return {
+      rateLimitTier: "openApiDefault",
       auth: {
         mode: "public",
         required: true,

@@ -453,9 +453,49 @@ pub fn route_manifest_header() -> (
     )
 }
 
+pub fn match_backend_route(method: &str, path: &str) -> Option<&'static RtcBackendRoute> {
+    RTC_BACKEND_ROUTES
+        .iter()
+        .find(|route| route.method == method && path_matches(route.path, path))
+}
+
+fn path_matches(template: &str, path: &str) -> bool {
+    let template_segments: Vec<&str> = template
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .collect();
+    let path_segments: Vec<&str> = path
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .collect();
+    if template_segments.len() != path_segments.len() {
+        return false;
+    }
+
+    template_segments
+        .iter()
+        .zip(path_segments.iter())
+        .all(|(template_segment, path_segment)| {
+            template_segment.starts_with('{') || template_segment == path_segment
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn backend_route_matching_supports_path_parameters() {
+        let route = match_backend_route(
+            "GET",
+            "/backend/v3/api/rtc/media_sessions/session-1/completion_record",
+        )
+        .expect("route should match");
+        assert_eq!(
+            route.operation_id,
+            "rtc.mediaSessions.completionRecord.retrieve"
+        );
+    }
 
     #[test]
     fn backend_routes_use_standard_prefix_owner_and_permissions() {

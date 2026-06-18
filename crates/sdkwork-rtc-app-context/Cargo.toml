@@ -8,4 +8,5 @@ license.workspace = true
 axum.workspace = true
 base64 = "0.22.1"
 hmac = "0.12.1"
+sdkwork-web-core.workspace = true
 sha2 = "0.10"

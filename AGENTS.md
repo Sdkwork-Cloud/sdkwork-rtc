@@ -82,8 +82,10 @@ This root has both `package.json` and `Cargo.toml`. Prefer narrow checks first, 
 
 ```powershell
 node --test tests/rtc-workspace-standard.test.mjs
+node scripts/prepare-ci-dependencies.mjs
 pnpm run audit:migration
 pnpm run materialize:openapi
+pnpm run materialize:rust-component-specs:check
 pnpm run sdk:check
 pnpm run test:topology-validate
 pnpm run test:topology-contract

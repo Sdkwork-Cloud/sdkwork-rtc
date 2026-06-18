@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use axum::{
-    Router, middleware,
+    Router,
     routing::{get, post, put},
 };
 
-use crate::{handlers, middleware::enforce_backend_route_auth, service::RtcBackendApiService};
+use crate::{handlers, service::RtcBackendApiService};
 
 pub fn build_sdkwork_rtc_backend_api_router(service: Arc<dyn RtcBackendApiService>) -> Router {
     Router::new()
@@ -147,7 +147,6 @@ pub fn build_sdkwork_rtc_backend_api_router(service: Arc<dyn RtcBackendApiServic
             "/backend/v3/api/rtc/provider_profiles/{provider_profile_id}/capabilities",
             put(handlers::configure_provider_capabilities),
         )
-        .layer(middleware::from_fn(enforce_backend_route_auth))
         .with_state(service)
 }
 
