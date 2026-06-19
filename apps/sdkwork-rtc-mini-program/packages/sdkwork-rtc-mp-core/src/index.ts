@@ -8,6 +8,10 @@ export {
   parseAppbaseCallbackSession,
   stripAppbaseCallbackFromLocation,
 } from "./session/appbaseAuthBridge";
+export {
+  RTC_MP_SESSION_STORAGE_KEY,
+  listLegacyRtcMpSessionStorageKeys,
+} from "./session/sessionStorageKey";
 export { resolveAppSdkBaseUrl } from "./config/resolveAppSdkBaseUrl";
 export {
   buildRtcAppSdkHeaders,

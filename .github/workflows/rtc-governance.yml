@@ -10,6 +10,15 @@ on:
       - main
       - master
   workflow_dispatch:
+    inputs:
+      sdkwork_im_ref:
+        description: sdkwork-im commit/ref for migration boundary verification.
+        required: false
+        default: main
+      sdkwork_core_ref:
+        description: sdkwork-core commit/ref for migration boundary verification.
+        required: false
+        default: main
 
 permissions:
   contents: read
@@ -40,6 +49,8 @@ jobs:
       - name: Prepare SDKWork source dependencies
         env:
           SDKWORK_RELEASE_TOKEN: ${{ secrets.SDKWORK_RELEASE_TOKEN || github.token }}
+          SDKWORK_IM_REF: ${{ github.event.inputs.sdkwork_im_ref || 'main' }}
+          SDKWORK_CORE_REF: ${{ github.event.inputs.sdkwork_core_ref || 'main' }}
         run: node scripts/prepare-ci-dependencies.mjs
 
       - name: Setup Rust

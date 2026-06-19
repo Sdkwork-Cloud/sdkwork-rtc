@@ -12,6 +12,8 @@ sdkwork-rtc.
 
 - `topology.spec.json` — runtime topology authority (`schemaVersion: 2`).
 - `component.spec.json` — repository-level RTC authority workspace component contract.
+- `database-prefix-registry.json` — canonical `rtc_` table prefix governance.
+- `database-table-registry.json` — RTC persistence table registry aligned with `RTC_TABLES`.
 - Component and integration specs referenced by crates, plugins, SDK families, and app roots.
 
 ## Related Specs

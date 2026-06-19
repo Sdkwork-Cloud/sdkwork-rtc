@@ -1,4 +1,4 @@
-const SESSION_KEY = "sdkwork.rtc.app.session";
+const { SESSION_STORAGE_KEY } = require("../../constants/sessionStorageKey");
 
 Page({
   data: {
@@ -19,7 +19,7 @@ Page({
       return;
     }
     wx.setStorageSync(
-      SESSION_KEY,
+      SESSION_STORAGE_KEY,
       JSON.stringify({
         accessToken,
         authToken: accessToken,

@@ -1,7 +1,9 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 import {
   DEFAULT_APP_SESSION,
+  listLegacyRtcMpSessionStorageKeys,
   parseAppbaseCallbackSession,
+  RTC_MP_SESSION_STORAGE_KEY,
   type RtcAppSession,
 } from "@sdkwork/rtc-mp-core";
 import {
@@ -11,21 +13,9 @@ import {
 
 import { getHostAdapters } from "./hostAdapters";
 
-const SESSION_STORAGE_KEY = "sdkwork.rtc.app.session";
+export { DEFAULT_APP_SESSION, RTC_MP_SESSION_STORAGE_KEY, type RtcAppSession };
 
-export { DEFAULT_APP_SESSION, type RtcAppSession };
-
-export function loadAppSession(): RtcAppSession | null {
-  const storage = getHostAdapters().secureStorage;
-  if (!storage) {
-    return null;
-  }
-
-  const raw = storage.getItem(SESSION_STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
+function parseStoredSession(raw: string): RtcAppSession | null {
   try {
     const parsed = JSON.parse(raw) as Partial<RtcAppSession>;
     if (!parsed.accessToken?.trim()) {
@@ -43,12 +33,49 @@ export function loadAppSession(): RtcAppSession | null {
   }
 }
 
+function migrateLegacyAppSession(storage: NonNullable<ReturnType<typeof getHostAdapters>["secureStorage"]>): RtcAppSession | null {
+  for (const legacyKey of listLegacyRtcMpSessionStorageKeys()) {
+    const raw = storage.getItem(legacyKey);
+    if (!raw) {
+      continue;
+    }
+    const session = parseStoredSession(raw);
+    storage.removeItem(legacyKey);
+    if (session) {
+      storage.setItem(RTC_MP_SESSION_STORAGE_KEY, JSON.stringify(session));
+      return session;
+    }
+  }
+  return null;
+}
+
+export function loadAppSession(): RtcAppSession | null {
+  const storage = getHostAdapters().secureStorage;
+  if (!storage) {
+    return null;
+  }
+
+  const raw = storage.getItem(RTC_MP_SESSION_STORAGE_KEY);
+  if (raw) {
+    return parseStoredSession(raw);
+  }
+
+  return migrateLegacyAppSession(storage);
+}
+
 export function saveAppSession(session: RtcAppSession): void {
-  getHostAdapters().secureStorage?.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  getHostAdapters().secureStorage?.setItem(RTC_MP_SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 
 export function clearAppSession(): void {
-  getHostAdapters().secureStorage?.removeItem(SESSION_STORAGE_KEY);
+  const storage = getHostAdapters().secureStorage;
+  if (!storage) {
+    return;
+  }
+  storage.removeItem(RTC_MP_SESSION_STORAGE_KEY);
+  for (const legacyKey of listLegacyRtcMpSessionStorageKeys()) {
+    storage.removeItem(legacyKey);
+  }
 }
 
 export function createAppTokenManager(session: RtcAppSession): AuthTokenManager {

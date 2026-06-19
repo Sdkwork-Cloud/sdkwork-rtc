@@ -12,7 +12,8 @@ export interface RtcAdminSession {
   userId: string;
 }
 
-const SESSION_STORAGE_KEY = "sdkwork.rtc.admin.session";
+export const RTC_ADMIN_SESSION_STORAGE_KEY = "sdkwork-rtc-h5:admin-session:v1";
+const LEGACY_RTC_ADMIN_SESSION_STORAGE_KEY = "sdkwork.rtc.admin.session";
 export const DEFAULT_ADMIN_PERMISSION_SCOPE = "rtc.*";
 
 export const DEFAULT_ADMIN_SESSION: RtcAdminSession = {
@@ -23,16 +24,7 @@ export const DEFAULT_ADMIN_SESSION: RtcAdminSession = {
   userId: "admin",
 };
 
-export function loadAdminSession(): RtcAdminSession | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
+function parseStoredAdminSession(raw: string): RtcAdminSession | null {
   try {
     const parsed = JSON.parse(raw) as Partial<RtcAdminSession>;
     if (!parsed.accessToken?.trim()) {
@@ -50,18 +42,50 @@ export function loadAdminSession(): RtcAdminSession | null {
   }
 }
 
+function migrateLegacyAdminSession(): RtcAdminSession | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const raw = window.sessionStorage.getItem(LEGACY_RTC_ADMIN_SESSION_STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+  const session = parseStoredAdminSession(raw);
+  window.sessionStorage.removeItem(LEGACY_RTC_ADMIN_SESSION_STORAGE_KEY);
+  if (!session) {
+    return null;
+  }
+  saveAdminSession(session);
+  return session;
+}
+
+export function loadAdminSession(): RtcAdminSession | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.sessionStorage.getItem(RTC_ADMIN_SESSION_STORAGE_KEY);
+  if (raw) {
+    return parseStoredAdminSession(raw);
+  }
+
+  return migrateLegacyAdminSession();
+}
+
 export function saveAdminSession(session: RtcAdminSession): void {
   if (typeof window === "undefined") {
     return;
   }
-  window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  window.sessionStorage.setItem(RTC_ADMIN_SESSION_STORAGE_KEY, JSON.stringify(session));
+  window.sessionStorage.removeItem(LEGACY_RTC_ADMIN_SESSION_STORAGE_KEY);
 }
 
 export function clearAdminSession(): void {
   if (typeof window === "undefined") {
     return;
   }
-  window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  window.sessionStorage.removeItem(RTC_ADMIN_SESSION_STORAGE_KEY);
+  window.sessionStorage.removeItem(LEGACY_RTC_ADMIN_SESSION_STORAGE_KEY);
 }
 
 export function buildAdminSdkHeaders(session: RtcAdminSession): Record<string, string> {

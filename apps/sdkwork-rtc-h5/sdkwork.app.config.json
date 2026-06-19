@@ -10,5 +10,11 @@
       "framework": "react",
       "surface": "mobile-browser"
     }
+  },
+  "runtime": {
+    "supportedDeploymentProfiles": [
+      "cloud"
+    ],
+    "defaultDeploymentProfile": "cloud"
   }
 }

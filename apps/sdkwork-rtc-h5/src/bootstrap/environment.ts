@@ -1,5 +1,6 @@
 export interface RtcEnvironment {
   apiBaseUrl: string;
+  appbaseAppApiBaseUrl: string;
   backendApiBaseUrl: string;
   appbaseLoginUrl: string;
   defaultMediaMode: "audio" | "video" | "live";

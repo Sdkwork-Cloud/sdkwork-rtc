@@ -9,8 +9,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@sdkwork/auth-runtime-pc-react": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-router-dom": "^7.17.0",
     "@sdkwork/rtc-h5-admin-core": "workspace:*",
     "@sdkwork/rtc-h5-admin-shell": "workspace:*",
     "@sdkwork/rtc-h5-core": "workspace:*",

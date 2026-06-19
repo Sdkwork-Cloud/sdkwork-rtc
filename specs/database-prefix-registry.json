@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.database.prefixRegistry",
+  "appCode": "rtc",
+  "product": "sdkwork-rtc",
+  "authority": "../sdkwork-specs/DATABASE_SPEC.md",
+  "prefixes": [
+    {
+      "prefix": "rtc",
+      "status": "ACTIVE",
+      "businessDomain": "real_time_communication",
+      "boundedContext": "media sessions, provider management, recording metadata, quality telemetry, and RTC persistence",
+      "ownerTeam": "sdkwork-rtc",
+      "writeOwners": [
+        "sdkwork-communication-rtc-repository-sqlx",
+        "sdkwork-rtc-service-host"
+      ],
+      "allowedTableNamePattern": "^rtc_[a-z0-9]+(_[a-z0-9]+)*$",
+      "tableExamples": [
+        "rtc_room",
+        "rtc_media_session",
+        "rtc_provider_profile",
+        "rtc_provider_webhook_event"
+      ],
+      "forbiddenAliases": [
+        "im",
+        "chat",
+        "call",
+        "sdkwork_rtc",
+        "sdkwork",
+        "app",
+        "sys",
+        "common"
+      ],
+      "validFrom": "2026-06-18",
+      "notes": [
+        "Use rtc_ only for RTC authority-owned tables.",
+        "Do not rename unrelated IAM, Drive, IM signaling, ops, or platform tables to rtc_.",
+        "Desktop SQLite tables that materialize RTC state must use the same rtc_ logical table names."
+      ]
+    }
+  ],
+  "nonRtcPrefixPolicy": {
+    "mustNotUseRtcPrefix": true,
+    "keepExistingBusinessPrefix": true,
+    "description": "Tables outside the RTC bounded context keep their own business-domain prefix or existing approved legacy name."
+  }
+}

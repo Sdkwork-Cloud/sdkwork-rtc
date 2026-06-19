@@ -213,6 +213,13 @@ function parseAppbaseCallbackSession(search = window.location.search, hash = win
   };
 }
 
+// packages/sdkwork-rtc-mp-core/src/session/sessionStorageKey.ts
+var RTC_MP_SESSION_STORAGE_KEY = "sdkwork-rtc-mini-program:session:v1";
+var LEGACY_RTC_MP_SESSION_STORAGE_KEYS = ["sdkwork.rtc.app.session"];
+function listLegacyRtcMpSessionStorageKeys() {
+  return LEGACY_RTC_MP_SESSION_STORAGE_KEYS;
+}
+
 // packages/sdkwork-rtc-mp-core/src/config/resolveAppSdkBaseUrl.ts
 var APP_API_PREFIX = "/app/v3/api";
 function stripAppApiSuffix(pathname) {
@@ -3763,17 +3770,8 @@ function getHostAdapters() {
 }
 
 // src/bootstrap/appAuth.ts
-var SESSION_STORAGE_KEY = "sdkwork.rtc.app.session";
-function loadAppSession() {
+function parseStoredSession(raw) {
   var _a, _b, _c, _d, _e;
-  const storage = getHostAdapters().secureStorage;
-  if (!storage) {
-    return null;
-  }
-  const raw = storage.getItem(SESSION_STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
   try {
     const parsed = JSON.parse(raw);
     if (!((_a = parsed.accessToken) == null ? void 0 : _a.trim())) {
@@ -3790,9 +3788,35 @@ function loadAppSession() {
     return null;
   }
 }
+function migrateLegacyAppSession(storage) {
+  for (const legacyKey of listLegacyRtcMpSessionStorageKeys()) {
+    const raw = storage.getItem(legacyKey);
+    if (!raw) {
+      continue;
+    }
+    const session = parseStoredSession(raw);
+    storage.removeItem(legacyKey);
+    if (session) {
+      storage.setItem(RTC_MP_SESSION_STORAGE_KEY, JSON.stringify(session));
+      return session;
+    }
+  }
+  return null;
+}
+function loadAppSession() {
+  const storage = getHostAdapters().secureStorage;
+  if (!storage) {
+    return null;
+  }
+  const raw = storage.getItem(RTC_MP_SESSION_STORAGE_KEY);
+  if (raw) {
+    return parseStoredSession(raw);
+  }
+  return migrateLegacyAppSession(storage);
+}
 function saveAppSession(session) {
   var _a;
-  (_a = getHostAdapters().secureStorage) == null ? void 0 : _a.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  (_a = getHostAdapters().secureStorage) == null ? void 0 : _a.setItem(RTC_MP_SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 function createAppTokenManager(session) {
   return createTokenManager2(() => session.accessToken);

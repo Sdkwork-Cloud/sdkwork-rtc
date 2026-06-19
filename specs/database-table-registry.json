@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.database.tableRegistry",
+  "appCode": "rtc",
+  "authority": "../sdkwork-specs/DATABASE_SPEC.md",
+  "prefixRegistry": "./database-prefix-registry.json",
+  "databaseProfiles": [
+    "postgresql",
+    "sqlite"
+  ],
+  "tables": [
+    {
+      "tableName": "rtc_room",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "tenant_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_room_participant",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "relation_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_media_session",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "tenant_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_media_session_completion_record",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "event_log",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_media_artifact",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "relation_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_media_participant",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "relation_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_media_track",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "relation_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_quality_sample",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "event_log",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_account",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "tenant_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_application",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "tenant_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_credential",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "tenant_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_profile",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "tenant_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_route",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "tenant_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_session_token_grant",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "relation_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_webhook_event",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "event_log",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_query_job",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "job_state",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_provider_query_snapshot",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "event_log",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    }
+  ]
+}

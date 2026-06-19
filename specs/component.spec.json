@@ -145,6 +145,12 @@
       "SDKWORK_RTC_PROFILE_ID",
       "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL"
     ],
+    "databasePrefixRegistries": [
+      "specs/database-prefix-registry.json"
+    ],
+    "databaseTableRegistries": [
+      "specs/database-table-registry.json"
+    ],
     "topologySpec": "specs/topology.spec.json"
   },
   "verification": {

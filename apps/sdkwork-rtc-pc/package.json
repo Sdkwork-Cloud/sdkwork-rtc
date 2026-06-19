@@ -9,6 +9,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@sdkwork/auth-pc-react": "workspace:*",
+    "@sdkwork/auth-runtime-pc-react": "workspace:*",
     "@sdkwork/rtc-pc-admin-core": "workspace:*",
     "@sdkwork/rtc-pc-admin-shell": "workspace:*",
     "@sdkwork/rtc-pc-core": "workspace:*",
@@ -17,12 +19,15 @@
     "@sdkwork/sdk-common": "^1.0.2",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-router-dom": "^7.17.0",
     "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
   }

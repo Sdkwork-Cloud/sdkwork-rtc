@@ -1,6 +1,6 @@
 import type { SdkworkAppClient } from "sdkwork-rtc-app-sdk-generated-typescript";
 
-import { initAppSdkClient } from "./appClient";
+import { getAppSdkClient, initAppSdkClient } from "./appClient";
 import { resolveEnvironment } from "./environment";
 
 export interface RtcSdkClients {

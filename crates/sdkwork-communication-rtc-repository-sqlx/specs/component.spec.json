@@ -88,7 +88,13 @@
     "dependencyApiExports": [],
     "dependencyApiSurfaces": [],
     "events": [],
-    "configKeys": []
+    "configKeys": [],
+    "databasePrefixRegistries": [
+      "specs/database-prefix-registry.json"
+    ],
+    "databaseTableRegistries": [
+      "specs/database-table-registry.json"
+    ]
   },
   "integration": {
     "authority": "Root SDKWork specs remain authoritative. Local specs may extend but must not contradict them.",

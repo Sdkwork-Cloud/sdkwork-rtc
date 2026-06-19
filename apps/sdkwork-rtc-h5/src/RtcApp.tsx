@@ -5,10 +5,9 @@ import {
   MediaSessionsPage,
   createRtcMediaWorkspaceManifest,
 } from "@sdkwork/rtc-h5-rtc";
+import { readRtcIamSessionTokens, toRtcAppSession } from "@sdkwork/rtc-h5-core";
 
-import { AppAuthGate } from "./AppAuthGate";
 import { createAppServices } from "./bootstrap/appServices";
-import { loadAppSession } from "./bootstrap/appAuth";
 import { resolveEnvironment } from "./bootstrap/environment";
 
 interface RtcAppProps {
@@ -24,7 +23,7 @@ export function RtcApp({ route }: RtcAppProps) {
   const services = useMemo(() => createAppServices(), []);
   const environment = useMemo(() => resolveEnvironment(), []);
   const workspace = useMemo(() => createRtcMediaWorkspaceManifest(), []);
-  const session = useMemo(() => loadAppSession(), []);
+  const session = useMemo(() => toRtcAppSession(readRtcIamSessionTokens()), []);
   const [participantId, setParticipantId] = useState(session?.userId ?? "user");
 
   const sessionId = parseMediaSessionRoute(route);
@@ -64,9 +63,5 @@ export function RtcApp({ route }: RtcAppProps) {
     );
   };
 
-  return (
-    <AppAuthGate>
-      <AppLayout activePath={activePath}>{renderRoute()}</AppLayout>
-    </AppAuthGate>
-  );
+  return <AppLayout activePath={activePath}>{renderRoute()}</AppLayout>;
 }

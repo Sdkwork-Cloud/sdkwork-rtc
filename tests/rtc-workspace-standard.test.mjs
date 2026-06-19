@@ -95,7 +95,11 @@ test("sdkwork-rtc app roots expose dual app and admin surfaces", () => {
     const appSource = read(`${appRoot}/src/App.tsx`);
     assert.match(appSource, /RtcApp/u, `${appRoot}/src/App.tsx must compose the user RTC surface`);
     assert.match(appSource, /AdminApp/u, `${appRoot}/src/App.tsx must compose the admin surface`);
-    assert.match(appSource, /\/rtc\/media-sessions/u, `${appRoot}/src/App.tsx must default to user RTC routes`);
+    assert.match(
+      appSource,
+      /\/rtc\/media-sessions|RTC_APP_HOME_PATH/u,
+      `${appRoot}/src/App.tsx must default to user RTC routes`,
+    );
     const rtcPackageSource = read(`${appRoot}/packages/${rtcPackage}/package.json`);
     assert.match(rtcPackageSource, /sdkwork-rtc-app-sdk-generated-typescript/u, `${rtcPackage} must depend on the generated app SDK`);
   }
@@ -184,6 +188,64 @@ test("sdkwork-rtc authority workspace declares root component spec", () => {
   assert.equal(spec.component?.capability, "rtc");
   assert.ok(Array.isArray(spec.verification?.commands) && spec.verification.commands.includes("pnpm run verify"));
   assert.ok(spec.contracts?.topologySpec, "root component spec must reference topology authority");
+  assert.deepEqual(spec.contracts?.databasePrefixRegistries, ["specs/database-prefix-registry.json"]);
+  assert.deepEqual(spec.contracts?.databaseTableRegistries, ["specs/database-table-registry.json"]);
+});
+
+test("sdkwork-rtc runnable app roots declare component specs", () => {
+  for (const [appRoot, expectation] of [
+    ["apps/sdkwork-rtc-pc", { name: "sdkwork-rtc-pc", type: "pc-app-root" }],
+    ["apps/sdkwork-rtc-h5", { name: "sdkwork-rtc-h5", type: "h5-app-root" }],
+    ["apps/sdkwork-rtc-flutter-mobile", { name: "sdkwork-rtc-flutter-mobile", type: "flutter-app-root" }],
+    ["apps/sdkwork-rtc-mini-program", { name: "sdkwork-rtc-mini-program", type: "mini-program-app-root" }],
+  ]) {
+    const specPath = `${appRoot}/specs/component.spec.json`;
+    assert.ok(exists(specPath), `${specPath} must exist`);
+    const spec = JSON.parse(read(specPath));
+    assert.equal(spec.kind, "sdkwork.component.spec");
+    assert.equal(spec.component?.name, expectation.name);
+    assert.equal(spec.component?.type, expectation.type);
+    assert.equal(spec.component?.domain, "rtc", `${specPath} must declare rtc domain`);
+    assert.ok(spec.component?.manifests?.includes("sdkwork.app.config.json"), `${specPath} must declare sdkwork.app.config.json`);
+  }
+});
+
+test("sdkwork-rtc flutter mobile packages declare component specs", () => {
+  for (const [packageDir, capability] of [
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core", "core"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_shell", "shell"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_commons", "commons"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_admin_core", "admin-core"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc", "rtc"],
+  ]) {
+    const specPath = `${packageDir}/specs/component.spec.json`;
+    assert.ok(exists(specPath), `${specPath} must exist`);
+    const spec = JSON.parse(read(specPath));
+    assert.equal(spec.component?.type, "flutter-package");
+    assert.equal(spec.component?.capability, capability);
+    assert.equal(spec.component?.domain, "communication");
+  }
+});
+
+test("sdkwork-rtc database registries align with repository table contracts", () => {
+  assert.ok(exists("specs/database-prefix-registry.json"), "specs/database-prefix-registry.json must exist");
+  assert.ok(exists("specs/database-table-registry.json"), "specs/database-table-registry.json must exist");
+
+  const prefixRegistry = JSON.parse(read("specs/database-prefix-registry.json"));
+  const tableRegistry = JSON.parse(read("specs/database-table-registry.json"));
+  const repositoryLib = read("crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs");
+  const contractTableNames = [...repositoryLib.matchAll(/table_name:\s*"([^"]+)"/gu)].map((match) => match[1]).sort();
+  const registryTableNames = tableRegistry.tables.map((entry) => entry.tableName).sort();
+
+  assert.equal(prefixRegistry.kind, "sdkwork.database.prefixRegistry");
+  assert.equal(prefixRegistry.prefixes?.[0]?.prefix, "rtc");
+  assert.equal(tableRegistry.kind, "sdkwork.database.tableRegistry");
+  assert.equal(tableRegistry.prefixRegistry, "./database-prefix-registry.json");
+  assert.deepEqual(registryTableNames, contractTableNames);
+  for (const entry of tableRegistry.tables) {
+    assert.equal(entry.modulePrefix, "rtc", `${entry.tableName} must use rtc module prefix`);
+    assert.match(entry.migration, /postgres_rtc\.sql/u, `${entry.tableName} must reference postgres_rtc.sql authority`);
+  }
 });
 
 test("sdkwork-rtc .sdkwork workspace metadata is materialized without template placeholders", () => {
@@ -254,6 +316,96 @@ test("sdkwork-rtc route crates do not keep legacy auth middleware modules", () =
   }
 });
 
+test("sdkwork-rtc client surfaces use app-scoped IAM session storage keys", () => {
+  const pcIamSession = read("apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/src/session/iamSession.ts");
+  const h5IamSession = read("apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/src/session/iamSession.ts");
+  const mpSessionKey = read("apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/src/session/sessionStorageKey.ts");
+  const flutterSession = read("apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core/lib/src/session/app_session.dart");
+
+  assert.match(pcIamSession, /sdkwork-rtc-pc:session:v1/u);
+  assert.match(h5IamSession, /sdkwork-rtc-h5:session:v1/u);
+  assert.match(mpSessionKey, /sdkwork-rtc-mini-program:session:v1/u);
+  assert.match(flutterSession, /sdkwork-rtc-flutter-mobile:session:v1/u);
+  assert.match(read("apps/sdkwork-rtc-pc/src/bootstrap/adminAuth.ts"), /sdkwork-rtc-pc:admin-session:v1/u);
+  assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/adminAuth.ts"), /sdkwork-rtc-h5:admin-session:v1/u);
+
+  for (const source of [pcIamSession, h5IamSession]) {
+    assert.doesNotMatch(source, /RTC_LEGACY_SESSION_STORAGE_KEY/u);
+    assert.doesNotMatch(source, /legacy-session/u);
+  }
+
+  for (const filePath of [
+    "apps/sdkwork-rtc-mini-program/src/pages/login/index.js",
+    "apps/sdkwork-rtc-mini-program/src/pages/media-sessions/index.js",
+    "apps/sdkwork-rtc-mini-program/src/pages/media-session-room/index.js",
+  ]) {
+    const source = read(filePath);
+    assert.doesNotMatch(source, /["']sdkwork\.rtc\.app\.session["']/u, `${filePath} must not hardcode legacy session storage key`);
+    assert.match(source, /constants\/sessionStorageKey/u, `${filePath} must import canonical session storage key`);
+  }
+  assert.match(
+    read("apps/sdkwork-rtc-mini-program/src/app.js"),
+    /constants\/sessionStorageKey/u,
+    "mini program app entry must import canonical session storage key",
+  );
+  assert.match(
+    read("apps/sdkwork-rtc-mini-program/src/constants/sessionStorageKey.js"),
+    /LEGACY_SESSION_STORAGE_KEYS/u,
+    "mini program constants must declare legacy migration keys centrally",
+  );
+});
+
+test("sdkwork-rtc PC app integrates appbase auth runtime factory", () => {
+  const appPackage = JSON.parse(read("apps/sdkwork-rtc-pc/package.json"));
+  const corePackage = JSON.parse(read("apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/package.json"));
+  assert.equal(appPackage.dependencies?.["@sdkwork/auth-runtime-pc-react"], "workspace:*");
+  assert.equal(appPackage.dependencies?.["@sdkwork/auth-pc-react"], "workspace:*");
+  assert.equal(appPackage.dependencies?.["react-router-dom"], "^7.17.0");
+  assert.equal(
+    corePackage.dependencies?.["@sdkwork/auth-runtime-pc-react"],
+    undefined,
+    "auth runtime factory must stay at app bootstrap layer, not rtc-pc-core",
+  );
+  assert.match(read("apps/sdkwork-rtc-pc/src/bootstrap/rtcAppAuthRuntime.ts"), /createSdkworkAppbasePcAuthRuntime/u);
+  assert.match(read("apps/sdkwork-rtc-pc/src/bootstrap/iamRuntime.ts"), /createRtcAppAuthRuntime/u);
+  assert.match(read("apps/sdkwork-rtc-pc/src/AppAuthGate.tsx"), /SdkworkIamAuthRoutes/u);
+  assert.match(read("apps/sdkwork-rtc-pc/src/App.tsx"), /HashRouter/u);
+  assert.match(read("apps/sdkwork-rtc-pc/vite.config.ts"), /@sdkwork\/auth-pc-react/u);
+  assert.ok(
+    exists("apps/sdkwork-rtc-pc/src/__tests__/pc-architecture.contract.test.ts"),
+    "rtc pc app must declare architecture contract tests",
+  );
+  assert.match(read("pnpm-workspace.yaml"), /sdkwork-auth-runtime-pc-react/u);
+  assert.match(read("pnpm-workspace.yaml"), /sdkwork-auth-pc-react/u);
+});
+
+test("sdkwork-rtc H5 app integrates appbase auth runtime at bootstrap without auth-pc-react UI", () => {
+  const h5Package = JSON.parse(read("apps/sdkwork-rtc-h5/package.json"));
+  const corePackage = JSON.parse(read("apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/package.json"));
+  assert.equal(h5Package.dependencies?.["@sdkwork/auth-runtime-pc-react"], "workspace:*");
+  assert.equal(h5Package.dependencies?.["react-router-dom"], "^7.17.0");
+  assert.equal(
+    h5Package.dependencies?.["@sdkwork/auth-pc-react"],
+    undefined,
+    "H5 defers auth-pc-react UI until dedicated H5 auth surface exists",
+  );
+  assert.equal(
+    corePackage.dependencies?.["@sdkwork/auth-runtime-pc-react"],
+    undefined,
+    "auth runtime factory must stay at app bootstrap layer, not rtc-h5-core",
+  );
+  assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/rtcAppAuthRuntime.ts"), /platform:\s*"h5"/u);
+  assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/iamRuntime.ts"), /createRtcAppAuthRuntime/u);
+  assert.match(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /RtcH5AuthLoginPage/u);
+  assert.match(read("apps/sdkwork-rtc-h5/src/App.tsx"), /HashRouter/u);
+  assert.doesNotMatch(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /SdkworkIamAuthRoutes/u);
+  assert.ok(
+    exists("apps/sdkwork-rtc-h5/src/__tests__/h5-architecture.contract.test.ts"),
+    "rtc h5 app must declare architecture contract tests",
+  );
+  assert.doesNotMatch(read("pnpm-workspace.yaml"), /sdkwork-auth-runtime-h5/u);
+});
+
 test("sdkwork-rtc client cores declare IAM contract dependency", () => {
   for (const packagePath of [
     "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/package.json",
@@ -320,6 +472,8 @@ test("sdkwork-rtc api-server wires database readiness when persistence pool is c
   assert.match(databaseModule, /connect_rtc_persistence_bootstrap_from_env/u);
   assert.match(databaseModule, /rtc_database_env_explicitly_configured/u, "repository must opt in to persistence only when RTC database env is configured");
   assert.match(databaseModule, /rtc_database_env_values_explicitly_configured/u, "repository must keep pure env detection helper for verification");
+  assert.match(read("crates/sdkwork-communication-rtc-repository-sqlx/specs/component.spec.json"), /database-prefix-registry\.json/u);
+  assert.match(read("crates/sdkwork-communication-rtc-repository-sqlx/specs/component.spec.json"), /database-table-registry\.json/u);
   assert.doesNotMatch(databaseModule, /persistence_from_legacy_database_url/u, "repository must not keep legacy direct sqlx pool bootstrap");
   assert.match(bootstrapSource, /RtcApiBootstrap/u);
   assert.match(bootstrapSource, /database_pool/u);

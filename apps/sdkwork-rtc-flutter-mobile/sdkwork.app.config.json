@@ -10,5 +10,11 @@
       "framework": "flutter",
       "surface": "app"
     }
+  },
+  "runtime": {
+    "supportedDeploymentProfiles": [
+      "cloud"
+    ],
+    "defaultDeploymentProfile": "cloud"
   }
 }

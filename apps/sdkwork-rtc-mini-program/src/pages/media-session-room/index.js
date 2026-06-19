@@ -1,4 +1,4 @@
-const SESSION_KEY = "sdkwork.rtc.app.session";
+const { SESSION_STORAGE_KEY } = require("../../constants/sessionStorageKey");
 const {
   bootstrapRtcMiniProgram,
   getMediaSession,
@@ -22,7 +22,7 @@ Page({
       this.setData({ loading: false, error: "Missing media session id" });
       return;
     }
-    const raw = wx.getStorageSync(SESSION_KEY);
+    const raw = wx.getStorageSync(SESSION_STORAGE_KEY);
     if (!raw) {
       wx.reLaunch({ url: "/pages/login/index" });
       return;

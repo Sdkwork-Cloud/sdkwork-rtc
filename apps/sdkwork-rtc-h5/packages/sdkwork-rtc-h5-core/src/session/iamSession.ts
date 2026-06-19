@@ -26,9 +26,13 @@ export interface RtcIamSession {
   user?: RtcIamSessionUser;
 }
 
-export const RTC_IAM_SESSION_STORAGE_KEY = "sdkwork.rtc.app.session:v1";
-export const RTC_LEGACY_SESSION_STORAGE_KEY = "sdkwork.rtc.app.session";
+export const RTC_IAM_SESSION_STORAGE_KEY = "sdkwork-rtc-h5:session:v1";
 export const RTC_IAM_SESSION_CHANGED_EVENT = "sdkwork-rtc-h5:auth-session-changed";
+
+const LEGACY_RTC_IAM_SESSION_STORAGE_KEYS = [
+  "sdkwork.rtc.app.session:v1",
+  "sdkwork.rtc.app.session",
+] as const;
 
 let rtcGlobalTokenManager: AuthTokenManager | null = null;
 
@@ -54,32 +58,38 @@ function dispatchRtcIamSessionChanged(session: RtcIamSession | null): void {
   );
 }
 
-function readLegacySession(): RtcIamSession | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  const raw = window.sessionStorage.getItem(RTC_LEGACY_SESSION_STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
+function parseStoredRtcIamSession(raw: string): RtcIamSession | null {
   try {
-    const parsed = JSON.parse(raw) as Partial<RtcAppSession>;
+    const parsed = JSON.parse(raw) as Partial<RtcIamSession> & Partial<RtcAppSession>;
     const accessToken = normalizeToken(parsed.accessToken);
+    const authToken = normalizeToken(parsed.authToken);
+    if (accessToken || authToken) {
+      return {
+        ...(accessToken ? { accessToken } : {}),
+        ...(authToken ? { authToken } : {}),
+        ...(normalizeToken(parsed.refreshToken) ? { refreshToken: parsed.refreshToken } : {}),
+        ...(parsed.sessionId ? { sessionId: parsed.sessionId } : {}),
+        ...(parsed.context ? { context: parsed.context } : {}),
+        ...(parsed.user ? { user: parsed.user } : {}),
+      };
+    }
+
     if (!accessToken) {
       return null;
     }
+
     return {
       accessToken,
-      authToken: normalizeToken(parsed.authToken) ?? accessToken,
+      authToken: authToken ?? accessToken,
       context: {
-        appId: "sdkwork-rtc-pc",
+        appId: "sdkwork-rtc-h5",
         authLevel: "password",
         dataScope: [],
         deploymentMode: "local",
         environment: "dev",
         organizationId: parsed.organizationId ?? DEFAULT_APP_SESSION.organizationId,
         permissionScope: [],
-        sessionId: "legacy-session",
+        sessionId: parsed.sessionId?.trim() || "migrated-session",
         tenantId: parsed.tenantId ?? DEFAULT_APP_SESSION.tenantId,
         userId: parsed.userId ?? DEFAULT_APP_SESSION.userId,
       },
@@ -87,6 +97,41 @@ function readLegacySession(): RtcIamSession | null {
   } catch {
     return null;
   }
+}
+
+function migrateLegacyRtcIamSession(): RtcIamSession | null {
+  const storage = getStorage();
+  if (storage) {
+    for (const legacyKey of LEGACY_RTC_IAM_SESSION_STORAGE_KEYS) {
+      const raw = storage.getItem(legacyKey);
+      if (!raw) {
+        continue;
+      }
+      const session = parseStoredRtcIamSession(raw);
+      storage.removeItem(legacyKey);
+      if (session) {
+        return applyRtcIamSessionTokens(session);
+      }
+    }
+  }
+
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  for (const legacyKey of LEGACY_RTC_IAM_SESSION_STORAGE_KEYS) {
+    const raw = window.sessionStorage.getItem(legacyKey);
+    if (!raw) {
+      continue;
+    }
+    const session = parseStoredRtcIamSession(raw);
+    window.sessionStorage.removeItem(legacyKey);
+    if (session) {
+      return applyRtcIamSessionTokens(session);
+    }
+  }
+
+  return null;
 }
 
 export function readRtcIamSessionTokens(): RtcIamSession | null {
@@ -97,25 +142,14 @@ export function readRtcIamSessionTokens(): RtcIamSession | null {
 
   const raw = storage.getItem(RTC_IAM_SESSION_STORAGE_KEY);
   if (raw) {
-    try {
-      const parsed = JSON.parse(raw) as RtcIamSession;
-      if (!normalizeToken(parsed.accessToken) && !normalizeToken(parsed.authToken)) {
-        return null;
-      }
-      return parsed;
-    } catch {
+    const session = parseStoredRtcIamSession(raw);
+    if (!session || (!normalizeToken(session.accessToken) && !normalizeToken(session.authToken))) {
       return null;
     }
+    return session;
   }
 
-  const legacy = readLegacySession();
-  if (legacy) {
-    applyRtcIamSessionTokens(legacy);
-    if (typeof window !== "undefined") {
-      window.sessionStorage.removeItem(RTC_LEGACY_SESSION_STORAGE_KEY);
-    }
-  }
-  return legacy;
+  return migrateLegacyRtcIamSession();
 }
 
 export function applyRtcIamSessionTokens(session: RtcIamSession): RtcIamSession {
@@ -148,7 +182,10 @@ export function clearRtcIamSessionTokens(): void {
   const storage = getStorage();
   storage?.removeItem(RTC_IAM_SESSION_STORAGE_KEY);
   if (typeof window !== "undefined") {
-    window.sessionStorage.removeItem(RTC_LEGACY_SESSION_STORAGE_KEY);
+    for (const legacyKey of LEGACY_RTC_IAM_SESSION_STORAGE_KEYS) {
+      window.sessionStorage.removeItem(legacyKey);
+      window.localStorage.removeItem(legacyKey);
+    }
   }
   getRtcGlobalTokenManager().clearTokens();
   dispatchRtcIamSessionChanged(null);

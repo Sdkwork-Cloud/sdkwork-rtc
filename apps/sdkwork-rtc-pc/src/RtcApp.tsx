@@ -7,7 +7,6 @@ import {
 } from "@sdkwork/rtc-pc-rtc";
 import { readRtcIamSessionTokens, toRtcAppSession } from "@sdkwork/rtc-pc-core";
 
-import { AppAuthGate } from "./AppAuthGate";
 import { createAppServices } from "./bootstrap/appServices";
 import { resolveEnvironment } from "./bootstrap/environment";
 
@@ -64,9 +63,5 @@ export function RtcApp({ route }: RtcAppProps) {
     );
   };
 
-  return (
-    <AppAuthGate>
-      <AppLayout activePath={activePath}>{renderRoute()}</AppLayout>
-    </AppAuthGate>
-  );
+  return <AppLayout activePath={activePath}>{renderRoute()}</AppLayout>;
 }

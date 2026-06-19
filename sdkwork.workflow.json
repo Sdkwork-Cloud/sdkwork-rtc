@@ -101,35 +101,55 @@
       {
         "name": "Package RTC cloud gateway config bundle",
         "shell": "pwsh",
-        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_PROFILE) {\n  'cloud-config' { pnpm gateway:cloud:bundle }\n  default { Write-Host \"Skipping RTC package archive for profile $($env:SDKWORK_PACKAGE_PROFILE)\" }\n}"
+        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_VARIANT) {\n  'config-bundle' { pnpm gateway:cloud:bundle }\n  default { Write-Host \"Skipping RTC package archive for profile $($env:SDKWORK_PACKAGE_VARIANT)\" }\n}"
+      }
+    ],
+    "sbom": [
+      {
+        "name": "Write RTC package SBOM evidence",
+        "shell": "node",
+        "run": "import { mkdirSync, writeFileSync } from 'node:fs';\nimport path from 'node:path';\nconst env = process.env;\nconst packageId = env.SDKWORK_PACKAGE_ID || env.SDKWORK_PACKAGE_TARGET_ID || 'sdkwork-rtc';\nconst output = path.posix.join('artifacts/release/sbom', `${packageId}.sbom.json`);\nmkdirSync(path.dirname(output), { recursive: true });\nwriteFileSync(output, `${JSON.stringify({ bomFormat: 'CycloneDX', specVersion: '1.6', version: 1, metadata: { timestamp: new Date().toISOString(), tools: [{ vendor: 'SDKWork', name: 'sdkwork-rtc-workflow-sbom', version: '1.0.0' }], component: { type: 'application', name: env.SDKWORK_APP_ID || 'sdkwork-rtc', version: env.SDKWORK_PACKAGE_VERSION || env.SDKWORK_RELEASE_TAG || '0.1.0', 'bom-ref': packageId }, properties: [{ name: 'sdkwork:packageId', value: packageId }, { name: 'sdkwork:targetId', value: env.SDKWORK_PACKAGE_TARGET_ID || packageId }, { name: 'sdkwork:runtimeTarget', value: env.SDKWORK_RUNTIME_TARGET || 'server' }, { name: 'sdkwork:deploymentProfile', value: env.SDKWORK_DEPLOYMENT_PROFILE || 'standalone' }] }, components: [] }, null, 2)}\\n`);"
       }
     ],
     "validate": [
       {
         "name": "Validate RTC cloud gateway config bundle",
         "shell": "pwsh",
-        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_PROFILE) {\n  'cloud-config' { pnpm gateway:cloud:bundle:validate }\n  default { Write-Host \"Skipping RTC package validation for profile $($env:SDKWORK_PACKAGE_PROFILE)\" }\n}"
+        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_VARIANT) {\n  'config-bundle' { pnpm gateway:cloud:bundle:validate }\n  default { Write-Host \"Skipping RTC package validation for profile $($env:SDKWORK_PACKAGE_VARIANT)\" }\n}"
       }
     ]
   },
   "targets": [
     {
-      "id": "linux-x64-server-tar-gz",
+      "id": "linux-x64-standalone-server-tar-gz",
       "profile": "server",
       "platform": "linux",
       "architecture": "x64",
-      "formats": ["tar.gz"],
+      "formats": [
+        "tar.gz"
+      ],
       "runner": "ubuntu-24.04",
-      "outputGlobs": ["artifacts/release/**/*"]
+      "outputGlobs": [
+        "artifacts/release/**/*"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "server"
     },
     {
-      "id": "cloud-config-bundle-tar-gz",
-      "profile": "cloud-config",
-      "platform": "all",
-      "architecture": "all",
-      "formats": ["tar.gz"],
+      "id": "container-noarch-cloud-container-config-bundle-tar-gz",
+      "profile": "container",
+      "platform": "container",
+      "architecture": "noarch",
+      "formats": [
+        "tar.gz"
+      ],
       "runner": "ubuntu-24.04",
-      "outputGlobs": ["dist/cloud-config/sdkwork-rtc-api-gateway-config-*.tar.gz"]
+      "outputGlobs": [
+        "dist/config-bundle/sdkwork-rtc-api-gateway-config-*.tar.gz"
+      ],
+      "deploymentProfile": "cloud",
+      "runtimeTarget": "container",
+      "variant": "config-bundle"
     }
   ],
   "security": {

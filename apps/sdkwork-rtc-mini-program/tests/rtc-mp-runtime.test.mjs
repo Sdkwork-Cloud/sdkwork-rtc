@@ -11,6 +11,7 @@ test("sdkwork-rtc mini program runtime bundle exports RTC helpers", () => {
   assert.equal(existsSync(bundlePath), true, "src/runtime/rtc-app.js must exist after build");
   const source = readFileSync(bundlePath, "utf8");
   assert.match(source, /bootstrapRtcMiniProgram/u);
+  assert.match(source, /sdkwork-rtc-mini-program:session:v1/u);
   assert.match(source, /listMediaSessions/u);
   assert.match(source, /createMediaSession/u);
   assert.match(source, /getMediaSession/u);

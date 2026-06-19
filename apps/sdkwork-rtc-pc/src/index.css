@@ -1,3 +1,24 @@
+@import "tailwindcss";
+@source "../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-pc-react/src";
+@source "../../../../sdkwork-appbase/packages/pc-react/foundation/sdkwork-i18n-pc-react/src";
+
+:root {
+  --sdkwork-rtc-auth-bg: #eef2f8;
+  --sdkwork-rtc-auth-aside-bg: #0f172a;
+  --sdkwork-rtc-auth-aside-border: rgba(148, 163, 184, 0.18);
+  --sdkwork-rtc-auth-aside-text: #e2e8f0;
+  --sdkwork-rtc-auth-aside-card-bg: rgba(15, 23, 42, 0.72);
+  --sdkwork-rtc-auth-aside-card-border: rgba(148, 163, 184, 0.24);
+  --sdkwork-rtc-auth-aside-badge-bg: rgba(59, 130, 246, 0.18);
+  --sdkwork-rtc-auth-aside-badge-text: #bfdbfe;
+  --sdkwork-rtc-auth-content-bg: #ffffff;
+  --sdkwork-rtc-auth-content-text: #0f172a;
+  --sdkwork-rtc-auth-muted-text: #64748b;
+  --sdkwork-rtc-auth-divider: #dbe3ef;
+  --sdkwork-rtc-auth-field-bg: #f8fafc;
+  --sdkwork-rtc-auth-qr-bg: #f8fafc;
+}
+
 *,
 *::before,
 *::after {
@@ -6,11 +27,16 @@
   padding: 0;
 }
 
+html,
+body,
+#root {
+  min-height: 100vh;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #f7f8fa;
   color: #17202a;
-  min-height: 100vh;
 }
 
 .admin-header {
@@ -64,12 +90,12 @@ body {
   margin: 0 auto;
 }
 
-.rtc-app-auth-login,
-.rtc-app-auth-shell {
+.admin-auth-shell,
+.admin-auth-login {
   min-height: 100vh;
 }
 
-.rtc-app-auth-toolbar {
+.admin-auth-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -78,7 +104,7 @@ body {
   border-bottom: 1px solid #dbe3ef;
 }
 
-.rtc-app-auth-form {
+.admin-auth-form {
   max-width: 420px;
   margin: 48px auto;
   padding: 24px;
@@ -89,14 +115,14 @@ body {
   gap: 12px;
 }
 
-.rtc-app-auth-form label {
+.admin-auth-form label {
   display: grid;
   gap: 6px;
 }
 
-.rtc-app-auth-divider {
-  margin: 16px 0;
-  text-align: center;
-  color: #64748b;
-  font-size: 14px;
+.sdkwork-rtc-auth-loading {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
 }

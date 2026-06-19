@@ -1,4 +1,4 @@
-const SESSION_KEY = "sdkwork.rtc.app.session";
+const { SESSION_STORAGE_KEY } = require("./constants/sessionStorageKey");
 const { bootstrapRtcMiniProgram } = require("../../runtime/rtc-app");
 
 App({
@@ -9,7 +9,7 @@ App({
     } catch {
       // Runtime bundle may be unavailable before build; pages bootstrap on demand.
     }
-    const session = wx.getStorageSync(SESSION_KEY);
+    const session = wx.getStorageSync(SESSION_STORAGE_KEY);
     if (!session) {
       wx.reLaunch({ url: "/pages/login/index" });
       return;

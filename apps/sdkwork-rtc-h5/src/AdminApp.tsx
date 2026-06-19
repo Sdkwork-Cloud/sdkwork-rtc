@@ -27,7 +27,10 @@ import {
 import { AuthGate } from "./AuthGate";
 import { createAdminServices } from "./bootstrap/adminServices";
 import { useAdminData } from "./hooks/useAdminData";
-import { useHashRoute } from "./hooks/useHashRoute";
+
+interface AdminAppProps {
+  route: string;
+}
 
 function AdminError({ message }: { message: string }) {
   return (
@@ -41,9 +44,8 @@ function AdminLoading({ label = "Loading RTC admin data..." }: { label?: string 
   return <p>{label}</p>;
 }
 
-export function AdminApp() {
+export function AdminApp({ route }: AdminAppProps) {
   const services = useMemo(() => createAdminServices(), []);
-  const route = useHashRoute("/admin/dashboard");
   const adminData = useAdminData(services);
 
   const [roomFilter, setRoomFilter] = useState(DEFAULT_ROOM_FILTER);

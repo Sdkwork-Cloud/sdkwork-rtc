@@ -50,3 +50,8 @@ const defaultAppSession = RtcAppSession(
   organizationId: 'default',
   userId: 'user',
 );
+
+const rtcFlutterMobileSessionStorageKey = 'sdkwork-rtc-flutter-mobile:session:v1';
+const legacyRtcFlutterMobileSessionStorageKeys = <String>[
+  'sdkwork.rtc.app.session',
+];

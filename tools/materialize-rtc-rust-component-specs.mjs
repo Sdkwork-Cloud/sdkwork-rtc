@@ -60,6 +60,8 @@ const components = [
     verify: "cargo test -p sdkwork-communication-rtc-repository-sqlx",
     routeManifest: null,
     runtimeEntrypoints: ["Cargo.toml"],
+    databasePrefixRegistries: ["specs/database-prefix-registry.json"],
+    databaseTableRegistries: ["specs/database-table-registry.json"],
   },
   {
     crateDir: "crates/sdkwork-router-rtc-app-api",
@@ -212,6 +214,12 @@ function buildManifest(component) {
       dependencyApiSurfaces: [],
       events: [],
       configKeys: [],
+      ...(component.databasePrefixRegistries
+        ? { databasePrefixRegistries: component.databasePrefixRegistries }
+        : {}),
+      ...(component.databaseTableRegistries
+        ? { databaseTableRegistries: component.databaseTableRegistries }
+        : {}),
     },
     integration: {
       authority:
