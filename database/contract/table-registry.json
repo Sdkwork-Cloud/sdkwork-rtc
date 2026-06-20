@@ -1,5 +1,108 @@
 {
   "schemaVersion": 1,
   "kind": "sdkwork.database.table-registry",
-  "tables": []
+  "tables": [
+    {
+      "table_name": "rtc_room",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_room_participant",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_media_session",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_media_session_completion_record",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_media_artifact",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_media_participant",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_media_track",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_quality_sample",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_account",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_application",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_credential",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_profile",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_route",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_session_token_grant",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_webhook_event",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_query_job",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_provider_query_snapshot",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    }
+  ]
 }

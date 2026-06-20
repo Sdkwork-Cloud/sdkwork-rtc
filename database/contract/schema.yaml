@@ -1,11 +1,61 @@
 schema_version: 1
 kind: sdkwork.database.schema
 module_id: rtc
-contract_version: 0.1.0
+contract_version: 1.0.0
 owner_team: rtc-platform
 compliance_level: L2
 engines:
   - postgres
-  - sqlite
 table_prefix: rtc_
-tables: []
+tables:
+  - name: rtc_room
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_room_participant
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_media_session
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_media_session_completion_record
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_media_artifact
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_media_participant
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_media_track
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_quality_sample
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_account
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_application
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_credential
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_profile
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_route
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_session_token_grant
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_webhook_event
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_query_job
+    lifecycle_status: active
+    owner: rtc-platform
+  - name: rtc_provider_query_snapshot
+    lifecycle_status: active
+    owner: rtc-platform

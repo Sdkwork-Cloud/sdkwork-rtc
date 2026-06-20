@@ -6,6 +6,7 @@ members = [
     "plugins/rtc-tencent",
     "plugins/rtc-livekit",
     "plugins/rtc-volcengine",
+    "crates/sdkwork-rtc-database-host",
     "crates/sdkwork-rtc-api-registry",
     "crates/sdkwork-rtc-app-context",
     "crates/sdkwork-communication-rtc-service",
@@ -36,6 +37,7 @@ uuid = { version = "1", features = ["v4"] }
 sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio-rustls", "any", "sqlite", "postgres", "json"] }
 
 # SDKWork workspace members - declared once at workspace root
+sdkwork-rtc-database-host = { path = "crates/sdkwork-rtc-database-host" }
 sdkwork-rtc-api-registry = { path = "crates/sdkwork-rtc-api-registry" }
 sdkwork-rtc-app-context = { path = "crates/sdkwork-rtc-app-context" }
 sdkwork-communication-rtc-service = { path = "crates/sdkwork-communication-rtc-service" }
@@ -54,9 +56,15 @@ sdkwork-drive-config = { path = "../sdkwork-drive/crates/sdkwork-drive-config" }
 sdkwork-drive-storage-contract = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-contract" }
 sdkwork-drive-storage-local = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-local" }
 sdkwork-drive-workspace-service = { path = "../sdkwork-drive/crates/sdkwork-drive-workspace-service" }
-sdkwork-database-config = { path = "../sdkwork-database/crates/sdkwork-database-config" }
-sdkwork-database-repository = { path = "../sdkwork-database/crates/sdkwork-database-repository" }
-sdkwork-database-sqlx = { path = "../sdkwork-database/crates/sdkwork-database-sqlx" }
+sdkwork-database-config = { path = "../sdkwork-database/crates/sdkwork-database-config", package = "sdkwork-database-config" }
+sdkwork-database-lifecycle = { path = "../sdkwork-database/crates/sdkwork-database-lifecycle", package = "sdkwork-database-lifecycle" }
+sdkwork-database-spi = { path = "../sdkwork-database/crates/sdkwork-database-spi", package = "sdkwork-database-spi" }
+sdkwork-database-repository = { path = "../sdkwork-database/crates/sdkwork-database-repository", package = "sdkwork-database-repository" }
+sdkwork-database-sqlx = { path = "../sdkwork-database/crates/sdkwork-database-sqlx", package = "sdkwork-database-sqlx" }
+sdkwork_database_config = { path = "../sdkwork-database/crates/sdkwork-database-config", package = "sdkwork-database-config" }
+sdkwork_database_lifecycle = { path = "../sdkwork-database/crates/sdkwork-database-lifecycle", package = "sdkwork-database-lifecycle" }
+sdkwork_database_spi = { path = "../sdkwork-database/crates/sdkwork-database-spi", package = "sdkwork-database-spi" }
+sdkwork_database_sqlx = { path = "../sdkwork-database/crates/sdkwork-database-sqlx", package = "sdkwork-database-sqlx" }
 sdkwork-iam-web-adapter = { path = "../sdkwork-appbase/crates/sdkwork-iam-web-adapter" }
 sdkwork-web-axum = { path = "../sdkwork-web-framework/crates/sdkwork-web-axum" }
 sdkwork-web-bootstrap = { path = "../sdkwork-web-framework/crates/sdkwork-web-bootstrap" }
