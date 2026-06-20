@@ -33,7 +33,17 @@
     "gateway:cloud:matrix": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs print-matrix --root . --spec specs/topology.spec.json --profile platform-config-bundle",
     "gateway:matrix": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs print-matrix --root . --spec specs/topology.spec.json --profile all",
     "typecheck": "tsc --noEmit",
-    "verify": "pnpm run test:workspace-standard && pnpm run audit:migration && pnpm run materialize:openapi && pnpm run materialize:rust-component-specs:check && pnpm run sdk:check && pnpm run test:topology-validate && pnpm run test:topology-contract && pnpm run test:topology-baggage && pnpm run test:topology-packaging && pnpm run typecheck && pnpm run test:h5-typecheck && pnpm test && pnpm run test:mini-program && pnpm run test:flutter-analyze && pnpm run test:flutter && pnpm run test:rust-fmt && pnpm run test:rust"
+    "verify": "pnpm run test:workspace-standard && pnpm run audit:migration && pnpm run materialize:openapi && pnpm run materialize:rust-component-specs:check && pnpm run sdk:check && pnpm run test:topology-validate && pnpm run test:topology-contract && pnpm run test:topology-baggage && pnpm run test:topology-packaging && pnpm run typecheck && pnpm run test:h5-typecheck && pnpm test && pnpm run test:mini-program && pnpm run test:flutter-analyze && pnpm run test:flutter && pnpm run test:rust-fmt && pnpm run test:rust",
+    "db:validate": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root .",
+    "db:plan": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . plan",
+    "db:init": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . init",
+    "db:migrate": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . migrate",
+    "db:seed": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . seed",
+    "db:status": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . status",
+    "db:drift": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . drift",
+    "db:drift:check": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . drift-check",
+    "db:bootstrap": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . bootstrap",
+    "test:contract:database": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root ."
   },
   "dependencies": {
     "@sdkwork/app-topology": "file:../sdkwork-app-topology"
