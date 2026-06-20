@@ -35,7 +35,7 @@ export function createRtcAppAuthRuntime(
   const composition = createSdkworkAppbasePcAuthRuntime({
     app: {
       appId: options.appId,
-      deploymentMode: options.deploymentMode ?? "local",
+      deploymentMode: options.deploymentMode ?? "saas",
       environment: options.environment ?? "dev",
       platform: "h5",
     },

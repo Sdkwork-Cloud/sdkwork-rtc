@@ -28,7 +28,7 @@ export function RtcH5AuthLoginPage({ homePath = RTC_APP_HOME_PATH }: RtcH5AuthLo
           appId: "sdkwork-rtc-h5",
           authLevel: "password",
           dataScope: [],
-          deploymentMode: "local",
+          deploymentMode: "saas",
           environment: "dev",
           organizationId: form.organizationId.trim() || DEFAULT_APP_SESSION.organizationId,
           permissionScope: [],

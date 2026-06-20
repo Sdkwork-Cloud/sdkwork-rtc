@@ -25,7 +25,7 @@ export function createIamRuntime() {
         appId: "sdkwork-rtc-h5",
         authLevel: "password",
         dataScope: [],
-        deploymentMode: "local",
+        deploymentMode: "saas",
         environment: "dev",
         organizationId: callbackSession.organizationId,
         permissionScope: [],

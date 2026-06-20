@@ -85,7 +85,7 @@ function parseStoredRtcIamSession(raw: string): RtcIamSession | null {
         appId: "sdkwork-rtc-pc",
         authLevel: "password",
         dataScope: [],
-        deploymentMode: "local",
+        deploymentMode: "saas",
         environment: "dev",
         organizationId: parsed.organizationId ?? DEFAULT_APP_SESSION.organizationId,
         permissionScope: [],
