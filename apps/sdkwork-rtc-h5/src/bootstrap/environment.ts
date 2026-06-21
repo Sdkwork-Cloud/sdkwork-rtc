@@ -35,6 +35,10 @@ export function resolveEnvironment(): RtcEnvironment {
       import.meta.env.VITE_SDKWORK_RTC_H5_APP_API_BASE_URL,
       deriveAppApiBaseUrl(applicationPublicHttpUrl),
     ),
+    appbaseAppApiBaseUrl: normalizeBaseUrl(
+      import.meta.env.VITE_SDKWORK_RTC_H5_APPBASE_APP_API_BASE_URL,
+      deriveAppApiBaseUrl(applicationPublicHttpUrl),
+    ),
     backendApiBaseUrl: normalizeBaseUrl(
       import.meta.env.VITE_SDKWORK_RTC_H5_BACKEND_API_BASE_URL,
       deriveBackendApiBaseUrl(applicationPublicHttpUrl),

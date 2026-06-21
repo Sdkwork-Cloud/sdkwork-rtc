@@ -1,8 +1,6 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use base64::Engine;
 use hmac::{Hmac, Mac};
 use sdkwork_communication_rtc_service::RtcContractError;
+use sdkwork_utils_rust::base64_encode;
 use sha2::Sha256;
 
 use crate::VolcengineRtcProviderConfig;
@@ -15,6 +13,8 @@ const PRIV_PUBLISH_AUDIO_STREAM: u16 = 1;
 const PRIV_PUBLISH_VIDEO_STREAM: u16 = 2;
 const PRIV_PUBLISH_DATA_STREAM: u16 = 3;
 const PRIV_SUBSCRIBE_STREAM: u16 = 4;
+
+pub use sdkwork_communication_rtc_service::{format_unix_seconds_rfc3339, issued_at_unix_seconds};
 
 pub fn generate_volcengine_rtc_token(
     config: &VolcengineRtcProviderConfig,
@@ -39,33 +39,13 @@ pub fn generate_volcengine_rtc_token(
         .put_bytes(message.as_slice())?
         .put_bytes(signature.as_slice())?
         .pack();
-    let encoded = base64::engine::general_purpose::STANDARD.encode(content);
+    let encoded = base64_encode(content.as_slice());
     Ok((format!("{TOKEN_VERSION}{app_id}{encoded}"), expire_at))
-}
-
-pub fn issued_at_unix_seconds() -> u32 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("system clock is before UNIX epoch")
-        .as_secs()
-        .try_into()
-        .unwrap_or(u32::MAX)
-}
-
-pub fn format_unix_seconds_rfc3339(seconds: u32) -> String {
-    let seconds = i128::from(seconds);
-    let days = seconds.div_euclid(86_400);
-    let seconds_of_day = seconds.rem_euclid(86_400);
-    let (year, month, day) = civil_from_days(days);
-    let hour = seconds_of_day / 3_600;
-    let minute = (seconds_of_day % 3_600) / 60;
-    let second = seconds_of_day % 60;
-    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.000Z")
 }
 
 fn required_config(value: Option<&str>, env_name: &str) -> Result<String, RtcContractError> {
     value
-        .filter(|value| !value.trim().is_empty())
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
         .map(str::to_string)
         .ok_or_else(|| {
             RtcContractError::Unavailable(format!(
@@ -143,18 +123,4 @@ impl VolcengineTokenBuffer {
     fn pack(self) -> Vec<u8> {
         self.buffer
     }
-}
-
-fn civil_from_days(days: i128) -> (i128, i128, i128) {
-    let z = days + 719_468;
-    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
-    let doe = z - era * 146_097;
-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
-    let year = yoe + era * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let day = doy - (153 * mp + 2) / 5 + 1;
-    let month = mp + if mp < 10 { 3 } else { -9 };
-    let year = year + i128::from(month <= 2);
-    (year, month, day)
 }

@@ -167,12 +167,16 @@ test("sdkwork-rtc declares GitHub packaging workflow manifest", () => {
   const verificationDependencyIds = (workflow.verificationDependencies ?? []).map((dependency) => dependency.id);
   const packageYml = read(".github/workflows/package.yml");
   const governanceYml = read(".github/workflows/rtc-governance.yml");
+  assert.match(packageYml, /SDKWORK_WEB_FRAMEWORK_REF/u, ".github/workflows/package.yml must pass SDKWORK_WEB_FRAMEWORK_REF");
+  assert.match(packageYml, /SDKWORK_DATABASE_REF/u, ".github/workflows/package.yml must pass SDKWORK_DATABASE_REF");
+  assert.match(packageYml, /SDKWORK_UTILS_REF/u, ".github/workflows/package.yml must pass SDKWORK_UTILS_REF");
   assert.match(packageYml, /SDKWORK_DRIVE_REF/u, ".github/workflows/package.yml must pass SDKWORK_DRIVE_REF");
   assert.match(governanceYml, /prepare-ci-dependencies/u, ".github/workflows/rtc-governance.yml must prepare sibling dependencies");
   assert.match(governanceYml, /pnpm run verify/u, ".github/workflows/rtc-governance.yml must run pnpm run verify");
   assert.ok(dependencyIds.includes("sdkwork-drive"), "sdkwork.workflow.json must declare sdkwork-drive for Drive-backed recording import");
   assert.ok(dependencyIds.includes("sdkwork-web-framework"), "sdkwork.workflow.json must declare sdkwork-web-framework");
   assert.ok(dependencyIds.includes("sdkwork-database"), "sdkwork.workflow.json must declare sdkwork-database");
+  assert.ok(dependencyIds.includes("sdkwork-utils"), "sdkwork.workflow.json must declare sdkwork-utils");
   assert.ok(verificationDependencyIds.includes("sdkwork-im"), "sdkwork.workflow.json must declare sdkwork-im for migration boundary verification");
   assert.ok(verificationDependencyIds.includes("sdkwork-core"), "sdkwork.workflow.json must declare sdkwork-core for migration boundary verification");
   assert.equal(workflow.toolchains?.flutter, "stable", "sdkwork.workflow.json must declare flutter toolchain for mobile verification");
@@ -368,6 +372,7 @@ test("sdkwork-rtc PC app integrates appbase auth runtime factory", () => {
   );
   assert.match(read("apps/sdkwork-rtc-pc/src/bootstrap/rtcAppAuthRuntime.ts"), /createSdkworkAppbasePcAuthRuntime/u);
   assert.match(read("apps/sdkwork-rtc-pc/src/bootstrap/iamRuntime.ts"), /createRtcAppAuthRuntime/u);
+  assert.match(read("apps/sdkwork-rtc-pc/src/bootstrap/environment.ts"), /VITE_SDKWORK_RTC_PC_APPBASE_APP_API_BASE_URL/u);
   assert.match(read("apps/sdkwork-rtc-pc/src/AppAuthGate.tsx"), /SdkworkIamAuthRoutes/u);
   assert.match(read("apps/sdkwork-rtc-pc/src/App.tsx"), /HashRouter/u);
   assert.match(read("apps/sdkwork-rtc-pc/vite.config.ts"), /@sdkwork\/auth-pc-react/u);
@@ -396,6 +401,7 @@ test("sdkwork-rtc H5 app integrates appbase auth runtime at bootstrap without au
   );
   assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/rtcAppAuthRuntime.ts"), /platform:\s*"h5"/u);
   assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/iamRuntime.ts"), /createRtcAppAuthRuntime/u);
+  assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/environment.ts"), /VITE_SDKWORK_RTC_H5_APPBASE_APP_API_BASE_URL/u);
   assert.match(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /RtcH5AuthLoginPage/u);
   assert.match(read("apps/sdkwork-rtc-h5/src/App.tsx"), /HashRouter/u);
   assert.doesNotMatch(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /SdkworkIamAuthRoutes/u);
@@ -447,6 +453,24 @@ test("sdkwork-rtc integrates sdkwork-web-framework for HTTP route crates", () =>
   const backendRoutes = read("crates/sdkwork-router-rtc-backend-api/src/routes.rs");
   assert.doesNotMatch(appRoutes, /enforce_app_route_auth/u, "app-api routes must not keep custom auth middleware");
   assert.doesNotMatch(backendRoutes, /enforce_backend_route_auth/u, "backend-api routes must not keep custom auth middleware");
+});
+
+test("sdkwork-rtc integrates sdkwork-utils for shared Rust and TypeScript helpers", () => {
+  const cargoToml = read("Cargo.toml");
+  const workflow = JSON.parse(read("sdkwork.workflow.json"));
+  const dependencyIds = (workflow.dependencies ?? []).map((dependency) => dependency.id);
+  const serviceLib = read("crates/sdkwork-communication-rtc-service/src/lib.rs");
+  const aliyunCredential = read("plugins/rtc-aliyun/src/credential.rs");
+
+  assert.match(cargoToml, /sdkwork-utils-rust/u, "Cargo.toml must declare sdkwork-utils-rust");
+  assert.ok(dependencyIds.includes("sdkwork-utils"), "sdkwork.workflow.json must declare sdkwork-utils");
+  assert.match(serviceLib, /sdkwork_utils_rust::format_datetime/u, "service crate must use sdkwork-utils datetime helpers");
+  assert.match(serviceLib, /sdkwork_utils_rust::sha256_hash/u, "service crate must use sdkwork-utils crypto helpers");
+  assert.match(aliyunCredential, /sdkwork_utils_rust::/u, "provider plugins must use sdkwork-utils instead of local crypto helpers");
+  assert.doesNotMatch(aliyunCredential, /fn sha256_hex/u, "provider plugins must not keep local sha256 helpers");
+  assert.match(read("pnpm-workspace.yaml"), /sdkwork-utils-typescript/u);
+  assert.match(read("apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-commons/package.json"), /@sdkwork\/utils/u);
+  assert.match(read("apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-commons/package.json"), /@sdkwork\/utils/u);
 });
 
 test("sdkwork-rtc route manifests declare WebRequestContext and apiSurface", () => {

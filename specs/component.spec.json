@@ -113,6 +113,14 @@
     ],
     "sdkDependencies": [
       {
+        "workspace": "sdkwork-utils",
+        "role": "cross-language-utility-library",
+        "packages": [
+          "sdkwork-utils-rust",
+          "@sdkwork/utils"
+        ]
+      },
+      {
         "workspace": "sdkwork-drive-app-sdk",
         "role": "drive-media-resource-app-capability",
         "apiAuthority": "sdkwork-drive-app-api",
@@ -160,6 +168,7 @@
       "pnpm run materialize:openapi",
       "pnpm run materialize:rust-component-specs:check",
       "pnpm run sdk:check",
+      "pnpm run test:contract:database",
       "pnpm run test:topology-validate",
       "pnpm run test:topology-contract",
       "pnpm run test:topology-baggage",

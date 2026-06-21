@@ -1,9 +1,7 @@
 use hmac::{Hmac, Mac};
-use sdkwork_communication_rtc_service::{
-    RtcContractError, RtcProviderQueryKind, RtcProviderQueryRequest,
-};
-use serde_json::{Map, Number, Value as JsonValue, json};
-use sha2::{Digest, Sha256};
+use sdkwork_communication_rtc_service::RtcContractError;
+use sdkwork_utils_rust::{hex_encode, sha256_hash};
+use sha2::Sha256;
 
 use crate::TencentRtcProviderConfig;
 
@@ -33,7 +31,10 @@ pub trait TencentRtcOpenApiExecutor: Send + Sync {
     ) -> Result<TencentRtcOpenApiResponse, RtcContractError>;
 }
 
-pub fn tencent_action(query_kind: RtcProviderQueryKind) -> &'static str {
+pub fn tencent_action(
+    query_kind: sdkwork_communication_rtc_service::RtcProviderQueryKind,
+) -> &'static str {
+    use sdkwork_communication_rtc_service::RtcProviderQueryKind;
     match query_kind {
         RtcProviderQueryKind::RoomOnlineUsers
         | RtcProviderQueryKind::RoomState
@@ -45,7 +46,7 @@ pub fn tencent_action(query_kind: RtcProviderQueryKind) -> &'static str {
 
 pub fn build_signed_tencent_request(
     config: &TencentRtcProviderConfig,
-    request: &RtcProviderQueryRequest,
+    request: &sdkwork_communication_rtc_service::RtcProviderQueryRequest,
     action: &str,
     signed_at: &str,
 ) -> Result<TencentRtcOpenApiRequest, RtcContractError> {
@@ -62,20 +63,20 @@ pub fn build_signed_tencent_request(
         "POST\n/\n\n{}\n{}\n{}",
         canonical_headers,
         signed_headers,
-        sha256_hex(body.as_bytes())
+        sha256_hash(body.as_bytes())
     );
     let credential_scope = format!("{date}/trtc/tc3_request");
     let string_to_sign = format!(
         "TC3-HMAC-SHA256\n{}\n{}\n{}",
         timestamp,
         credential_scope,
-        sha256_hex(canonical_request.as_bytes())
+        sha256_hash(canonical_request.as_bytes())
     );
     let secret_date = hmac_sha256(format!("TC3{secret_key}").as_bytes(), date.as_bytes())?;
     let secret_service = hmac_sha256(secret_date.as_slice(), b"trtc")?;
     let secret_signing = hmac_sha256(secret_service.as_slice(), b"tc3_request")?;
     let signature_bytes = hmac_sha256(secret_signing.as_slice(), string_to_sign.as_bytes())?;
-    let signature = hex_lower(signature_bytes.as_slice());
+    let signature = hex_encode(signature_bytes.as_slice());
     let authorization = format!(
         "TC3-HMAC-SHA256 Credential={}/{}, SignedHeaders={}, Signature={}",
         secret_id, credential_scope, signed_headers, signature
@@ -103,8 +104,9 @@ pub fn build_signed_tencent_request(
 pub fn request_snapshot(
     request: &TencentRtcOpenApiRequest,
     response: Option<&TencentRtcOpenApiResponse>,
-    normalized: Option<JsonValue>,
+    normalized: Option<serde_json::Value>,
 ) -> String {
+    use serde_json::{Map, Value as JsonValue, json};
     let provider_request = json!({
         "method": request.method,
         "endpoint": request.endpoint,
@@ -132,21 +134,30 @@ pub fn request_snapshot(
 
 fn request_body(
     config: &TencentRtcProviderConfig,
-    request: &RtcProviderQueryRequest,
+    request: &sdkwork_communication_rtc_service::RtcProviderQueryRequest,
     action: &str,
 ) -> Result<String, RtcContractError> {
+    use serde_json::{Map, Value as JsonValue};
     let mut body = Map::new();
     if let Some(sdk_app_id) = config
         .sdk_app_id
         .as_deref()
-        .filter(|value| !value.is_empty())
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
     {
         body.insert("SdkAppId".into(), parse_sdk_app_id(sdk_app_id)?);
     }
-    if let Some(room_id) = request.room_id.as_deref().filter(|value| !value.is_empty()) {
+    if let Some(room_id) = request
+        .room_id
+        .as_deref()
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
+    {
         body.insert("RoomId".into(), JsonValue::String(room_id.into()));
     }
-    if let Some(cursor) = request.cursor.as_deref().filter(|value| !value.is_empty()) {
+    if let Some(cursor) = request
+        .cursor
+        .as_deref()
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
+    {
         let cursor_key = if action == "DescribeTRTCRealTimeQualityData" {
             "Next"
         } else {
@@ -159,7 +170,8 @@ fn request_body(
     })
 }
 
-fn parse_sdk_app_id(value: &str) -> Result<JsonValue, RtcContractError> {
+fn parse_sdk_app_id(value: &str) -> Result<serde_json::Value, RtcContractError> {
+    use serde_json::{Number, Value as JsonValue};
     let parsed = value.parse::<u64>().map_err(|error| {
         RtcContractError::Conflict(format!("invalid tencent SDKAppId {value}: {error}"))
     })?;
@@ -168,7 +180,7 @@ fn parse_sdk_app_id(value: &str) -> Result<JsonValue, RtcContractError> {
 
 fn required_config(value: Option<&str>, env_name: &str) -> Result<String, RtcContractError> {
     value
-        .filter(|value| !value.trim().is_empty())
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
         .map(str::to_string)
         .ok_or_else(|| {
             RtcContractError::Unavailable(format!(
@@ -177,20 +189,11 @@ fn required_config(value: Option<&str>, env_name: &str) -> Result<String, RtcCon
         })
 }
 
-fn sha256_hex(bytes: &[u8]) -> String {
-    let digest = Sha256::digest(bytes);
-    hex_lower(digest.as_slice())
-}
-
 fn hmac_sha256(key: &[u8], data: &[u8]) -> Result<Vec<u8>, RtcContractError> {
     let mut mac = HmacSha256::new_from_slice(key)
         .map_err(|_| RtcContractError::Conflict("invalid tencent signing key".into()))?;
     mac.update(data);
     Ok(mac.finalize().into_bytes().to_vec())
-}
-
-fn hex_lower(bytes: &[u8]) -> String {
-    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 fn tencent_signing_time(rfc3339_millis: &str) -> (String, String) {

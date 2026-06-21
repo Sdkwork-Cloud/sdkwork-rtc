@@ -28,6 +28,12 @@ async function readJson(relativePath) {
 
 test('declares v2 topology spec and profile env files for sdkwork-rtc', async () => {
   assert.equal(await exists('specs/topology.spec.json'), true);
+  const topologyBytes = await readFile(path.join(ROOT, 'specs/topology.spec.json'));
+  assert.notDeepEqual(
+    Array.from(topologyBytes.slice(0, 3)),
+    [0xef, 0xbb, 0xbf],
+    'specs/topology.spec.json must not contain a UTF-8 BOM',
+  );
   assert.equal(await exists('scripts/lib/rtc-topology.mjs'), true);
   assert.equal(await exists('scripts/rtc-dev.mjs'), true);
   assert.equal(await exists('docs/topology-standard.md'), true);
@@ -164,6 +170,7 @@ test('client bootstrap reads topology surface env keys', async () => {
 
   assert.match(h5Environment, /VITE_SDKWORK_RTC_H5_APPLICATION_PUBLIC_HTTP_URL/);
   assert.match(h5Environment, /VITE_SDKWORK_RTC_H5_APP_API_BASE_URL/);
+  assert.match(h5Environment, /VITE_SDKWORK_RTC_H5_APPBASE_APP_API_BASE_URL/);
   assert.match(h5Environment, /VITE_SDKWORK_RTC_H5_BACKEND_API_BASE_URL/);
 
   assert.match(flutterEnvironment, /SDKWORK_RTC_APPLICATION_PUBLIC_HTTP_URL/);

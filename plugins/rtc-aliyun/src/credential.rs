@@ -1,11 +1,10 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use base64::Engine;
 use sdkwork_communication_rtc_service::RtcContractError;
+use sdkwork_utils_rust::{base64_encode, hex_decode, sha256_hash};
 use serde_json::json;
-use sha2::{Digest, Sha256};
 
 use crate::config::AliyunRtcProviderConfig;
+
+pub use sdkwork_communication_rtc_service::{format_unix_seconds_rfc3339, issued_at_unix_seconds};
 
 pub fn generate_aliyun_rtc_token(
     config: &AliyunRtcProviderConfig,
@@ -18,9 +17,8 @@ pub fn generate_aliyun_rtc_token(
     let expire_at = issued_at.saturating_add(config.credential_ttl_seconds);
     let nonce = stable_nonce(app_id.as_str(), channel_id, user_id, issued_at);
     let timestamp = i64::from(issued_at);
-    let token = sha256_hex(&format!(
-        "{app_id}{app_key}{channel_id}{user_id}{nonce}{timestamp}"
-    ));
+    let token =
+        sha256_hash(format!("{app_id}{app_key}{channel_id}{user_id}{nonce}{timestamp}").as_bytes());
     let payload = json!({
         "appid": app_id,
         "channelid": channel_id,
@@ -29,33 +27,13 @@ pub fn generate_aliyun_rtc_token(
         "timestamp": timestamp,
         "token": token,
     });
-    let encoded = base64::engine::general_purpose::STANDARD.encode(payload.to_string());
+    let encoded = base64_encode(payload.to_string().as_bytes());
     Ok((encoded, expire_at))
-}
-
-pub fn issued_at_unix_seconds() -> u32 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("system clock is before UNIX epoch")
-        .as_secs()
-        .try_into()
-        .unwrap_or(u32::MAX)
-}
-
-pub fn format_unix_seconds_rfc3339(seconds: u32) -> String {
-    let seconds = i128::from(seconds);
-    let days = seconds.div_euclid(86_400);
-    let seconds_of_day = seconds.rem_euclid(86_400);
-    let (year, month, day) = civil_from_days(days);
-    let hour = seconds_of_day / 3_600;
-    let minute = (seconds_of_day % 3_600) / 60;
-    let second = seconds_of_day % 60;
-    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.000Z")
 }
 
 fn required_config(value: Option<&str>, env_name: &str) -> Result<String, RtcContractError> {
     value
-        .filter(|value| !value.trim().is_empty())
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
         .map(str::to_string)
         .ok_or_else(|| {
             RtcContractError::Unavailable(format!(
@@ -72,25 +50,7 @@ fn stable_nonce(app_id: &str, channel_id: &str, user_id: &str, issued_at: u32) -
 }
 
 fn sha256_prefix(value: &str) -> u32 {
-    let digest = Sha256::digest(value.as_bytes());
-    u32::from_be_bytes([digest[0], digest[1], digest[2], digest[3]])
-}
-
-fn sha256_hex(value: &str) -> String {
-    let digest = Sha256::digest(value.as_bytes());
-    digest.iter().map(|byte| format!("{byte:02x}")).collect()
-}
-
-fn civil_from_days(days: i128) -> (i32, u32, u32) {
-    let z = days + 719_468;
-    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
-    let doe = (z - era * 146_097) as u32;
-    let yoe = (doe - doe / 1_460 + doe / 365 - doe / 1_460) / 365;
-    let y = yoe as i32 + era as i32 * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let day = doy - (153 * mp + 2) / 5 + 1;
-    let month = if mp < 10 { mp + 3 } else { mp - 9 };
-    let year = if mp >= 10 { y + 1 } else { y };
-    (year, month, day)
+    let digest = sha256_hash(value.as_bytes());
+    let bytes = hex_decode(&digest[0..8]).unwrap_or_else(|| vec![0, 0, 0, 0]);
+    u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])
 }

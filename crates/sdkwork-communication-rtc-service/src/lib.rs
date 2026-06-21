@@ -1,13 +1,9 @@
+use serde::{Deserialize, Serialize};
+use serde_json::{Value as JsonValue, json};
 use std::collections::BTreeMap;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use serde::{Deserialize, Serialize};
-use serde_json::{Value as JsonValue, json};
-use sha2::{Digest, Sha256};
-
 pub mod completion;
 pub mod list_window;
 pub mod persistence;
@@ -1030,10 +1026,10 @@ pub struct RtcProviderQueryResult {
 }
 
 pub fn rtc_provider_payload_hash(payload: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(payload.as_bytes());
-    let digest = hasher.finalize();
-    format!("sha256:{digest:x}")
+    format!(
+        "sha256:{}",
+        sdkwork_utils_rust::sha256_hash(payload.as_bytes())
+    )
 }
 
 pub trait RtcProviderPort: Send + Sync {
@@ -1240,36 +1236,37 @@ pub fn summarize_rtc_workspace(
 }
 
 pub fn utc_now_rfc3339_millis() -> String {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("system clock is before UNIX epoch");
-    format_unix_millis(now.as_millis() as i128)
+    sdkwork_utils_rust::format_datetime(sdkwork_utils_rust::now(), None)
 }
 
-fn format_unix_millis(millis: i128) -> String {
-    let seconds = millis.div_euclid(1000);
-    let millisecond = millis.rem_euclid(1000);
-    let days = seconds.div_euclid(86_400);
-    let seconds_of_day = seconds.rem_euclid(86_400);
-    let (year, month, day) = civil_from_days(days);
-    let hour = seconds_of_day / 3_600;
-    let minute = (seconds_of_day % 3_600) / 60;
-    let second = seconds_of_day % 60;
-    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millisecond:03}Z")
+pub fn issued_at_unix_seconds() -> u32 {
+    sdkwork_utils_rust::now()
+        .timestamp()
+        .try_into()
+        .unwrap_or(u32::MAX)
 }
 
-fn civil_from_days(days: i128) -> (i128, i128, i128) {
-    let z = days + 719_468;
-    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
-    let doe = z - era * 146_097;
-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
-    let year = yoe + era * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let day = doy - (153 * mp + 2) / 5 + 1;
-    let month = mp + if mp < 10 { 3 } else { -9 };
-    let year = year + i128::from(month <= 2);
-    (year, month, day)
+pub fn issued_at_unix_seconds_u64() -> u64 {
+    sdkwork_utils_rust::now()
+        .timestamp()
+        .try_into()
+        .unwrap_or(u64::MAX)
+}
+
+pub fn format_unix_seconds_rfc3339(seconds: u32) -> String {
+    format_unix_timestamp_rfc3339(i64::from(seconds))
+}
+
+pub fn format_unix_seconds_rfc3339_u64(seconds: u64) -> String {
+    format_unix_timestamp_rfc3339(i64::try_from(seconds).unwrap_or(i64::MAX))
+}
+
+fn format_unix_timestamp_rfc3339(seconds: i64) -> String {
+    sdkwork_utils_rust::format_datetime(
+        sdkwork_utils_rust::from_unix_millis(seconds.saturating_mul(1000))
+            .expect("unix timestamp within chrono range"),
+        None,
+    )
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1607,7 +1604,8 @@ mod tests {
     }
 
     #[test]
-    fn utc_time_helpers_format_unix_millis() {
-        assert_eq!(format_unix_millis(0), "1970-01-01T00:00:00.000Z");
+    fn utc_time_helpers_format_unix_seconds() {
+        assert_eq!(format_unix_seconds_rfc3339(0), "1970-01-01T00:00:00.000Z");
+        assert_eq!(utc_now_rfc3339_millis().len(), 24);
     }
 }

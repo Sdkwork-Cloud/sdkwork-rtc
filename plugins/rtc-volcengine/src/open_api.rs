@@ -2,8 +2,9 @@ use hmac::{Hmac, Mac};
 use sdkwork_communication_rtc_service::{
     RtcContractError, RtcProviderQueryKind, RtcProviderQueryRequest,
 };
+use sdkwork_utils_rust::{hex_encode, sha256_hash};
 use serde_json::{Map, Value as JsonValue, json};
-use sha2::{Digest, Sha256};
+use sha2::Sha256;
 
 use crate::VolcengineRtcProviderConfig;
 
@@ -58,18 +59,30 @@ pub fn build_signed_volcengine_request(
         "SDKWORK_RTC_VOLCENGINE_SECRET_ACCESS_KEY",
     )?;
     let body = String::new();
-    let payload_hash = sha256_hex(body.as_bytes());
+    let payload_hash = sha256_hash(body.as_bytes());
     let mut query = vec![
         ("Action".to_string(), action.to_string()),
         ("Version".to_string(), config.api_version.clone()),
     ];
-    if let Some(app_id) = config.app_id.as_deref().filter(|value| !value.is_empty()) {
+    if let Some(app_id) = config
+        .app_id
+        .as_deref()
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
+    {
         query.push(("AppId".to_string(), app_id.to_string()));
     }
-    if let Some(room_id) = request.room_id.as_deref().filter(|value| !value.is_empty()) {
+    if let Some(room_id) = request
+        .room_id
+        .as_deref()
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
+    {
         query.push(("RoomId".to_string(), room_id.to_string()));
     }
-    if let Some(cursor) = request.cursor.as_deref().filter(|value| !value.is_empty()) {
+    if let Some(cursor) = request
+        .cursor
+        .as_deref()
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
+    {
         query.push(("PageToken".to_string(), cursor.to_string()));
     }
     query.sort_by(|left, right| left.0.cmp(&right.0).then(left.1.cmp(&right.1)));
@@ -90,14 +103,14 @@ pub fn build_signed_volcengine_request(
         "HMAC-SHA256\n{}\n{}\n{}",
         signing_time,
         scope,
-        sha256_hex(canonical_request.as_bytes())
+        sha256_hash(canonical_request.as_bytes())
     );
     let signing_key = hmac_sha256(secret_access_key.as_bytes(), short_date.as_bytes())?;
     let signing_key = hmac_sha256(signing_key.as_slice(), config.region.as_bytes())?;
     let signing_key = hmac_sha256(signing_key.as_slice(), b"rtc")?;
     let signing_key = hmac_sha256(signing_key.as_slice(), b"request")?;
     let signature_bytes = hmac_sha256(signing_key.as_slice(), string_to_sign.as_bytes())?;
-    let signature = hex_lower(signature_bytes.as_slice());
+    let signature = hex_encode(signature_bytes.as_slice());
     let authorization = format!(
         "HMAC-SHA256 Credential={}/{}, SignedHeaders={}, Signature={}",
         access_key_id, scope, signed_headers, signature
@@ -153,7 +166,7 @@ pub fn request_snapshot(
 
 fn required_config(value: Option<&str>, env_name: &str) -> Result<String, RtcContractError> {
     value
-        .filter(|value| !value.trim().is_empty())
+        .filter(|value| !sdkwork_utils_rust::is_blank(Some(value)))
         .map(str::to_string)
         .ok_or_else(|| {
             RtcContractError::Unavailable(format!(
@@ -182,20 +195,11 @@ fn percent_encode(value: &str) -> String {
         .collect()
 }
 
-fn sha256_hex(bytes: &[u8]) -> String {
-    let digest = Sha256::digest(bytes);
-    hex_lower(digest.as_slice())
-}
-
 fn hmac_sha256(key: &[u8], data: &[u8]) -> Result<Vec<u8>, RtcContractError> {
     let mut mac = HmacSha256::new_from_slice(key)
         .map_err(|_| RtcContractError::Conflict("invalid volcengine signing key".into()))?;
     mac.update(data);
     Ok(mac.finalize().into_bytes().to_vec())
-}
-
-fn hex_lower(bytes: &[u8]) -> String {
-    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 fn volcengine_signing_time(rfc3339_millis: &str) -> (String, String) {
