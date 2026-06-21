@@ -9,21 +9,21 @@ Platform standard: `../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 `self-hosted.split-services.development` — start the RTC API server and a client renderer:
 
 ```bash
-pnpm rtc:dev
-pnpm rtc:dev:h5
-pnpm rtc:dev:flutter
+pnpm dev
+pnpm dev:browser:postgres:split-services:standalone:local
+pnpm dev:flutter-android
 ```
 
 Cloud development profile:
 
 ```bash
-pnpm rtc:dev:cloud
+pnpm dev:browser:postgres:split-services:cloud
 ```
 
 Server-only smoke (no client renderer):
 
 ```bash
-pnpm rtc:dev:server
+pnpm dev:server
 ```
 
 ## Surfaces
@@ -55,8 +55,8 @@ Cloud gateway config bundles: `configs/sdkwork-api-gateway.sdkwork-rtc.{developm
 Packaging:
 
 ```bash
-pnpm gateway:cloud:bundle
-pnpm gateway:cloud:matrix
+pnpm gateway:bundle:cloud
+pnpm gateway:matrix:cloud
 ```
 
 ## Validate

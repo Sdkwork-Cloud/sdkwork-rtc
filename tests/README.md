@@ -28,4 +28,4 @@ sdkwork-rtc.
 
 ## Verification
 
-Run `node --test tests/rtc-workspace-standard.test.mjs` and `pnpm run audit:migration`.
+Run `node --test tests/rtc-workspace-standard.test.mjs` and `pnpm run test:contract:migration`.

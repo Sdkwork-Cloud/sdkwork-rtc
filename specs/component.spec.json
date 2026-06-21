@@ -164,9 +164,9 @@
   "verification": {
     "commands": [
       "pnpm run test:workspace-standard",
-      "pnpm run audit:migration",
-      "pnpm run materialize:openapi",
-      "pnpm run materialize:rust-component-specs:check",
+      "pnpm run test:contract:migration",
+      "pnpm run api:materialize",
+      "pnpm run api:materialize:check",
       "pnpm run sdk:check",
       "pnpm run test:contract:database",
       "pnpm run test:topology-validate",

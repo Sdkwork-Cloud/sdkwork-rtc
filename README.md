@@ -106,11 +106,11 @@ pnpm run verify
 Default dev profile: `self-hosted.split-services.development`
 
 ```powershell
-pnpm rtc:dev          # PC admin UI + RTC API server
-pnpm rtc:dev:h5       # H5 admin UI + RTC API server
-pnpm rtc:dev:flutter  # Flutter mobile + RTC API server
-pnpm rtc:dev:cloud    # cloud-hosted profile with platform API gateway
-pnpm rtc:dev:server   # RTC API server only
+pnpm dev                                                    # PC admin UI + RTC API server
+pnpm dev:browser:postgres:split-services:standalone:local   # H5 admin UI + RTC API server
+pnpm dev:flutter-android                                    # Flutter mobile + RTC API server
+pnpm dev:browser:postgres:split-services:cloud              # cloud deployment profile with platform API gateway
+pnpm dev:server                                             # RTC API server only
 ```
 
 Topology authority: `specs/topology.spec.json`, profiles under `configs/topology/`.
@@ -125,5 +125,5 @@ cargo test -p sdkwork-rtc-adapter-volcengine -p sdkwork-rtc-adapter-tencent
 The migration audit also checks that old appbase and Craw Chat RTC authority sources are removed:
 
 ```powershell
-pnpm run audit:migration
+pnpm run test:contract:migration
 ```

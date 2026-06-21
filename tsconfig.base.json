@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@sdkwork/utils": ["../sdkwork-utils/packages/sdkwork-utils-typescript/dist/index.d.ts"]
+    },
+    "ignoreDeprecations": "6.0",
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
     "declaration": true,

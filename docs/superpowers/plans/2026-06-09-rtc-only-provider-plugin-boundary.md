@@ -157,7 +157,7 @@ Expected: materialized SDK metadata, docs, language catalogs, package manifests,
 Run:
 
 ```powershell
-pnpm run audit:migration
+pnpm run test:contract:migration
 pnpm --dir sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript test
 node sdks\sdkwork-rtc-sdk\bin\verify-sdk.mjs
 node sdks\sdkwork-rtc-sdk\test\verify-sdk-automation.test.mjs

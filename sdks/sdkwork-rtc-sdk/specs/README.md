@@ -64,4 +64,4 @@ Root SDKWork standards remain authoritative. Local component specs can narrow or
 
 ## Verification
 
-- `pnpm run audit:migration`
+- `pnpm run test:contract:migration`

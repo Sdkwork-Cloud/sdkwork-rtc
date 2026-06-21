@@ -171,7 +171,7 @@ test("sdkwork-rtc declares GitHub packaging workflow manifest", () => {
   assert.match(packageYml, /SDKWORK_DATABASE_REF/u, ".github/workflows/package.yml must pass SDKWORK_DATABASE_REF");
   assert.match(packageYml, /SDKWORK_UTILS_REF/u, ".github/workflows/package.yml must pass SDKWORK_UTILS_REF");
   assert.match(packageYml, /SDKWORK_DRIVE_REF/u, ".github/workflows/package.yml must pass SDKWORK_DRIVE_REF");
-  assert.match(governanceYml, /prepare-ci-dependencies/u, ".github/workflows/rtc-governance.yml must prepare sibling dependencies");
+  assert.match(governanceYml, /workflow:prepare-ci-dependencies/u, ".github/workflows/rtc-governance.yml must prepare sibling dependencies");
   assert.match(governanceYml, /pnpm run verify/u, ".github/workflows/rtc-governance.yml must run pnpm run verify");
   assert.ok(dependencyIds.includes("sdkwork-drive"), "sdkwork.workflow.json must declare sdkwork-drive for Drive-backed recording import");
   assert.ok(dependencyIds.includes("sdkwork-web-framework"), "sdkwork.workflow.json must declare sdkwork-web-framework");

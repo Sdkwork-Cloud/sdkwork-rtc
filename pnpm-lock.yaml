@@ -51,6 +51,9 @@ importers:
         specifier: file:../sdkwork-app-topology
         version: file:../sdkwork-app-topology
     devDependencies:
+      '@sdkwork/utils':
+        specifier: workspace:*
+        version: link:../sdkwork-utils/packages/sdkwork-utils-typescript
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -194,6 +197,9 @@ importers:
       '@sdkwork/runtime-bootstrap':
         specifier: workspace:*
         version: link:../../../common/foundation/sdkwork-runtime-bootstrap
+      '@sdkwork/utils':
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
       lucide-react:
         specifier: 'catalog:'
         version: 1.7.0(react@19.2.7)
@@ -509,7 +515,7 @@ importers:
 
   apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-commons:
     dependencies:
-      '@sdkwork/utils-typescript':
+      '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
 
@@ -679,7 +685,7 @@ importers:
 
   apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-commons:
     dependencies:
-      '@sdkwork/utils-typescript':
+      '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
 

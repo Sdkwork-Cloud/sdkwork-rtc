@@ -113,7 +113,7 @@ When aligning a sibling `sdkwork-im` checkout:
 
 1. Replace `../sdkwork-rtc-im-compat` Cargo paths with `../sdkwork-rtc/crates/` and `../sdkwork-rtc/plugins/`.
 2. Migrate `sdkwork-rtc-core` usage to `sdkwork-communication-rtc-service`.
-3. Remove `sdks/sdkwork-rtc-sdk` from IM; consume `../../../sdkwork-rtc/sdks/sdkwork-rtc-sdk` via pnpm workspace only.
+3. Remove `sdks/sdkwork-rtc-sdk` from IM; consume `../../../sdkwork-rtc/sdks/sdkwork-rtc-sdk` through the shared workspace package layout only.
 4. Keep `CallService` on `@sdkwork/im-sdk` and `RtcMediaService` on `@sdkwork/rtc-sdk`.
 5. Ensure gateway uses `services/sdkwork-im-gateway` and routes calls, not RTC app API.
 
@@ -122,7 +122,7 @@ When aligning a sibling `sdkwork-im` checkout:
 From `sdkwork-rtc` root:
 
 ```powershell
-pnpm run audit:migration
+pnpm run test:contract:migration
 ```
 
 Relevant contract tests:

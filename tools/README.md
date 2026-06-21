@@ -29,4 +29,4 @@ sdkwork-rtc.
 
 ## Verification
 
-Run `pnpm run sdk:check` and `pnpm run audit:migration`.
+Run `pnpm run sdk:check` and `pnpm run test:contract:migration`.

@@ -121,7 +121,7 @@
   },
   "verification": {
     "commands": [
-      "pnpm run audit:migration"
+      "pnpm run test:contract:migration"
     ]
   },
   "metadata": {

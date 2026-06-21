@@ -40,9 +40,22 @@ function flutterCommand() {
   return process.platform === 'win32' ? 'flutter.bat' : 'flutter';
 }
 
+function toTopologyHosting(deploymentProfile) {
+  const normalized = String(deploymentProfile ?? '').trim().toLowerCase();
+  if (normalized === 'standalone' || normalized === 'self-hosted') {
+    return 'self-hosted';
+  }
+  if (normalized === 'cloud' || normalized === 'cloud-hosted') {
+    return 'cloud-hosted';
+  }
+  throw new Error(
+    `deployment-profile must be standalone or cloud, received: ${deploymentProfile}`,
+  );
+}
+
 function parseArgs(argv) {
   const settings = {
-    hosting: 'self-hosted',
+    deploymentProfile: 'standalone',
     serviceLayout: 'split-services',
     target: 'pc',
     dryRun: false,
@@ -55,10 +68,15 @@ function parseArgs(argv) {
       settings.help = true;
       continue;
     }
-    if (arg === '--hosting') {
-      settings.hosting = argv[index + 1] ?? settings.hosting;
+    if (arg === '--deployment-profile') {
+      settings.deploymentProfile = argv[index + 1] ?? settings.deploymentProfile;
       index += 1;
       continue;
+    }
+    if (arg === '--hosting') {
+      throw new Error(
+        '--hosting is retired; use --deployment-profile standalone|cloud',
+      );
     }
     if (arg === '--service-layout') {
       settings.serviceLayout = argv[index + 1] ?? settings.serviceLayout;
@@ -72,7 +90,7 @@ function parseArgs(argv) {
     }
     if (arg === '--topology') {
       throw new Error(
-        '--topology is retired; use --hosting (standalone -> self-hosted, cloud -> cloud-hosted)',
+        '--topology is retired; use --deployment-profile standalone|cloud',
       );
     }
     if (arg === '--dry-run') {
@@ -80,6 +98,7 @@ function parseArgs(argv) {
     }
   }
 
+  settings.hosting = toTopologyHosting(settings.deploymentProfile);
   return settings;
 }
 
@@ -89,10 +108,10 @@ function printHelp() {
 Topology-aware RTC dev entry. Loads configs/topology profile env via @sdkwork/app-topology.
 
 Options:
-  --hosting <self-hosted|cloud-hosted>              Default: self-hosted
-  --service-layout <split-services|unified-process> Default: split-services
-  --target <pc|h5|flutter|server>                   Default: pc
-  --dry-run                                         Print plan without executing
+  --deployment-profile <standalone|cloud>             Default: standalone
+  --service-layout <unified-process|split-services>   Default: split-services
+  --target <pc|h5|flutter|server>                     Default: pc
+  --dry-run                                           Print plan without executing
   --help, -h
 `);
 }

@@ -1,8 +1,5 @@
 use crate::RtcContractError;
-use hmac::{Hmac, Mac};
-use sha2::Sha256;
-
-type HmacSha256 = Hmac<Sha256>;
+use sdkwork_utils_rust::{base64_decode, hex_decode, hmac_sha256, secure_compare};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RtcProviderWebhookVerifyRequest {
@@ -24,13 +21,9 @@ pub fn verify_hmac_sha256_payload(
         ));
     }
 
-    let mut mac = HmacSha256::new_from_slice(secret.as_bytes()).map_err(|error| {
-        RtcContractError::Conflict(format!("invalid RTC webhook signing secret: {error}"))
-    })?;
-    mac.update(payload.as_bytes());
-    let expected = mac.finalize().into_bytes();
+    let expected_hex = hmac_sha256(payload.as_bytes(), secret.as_bytes());
 
-    if signature_matches_digest(signature, expected.as_slice()) {
+    if signature_matches_digest(signature, expected_hex.as_str()) {
         return Ok(());
     }
 
@@ -39,21 +32,28 @@ pub fn verify_hmac_sha256_payload(
     ))
 }
 
-fn signature_matches_digest(signature: &str, digest: &[u8]) -> bool {
+fn signature_matches_digest(signature: &str, expected_hex: &str) -> bool {
     let normalized = signature
         .strip_prefix("sha256=")
         .or_else(|| signature.strip_prefix("SHA256="))
         .unwrap_or(signature)
         .trim();
 
-    if let Ok(provided) = hex::decode(normalized) {
-        return constant_time_eq(provided.as_slice(), digest);
+    if secure_compare(normalized, expected_hex) {
+        return true;
     }
 
-    if let Ok(provided) =
-        base64::Engine::decode(&base64::engine::general_purpose::STANDARD, normalized)
-    {
-        return constant_time_eq(provided.as_slice(), digest);
+    let expected = match hex_decode(expected_hex) {
+        Some(bytes) => bytes,
+        None => return false,
+    };
+
+    if let Some(provided) = hex_decode(normalized) {
+        return constant_time_eq(provided.as_slice(), expected.as_slice());
+    }
+
+    if let Some(provided) = base64_decode(normalized) {
+        return constant_time_eq(provided.as_slice(), expected.as_slice());
     }
 
     false
@@ -72,8 +72,5 @@ fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
 }
 
 pub fn sign_hmac_sha256_payload_hex(secret: &str, payload: &str) -> String {
-    let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
-        .expect("valid RTC webhook signing secret length");
-    mac.update(payload.as_bytes());
-    hex::encode(mac.finalize().into_bytes())
+    hmac_sha256(payload.as_bytes(), secret.as_bytes())
 }

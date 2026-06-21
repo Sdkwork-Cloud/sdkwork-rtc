@@ -51,7 +51,7 @@ jobs:
           SDKWORK_RELEASE_TOKEN: ${{ secrets.SDKWORK_RELEASE_TOKEN || github.token }}
           SDKWORK_IM_REF: ${{ github.event.inputs.sdkwork_im_ref || 'main' }}
           SDKWORK_CORE_REF: ${{ github.event.inputs.sdkwork_core_ref || 'main' }}
-        run: node scripts/prepare-ci-dependencies.mjs
+        run: pnpm run workflow:prepare-ci-dependencies
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable

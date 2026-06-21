@@ -66,11 +66,15 @@ test('declares v2 topology spec and profile env files for sdkwork-rtc', async ()
   }
 });
 
-test('root package.json wires @sdkwork/app-topology and rtc:dev scripts', async () => {
+test('root package.json wires @sdkwork/app-topology and standard dev scripts', async () => {
   const packageJson = await readJson('package.json');
   assert.equal(packageJson.dependencies['@sdkwork/app-topology'], 'file:../sdkwork-app-topology');
-  assert.match(packageJson.scripts['rtc:dev'], /scripts\/rtc-dev\.mjs/);
-  assert.match(packageJson.scripts['rtc:dev:cloud'], /cloud-hosted/);
+  assert.match(packageJson.scripts.dev, /dev:browser:postgres:split-services:standalone/u);
+  assert.match(
+    packageJson.scripts['dev:browser:postgres:split-services:standalone'],
+    /scripts\/rtc-dev\.mjs/,
+  );
+  assert.match(packageJson.scripts['dev:browser:postgres:split-services:cloud'], /--deployment-profile cloud/u);
   assert.match(packageJson.scripts['test:topology-validate'], /sdkwork-topology\.mjs validate/);
 });
 
@@ -85,7 +89,8 @@ test('rtc dev orchestrator uses topology adapter helpers', async () => {
   assert.match(devScript, /resolveCloudGatewayConfigPath/);
   assert.match(devScript, /shouldAutostartGateway/);
   assert.match(devScript, /--config/);
-  assert.match(devScript, /--topology is retired/);
+  assert.match(devScript, /--hosting is retired/u);
+  assert.match(devScript, /--topology is retired/u);
 });
 
 test('declares cloud gateway config bundles referenced by topology spec', async () => {
@@ -101,8 +106,8 @@ test('declares cloud gateway config bundles referenced by topology spec', async 
 
 test('gateway cloud bundle and package matrix scripts are wired', async () => {
   const packageJson = await readJson('package.json');
-  assert.match(packageJson.scripts['gateway:cloud:bundle'], /gateway-cloud-bundle\.mjs bundle/);
-  assert.match(packageJson.scripts['gateway:cloud:matrix'], /print-matrix/);
+  assert.match(packageJson.scripts['gateway:bundle:cloud'], /gateway-cloud-bundle\.mjs bundle/);
+  assert.match(packageJson.scripts['gateway:matrix:cloud'], /print-matrix/);
 
   const bundleScript = await read('scripts/gateway-cloud-bundle.mjs');
   assert.match(bundleScript, /RTC_CLOUD_GATEWAY_CONFIGS/);

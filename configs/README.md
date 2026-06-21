@@ -32,5 +32,5 @@ sdkwork-rtc.
 ```powershell
 node --test tests/rtc-workspace-standard.test.mjs
 pnpm run test:topology-validate
-pnpm run gateway:cloud:matrix
+pnpm run gateway:matrix:cloud
 ```
