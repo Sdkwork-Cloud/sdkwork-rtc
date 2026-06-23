@@ -39,6 +39,11 @@ impl RtcSecretResolver for EnvRtcSecretResolver {
         }
 
         if let Some(value) = trimmed.strip_prefix("plain:") {
+            if !allows_plaintext_secret_refs() {
+                return Err(RtcSecretResolverError::new(
+                    "plain secret refs are disabled outside local development; use secret:// refs",
+                ));
+            }
             if value.trim().is_empty() {
                 return Err(RtcSecretResolverError::new(
                     "plain secret ref must include a non-empty value",
@@ -112,6 +117,17 @@ impl RtcSecretResolver for MapRtcSecretResolver {
 }
 
 pub type SharedRtcSecretResolver = Arc<dyn RtcSecretResolver>;
+
+fn allows_plaintext_secret_refs() -> bool {
+    let environment = std::env::var("SDKWORK_RTC_ENVIRONMENT")
+        .or_else(|_| std::env::var("SDKWORK_ENVIRONMENT"))
+        .unwrap_or_else(|_| "development".to_owned())
+        .to_ascii_lowercase();
+    matches!(
+        environment.as_str(),
+        "development" | "dev" | "local" | "test"
+    )
+}
 
 fn secret_ref_to_env_key(secret_ref: &str) -> String {
     let normalized = secret_ref

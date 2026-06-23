@@ -16,10 +16,20 @@ class RtcSdkClients {
 }
 
 RtcSdkClients? _activeSdkClients;
+SdkworkAppClient? _sharedAppSdkClient;
 
 RtcSdkClients createSdkClients({RtcAppSession? session}) {
   final env = resolveEnvironment();
   final activeSession = session ?? loadAppSession();
+  _sharedAppSdkClient ??= createRtcAppClient(
+    apiBaseUrl: env.apiBaseUrl,
+    accessToken: activeSession?.accessToken,
+    authToken: activeSession?.authToken ?? activeSession?.accessToken,
+    tenantId: activeSession?.tenantId ?? defaultAppSession.tenantId,
+    organizationId: activeSession?.organizationId ?? defaultAppSession.organizationId,
+    userId: activeSession?.userId ?? defaultAppSession.userId,
+    permissionScope: defaultAppPermissionScope,
+  ).appSdk;
   final bundle = createRtcAppClient(
     apiBaseUrl: env.apiBaseUrl,
     accessToken: activeSession?.accessToken,
@@ -28,6 +38,7 @@ RtcSdkClients createSdkClients({RtcAppSession? session}) {
     organizationId: activeSession?.organizationId ?? defaultAppSession.organizationId,
     userId: activeSession?.userId ?? defaultAppSession.userId,
     permissionScope: defaultAppPermissionScope,
+    existingClient: _sharedAppSdkClient,
   );
 
   _activeSdkClients = RtcSdkClients(

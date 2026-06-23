@@ -1,9 +1,13 @@
-import 'app_api_client.dart';
+import 'package:sdkwork_rtc_app_sdk_generated_dart/app_client.dart';
+
+export 'package:sdkwork_rtc_app_sdk_generated_dart/app_client.dart';
+
+const appApiPrefix = '/app/v3/api';
 
 class RtcAppClientBundle {
-  const RtcAppClientBundle({required this.appApi});
+  const RtcAppClientBundle({required this.appSdk});
 
-  final AppApiClient appApi;
+  final SdkworkAppClient appSdk;
 }
 
 RtcAppClientBundle createRtcAppClient({
@@ -14,16 +18,55 @@ RtcAppClientBundle createRtcAppClient({
   String? organizationId,
   String? userId,
   String permissionScope = 'rtc.*',
+  SdkworkAppClient? existingClient,
 }) {
-  return RtcAppClientBundle(
-    appApi: AppApiClient(
+  final SdkworkAppClient client;
+  if (existingClient != null) {
+    client = existingClient;
+    if (authToken != null && authToken.isNotEmpty) {
+      client.setAuthToken(authToken);
+    }
+    if (accessToken != null && accessToken.isNotEmpty) {
+      client.setAccessToken(accessToken);
+    }
+    if (tenantId != null && tenantId.isNotEmpty) {
+      client.setHeader('x-sdkwork-tenant-id', tenantId);
+    }
+    if (organizationId != null && organizationId.isNotEmpty) {
+      client.setHeader('x-sdkwork-organization-id', organizationId);
+    }
+    if (userId != null && userId.isNotEmpty) {
+      client.setHeader('x-sdkwork-user-id', userId);
+      client.setHeader('x-sdkwork-actor-id', userId);
+    }
+    if (permissionScope.isNotEmpty) {
+      client.setHeader('x-sdkwork-permission-scope', permissionScope);
+    }
+  } else {
+    client = SdkworkAppClient.withBaseUrl(
       baseUrl: resolveAppApiBaseUrl(apiBaseUrl),
-      accessToken: accessToken,
       authToken: authToken,
-      tenantId: tenantId,
-      organizationId: organizationId,
-      userId: userId,
-      permissionScope: permissionScope,
-    ),
-  );
+      accessToken: accessToken,
+      headers: {
+        if (tenantId != null && tenantId.isNotEmpty) 'x-sdkwork-tenant-id': tenantId,
+        if (organizationId != null && organizationId.isNotEmpty)
+          'x-sdkwork-organization-id': organizationId,
+        if (userId != null && userId.isNotEmpty) ...{
+          'x-sdkwork-user-id': userId,
+          'x-sdkwork-actor-id': userId,
+        },
+        if (permissionScope.isNotEmpty) 'x-sdkwork-permission-scope': permissionScope,
+      },
+    );
+  }
+
+  return RtcAppClientBundle(appSdk: client);
+}
+
+String resolveAppApiBaseUrl(String configuredApiBaseUrl) {
+  final trimmed = configuredApiBaseUrl.trim();
+  if (trimmed.endsWith(appApiPrefix)) {
+    return trimmed.substring(0, trimmed.length - appApiPrefix.length);
+  }
+  return trimmed;
 }

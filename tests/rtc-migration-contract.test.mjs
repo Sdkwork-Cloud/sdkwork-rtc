@@ -3176,6 +3176,7 @@ test("sdkwork-rtc builtin Rust provider adapters implement declared webhook and 
       .join("\n");
     for (const requiredToken of [
       "fn parse_provider_webhook",
+      "fn verify_provider_webhook_signature",
       "RtcProviderWebhookEvent",
       "rtc_provider_payload_hash",
       "fn query_provider_state",
@@ -3209,6 +3210,7 @@ test("sdkwork-rtc builtin Rust provider adapters implement declared webhook and 
       "provider.webhook",
       "provider.active-query",
       ".parse_provider_webhook(RtcProviderWebhookParseRequest",
+      ".verify_provider_webhook_signature(RtcProviderWebhookVerifyRequest",
       ".query_provider_state(RtcProviderQueryRequest",
     ]) {
       assert.match(

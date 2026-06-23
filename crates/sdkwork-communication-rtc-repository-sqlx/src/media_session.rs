@@ -8,7 +8,9 @@ use sdkwork_communication_rtc_service::{
     rtc_provider_payload_hash,
 };
 use serde::de::DeserializeOwned;
-use sqlx::{PgPool, Row, SqlitePool, postgres::PgRow, sqlite::SqliteRow};
+use sqlx::{
+    Executor, PgPool, Postgres, Row, Sqlite, SqlitePool, postgres::PgRow, sqlite::SqliteRow,
+};
 
 use crate::{RtcStorageError, RtcStorageResult};
 
@@ -28,6 +30,20 @@ impl RtcSqliteMediaSessionRepository {
         room: &RtcRoom,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_room_with(&self.pool, numeric_id, room, updated_at)
+            .await
+    }
+
+    pub async fn upsert_room_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        room: &RtcRoom,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_room_sql())
             .bind(numeric_id)
             .bind(&room.id)
@@ -38,7 +54,7 @@ impl RtcSqliteMediaSessionRepository {
             .bind(room_status_to_i32(&room.status))
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -50,6 +66,20 @@ impl RtcSqliteMediaSessionRepository {
         session: &RtcMediaSession,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_session_with(&self.pool, numeric_id, session, updated_at)
+            .await
+    }
+
+    pub async fn upsert_media_session_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        session: &RtcMediaSession,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         let quality_summary = serialize_optional_json(&session.quality_summary)?;
         let recording_summary = serialize_optional_json(&session.recording_summary)?;
 
@@ -82,7 +112,7 @@ impl RtcSqliteMediaSessionRepository {
             .bind(&session.last_provider_query_job_id)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -96,6 +126,29 @@ impl RtcSqliteMediaSessionRepository {
         participant: &RtcMediaParticipant,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_participant_with(
+            &self.pool,
+            numeric_id,
+            tenant_id,
+            organization_id,
+            participant,
+            updated_at,
+        )
+        .await
+    }
+
+    pub async fn upsert_media_participant_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        tenant_id: &str,
+        organization_id: &str,
+        participant: &RtcMediaParticipant,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_media_participant_sql())
             .bind(numeric_id)
             .bind(&participant.id)
@@ -117,7 +170,7 @@ impl RtcSqliteMediaSessionRepository {
             .bind(&participant.last_seen_at)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -131,6 +184,29 @@ impl RtcSqliteMediaSessionRepository {
         track: &RtcMediaTrack,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_track_with(
+            &self.pool,
+            numeric_id,
+            tenant_id,
+            organization_id,
+            track,
+            updated_at,
+        )
+        .await
+    }
+
+    pub async fn upsert_media_track_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        tenant_id: &str,
+        organization_id: &str,
+        track: &RtcMediaTrack,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_media_track_sql())
             .bind(numeric_id)
             .bind(&track.id)
@@ -149,7 +225,7 @@ impl RtcSqliteMediaSessionRepository {
             .bind(&track.end_reason)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -162,6 +238,27 @@ impl RtcSqliteMediaSessionRepository {
         artifact: &RtcMediaArtifact,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_artifact_with(
+            &self.pool,
+            numeric_id,
+            organization_id,
+            artifact,
+            updated_at,
+        )
+        .await
+    }
+
+    pub async fn upsert_media_artifact_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        organization_id: &str,
+        artifact: &RtcMediaArtifact,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         validate_rtc_media_artifact_drive_snapshot(artifact)?;
         let media_resource_snapshot = serialize_json(&artifact.resource)?;
         let resource_hash = artifact
@@ -195,7 +292,7 @@ impl RtcSqliteMediaSessionRepository {
             .bind(&artifact.source_provider_query_job_id)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -208,6 +305,21 @@ impl RtcSqliteMediaSessionRepository {
         organization_id: &str,
         sample: &RtcQualitySample,
     ) -> RtcStorageResult<()> {
+        self.insert_quality_sample_with(&self.pool, numeric_id, tenant_id, organization_id, sample)
+            .await
+    }
+
+    pub async fn insert_quality_sample_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        tenant_id: &str,
+        organization_id: &str,
+        sample: &RtcQualitySample,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_quality_sample_sql())
             .bind(numeric_id)
             .bind(&sample.id)
@@ -224,7 +336,7 @@ impl RtcSqliteMediaSessionRepository {
             .bind(sample.bitrate_kbps.map(u32_to_i64))
             .bind(&sample.sampled_at)
             .bind(&sample.sampled_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -286,7 +398,7 @@ impl RtcSqliteMediaSessionRepository {
             .collect()
     }
 
-    async fn list_media_tracks(
+    pub async fn list_media_tracks(
         &self,
         media_session_id: &str,
     ) -> RtcStorageResult<Vec<RtcMediaTrack>> {
@@ -333,6 +445,52 @@ impl RtcSqliteMediaSessionRepository {
 
         rows.into_iter().map(sqlite_row_to_quality_sample).collect()
     }
+
+    pub async fn list_media_sessions_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcMediaSession>> {
+        let sql = sqlite_media_session_select_sql(
+            "WHERE tenant_id = ? AND organization_id = ?",
+            "ORDER BY started_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut sessions = Vec::with_capacity(rows.len());
+        for row in rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = self.list_media_participants(session_id.as_str()).await?;
+            sessions.push(sqlite_row_to_media_session(row, participants)?);
+        }
+        Ok(sessions)
+    }
+
+    pub async fn get_media_session_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        media_session_id: &str,
+    ) -> RtcStorageResult<Option<RtcMediaSession>> {
+        let sql = sqlite_media_session_select_sql(
+            "WHERE uuid = ? AND tenant_id = ? AND organization_id = ?",
+            "",
+        );
+        let row = sqlx::query(&sql)
+            .bind(media_session_id)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_optional(&self.pool)
+            .await?;
+        let Some(row) = row else {
+            return Ok(None);
+        };
+        let participants = self.list_media_participants(media_session_id).await?;
+        Ok(Some(sqlite_row_to_media_session(row, participants)?))
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -351,6 +509,20 @@ impl RtcPostgresMediaSessionRepository {
         room: &RtcRoom,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_room_with(&self.pool, numeric_id, room, updated_at)
+            .await
+    }
+
+    pub async fn upsert_room_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        room: &RtcRoom,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_room_sql())
             .bind(numeric_id)
             .bind(&room.id)
@@ -361,7 +533,7 @@ impl RtcPostgresMediaSessionRepository {
             .bind(room_status_to_i32(&room.status))
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -373,6 +545,20 @@ impl RtcPostgresMediaSessionRepository {
         session: &RtcMediaSession,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_session_with(&self.pool, numeric_id, session, updated_at)
+            .await
+    }
+
+    pub async fn upsert_media_session_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        session: &RtcMediaSession,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         let quality_summary = serialize_optional_json(&session.quality_summary)?;
         let recording_summary = serialize_optional_json(&session.recording_summary)?;
 
@@ -405,7 +591,7 @@ impl RtcPostgresMediaSessionRepository {
             .bind(&session.last_provider_query_job_id)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -419,6 +605,29 @@ impl RtcPostgresMediaSessionRepository {
         participant: &RtcMediaParticipant,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_participant_with(
+            &self.pool,
+            numeric_id,
+            tenant_id,
+            organization_id,
+            participant,
+            updated_at,
+        )
+        .await
+    }
+
+    pub async fn upsert_media_participant_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        tenant_id: &str,
+        organization_id: &str,
+        participant: &RtcMediaParticipant,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_media_participant_sql())
             .bind(numeric_id)
             .bind(&participant.id)
@@ -440,7 +649,7 @@ impl RtcPostgresMediaSessionRepository {
             .bind(&participant.last_seen_at)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -454,6 +663,29 @@ impl RtcPostgresMediaSessionRepository {
         track: &RtcMediaTrack,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_track_with(
+            &self.pool,
+            numeric_id,
+            tenant_id,
+            organization_id,
+            track,
+            updated_at,
+        )
+        .await
+    }
+
+    pub async fn upsert_media_track_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        tenant_id: &str,
+        organization_id: &str,
+        track: &RtcMediaTrack,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_media_track_sql())
             .bind(numeric_id)
             .bind(&track.id)
@@ -472,7 +704,7 @@ impl RtcPostgresMediaSessionRepository {
             .bind(&track.end_reason)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -485,6 +717,27 @@ impl RtcPostgresMediaSessionRepository {
         artifact: &RtcMediaArtifact,
         updated_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_media_artifact_with(
+            &self.pool,
+            numeric_id,
+            organization_id,
+            artifact,
+            updated_at,
+        )
+        .await
+    }
+
+    pub async fn upsert_media_artifact_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        organization_id: &str,
+        artifact: &RtcMediaArtifact,
+        updated_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         validate_rtc_media_artifact_drive_snapshot(artifact)?;
         let media_resource_snapshot = serialize_json(&artifact.resource)?;
         let resource_hash = artifact
@@ -518,7 +771,7 @@ impl RtcPostgresMediaSessionRepository {
             .bind(&artifact.source_provider_query_job_id)
             .bind(updated_at)
             .bind(updated_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -531,6 +784,21 @@ impl RtcPostgresMediaSessionRepository {
         organization_id: &str,
         sample: &RtcQualitySample,
     ) -> RtcStorageResult<()> {
+        self.insert_quality_sample_with(&self.pool, numeric_id, tenant_id, organization_id, sample)
+            .await
+    }
+
+    pub async fn insert_quality_sample_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        tenant_id: &str,
+        organization_id: &str,
+        sample: &RtcQualitySample,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_quality_sample_sql())
             .bind(numeric_id)
             .bind(&sample.id)
@@ -544,7 +812,7 @@ impl RtcPostgresMediaSessionRepository {
             .bind(sample.bitrate_kbps.map(u32_to_i32))
             .bind(&sample.sampled_at)
             .bind(&sample.sampled_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -606,7 +874,7 @@ impl RtcPostgresMediaSessionRepository {
             .collect()
     }
 
-    async fn list_media_tracks(
+    pub async fn list_media_tracks(
         &self,
         media_session_id: &str,
     ) -> RtcStorageResult<Vec<RtcMediaTrack>> {
@@ -656,6 +924,52 @@ impl RtcPostgresMediaSessionRepository {
         rows.into_iter()
             .map(postgres_row_to_quality_sample)
             .collect()
+    }
+
+    pub async fn list_media_sessions_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcMediaSession>> {
+        let sql = postgres_media_session_select_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2",
+            "ORDER BY started_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut sessions = Vec::with_capacity(rows.len());
+        for row in rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = self.list_media_participants(session_id.as_str()).await?;
+            sessions.push(postgres_row_to_media_session(row, participants)?);
+        }
+        Ok(sessions)
+    }
+
+    pub async fn get_media_session_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        media_session_id: &str,
+    ) -> RtcStorageResult<Option<RtcMediaSession>> {
+        let sql = postgres_media_session_select_sql(
+            "WHERE uuid = $1 AND tenant_id = $2 AND organization_id = $3",
+            "",
+        );
+        let row = sqlx::query(&sql)
+            .bind(media_session_id)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_optional(&self.pool)
+            .await?;
+        let Some(row) = row else {
+            return Ok(None);
+        };
+        let participants = self.list_media_participants(media_session_id).await?;
+        Ok(Some(postgres_row_to_media_session(row, participants)?))
     }
 }
 

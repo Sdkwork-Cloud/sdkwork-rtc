@@ -1,3 +1,10 @@
+import type { RtcClient } from "@sdkwork/rtc-sdk";
+
+import {
+  importRtcProviderPackageModule,
+  normalizeRtcProviderKey,
+} from "./rtcProviderPackageImport";
+
 export interface RtcMediaRuntimeJoinInput {
   appId: string;
   sessionId: string;
@@ -5,6 +12,7 @@ export interface RtcMediaRuntimeJoinInput {
   participantId: string;
   token: string;
   displayName: string;
+  providerKey?: string;
 }
 
 export interface RtcMediaRuntimeStatus {
@@ -19,19 +27,43 @@ export interface RtcMediaRuntimePort {
   getStatus(): RtcMediaRuntimeStatus;
 }
 
+async function publishDefaultLocalTracks(client: RtcClient, participantId: string): Promise<void> {
+  await client.publish({
+    trackId: `${participantId}:audio`,
+    kind: "audio",
+  });
+  await client.publish({
+    trackId: `${participantId}:video`,
+    kind: "video",
+  });
+}
+
 export async function createRtcMediaRuntime(): Promise<RtcMediaRuntimePort> {
   let connected = false;
+  let activeProviderKey = "volcengine";
   let message = "RTC media runtime is ready for credential-backed join.";
+  let rtcClient: RtcClient | null = null;
 
   return {
     async join(input) {
+      const providerKey = normalizeRtcProviderKey(input.providerKey);
+      activeProviderKey = providerKey;
       try {
+        if (rtcClient) {
+          await rtcClient.leave().catch(() => undefined);
+          rtcClient = null;
+        }
         const rtcSdk = await import("@sdkwork/rtc-sdk");
-        const providerModule = await import("@sdkwork/rtc-sdk-provider-volcengine");
+        const packageEntry = rtcSdk.getRtcProviderPackageByProviderKey(providerKey);
+        if (!packageEntry) {
+          throw new Error(`Unknown RTC provider package: ${providerKey}`);
+        }
         const driverManager = await rtcSdk.installRtcProviderPackage(
           new rtcSdk.RtcDriverManager(),
-          { providerKey: "volcengine" },
-          rtcSdk.createRtcProviderPackageLoader(async () => providerModule),
+          { providerKey },
+          rtcSdk.createRtcProviderPackageLoader(async (_packageIdentity, entry) =>
+            importRtcProviderPackageModule(entry),
+          ),
         );
         const dataSource = new rtcSdk.RtcDataSource({
           driverManager,
@@ -42,31 +74,38 @@ export async function createRtcMediaRuntime(): Promise<RtcMediaRuntimePort> {
             userExtraInfo: { displayName: input.displayName },
           },
         });
-        const rtcClient = await dataSource.createClient();
-        await rtcClient.join({
+        const client = await dataSource.createClient();
+        rtcClient = client;
+        await client.join({
           sessionId: input.sessionId,
           roomId: input.roomId,
           participantId: input.participantId,
           token: input.token,
         });
+        await publishDefaultLocalTracks(client, input.participantId);
         connected = true;
-        message = "Joined media session through volcengine runtime.";
-        return { connected: true, providerKey: "volcengine", message };
+        message = `Joined media session through ${providerKey} runtime.`;
+        return { connected: true, providerKey, message };
       } catch (error) {
+        rtcClient = null;
         connected = false;
         message =
           error instanceof Error
             ? error.message
             : "RTC media runtime is unavailable in this build.";
-        return { connected: false, providerKey: "volcengine", message };
+        return { connected: false, providerKey, message };
       }
     },
     async leave() {
+      if (rtcClient) {
+        await rtcClient.leave().catch(() => undefined);
+        rtcClient = null;
+      }
       connected = false;
       message = "Left media session.";
     },
     getStatus() {
-      return { connected, providerKey: "volcengine", message };
+      return { connected, providerKey: activeProviderKey, message };
     },
   };
 }

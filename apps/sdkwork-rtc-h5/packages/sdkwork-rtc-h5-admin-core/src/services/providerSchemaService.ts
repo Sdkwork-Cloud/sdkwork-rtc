@@ -1,40 +1,31 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderConfigSchema } from "../types/providerSchema";
-import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
-
-interface ApiEnvelope<T> {
-  data?: T;
-  message?: string;
-}
+import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 export class ProviderSchemaService {
   private readonly client;
 
   constructor(
-    baseUrl: string,
+    baseUrlOrClient: RtcBackendClientSource,
     tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
   ) {
-    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+    this.client = resolveBackendRtcClient(baseUrlOrClient, tokenManagerOrOptions);
   }
 
   async listSchemas(): Promise<ProviderConfigSchema[]> {
-    const response = await this.client.http.get<ApiEnvelope<ProviderConfigSchema[]>>(
-      "/backend/v3/api/rtc/provider_schemas",
-    );
+    const response = await this.client.rtcProviderSchemas.rtc.providerSchemas.list();
     if (!response.data) {
       throw new Error("Invalid response: missing provider schema data");
     }
-    return response.data;
+    return response.data as unknown as ProviderConfigSchema[];
   }
 
   async getSchema(provider: string): Promise<ProviderConfigSchema> {
-    const response = await this.client.http.get<ApiEnvelope<ProviderConfigSchema>>(
-      `/backend/v3/api/rtc/provider_schemas/${encodeURIComponent(provider)}`,
-    );
+    const response = await this.client.rtcProviderSchemas.rtc.providerSchemas.retrieve(provider);
     if (!response.data) {
       throw new Error(`RTC provider schema not found: ${provider}`);
     }
-    return response.data;
+    return response.data as unknown as ProviderConfigSchema;
   }
 }

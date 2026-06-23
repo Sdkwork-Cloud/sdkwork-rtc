@@ -16,7 +16,7 @@ class RtcAppServices {
   });
 }
 
-RtcAppServices createRtcAppServices(AppApiClient client) {
+RtcAppServices createRtcAppServices(SdkworkAppClient client) {
   return RtcAppServices(
     mediaSessions: MediaSessionService(client),
     participantCredentials: ParticipantCredentialService(client),

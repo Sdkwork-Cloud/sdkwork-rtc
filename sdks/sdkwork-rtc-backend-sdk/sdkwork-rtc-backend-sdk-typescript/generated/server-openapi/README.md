@@ -166,17 +166,9 @@ const result = await client.rtcProviderProfiles.rtc.providerProfiles.list(params
 ### rtc_provider_query_jobs
 
 ```typescript
-// Rtc provider Query Jobs create.
-const body = {
-  provider: 'provider',
-  providerProfileId: 'providerProfileId',
-  queryKind: 'room_online_users',
-  roomId: 'roomId',
-  mediaSessionId: 'mediaSessionId',
-  providerSessionId: 'providerSessionId',
-  cursor: 'cursor',
-};
-const result = await client.rtcProviderQueryJobs.rtc.providerQueryJobs.create(body);
+// Rtc provider Query Jobs retrieve.
+const providerQueryJobId = '1';
+const result = await client.rtcProviderQueryJobs.rtc.providerQueryJobs.retrieve(providerQueryJobId);
 ```
 
 ### rtc_provider_routes

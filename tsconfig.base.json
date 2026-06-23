@@ -2,7 +2,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@sdkwork/utils": ["../sdkwork-utils/packages/sdkwork-utils-typescript/dist/index.d.ts"]
+      "@sdkwork/utils": ["../sdkwork-utils/packages/sdkwork-utils-typescript/dist/index.d.ts"],
+      "@sdkwork/rtc-sdk": ["sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/index.ts"],
+      "@sdkwork/rtc-sdk-provider-volcengine": [
+        "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/providers/rtc-sdk-provider-volcengine/index.d.ts"
+      ]
     },
     "ignoreDeprecations": "6.0",
     "allowSyntheticDefaultImports": true,

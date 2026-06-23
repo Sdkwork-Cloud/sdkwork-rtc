@@ -13,6 +13,14 @@ export type {
   PersistProviderWizardServices,
 } from "./services/persistProviderWizard";
 export { RoomService } from "./services/roomService";
+export {
+  createBackendRtcClient,
+  resolveBackendRtcClient,
+} from "./services/backendClient";
+export type {
+  RtcBackendClientOptions,
+  RtcBackendClientSource,
+} from "./services/backendClient";
 
 export { ProviderSchemaForm, validateSchemaFields } from "./components/ProviderSchemaForm";
 export { ProviderAccountList } from "./components/ProviderAccountList";

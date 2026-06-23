@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "sdk": {
+    "name": "sdkwork-rtc-backend-sdk",
+    "version": "0.1.0",
+    "language": "dart",
+    "sdkType": "backend",
+    "protocol": "http",
+    "packageName": "sdkwork-rtc-backend-sdk-generated-dart"
+  },
+  "generatedFiles": [
+    {
+      "path": "analysis_options.yaml",
+      "sha256": "69d5fc7c4dc082613882215d52d18b02b1688b833d674ce9b281f45821626b7d"
+    },
+    {
+      "path": "bin/publish-core.mjs",
+      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+    },
+    {
+      "path": "bin/publish.ps1",
+      "sha256": "d5a885af5382bc78688027a6ae50c2e8f1bba010ae6eea4af3fcb4260e58e5eb"
+    },
+    {
+      "path": "bin/publish.sh",
+      "sha256": "19c4c829c62f2846d127e80e9b1559ae860af8b1793301812b974ff6db4b6e3a"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "fb941a0806986a54fc192f98a98f6d9c282b8d350b2b19a3e71dda404e92d545"
+    },
+    {
+      "path": "lib/backend_client.dart",
+      "sha256": "2326be6a76da7f1dac08c6ca289b59dc5d7ec72262e1bf6f7b84ab46288ae833"
+    },
+    {
+      "path": "lib/sdkwork_rtc_backend_sdk_generated_dart.dart",
+      "sha256": "09f2cbfacd1e1635787870f3c8f8a0fcf4e419aa650cfa5cb6b5e9d495bc2f54"
+    },
+    {
+      "path": "lib/src/api/api.dart",
+      "sha256": "bf1ee3dd8151759ee694f1fa532accd4e3dd6fa2b355c567dceee3dfc9ed1868"
+    },
+    {
+      "path": "lib/src/api/paths.dart",
+      "sha256": "218de8a1eb38353e21003db2e1eb53e0b30a40d51a9e2ddb65fe7169592d9860"
+    },
+    {
+      "path": "lib/src/api/response_helpers.dart",
+      "sha256": "8295b6cc4e67bb9d54a1b0a98c4282dcf8ea0cb126835a32797dd4d2c91a4214"
+    },
+    {
+      "path": "lib/src/api/rtc_media_artifacts.dart",
+      "sha256": "1a5fb5ed7163272c53e06ee8b18600a16964f652da0c8502a14c5a3e46ca0eac"
+    },
+    {
+      "path": "lib/src/api/rtc_media_sessions.dart",
+      "sha256": "eb7f5c86f850401ef8c3efe23552c9deb594f964983503492b73b191323c065f"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_accounts.dart",
+      "sha256": "22ed36f154d5d38253283ba507114a2a00f9aed9ddbd12f378356eac1c68c301"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_applications.dart",
+      "sha256": "6744a84eff24ad5667d34b0f9e8023e6c1d19b89f05d1ef72707fd246fcb4591"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_credentials.dart",
+      "sha256": "1049c5a4de0ca873768451eb78d3a8ed73bbfd160d4cee32d6f07ce511db9329"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_plugins.dart",
+      "sha256": "b61c2dbe76a1cf6da5e756e5922d61d2f664d6dd1805b0bf3870a5861411b719"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_profiles.dart",
+      "sha256": "743c8c3dde42021ff45dd66ff71eaa7b824d2820171e0ecd54223d6649b4f375"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_query_jobs.dart",
+      "sha256": "59a7e4e5cc0f1c4cc84bef5903abd5d63d3ac25ddc84485729c270c0dd635416"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_routes.dart",
+      "sha256": "3a818cde2ff5615740b03cd603cb53be503e9d41a78d6540a86cfd7ad84aaf9a"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_schemas.dart",
+      "sha256": "77187a41a58298f04e38ea538c6a7f9d3f909b9095e3a6f8c0036565fdad0acd"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_webhooks.dart",
+      "sha256": "c2a023f83c5ecd4e0bc654eb299f0d54619552a84b05fb6040da91b210daed8e"
+    },
+    {
+      "path": "lib/src/api/rtc_quality_samples.dart",
+      "sha256": "1e3e4870382d6b34aeab3fe60aa620dd225aa3896eeecf29d2dba06683102957"
+    },
+    {
+      "path": "lib/src/api/rtc_rooms.dart",
+      "sha256": "fdea7a8727317f7bcb180c359242ebe2387885649416310a7e64a6986082a168"
+    },
+    {
+      "path": "lib/src/http/client.dart",
+      "sha256": "9984029605ea1e2e05ae5fa024e80567197d76af4853a7e8251c2e92f77b7360"
+    },
+    {
+      "path": "lib/src/http/sdk_config.dart",
+      "sha256": "f2bb41dbc413f797f58f402823246de137d473e3c9c4614680781451b131fbe0"
+    },
+    {
+      "path": "lib/src/models.dart",
+      "sha256": "516f31c10993716a27af858765f37663aca188b3aafb665339f51f640c9d7d4f"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "7840cc7d2b36ff364ac16c2fc5ec15b861bfe96854eecf81fb59b00edb8b1447"
+    },
+    {
+      "path": "pubspec.yaml",
+      "sha256": "e05e6a9a4824d3241052e5d8266e50edf6a0e4b5d0286ace95c4f105c1190de2"
+    },
+    {
+      "path": "README.md",
+      "sha256": "8fc71c4991a43ed6bc9660aee6371849fda8c6c09f08efd924e4f858947971d1"
+    },
+    {
+      "path": "sdkwork-sdk.json",
+      "sha256": "95fa036633f7342b4f11af910ecc06d0dc2b03a2e156306f45978faf7edc8ca2"
+    }
+  ],
+  "scaffoldFiles": [
+    "custom/README.md"
+  ],
+  "customRoots": [
+    "custom/"
+  ]
+}

@@ -12,6 +12,18 @@ export interface RtcProviderRoutesRtcProviderRoutesListParams {
   q?: string;
 }
 
+export interface RtcProviderRoutesRtcProviderRoutesCreateParams {
+  idempotencyKey?: string;
+}
+
+export interface RtcProviderRoutesRtcProviderRoutesUpdateParams {
+  idempotencyKey?: string;
+}
+
+export interface RtcProviderRoutesRtcProviderRoutesDisableParams {
+  idempotencyKey?: string;
+}
+
 export class RtcProviderRoutesRtcProviderRoutesApi {
   private client: HttpClient;
 
@@ -33,8 +45,14 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
   }
 
 /** Rtc provider Routes create. */
-  async create(body: RtcProviderRouteCommand): Promise<RtcProviderRouteResponse> {
-    return this.client.post<RtcProviderRouteResponse>(backendApiPath(`/rtc/provider_routes`), body, undefined, undefined, 'application/json');
+  async create(body: RtcProviderRouteCommand, params?: RtcProviderRoutesRtcProviderRoutesCreateParams): Promise<RtcProviderRouteResponse> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.post<RtcProviderRouteResponse>(backendApiPath(`/rtc/provider_routes`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Routes retrieve. */
@@ -43,13 +61,25 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
   }
 
 /** Rtc provider Routes update. */
-  async update(providerRouteId: string, body?: RtcProviderRouteCommand): Promise<RtcProviderRouteResponse> {
-    return this.client.patch<RtcProviderRouteResponse>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(providerRouteId: string, body?: RtcProviderRouteCommand, params?: RtcProviderRoutesRtcProviderRoutesUpdateParams): Promise<RtcProviderRouteResponse> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.patch<RtcProviderRouteResponse>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Routes disable. */
-  async disable(providerRouteId: string, body: RtcProviderRouteDisableRequest): Promise<RtcProviderRouteResponse> {
-    return this.client.post<RtcProviderRouteResponse>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}/disable`), body, undefined, undefined, 'application/json');
+  async disable(providerRouteId: string, body: RtcProviderRouteDisableRequest, params?: RtcProviderRoutesRtcProviderRoutesDisableParams): Promise<RtcProviderRouteResponse> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.post<RtcProviderRouteResponse>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}/disable`), body, undefined, requestHeaders, 'application/json');
   }
 }
 
@@ -309,4 +339,79 @@ function encodeQueryValue(value: string, allowReserved: boolean): string {
     .replace(/%2C/gi, ',')
     .replace(/%3B/gi, ';')
     .replace(/%3D/gi, '=');
+}
+function buildRequestHeaders(
+  headers: Record<string, HeaderParameterSpec | undefined>,
+  cookies: Record<string, HeaderParameterSpec | undefined> = {},
+): Record<string, string> | undefined {
+  const requestHeaders: Record<string, string> = {};
+
+  for (const [name, parameter] of Object.entries(headers)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      requestHeaders[name] = serialized;
+    }
+  }
+
+  const cookieHeader = buildCookieHeader(cookies);
+  if (cookieHeader) {
+    requestHeaders.Cookie = requestHeaders.Cookie
+      ? `${requestHeaders.Cookie}; ${cookieHeader}`
+      : cookieHeader;
+  }
+
+  return Object.keys(requestHeaders).length > 0 ? requestHeaders : undefined;
+}
+
+interface HeaderParameterSpec {
+  value: unknown;
+  style: string;
+  explode: boolean;
+  contentType?: string;
+}
+
+function buildCookieHeader(cookies: Record<string, HeaderParameterSpec | undefined>): string | undefined {
+  const pairs: string[] = [];
+  for (const [name, parameter] of Object.entries(cookies)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      pairs.push(`${encodeURIComponent(name)}=${encodeURIComponent(serialized)}`);
+    }
+  }
+  return pairs.length > 0 ? pairs.join('; ') : undefined;
+}
+
+function serializeParameterValue(parameter: HeaderParameterSpec | undefined): string | undefined {
+  const value = parameter?.value;
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (parameter?.contentType) {
+    return JSON.stringify(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeHeaderPrimitive(item)).join(',');
+  }
+  if (typeof value === 'object' && value !== null) {
+    return serializeHeaderObject(value as Record<string, unknown>, parameter?.explode === true);
+  }
+  return serializeHeaderPrimitive(value);
+}
+
+function serializeHeaderObject(value: Record<string, unknown>, explode: boolean): string {
+  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+  if (explode) {
+    return entries.map(([key, entryValue]) => `${key}=${serializeHeaderPrimitive(entryValue)}`).join(',');
+  }
+  return entries.flatMap(([key, entryValue]) => [key, serializeHeaderPrimitive(entryValue)]).join(',');
+}
+
+function serializeHeaderPrimitive(value: unknown): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return String(value);
 }

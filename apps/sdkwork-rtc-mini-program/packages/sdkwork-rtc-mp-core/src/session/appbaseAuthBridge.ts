@@ -1,5 +1,4 @@
 import type { RtcAppSession } from "./appSession";
-import { DEFAULT_APP_SESSION } from "./appSession";
 
 const CALLBACK_KEYS = {
   accessToken: ["accessToken", "access_token"],
@@ -25,6 +24,43 @@ export function buildAppbaseLoginUrl(loginUrl: string, returnUrl: string): strin
   return target.toString();
 }
 
+export function parseAppbaseCallbackFromQuery(
+  query: Record<string, string | undefined>,
+): RtcAppSession | null {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+  return parseAppbaseCallbackFromSearchParams(params);
+}
+
+function parseAppbaseCallbackFromSearchParams(
+  params: URLSearchParams,
+): RtcAppSession | null {
+  const accessToken = readParam(params, CALLBACK_KEYS.accessToken);
+  if (!accessToken) {
+    return null;
+  }
+
+  const authToken = readParam(params, CALLBACK_KEYS.authToken) || accessToken;
+  const tenantId = readParam(params, CALLBACK_KEYS.tenantId);
+  const organizationId = readParam(params, CALLBACK_KEYS.organizationId);
+  const userId = readParam(params, CALLBACK_KEYS.userId);
+  if (!tenantId || !organizationId || !userId) {
+    return null;
+  }
+
+  return {
+    accessToken,
+    authToken,
+    tenantId,
+    organizationId,
+    userId,
+  };
+}
+
 export function parseAppbaseCallbackSession(
   search = window.location.search,
   hash = window.location.hash,
@@ -36,21 +72,7 @@ export function parseAppbaseCallbackSession(
       params.set(key, value);
     }
   }
-
-  const accessToken = readParam(params, CALLBACK_KEYS.accessToken);
-  if (!accessToken) {
-    return null;
-  }
-
-  const authToken = readParam(params, CALLBACK_KEYS.authToken) || accessToken;
-  return {
-    accessToken,
-    authToken,
-    tenantId: readParam(params, CALLBACK_KEYS.tenantId) || DEFAULT_APP_SESSION.tenantId,
-    organizationId:
-      readParam(params, CALLBACK_KEYS.organizationId) || DEFAULT_APP_SESSION.organizationId,
-    userId: readParam(params, CALLBACK_KEYS.userId) || DEFAULT_APP_SESSION.userId,
-  };
+  return parseAppbaseCallbackFromSearchParams(params);
 }
 
 export function stripAppbaseCallbackFromLocation(): void {

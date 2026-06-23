@@ -31,8 +31,8 @@ class RtcAdminServices {
 
 RtcAdminServices createAdminServices({required RtcAdminSession session}) {
   final env = resolveEnvironment();
-  final client = BackendApiClient(
-    baseUrl: env.backendApiBaseUrl,
+  final bundle = createRtcBackendClient(
+    backendApiBaseUrl: env.backendApiBaseUrl,
     accessToken: session.accessToken,
     authToken: session.authToken,
     tenantId: session.tenantId,
@@ -40,6 +40,7 @@ RtcAdminServices createAdminServices({required RtcAdminSession session}) {
     userId: session.userId,
     permissionScope: defaultAdminPermissionScope,
   );
+  final client = bundle.backendSdk;
 
   return RtcAdminServices(
     accounts: ProviderAccountService(client),

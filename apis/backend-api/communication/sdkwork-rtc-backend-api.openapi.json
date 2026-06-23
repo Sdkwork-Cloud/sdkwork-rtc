@@ -606,6 +606,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -696,6 +707,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.media_sessions.close",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -964,7 +977,19 @@
         ],
         "summary": "Rtc provider Accounts create.",
         "operationId": "rtc.providerAccounts.create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -1053,6 +1078,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_accounts.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -1185,6 +1212,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -1275,6 +1313,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_accounts.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": false,
           "content": {
@@ -1452,6 +1492,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -1542,6 +1593,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_applications.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -1569,6 +1622,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -1659,6 +1723,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_accounts.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -1791,6 +1857,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -1881,6 +1958,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_applications.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": false,
           "content": {
@@ -2058,6 +2137,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -2148,6 +2238,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_credentials.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "authCritical",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -2175,6 +2267,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -2265,6 +2368,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_applications.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -2397,6 +2502,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -2487,6 +2603,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_credentials.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": false,
           "content": {
@@ -2514,6 +2632,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -2604,6 +2733,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_credentials.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -3016,7 +3147,19 @@
         ],
         "summary": "Rtc provider Profiles create.",
         "operationId": "rtc.providerProfiles.create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -3105,6 +3248,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_profiles.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -3237,6 +3382,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -3327,6 +3483,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_profiles.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": false,
           "content": {
@@ -3354,6 +3512,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -3444,6 +3613,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_profiles.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -3471,6 +3642,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -3561,6 +3743,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_profiles.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -3588,6 +3772,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -3678,6 +3873,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_profiles.verify",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -3697,7 +3894,19 @@
         ],
         "summary": "Rtc provider Query Jobs create.",
         "operationId": "rtc.providerQueryJobs.create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -3786,6 +3995,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_query_jobs.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -4206,7 +4417,19 @@
         ],
         "summary": "Rtc provider Routes create.",
         "operationId": "rtc.providerRoutes.create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -4295,6 +4518,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_routes.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -4427,6 +4652,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -4517,6 +4753,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_routes.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": false,
           "content": {
@@ -4544,6 +4782,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -4634,6 +4883,8 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.provider_routes.write",
         "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -4912,6 +5163,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
           }
         ],
         "responses": {
@@ -5018,6 +5280,7 @@
         ],
         "x-sdkwork-forbid-credential-headers": true,
         "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
         "requestBody": {
           "required": true,
           "content": {

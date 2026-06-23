@@ -9,12 +9,19 @@
     "protocol": "http",
     "packageName": "sdkwork-rtc-backend-sdk-generated-typescript"
   },
-  "changeFingerprint": "6a2136e39a2c06fc6672e161dde7cb7f9a120284f525a4f806db69d5551df89b",
+  "changeFingerprint": "a7aa87ecc05ceef39d06f38715fe889152a2be29afc5f0455e84c3364cfd6fcb",
   "changes": {
     "createdGeneratedFiles": [],
     "updatedGeneratedFiles": [
       "README.md",
-      "src/http/client.ts"
+      "src/api/rtc-media-sessions.ts",
+      "src/api/rtc-provider-accounts.ts",
+      "src/api/rtc-provider-applications.ts",
+      "src/api/rtc-provider-credentials.ts",
+      "src/api/rtc-provider-profiles.ts",
+      "src/api/rtc-provider-query-jobs.ts",
+      "src/api/rtc-provider-routes.ts",
+      "src/api/rtc-provider-webhooks.ts"
     ],
     "unchangedGeneratedFiles": [
       "bin/publish-core.mjs",
@@ -30,19 +37,12 @@
       "src/api/index.ts",
       "src/api/paths.ts",
       "src/api/rtc-media-artifacts.ts",
-      "src/api/rtc-media-sessions.ts",
-      "src/api/rtc-provider-accounts.ts",
-      "src/api/rtc-provider-applications.ts",
-      "src/api/rtc-provider-credentials.ts",
       "src/api/rtc-provider-plugins.ts",
-      "src/api/rtc-provider-profiles.ts",
-      "src/api/rtc-provider-query-jobs.ts",
-      "src/api/rtc-provider-routes.ts",
       "src/api/rtc-provider-schemas.ts",
-      "src/api/rtc-provider-webhooks.ts",
       "src/api/rtc-quality-samples.ts",
       "src/api/rtc-rooms.ts",
       "src/auth/index.ts",
+      "src/http/client.ts",
       "src/http/index.ts",
       "src/index.ts",
       "src/sdk.ts",
@@ -125,28 +125,26 @@
       "custom/build-runtime.mjs",
       "custom/README.md"
     ],
-    "backedUpFiles": [
-      "src/http/client.ts"
-    ]
+    "backedUpFiles": []
   },
   "impact": {
     "schemaVersion": 1,
     "areas": [
       "api-surface",
-      "runtime",
       "documentation"
     ],
     "details": [
       {
         "area": "api-surface",
         "paths": [
-          "src/http/client.ts"
-        ]
-      },
-      {
-        "area": "runtime",
-        "paths": [
-          "src/http/client.ts"
+          "src/api/rtc-media-sessions.ts",
+          "src/api/rtc-provider-accounts.ts",
+          "src/api/rtc-provider-applications.ts",
+          "src/api/rtc-provider-credentials.ts",
+          "src/api/rtc-provider-profiles.ts",
+          "src/api/rtc-provider-query-jobs.ts",
+          "src/api/rtc-provider-routes.ts",
+          "src/api/rtc-provider-webhooks.ts"
         ]
       },
       {
@@ -157,18 +155,18 @@
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, runtime, documentation. Verification is required."
+    "summary": "Detected impact areas: api-surface, documentation. Verification is required."
   },
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, runtime, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, runtime, documentation.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -186,7 +184,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, runtime, documentation.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -204,14 +202,12 @@
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "high",
+    "riskLevel": "medium",
     "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "backed-up-generated-files",
-      "manual-review-required",
       "verification-required"
     ]
   },

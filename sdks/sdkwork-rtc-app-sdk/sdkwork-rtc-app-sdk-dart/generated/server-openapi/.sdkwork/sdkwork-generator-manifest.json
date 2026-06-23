@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "sdk": {
+    "name": "sdkwork-rtc-app-sdk",
+    "version": "0.1.0",
+    "language": "dart",
+    "sdkType": "app",
+    "protocol": "http",
+    "packageName": "sdkwork-rtc-app-sdk-generated-dart"
+  },
+  "generatedFiles": [
+    {
+      "path": "analysis_options.yaml",
+      "sha256": "69d5fc7c4dc082613882215d52d18b02b1688b833d674ce9b281f45821626b7d"
+    },
+    {
+      "path": "bin/publish-core.mjs",
+      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+    },
+    {
+      "path": "bin/publish.ps1",
+      "sha256": "d5a885af5382bc78688027a6ae50c2e8f1bba010ae6eea4af3fcb4260e58e5eb"
+    },
+    {
+      "path": "bin/publish.sh",
+      "sha256": "19c4c829c62f2846d127e80e9b1559ae860af8b1793301812b974ff6db4b6e3a"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "fb941a0806986a54fc192f98a98f6d9c282b8d350b2b19a3e71dda404e92d545"
+    },
+    {
+      "path": "lib/app_client.dart",
+      "sha256": "ee68de96c511318b7e866dbca44e311b8e4417f1fdbdf2ee94d2b1f9b4f75c9e"
+    },
+    {
+      "path": "lib/sdkwork_rtc_app_sdk_generated_dart.dart",
+      "sha256": "5d277cda7c22a2a043361cf6528d29eecc1a751d5d4a13e18db5cecab5d586d1"
+    },
+    {
+      "path": "lib/src/api/api.dart",
+      "sha256": "8dfcf8d4baa729c71b8011dc7bf679ef8a1381ec94b76f5542d5d4efed5c937f"
+    },
+    {
+      "path": "lib/src/api/paths.dart",
+      "sha256": "fc74022b8530edc3908245114ac0c9bf5268bba34f1852dcb4ffbde5cef81be1"
+    },
+    {
+      "path": "lib/src/api/response_helpers.dart",
+      "sha256": "8295b6cc4e67bb9d54a1b0a98c4282dcf8ea0cb126835a32797dd4d2c91a4214"
+    },
+    {
+      "path": "lib/src/api/rtc_media_sessions.dart",
+      "sha256": "a37789989e1dc1e22cf3f3158e420f0978d68ae61144215b463b0c14040914c2"
+    },
+    {
+      "path": "lib/src/api/rtc_participant_credentials.dart",
+      "sha256": "e2e2ef6f51369cc8c61362d163779ac581de005464c197b82e6b6a34585be744"
+    },
+    {
+      "path": "lib/src/api/rtc_provider_profiles.dart",
+      "sha256": "df1cab3c560187b6a0a2cf1ed8deabcc745e6604f626f04a4e1d2ded17317c2d"
+    },
+    {
+      "path": "lib/src/api/rtc_recording_artifacts.dart",
+      "sha256": "bf6c8c48d91ed1f0ac2953439a290ff25406b928543b226d81883ae6a8864c71"
+    },
+    {
+      "path": "lib/src/api/rtc_rooms.dart",
+      "sha256": "5cb3adfe60c30cf4bb6181cf48f8fd832711da1c678c40d8fd38e5e28f8e73e6"
+    },
+    {
+      "path": "lib/src/http/client.dart",
+      "sha256": "9984029605ea1e2e05ae5fa024e80567197d76af4853a7e8251c2e92f77b7360"
+    },
+    {
+      "path": "lib/src/http/sdk_config.dart",
+      "sha256": "f2bb41dbc413f797f58f402823246de137d473e3c9c4614680781451b131fbe0"
+    },
+    {
+      "path": "lib/src/models.dart",
+      "sha256": "93462e15372e4543a8e42d0787d0524c7409e1948027e5b0794e04c0f40bd3c6"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "7840cc7d2b36ff364ac16c2fc5ec15b861bfe96854eecf81fb59b00edb8b1447"
+    },
+    {
+      "path": "pubspec.yaml",
+      "sha256": "7f32ac079f45ca547aad7b85abc9b4c1813214063582de90bd312ceb41a0432b"
+    },
+    {
+      "path": "README.md",
+      "sha256": "001a49c796fb80b4e5444c6b6f98f6ff4b1c2bb696c6f4d7c3e25529b07566c6"
+    },
+    {
+      "path": "sdkwork-sdk.json",
+      "sha256": "a6ce5d09bf011f7077cd372e0b40844c17822c5b6ecede95d9d920b8d12a8966"
+    }
+  ],
+  "scaffoldFiles": [
+    "custom/README.md"
+  ],
+  "customRoots": [
+    "custom/"
+  ]
+}

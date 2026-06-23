@@ -28,6 +28,15 @@
       "version": "0.1.0"
     },
     {
+      "language": "dart",
+      "workspace": "sdkwork-rtc-backend-sdk-dart",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-rtc-backend-sdk-dart/generated/server-openapi",
+      "name": "sdkwork_rtc_backend_sdk",
+      "version": "0.1.0"
+    },
+    {
       "language": "rust",
       "workspace": "sdkwork-rtc-backend-sdk-rust",
       "generationState": "declared",

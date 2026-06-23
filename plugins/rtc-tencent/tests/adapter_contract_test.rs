@@ -1,8 +1,9 @@
 use sdkwork_communication_rtc_service::{
     RtcContractError, RtcCreateMediaSessionRequest, RtcMediaSessionMode, RtcProviderEventKind,
     RtcProviderPluginFactory, RtcProviderPort, RtcProviderQueryKind, RtcProviderQueryRequest,
-    RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactImportPort,
-    RtcRecordingArtifactImportRequest,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
+    RtcRecordingArtifactImportPort, RtcRecordingArtifactImportRequest,
+    sign_hmac_sha256_payload_hex,
 };
 use sdkwork_rtc_adapter_tencent::{
     TENCENT_RTC_PLUGIN_ID, TencentRtcOpenApiExecutor, TencentRtcOpenApiRequest,
@@ -237,6 +238,20 @@ fn test_tencent_rtc_provider_implements_webhook_and_active_query_surface() {
     );
     assert_eq!(parsed.participant_id.as_deref(), Some("u_guest"));
     assert_eq!(parsed.signature_header.as_deref(), Some("sig-demo"));
+
+    let webhook_payload = r#"{"EventType":"104","EventId":"tc-event-1"}"#;
+    let webhook_secret = "tencent-webhook-secret";
+    provider
+        .verify_provider_webhook_signature(RtcProviderWebhookVerifyRequest {
+            headers: Vec::new(),
+            raw_payload: webhook_payload.into(),
+            signature_header: Some(sign_hmac_sha256_payload_hex(
+                webhook_secret,
+                webhook_payload,
+            )),
+            webhook_secret: webhook_secret.into(),
+        })
+        .expect("tencent webhook signature should verify");
 
     let nested = provider
         .parse_provider_webhook(RtcProviderWebhookParseRequest {

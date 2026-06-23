@@ -44,7 +44,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "7724a1a9789bc99a9ecc10d0eb34d70f00953a40977cb6f210826791431d78dc"
+      "sha256": "d93bcf1688ca36078bd07e78d221810c66e24462eb1db5abf378d31348798bdc"
     },
     {
       "path": "sdkwork-sdk.json",
@@ -68,19 +68,19 @@
     },
     {
       "path": "src/api/rtc-media-sessions.ts",
-      "sha256": "295239107648ce6deedef5a786aa39152047c8d4b5b55bec7d0dba141cd8f076"
+      "sha256": "4da02af50611e51694607716bb3f58142a4bb9a6c8b39fce9f91269115b0e4fa"
     },
     {
       "path": "src/api/rtc-provider-accounts.ts",
-      "sha256": "9c759a3aa89ce6fb712f6c5cb2fc794215a74408b9ca52e15f250b861b875614"
+      "sha256": "962357e01148f7eba4e22e5590a3f832e1fa856528c98a9527fd7e0ae25f2075"
     },
     {
       "path": "src/api/rtc-provider-applications.ts",
-      "sha256": "10f6d52adba7a69ad4237c531560b6cdfd5627e7f81f64b93a3b6f9d0bcb5b62"
+      "sha256": "84e0f46a823cabbfbde1e2779a4a2a4f13a1a0ad1cb50f13eb056bb8746e9db9"
     },
     {
       "path": "src/api/rtc-provider-credentials.ts",
-      "sha256": "7b07363a675d3633677f6673db54343caf46e902dd740fb1e00c2667c6ad8438"
+      "sha256": "ba848906fd5896381895c27bb3fcd7e395549b9de86d3793a3974f50dc3e0618"
     },
     {
       "path": "src/api/rtc-provider-plugins.ts",
@@ -88,15 +88,15 @@
     },
     {
       "path": "src/api/rtc-provider-profiles.ts",
-      "sha256": "d47d3c7ef32ea0efb408ab10bd0047873f265b4c8993e2c8a1ca21dbef49e647"
+      "sha256": "1428f4ff69acbc73e8420646364dc5c05b4fa9bc197d031af8aeb10acc4af621"
     },
     {
       "path": "src/api/rtc-provider-query-jobs.ts",
-      "sha256": "07b5a987b1154027fc2276bdf5102fdf95a53efe07d5df4d5fa1c348341ebbb0"
+      "sha256": "1934fc92324e30a04163a6bc33b7449ecd29fbe0c493dbe0b94ad3184830d585"
     },
     {
       "path": "src/api/rtc-provider-routes.ts",
-      "sha256": "d7d87debb3b5c192725ef195750d67f25d7ba9afa45790b724ded19924a2dd94"
+      "sha256": "d7f0f2650340db23f8629651736aec2d5c168f3ab612c20b4873859a20b487d9"
     },
     {
       "path": "src/api/rtc-provider-schemas.ts",
@@ -104,7 +104,7 @@
     },
     {
       "path": "src/api/rtc-provider-webhooks.ts",
-      "sha256": "84950a53940daf086b815d5976a8637666acb7e036cbebfa5b97481915c7b72c"
+      "sha256": "645202bc9c0c859467cb26f40d7c191fba88ee4292ef5f7b065ab6653f3b6a5b"
     },
     {
       "path": "src/api/rtc-quality-samples.ts",
@@ -120,7 +120,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "e1026e5587705492dcf32bf25ebb2584d5645b11a1046db92e9d4808f4b3edc0"
+      "sha256": "1d339275acee6ec54660a32eb9effcc718ebf0992c5e9bfdb80a3452e0702137"
     },
     {
       "path": "src/http/index.ts",

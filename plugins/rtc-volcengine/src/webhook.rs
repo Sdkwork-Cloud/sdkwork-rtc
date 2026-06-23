@@ -1,6 +1,7 @@
 use sdkwork_communication_rtc_service::{
     RtcContractError, RtcProviderEventKind, RtcProviderWebhookEvent,
-    RtcProviderWebhookParseRequest, rtc_provider_payload_hash,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, rtc_provider_payload_hash,
+    verify_provider_webhook_signature_hmac,
 };
 use serde_json::{Value as JsonValue, json};
 
@@ -55,8 +56,7 @@ pub(crate) fn parse_provider_webhook(
     let signature_header = header_value(
         request.headers.as_slice(),
         &["X-Volc-Signature", "X-VolcEngine-Signature", "X-Volc-Sign"],
-    )
-    .or_else(|| string_field(&payload, &["Signature", "signature", "Sign", "sign"]));
+    );
     let normalized_event_json = json!({
         "provider": "volcengine",
         "eventType": event_type.clone(),
@@ -88,6 +88,12 @@ pub(crate) fn parse_provider_webhook(
         raw_payload: request.raw_payload,
         normalized_event_json,
     })
+}
+
+pub(crate) fn verify_provider_webhook_signature(
+    request: RtcProviderWebhookVerifyRequest,
+) -> Result<(), RtcContractError> {
+    verify_provider_webhook_signature_hmac(request)
 }
 
 fn parse_payload(raw_payload: &str) -> Result<JsonValue, RtcContractError> {

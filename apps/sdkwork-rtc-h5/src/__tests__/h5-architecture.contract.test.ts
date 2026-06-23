@@ -68,15 +68,19 @@ describe("rtc h5 architecture contract", () => {
     expect(corePackageJson.dependencies).not.toHaveProperty("@sdkwork/auth-runtime-pc-react");
   });
 
-  it("protects user RTC routes through AppAuthGate and defers auth UI until H5 auth surface exists", () => {
+  it("protects user RTC routes through AppAuthGate and uses shared IAM auth routes", () => {
     const authGate = read("src/AppAuthGate.tsx");
-    const loginPage = read("src/RtcH5AuthLoginPage.tsx");
+    const authConfig = read("src/bootstrap/rtcAuthConfig.ts");
+    const appPackageJson = JSON.parse(readFileSync(path.join(appRoot, "package.json"), "utf8"));
 
     expect(authGate).toContain("RTC_IAM_SESSION_CHANGED_EVENT");
-    expect(authGate).toContain("RtcH5AuthLoginPage");
-    expect(authGate).not.toContain("SdkworkIamAuthRoutes");
-    expect(loginPage).toContain("buildAppbaseLoginUrl");
-    expect(loginPage).not.toMatch(/\/app\/v3\/api\/auth/u);
+    expect(authGate).toContain("SdkworkIamAuthRoutes");
+    expect(authGate).toContain('viewportMode="flow"');
+    expect(authGate).not.toContain("RtcH5AuthLoginPage");
+    expect(authConfig).toContain("resolveRtcAuthRuntimeConfig");
+    expect(appPackageJson.dependencies).toMatchObject({
+      "@sdkwork/auth-pc-react": expect.any(String),
+    });
   });
 
   it("keeps auth runtime packages out of rtc-h5-core", () => {

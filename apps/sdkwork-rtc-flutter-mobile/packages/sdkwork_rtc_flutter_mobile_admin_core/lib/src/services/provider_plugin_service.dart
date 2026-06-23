@@ -1,8 +1,9 @@
+import '../admin_sdk_mapper.dart';
+import '../backend_rtc_client.dart';
 import '../models/provider_plugin.dart';
-import 'backend_api_client.dart';
 
 class ProviderPluginService {
-  final BackendApiClient _client;
+  final SdkworkBackendClient _client;
 
   ProviderPluginService(this._client);
 
@@ -13,29 +14,22 @@ class ProviderPluginService {
     String? search,
     String? sort,
   }) async {
-    final query = <String, String>{};
-    if (page != null) query['page'] = page.toString();
-    if (limit != null) query['pageSize'] = limit.toString();
-    if (cursor != null) query['cursor'] = cursor;
-    if (search != null) query['q'] = search;
-    if (sort != null) query['sort'] = sort;
-
-    final data = await _client.getJson(
-      '/rtc/provider_plugins',
-      query: query.isEmpty ? null : query,
+    final response = await _client.rtcProviderPlugins.list(
+      page,
+      limit,
+      cursor,
+      sort,
+      search,
     );
-    final items = data['items'];
-    if (items is! List<dynamic>) return [];
-    return items
-        .whereType<Map<String, dynamic>>()
+    return backendResponseItems(response)
         .map(ProviderPluginDescriptor.fromJson)
         .toList();
   }
 
   Future<ProviderPluginDescriptor> get(String provider) async {
-    final data = await _client.getJson(
-      '/rtc/provider_plugins/${Uri.encodeComponent(provider)}',
+    final response = await _client.rtcProviderPlugins.retrieve(provider);
+    return ProviderPluginDescriptor.fromJson(
+      backendResponseEntity(response, 'Provider plugin $provider was not found'),
     );
-    return ProviderPluginDescriptor.fromJson(data);
   }
 }

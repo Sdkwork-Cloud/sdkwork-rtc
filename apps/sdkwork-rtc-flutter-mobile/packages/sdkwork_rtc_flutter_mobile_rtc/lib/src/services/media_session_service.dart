@@ -1,6 +1,9 @@
+import 'package:sdkwork_rtc_app_sdk_generated_dart/sdkwork_rtc_app_sdk_generated_dart.dart'
+    as generated;
 import 'package:sdkwork_rtc_flutter_mobile_core/sdkwork_rtc_flutter_mobile_core.dart';
 
 import '../models/media_session.dart';
+import 'rtc_command_idempotency.dart';
 
 class MediaSessionListParams {
   final int? page;
@@ -29,30 +32,27 @@ class MediaSessionListResult {
 }
 
 class MediaSessionService {
-  final AppApiClient _client;
+  final SdkworkAppClient _client;
 
   MediaSessionService(this._client);
 
   Future<MediaSessionListResult> list([MediaSessionListParams? params]) async {
-    final query = <String, String>{};
-    if (params?.page != null) query['page'] = params!.page.toString();
-    if (params?.pageSize != null) query['pageSize'] = params!.pageSize.toString();
-    if (params?.cursor != null) query['cursor'] = params!.cursor!;
-    if (params?.search != null) query['q'] = params!.search!;
-    if (params?.sort != null) query['sort'] = params!.sort!;
-
-    final data = await _client.getJson(
-      '/rtc/media_sessions',
-      query: query.isEmpty ? null : query,
+    final response = await _client.rtcMediaSessions.list(
+      params?.page,
+      params?.pageSize,
+      params?.cursor,
+      params?.sort,
+      params?.search,
     );
-    final items = data['items'];
-    final sessions = items is List<dynamic>
-        ? items
+    final data = response?.data;
+    final rawItems = data is Map<String, dynamic> ? data['items'] : null;
+    final sessions = rawItems is List<dynamic>
+        ? rawItems
             .whereType<Map<String, dynamic>>()
-            .map(RtcMediaSession.fromJson)
+            .map(_mapGeneratedMediaSession)
             .toList()
         : <RtcMediaSession>[];
-    final nextCursor = data['nextCursor'] as String?;
+    final nextCursor = data is Map<String, dynamic> ? data['nextCursor'] as String? : null;
     return MediaSessionListResult(
       items: sessions,
       nextCursor: nextCursor != null && nextCursor.isNotEmpty ? nextCursor : null,
@@ -60,14 +60,36 @@ class MediaSessionService {
   }
 
   Future<RtcMediaSession> get(String mediaSessionId) async {
-    final data = await _client.getJson(
-      '/rtc/media_sessions/${Uri.encodeComponent(mediaSessionId)}',
-    );
-    return RtcMediaSession.fromJson(data);
+    final response = await _client.rtcMediaSessions.retrieve(mediaSessionId);
+    final session = response?.data;
+    if (session == null) {
+      throw StateError('RTC media session not found: $mediaSessionId');
+    }
+    return _mapGeneratedMediaSession(session.toJson());
   }
 
-  Future<RtcMediaSession> create(RtcCreateMediaSessionRequest body) async {
-    final data = await _client.postJson('/rtc/media_sessions', body.toJson());
-    return RtcMediaSession.fromJson(data);
+  Future<RtcMediaSession> create(
+    RtcCreateMediaSessionRequest body, {
+    String? idempotencyKey,
+  }) async {
+    final response = await _client.rtcMediaSessions.create(
+      generated.RtcCreateMediaSessionRequest(
+        roomId: body.roomId,
+        mediaMode: body.mediaMode,
+        providerProfileId: body.providerProfileId,
+        provider: body.provider,
+      ),
+      idempotencyKey ??
+          createRtcCommandIdempotencyKey('media-session-create'),
+    );
+    final session = response?.data;
+    if (session == null) {
+      throw StateError('RTC media session was not created');
+    }
+    return _mapGeneratedMediaSession(session.toJson());
+  }
+
+  RtcMediaSession _mapGeneratedMediaSession(Map<String, dynamic> json) {
+    return RtcMediaSession.fromJson(json);
   }
 }

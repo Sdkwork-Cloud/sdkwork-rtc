@@ -1,6 +1,7 @@
 pub mod drive_importer;
 pub mod in_memory;
 pub mod plugin_registry;
+pub mod resilient_provider;
 pub mod secret_resolver;
 pub mod service;
 
@@ -15,3 +16,4 @@ pub use secret_resolver::{
     SharedRtcSecretResolver,
 };
 pub use service::RtcProductService;
+pub use service::RtcSessionReconcileResult;

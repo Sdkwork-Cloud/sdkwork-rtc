@@ -1,21 +1,29 @@
+import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart'
+    as generated;
+
+import '../admin_sdk_mapper.dart';
+import '../backend_rtc_client.dart';
 import '../models/provider_query_jobs.dart';
-import 'backend_api_client.dart';
 
 class ProviderQueryJobService {
-  final BackendApiClient _client;
+  final SdkworkBackendClient _client;
 
   ProviderQueryJobService(this._client);
 
   Future<ProviderQueryJob> create(ProviderQueryJobCreateCommand command) async {
-    final data = await _client.postJson('/rtc/provider_query_jobs', command.toJson());
-    return ProviderQueryJob.fromJson(data);
+    final response = await _client.rtcProviderQueryJobs.create(
+      generated.RtcProviderQueryJobCreateRequest.fromJson(command.toJson()),
+    );
+    return ProviderQueryJob.fromJson(
+      backendResponseEntity(response, 'Provider query job create failed'),
+    );
   }
 
   Future<ProviderQueryJob> get(String id) async {
-    final data = await _client.getJson(
-      '/rtc/provider_query_jobs/${Uri.encodeComponent(id)}',
+    final response = await _client.rtcProviderQueryJobs.retrieve(id);
+    return ProviderQueryJob.fromJson(
+      backendResponseEntity(response, 'Provider query job $id was not found'),
     );
-    return ProviderQueryJob.fromJson(data);
   }
 
   Future<List<ProviderQuerySnapshot>> listSnapshots(
@@ -26,21 +34,15 @@ class ProviderQueryJobService {
     String? search,
     String? sort,
   }) async {
-    final query = <String, String>{};
-    if (page != null) query['page'] = page.toString();
-    if (limit != null) query['pageSize'] = limit.toString();
-    if (cursor != null) query['cursor'] = cursor;
-    if (search != null) query['q'] = search;
-    if (sort != null) query['sort'] = sort;
-
-    final data = await _client.getJson(
-      '/rtc/provider_query_jobs/${Uri.encodeComponent(providerQueryJobId)}/snapshots',
-      query: query.isEmpty ? null : query,
+    final response = await _client.rtcProviderQueryJobs.snapshotsList(
+      providerQueryJobId,
+      page,
+      limit,
+      cursor,
+      sort,
+      search,
     );
-    final items = data['items'];
-    if (items is! List<dynamic>) return [];
-    return items
-        .whereType<Map<String, dynamic>>()
+    return backendResponseItems(response)
         .map(ProviderQuerySnapshot.fromJson)
         .toList();
   }

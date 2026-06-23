@@ -4,7 +4,9 @@ use sdkwork_communication_rtc_service::{
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value as JsonValue;
-use sqlx::{PgPool, Row, SqlitePool, postgres::PgRow, sqlite::SqliteRow};
+use sqlx::{
+    Executor, PgPool, Postgres, Row, Sqlite, SqlitePool, postgres::PgRow, sqlite::SqliteRow,
+};
 
 use crate::{RtcStorageError, RtcStorageResult};
 
@@ -23,6 +25,19 @@ impl RtcSqliteProviderProfileRepository {
         numeric_id: i64,
         profile: &RtcProviderProfile,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_profile_with(&self.pool, numeric_id, profile)
+            .await
+    }
+
+    pub async fn upsert_provider_profile_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        profile: &RtcProviderProfile,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         let capability_snapshot = serialize_json(&profile.capabilities)?;
         let config_snapshot = serialize_json(&profile.config_snapshot)?;
 
@@ -80,7 +95,7 @@ impl RtcSqliteProviderProfileRepository {
                 "deleted_by",
                 profile.deleted_by.as_deref(),
             )?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -239,6 +254,19 @@ impl RtcPostgresProviderProfileRepository {
         numeric_id: i64,
         profile: &RtcProviderProfile,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_profile_with(&self.pool, numeric_id, profile)
+            .await
+    }
+
+    pub async fn upsert_provider_profile_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        profile: &RtcProviderProfile,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_provider_profile_sql())
             .bind(numeric_id)
             .bind(&profile.id)
@@ -293,7 +321,7 @@ impl RtcPostgresProviderProfileRepository {
                 "deleted_by",
                 profile.deleted_by.as_deref(),
             )?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())

@@ -1,8 +1,9 @@
 use sdkwork_communication_rtc_service::{
     RtcContractError, RtcCreateMediaSessionRequest, RtcMediaSessionMode, RtcProviderEventKind,
     RtcProviderPluginFactory, RtcProviderPort, RtcProviderQueryKind, RtcProviderQueryRequest,
-    RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactImportPort,
-    RtcRecordingArtifactImportRequest,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
+    RtcRecordingArtifactImportPort, RtcRecordingArtifactImportRequest,
+    sign_hmac_sha256_payload_hex,
 };
 use sdkwork_rtc_adapter_volcengine::{
     VOLCENGINE_RTC_PLUGIN_ID, VolcengineRtcOpenApiExecutor, VolcengineRtcOpenApiRequest,
@@ -153,6 +154,18 @@ fn test_volcengine_rtc_provider_implements_webhook_and_active_query_surface() {
     assert_eq!(parsed.participant_id.as_deref(), Some("u_host"));
     assert_eq!(parsed.signature_header.as_deref(), Some("sig-demo"));
 
+    let webhook_payload = r#"{"EventType":"RoomUserJoin","EventId":"ve-event-1"}"#;
+    let webhook_secret = "volcengine-webhook-secret";
+    let webhook_signature = sign_hmac_sha256_payload_hex(webhook_secret, webhook_payload);
+    provider
+        .verify_provider_webhook_signature(RtcProviderWebhookVerifyRequest {
+            headers: Vec::new(),
+            raw_payload: webhook_payload.into(),
+            signature_header: Some(webhook_signature),
+            webhook_secret: webhook_secret.into(),
+        })
+        .expect("volcengine webhook signature should verify");
+
     let nested = provider
         .parse_provider_webhook(RtcProviderWebhookParseRequest {
             provider: "volcengine".into(),
@@ -181,12 +194,11 @@ fn test_volcengine_rtc_provider_implements_webhook_and_active_query_surface() {
             provider: "volcengine".into(),
             provider_profile_id: Some("profile_volcengine".into()),
             received_at: "2026-06-09T00:00:02.000Z".into(),
-            headers: vec![],
+            headers: vec![("X-Volc-Signature".into(), "header-signature".into())],
             raw_payload: r#"{
                 "EventType": "RoomCreated",
                 "EventId": "volc-room-created-1",
                 "EventTime": 1781000002000,
-                "Signature": "body-signature",
                 "EventData": "{\"RoomId\":\"room_string_data\",\"UserId\":\"u_creator\"}"
             }"#
             .into(),
@@ -197,7 +209,7 @@ fn test_volcengine_rtc_provider_implements_webhook_and_active_query_surface() {
     assert_eq!(string_data.participant_id.as_deref(), Some("u_creator"));
     assert_eq!(
         string_data.signature_header.as_deref(),
-        Some("body-signature")
+        Some("header-signature")
     );
 
     let query = provider.query_provider_state(RtcProviderQueryRequest {

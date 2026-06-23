@@ -5,9 +5,10 @@ use std::pin::Pin;
 
 use crate::{
     RtcMediaArtifact, RtcMediaParticipant, RtcMediaSession, RtcMediaSessionCompletionRecord,
-    RtcMediaTrack, RtcProviderAccount, RtcProviderApplication, RtcProviderCredential,
-    RtcProviderProfile, RtcProviderQueryJobRecord, RtcProviderQuerySnapshotRecord,
-    RtcProviderRoute, RtcProviderWebhookEventRecord, RtcQualitySample, RtcRoom,
+    RtcMediaSessionIdempotencyRecord, RtcMediaTrack, RtcProviderAccount, RtcProviderApplication,
+    RtcProviderCredential, RtcProviderProfile, RtcProviderQueryJobRecord,
+    RtcProviderQuerySnapshotRecord, RtcProviderRoute, RtcProviderWebhookEventRecord,
+    RtcQualitySample, RtcRoom,
 };
 
 pub type RtcPersistenceResult<T> = Result<T, RtcPersistenceError>;
@@ -32,6 +33,7 @@ pub struct RtcPersistenceChangeSet {
     pub webhook_events: Vec<RtcProviderWebhookEventRecord>,
     pub provider_query_jobs: Vec<RtcProviderQueryJobRecord>,
     pub provider_query_snapshots: Vec<RtcProviderQuerySnapshotRecord>,
+    pub media_session_idempotencies: Vec<RtcMediaSessionIdempotencyRecord>,
 }
 
 impl RtcPersistenceChangeSet {
@@ -51,6 +53,7 @@ impl RtcPersistenceChangeSet {
             && self.webhook_events.is_empty()
             && self.provider_query_jobs.is_empty()
             && self.provider_query_snapshots.is_empty()
+            && self.media_session_idempotencies.is_empty()
     }
 }
 
@@ -77,6 +80,12 @@ pub struct RtcRuntimeLoadRequest {
     pub organization_id: String,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum RtcMediaSessionIdempotencyClaim {
+    Claimed,
+    Existing(RtcMediaSessionIdempotencyRecord),
+}
+
 pub trait RtcPersistencePort: Send + Sync {
     fn persist_changes<'a>(
         &'a self,
@@ -87,6 +96,31 @@ pub trait RtcPersistencePort: Send + Sync {
         &'a self,
         request: RtcRuntimeLoadRequest,
     ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet>;
+
+    fn resolve_media_session_idempotency_record<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        idempotency_key: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSessionIdempotencyRecord>>;
+
+    fn claim_media_session_create_idempotency<'a>(
+        &'a self,
+        record: RtcMediaSessionIdempotencyRecord,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim>;
+
+    fn load_media_session<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSession>>;
+
+    /// Returns `true` when the event row was inserted, `false` when it was a duplicate.
+    fn try_insert_webhook_event<'a>(
+        &'a self,
+        event: &'a RtcProviderWebhookEventRecord,
+    ) -> RtcPersistenceFuture<'a, bool>;
 }
 
 #[derive(Clone, Debug, Default)]
@@ -105,5 +139,37 @@ impl RtcPersistencePort for NoopRtcPersistencePort {
         _request: RtcRuntimeLoadRequest,
     ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet> {
         Box::pin(async { Ok(RtcPersistenceChangeSet::default()) })
+    }
+
+    fn resolve_media_session_idempotency_record<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _idempotency_key: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSessionIdempotencyRecord>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn claim_media_session_create_idempotency<'a>(
+        &'a self,
+        _record: RtcMediaSessionIdempotencyRecord,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim> {
+        Box::pin(async { Ok(RtcMediaSessionIdempotencyClaim::Claimed) })
+    }
+
+    fn load_media_session<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSession>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn try_insert_webhook_event<'a>(
+        &'a self,
+        _event: &'a RtcProviderWebhookEventRecord,
+    ) -> RtcPersistenceFuture<'a, bool> {
+        Box::pin(async { Ok(true) })
     }
 }

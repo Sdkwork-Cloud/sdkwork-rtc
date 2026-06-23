@@ -10,6 +10,8 @@ export interface RtcBackendClientOptions {
   headers?: Record<string, string>;
 }
 
+export type RtcBackendClientSource = string | SdkworkBackendClient;
+
 export function createBackendRtcClient(
   baseUrl: string,
   tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
@@ -39,4 +41,15 @@ export function createBackendRtcClient(
   }
 
   return client;
+}
+
+export function resolveBackendRtcClient(
+  source: RtcBackendClientSource,
+  tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
+  maybeOptions?: RtcBackendClientOptions,
+): SdkworkBackendClient {
+  if (typeof source !== "string") {
+    return source;
+  }
+  return createBackendRtcClient(source, tokenManagerOrOptions, maybeOptions);
 }

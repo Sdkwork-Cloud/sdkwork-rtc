@@ -1,8 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 import {
-  DEFAULT_APP_SESSION,
   listLegacyRtcMpSessionStorageKeys,
-  parseAppbaseCallbackSession,
+  parseAppbaseCallbackFromQuery,
   RTC_MP_SESSION_STORAGE_KEY,
   type RtcAppSession,
 } from "@sdkwork/rtc-mp-core";
@@ -13,7 +12,7 @@ import {
 
 import { getHostAdapters } from "./hostAdapters";
 
-export { DEFAULT_APP_SESSION, RTC_MP_SESSION_STORAGE_KEY, type RtcAppSession };
+export { RTC_MP_SESSION_STORAGE_KEY, type RtcAppSession };
 
 function parseStoredSession(raw: string): RtcAppSession | null {
   try {
@@ -24,9 +23,9 @@ function parseStoredSession(raw: string): RtcAppSession | null {
     return {
       accessToken: parsed.accessToken.trim(),
       authToken: parsed.authToken?.trim() || parsed.accessToken.trim(),
-      tenantId: parsed.tenantId?.trim() || DEFAULT_APP_SESSION.tenantId,
-      organizationId: parsed.organizationId?.trim() || DEFAULT_APP_SESSION.organizationId,
-      userId: parsed.userId?.trim() || DEFAULT_APP_SESSION.userId,
+      tenantId: parsed.tenantId?.trim() ?? "",
+      organizationId: parsed.organizationId?.trim() ?? "",
+      userId: parsed.userId?.trim() ?? "",
     };
   } catch {
     return null;
@@ -79,17 +78,16 @@ export function clearAppSession(): void {
 }
 
 export function createAppTokenManager(session: RtcAppSession): AuthTokenManager {
-  return createTokenManager(() => session.accessToken);
+  const manager = createTokenManager();
+  manager.setTokens?.({
+    accessToken: session.accessToken,
+    authToken: session.authToken,
+  });
+  return manager;
 }
 
 export function consumeAppbaseCallbackSession(query: Record<string, string | undefined>): RtcAppSession | null {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (value) {
-      params.set(key, value);
-    }
-  }
-  const session = parseAppbaseCallbackSession(`?${params.toString()}`, "");
+  const session = parseAppbaseCallbackFromQuery(query);
   if (!session) {
     return null;
   }

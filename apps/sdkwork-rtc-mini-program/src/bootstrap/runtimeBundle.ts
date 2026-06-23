@@ -2,6 +2,7 @@ import { installWeixinFetch } from "@sdkwork/rtc-mp-host";
 
 import { bootstrap } from "./iamRuntime";
 import { createAppServices } from "./appServices";
+import { buildAppbaseLoginUrl } from "@sdkwork/rtc-mp-core";
 import { resolveEnvironment, saveRuntimeEnvironment } from "./environment";
 
 function getServices() {
@@ -86,3 +87,5 @@ export function configureRtcRuntime(config: {
 export function getRtcRuntimeEnvironment() {
   return resolveEnvironment();
 }
+
+export { buildAppbaseLoginUrl };

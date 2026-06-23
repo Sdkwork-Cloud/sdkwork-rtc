@@ -6,6 +6,8 @@ use sdkwork_communication_rtc_service::{
     ProviderPluginDescriptor, RtcProviderPluginFactory, RtcProviderPort,
 };
 
+use crate::resilient_provider::wrap_provider_with_timeout;
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RtcProviderPluginRegistryError {
     DuplicateProvider {
@@ -118,7 +120,8 @@ impl RtcProviderPluginRegistry {
         }
 
         self.descriptors.insert(provider_key.clone(), descriptor);
-        self.providers.insert(provider_key, provider);
+        self.providers
+            .insert(provider_key, wrap_provider_with_timeout(provider));
         Ok(())
     }
 

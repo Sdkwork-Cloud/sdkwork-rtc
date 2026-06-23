@@ -6,6 +6,7 @@ export {
 export {
   buildAppbaseLoginUrl,
   parseAppbaseCallbackSession,
+  parseAppbaseCallbackFromQuery,
   stripAppbaseCallbackFromLocation,
 } from "./session/appbaseAuthBridge";
 export {

@@ -9,6 +9,53 @@ pub struct RtcProviderWebhookVerifyRequest {
     pub webhook_secret: String,
 }
 
+pub fn verify_provider_webhook_signature_hmac(
+    request: RtcProviderWebhookVerifyRequest,
+) -> Result<(), RtcContractError> {
+    let signature = required_signature_header(&request)?;
+    verify_hmac_sha256_payload(
+        request.webhook_secret.as_str(),
+        request.raw_payload.as_str(),
+        signature.as_str(),
+    )
+}
+
+pub fn verify_livekit_webhook_signature(
+    request: RtcProviderWebhookVerifyRequest,
+) -> Result<(), RtcContractError> {
+    let signature = required_signature_header(&request)?;
+    let normalized = strip_bearer_prefix(signature.as_str());
+    verify_hmac_sha256_payload(
+        request.webhook_secret.as_str(),
+        request.raw_payload.as_str(),
+        normalized,
+    )
+}
+
+pub fn required_signature_header(
+    request: &RtcProviderWebhookVerifyRequest,
+) -> Result<String, RtcContractError> {
+    request
+        .signature_header
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
+        .ok_or_else(|| {
+            RtcContractError::Conflict(
+                "RTC provider webhook signature header is missing".to_string(),
+            )
+        })
+}
+
+pub fn strip_bearer_prefix(signature: &str) -> &str {
+    signature
+        .strip_prefix("Bearer ")
+        .or_else(|| signature.strip_prefix("bearer "))
+        .unwrap_or(signature)
+        .trim()
+}
+
 pub fn verify_hmac_sha256_payload(
     secret: &str,
     payload: &str,
@@ -73,4 +120,32 @@ fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
 
 pub fn sign_hmac_sha256_payload_hex(secret: &str, payload: &str) -> String {
     hmac_sha256(payload.as_bytes(), secret.as_bytes())
+}
+
+const MAX_PROVIDER_WEBHOOK_AGE_MS: i64 = 10 * 60 * 1_000;
+const MAX_PROVIDER_WEBHOOK_CLOCK_SKEW_MS: i64 = 60 * 1_000;
+
+use crate::runtime_environment::rtc_requires_provider_webhook_timestamp;
+
+pub fn validate_provider_webhook_freshness(
+    occurred_at: Option<&str>,
+) -> Result<(), RtcContractError> {
+    let Some(occurred_at) = occurred_at.map(str::trim).filter(|value| !value.is_empty()) else {
+        if rtc_requires_provider_webhook_timestamp() {
+            return Err(RtcContractError::Conflict(
+                "RTC provider webhook timestamp is required".to_string(),
+            ));
+        }
+        return Ok(());
+    };
+    let occurred = sdkwork_utils_rust::parse_datetime(occurred_at, None).ok_or_else(|| {
+        RtcContractError::Conflict("RTC provider webhook timestamp is invalid".to_string())
+    })?;
+    let age_ms = sdkwork_utils_rust::diff_millis(occurred, sdkwork_utils_rust::now());
+    if age_ms > MAX_PROVIDER_WEBHOOK_AGE_MS || age_ms < -MAX_PROVIDER_WEBHOOK_CLOCK_SKEW_MS {
+        return Err(RtcContractError::Conflict(
+            "RTC provider webhook timestamp is outside the allowed replay window".to_string(),
+        ));
+    }
+    Ok(())
 }

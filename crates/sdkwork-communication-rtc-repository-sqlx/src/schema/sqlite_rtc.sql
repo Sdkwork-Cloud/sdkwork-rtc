@@ -579,3 +579,21 @@ CREATE INDEX idx_rtc_provider_query_snapshot_target_captured
 
 CREATE INDEX idx_rtc_provider_query_snapshot_provider_session_captured
     ON rtc_provider_query_snapshot (tenant_id, organization_id, provider, provider_session_id, captured_at);
+
+CREATE TABLE rtc_media_session_idempotency (
+    id INTEGER NOT NULL,
+    uuid TEXT NOT NULL,
+    tenant_id INTEGER NOT NULL,
+    organization_id INTEGER NOT NULL DEFAULT 0,
+    idempotency_key TEXT NOT NULL,
+    media_session_id TEXT NOT NULL,
+    payload_hash TEXT NOT NULL DEFAULT '',
+    response_json TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_rtc_media_session_idempotency_uuid UNIQUE (uuid),
+    CONSTRAINT uk_rtc_media_session_idempotency_scope UNIQUE (tenant_id, organization_id, idempotency_key)
+);
+
+CREATE INDEX idx_rtc_media_session_idempotency_session
+    ON rtc_media_session_idempotency (tenant_id, organization_id, media_session_id);

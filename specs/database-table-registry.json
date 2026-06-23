@@ -161,6 +161,15 @@
       "systemOfRecord": true,
       "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
       "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+    },
+    {
+      "tableName": "rtc_media_session_idempotency",
+      "modulePrefix": "rtc",
+      "boundedContext": "real_time_communication",
+      "tableProfile": "relation_entity",
+      "systemOfRecord": true,
+      "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
     }
   ]
 }

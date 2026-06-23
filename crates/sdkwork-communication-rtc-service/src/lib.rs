@@ -5,8 +5,10 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 pub mod completion;
+pub mod idempotency;
 pub mod list_window;
 pub mod persistence;
+pub mod runtime_environment;
 pub mod provider_account;
 pub mod provider_event;
 pub mod provider_profile;
@@ -14,18 +16,25 @@ pub mod provider_route;
 pub mod session_tracker;
 pub mod webhook_signature;
 pub use completion::*;
+pub use idempotency::*;
 pub use list_window::{
     DEFAULT_LIST_PAGE_SIZE, MAX_LIST_PAGE_SIZE, RtcListWindow, RtcListWindowError,
     RtcListWindowParams, apply_list_window, matches_query_tokens,
 };
 pub use persistence::*;
+pub use runtime_environment::{
+    rtc_allows_in_memory_only_runtime, rtc_persistence_required,
+    rtc_requires_provider_webhook_timestamp, rtc_runtime_environment,
+};
 pub use provider_account::*;
 pub use provider_event::*;
 pub use provider_profile::*;
 pub use provider_route::*;
 pub use session_tracker::RtcActiveSessionTracker;
 pub use webhook_signature::{
-    RtcProviderWebhookVerifyRequest, sign_hmac_sha256_payload_hex, verify_hmac_sha256_payload,
+    RtcProviderWebhookVerifyRequest, required_signature_header, sign_hmac_sha256_payload_hex,
+    strip_bearer_prefix, validate_provider_webhook_freshness, verify_hmac_sha256_payload,
+    verify_livekit_webhook_signature, verify_provider_webhook_signature_hmac,
 };
 
 pub const RTC_OWNER: &str = "sdkwork-rtc";
@@ -1070,16 +1079,7 @@ pub trait RtcProviderPort: Send + Sync {
         &self,
         request: RtcProviderWebhookVerifyRequest,
     ) -> Result<(), RtcContractError> {
-        let signature = request.signature_header.ok_or_else(|| {
-            RtcContractError::Conflict(
-                "RTC provider webhook signature header is missing".to_string(),
-            )
-        })?;
-        verify_hmac_sha256_payload(
-            request.webhook_secret.as_str(),
-            request.raw_payload.as_str(),
-            signature.as_str(),
-        )
+        verify_provider_webhook_signature_hmac(request)
     }
     fn query_provider_state(
         &self,
@@ -1237,6 +1237,15 @@ pub fn summarize_rtc_workspace(
 
 pub fn utc_now_rfc3339_millis() -> String {
     sdkwork_utils_rust::format_datetime(sdkwork_utils_rust::now(), None)
+}
+
+pub fn rfc3339_age_ms(value: &str) -> Option<u64> {
+    sdkwork_utils_rust::parse_datetime(value, None).map(|started| {
+        sdkwork_utils_rust::now()
+            .signed_duration_since(started)
+            .num_milliseconds()
+            .max(0) as u64
+    })
 }
 
 pub fn issued_at_unix_seconds() -> u32 {

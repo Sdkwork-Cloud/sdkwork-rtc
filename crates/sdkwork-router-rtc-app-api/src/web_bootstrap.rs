@@ -4,7 +4,9 @@ use axum::Router;
 use sdkwork_iam_web_adapter::{IamDatabaseWebRequestContextResolver, build_web_framework_layer};
 use sdkwork_rtc_app_context::app_context_from_web_request;
 use sdkwork_web_axum::with_web_request_context;
-use sdkwork_web_core::{DomainContextInjector, HttpRouteManifest, WebRequestContext};
+use sdkwork_web_core::{
+    DomainContextInjector, HttpRouteManifest, RateLimitPolicy, SecurityPolicy, WebRequestContext,
+};
 
 include!(concat!(env!("OUT_DIR"), "/rtc_app_http_routes.rs"));
 
@@ -19,6 +21,16 @@ impl DomainContextInjector for RtcAppContextInjector {
     }
 }
 
+fn rtc_app_security_policy() -> SecurityPolicy {
+    SecurityPolicy {
+        rate_limit: RateLimitPolicy {
+            enabled: true,
+            ..RateLimitPolicy::default()
+        },
+        ..SecurityPolicy::default()
+    }
+}
+
 fn wrap_router_with_resolver(
     resolver: IamDatabaseWebRequestContextResolver,
     router: Router,
@@ -28,7 +40,8 @@ fn wrap_router_with_resolver(
         HttpRouteManifest::new(RTC_APP_HTTP_ROUTES),
         Vec::new(),
     )
-    .with_domain_injector(Arc::new(RtcAppContextInjector));
+    .with_domain_injector(Arc::new(RtcAppContextInjector))
+    .with_security_policy(rtc_app_security_policy());
     with_web_request_context(router, layer)
 }
 

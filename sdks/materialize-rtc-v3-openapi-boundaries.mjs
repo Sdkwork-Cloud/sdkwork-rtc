@@ -389,6 +389,11 @@ function buildOperation(source, route) {
     operation["x-sdkwork-rate-limit-tier"] = operationAuth.rateLimitTier;
   }
 
+  if (operationAuth.idempotent) {
+    operation["x-sdkwork-idempotent"] = true;
+    operation.parameters.push(idempotencyParam());
+  }
+
   if (usesJsonBody(method)) {
     operation.requestBody = {
       required: method !== "patch",
@@ -424,13 +429,17 @@ function operationAuthMetadata(source, route) {
       providerWebhookSignature: true,
       security: [],
       rateLimitTier: "openApiDefault",
+      idempotent: true,
     };
   }
 
+  const mutationPolicy = mutationRoutePolicy(route);
   return {
     authMode: source.authMode,
     providerWebhookSignature: false,
     security: securityRequirement(source),
+    rateLimitTier: mutationPolicy.rateLimitTier,
+    idempotent: mutationPolicy.idempotent,
   };
 }
 
@@ -438,6 +447,7 @@ function routeAuthManifest(route) {
   if (route.operationId === PROVIDER_WEBHOOK_RECEIVE_OPERATION_ID) {
     return {
       rateLimitTier: "openApiDefault",
+      idempotent: true,
       auth: {
         mode: "public",
         required: true,
@@ -449,7 +459,10 @@ function routeAuthManifest(route) {
     };
   }
 
+  const mutationPolicy = mutationRoutePolicy(route);
   return {
+    ...(mutationPolicy.rateLimitTier ? { rateLimitTier: mutationPolicy.rateLimitTier } : {}),
+    ...(mutationPolicy.idempotent ? { idempotent: true } : {}),
     auth: {
       mode: "dual-token",
       required: true,
@@ -458,6 +471,39 @@ function routeAuthManifest(route) {
       dataScope: "organization",
     },
   };
+}
+
+function mutationRoutePolicy(route) {
+  const method = route.method.toUpperCase();
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
+    return { rateLimitTier: null, idempotent: false };
+  }
+
+  if (route.operationId.endsWith(".issue") || route.operationId.includes("credential")) {
+    return { rateLimitTier: "authCritical", idempotent: true };
+  }
+
+  if (method === "PUT" || method === "PATCH" || method === "DELETE") {
+    return { rateLimitTier: "openApiDefault", idempotent: true };
+  }
+
+  if (
+    method === "POST" &&
+    (route.operationId.endsWith(".disable") ||
+      route.operationId.endsWith(".revoke") ||
+      route.operationId.endsWith(".close") ||
+      route.operationId.endsWith(".verify") ||
+      route.operationId.endsWith(".configure") ||
+      route.operationId.endsWith(".create"))
+  ) {
+    return { rateLimitTier: "openApiDefault", idempotent: true };
+  }
+
+  if (method === "POST") {
+    return { rateLimitTier: "openApiDefault", idempotent: false };
+  }
+
+  return { rateLimitTier: "openApiDefault", idempotent: false };
 }
 
 function securitySchemes() {
@@ -2035,6 +2081,17 @@ function extractPathParameters(path) {
     });
   }
   return parameters;
+}
+
+function idempotencyParam() {
+  return {
+    name: "Idempotency-Key",
+    in: "header",
+    required: false,
+    schema: { type: "string", minLength: 1, maxLength: 128 },
+    description:
+      "Client retry idempotency key scoped by tenant, organization, method, and path.",
+  };
 }
 
 function queryParameter(name, schema) {

@@ -175,6 +175,8 @@
         "response": "RtcMediaSessionResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -277,6 +279,8 @@
         "response": "RtcProviderAccountResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -345,6 +349,8 @@
         "response": "RtcProviderAccountResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -413,6 +419,8 @@
         "response": "RtcProviderApplicationResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -447,6 +455,8 @@
         "response": "RtcProviderAccountResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -515,6 +525,8 @@
         "response": "RtcProviderApplicationResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -583,6 +595,8 @@
         "response": "RtcProviderCredentialResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "authCritical",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -617,6 +631,8 @@
         "response": "RtcProviderApplicationResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -685,6 +701,8 @@
         "response": "RtcProviderCredentialResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -719,6 +737,8 @@
         "response": "RtcProviderCredentialResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -855,6 +875,8 @@
         "response": "RtcProviderProfileResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -923,6 +945,8 @@
         "response": "RtcProviderProfileResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -957,6 +981,8 @@
         "response": "RtcApiResult",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -991,6 +1017,8 @@
         "response": "RtcProviderProfileResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -1025,6 +1053,8 @@
         "response": "RtcProviderProfileVerifyResultResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -1059,6 +1089,8 @@
         "response": "RtcProviderQueryJobResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -1195,6 +1227,8 @@
         "response": "RtcProviderRouteResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -1263,6 +1297,8 @@
         "response": "RtcProviderRouteResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -1297,6 +1333,8 @@
         "response": "RtcProviderRouteResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"
@@ -1401,6 +1439,7 @@
         "problem": "ProblemDetail"
       },
       "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"

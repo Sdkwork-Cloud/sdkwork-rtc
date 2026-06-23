@@ -1,47 +1,49 @@
+import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart'
+    as generated;
+
+import '../admin_sdk_mapper.dart';
+import '../backend_rtc_client.dart';
 import '../models/provider_route.dart';
-import 'backend_api_client.dart';
 
 class ProviderRouteService {
-  final BackendApiClient _client;
+  final SdkworkBackendClient _client;
 
   ProviderRouteService(this._client);
 
   Future<List<ProviderRoute>> list() async {
-    final data = await _client.getJson('/rtc/provider_routes');
-    final items = data['items'];
-    if (items is! List<dynamic>) return [];
-    return items
-        .whereType<Map<String, dynamic>>()
-        .map(ProviderRoute.fromJson)
-        .toList();
+    final response = await _client.rtcProviderRoutes.list();
+    return backendResponseItems(response).map(ProviderRoute.fromJson).toList();
   }
 
   Future<ProviderRoute?> create(ProviderRouteCommand command) async {
-    final data = await _client.postJson(
-      '/rtc/provider_routes',
-      command.toJson(),
+    final response = await _client.rtcProviderRoutes.create(
+      generated.RtcProviderRouteCommand.fromJson(command.toJson()),
     );
-    return ProviderRoute.fromJson(data);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderRoute.fromJson(data);
   }
 
   Future<ProviderRoute?> get(String id) async {
-    final data = await _client.getJson('/rtc/provider_routes/$id');
-    return ProviderRoute.fromJson(data);
+    final response = await _client.rtcProviderRoutes.retrieve(id);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderRoute.fromJson(data);
   }
 
   Future<ProviderRoute?> update(String id, ProviderRouteCommand command) async {
-    final data = await _client.patchJson(
-      '/rtc/provider_routes/$id',
-      command.toJson(),
+    final response = await _client.rtcProviderRoutes.update(
+      id,
+      generated.RtcProviderRouteCommand.fromJson(command.toJson()),
     );
-    return ProviderRoute.fromJson(data);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderRoute.fromJson(data);
   }
 
   Future<ProviderRoute?> disable(String id, {String? reason}) async {
-    final data = await _client.postJson(
-      '/rtc/provider_routes/$id/disable',
-      {if (reason != null) 'reason': reason},
+    final response = await _client.rtcProviderRoutes.disable(
+      id,
+      generated.RtcProviderRouteDisableRequest(reason: reason),
     );
-    return ProviderRoute.fromJson(data);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderRoute.fromJson(data);
   }
 }

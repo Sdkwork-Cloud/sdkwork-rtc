@@ -99,6 +99,26 @@ impl RtcSqliteProviderEventRepository {
         row.map(sqlite_row_to_webhook_event_record).transpose()
     }
 
+    pub async fn list_webhook_events_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcProviderWebhookEventRecord>> {
+        let sql = webhook_event_select_columns_sql(
+            "WHERE tenant_id = ? AND organization_id = ?",
+            "ORDER BY received_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_webhook_event_record)
+            .collect()
+    }
+
     pub async fn record_provider_query_result(
         &self,
         query_job_numeric_id: i64,
@@ -326,6 +346,26 @@ impl RtcPostgresProviderEventRepository {
             .await?;
 
         row.map(postgres_row_to_webhook_event_record).transpose()
+    }
+
+    pub async fn list_webhook_events_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcProviderWebhookEventRecord>> {
+        let sql = postgres_webhook_event_select_columns_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2",
+            "ORDER BY received_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_webhook_event_record)
+            .collect()
     }
 
     pub async fn record_provider_query_result(

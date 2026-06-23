@@ -24,6 +24,7 @@ pub enum RtcStorageError {
     MissingProviderWebhookEvent { webhook_event_id: String },
     MissingProviderQueryJob { provider_query_job_id: String },
     MissingProviderQuerySnapshot { provider_query_snapshot_id: String },
+    Conflict(String),
 }
 
 impl fmt::Display for RtcStorageError {
@@ -103,6 +104,7 @@ impl fmt::Display for RtcStorageError {
                     "rtc provider query snapshot row is missing: {provider_query_snapshot_id}"
                 )
             }
+            Self::Conflict(message) => write!(formatter, "rtc storage conflict: {message}"),
         }
     }
 }
@@ -138,13 +140,25 @@ impl RtcSqliteCompletionRecordRepository {
         numeric_id: i64,
         record: &RtcMediaSessionCompletionRecord,
     ) -> RtcStorageResult<()> {
+        let mut transaction = self.pool.begin().await?;
+        self.upsert_completion_record_with(&mut transaction, numeric_id, record)
+            .await?;
+        transaction.commit().await?;
+        Ok(())
+    }
+
+    pub async fn upsert_completion_record_with(
+        &self,
+        transaction: &mut sqlx::Transaction<'_, Sqlite>,
+        numeric_id: i64,
+        record: &RtcMediaSessionCompletionRecord,
+    ) -> RtcStorageResult<()> {
         let quality_summary = serialize_json(&record.quality_summary)?;
         let recording_summary = serialize_json(&record.recording_summary)?;
         let participants = serialize_json(&record.participants)?;
         let tracks = serialize_json(&record.tracks)?;
         let artifacts = serialize_json(&record.artifacts)?;
         let completion_snapshot = serialize_json(&record.completion_snapshot)?;
-        let mut transaction = self.pool.begin().await?;
 
         sqlx::query(
             r#"
@@ -257,14 +271,10 @@ impl RtcSqliteCompletionRecordRepository {
         .bind(&record.recorded_at)
         .bind(&record.recorded_at)
         .bind(&record.recorded_at)
-        .execute(&mut *transaction)
+        .execute(&mut **transaction)
         .await?;
 
-        self.update_media_session_summary(&mut transaction, record)
-            .await?;
-        transaction.commit().await?;
-
-        Ok(())
+        self.update_media_session_summary(transaction, record).await
     }
 
     pub async fn get_completion_record_by_session_id(
@@ -383,7 +393,18 @@ impl RtcPostgresCompletionRecordRepository {
         record: &RtcMediaSessionCompletionRecord,
     ) -> RtcStorageResult<()> {
         let mut transaction = self.pool.begin().await?;
+        self.upsert_completion_record_with(&mut transaction, numeric_id, record)
+            .await?;
+        transaction.commit().await?;
+        Ok(())
+    }
 
+    pub async fn upsert_completion_record_with(
+        &self,
+        transaction: &mut sqlx::Transaction<'_, Postgres>,
+        numeric_id: i64,
+        record: &RtcMediaSessionCompletionRecord,
+    ) -> RtcStorageResult<()> {
         sqlx::query(
             r#"
             INSERT INTO rtc_media_session_completion_record (
@@ -531,14 +552,10 @@ impl RtcPostgresCompletionRecordRepository {
         .bind(&record.recorded_at)
         .bind(&record.recorded_at)
         .bind(&record.recorded_at)
-        .execute(&mut *transaction)
+        .execute(&mut **transaction)
         .await?;
 
-        self.update_media_session_summary(&mut transaction, record)
-            .await?;
-        transaction.commit().await?;
-
-        Ok(())
+        self.update_media_session_summary(transaction, record).await
     }
 
     pub async fn get_completion_record_by_session_id(

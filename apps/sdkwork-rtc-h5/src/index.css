@@ -6,6 +6,23 @@
   padding: 0;
 }
 
+:root {
+  --sdkwork-rtc-auth-bg: #eef2f8;
+  --sdkwork-rtc-auth-aside-bg: #0f172a;
+  --sdkwork-rtc-auth-aside-border: rgba(148, 163, 184, 0.18);
+  --sdkwork-rtc-auth-aside-text: #e2e8f0;
+  --sdkwork-rtc-auth-aside-card-bg: rgba(15, 23, 42, 0.72);
+  --sdkwork-rtc-auth-aside-card-border: rgba(148, 163, 184, 0.24);
+  --sdkwork-rtc-auth-aside-badge-bg: rgba(59, 130, 246, 0.18);
+  --sdkwork-rtc-auth-aside-badge-text: #bfdbfe;
+  --sdkwork-rtc-auth-content-bg: #ffffff;
+  --sdkwork-rtc-auth-content-text: #0f172a;
+  --sdkwork-rtc-auth-muted-text: #64748b;
+  --sdkwork-rtc-auth-divider: #dbe3ef;
+  --sdkwork-rtc-auth-field-bg: #f8fafc;
+  --sdkwork-rtc-auth-qr-bg: #f8fafc;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: #f7f8fa;

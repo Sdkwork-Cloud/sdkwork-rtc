@@ -44,7 +44,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "073c4af4fc3d24e314bf162db6bd4ff79826db1df64862d75b22046041b6dd7b"
+      "sha256": "81f4caa82996071bbd4b0f371e7bf0090ca884088e4b3b5b5b42a39df352ef32"
     },
     {
       "path": "sdkwork-sdk.json",
@@ -64,11 +64,11 @@
     },
     {
       "path": "src/api/rtc-media-sessions.ts",
-      "sha256": "ff486ca62fa1642a06e74f31c27f9597b1cbda68e517cdf73b35863483192677"
+      "sha256": "175d8ae150481c0e7ef362d4c2940389b10d26e152fcb68652ddaafdea420872"
     },
     {
       "path": "src/api/rtc-participant-credentials.ts",
-      "sha256": "793d5bd8669b18cb05feeb99698180ade7c88ae5c55559961f86195e2e47f299"
+      "sha256": "02b7dbbfc4aa17746b1d24f1f3e84320a8a8c9f43c35da6e2b0603a09855a0f9"
     },
     {
       "path": "src/api/rtc-provider-profiles.ts",
@@ -88,7 +88,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "8200225b1363ec0ef556e9f10b7e80c3ce37c311e0641054c88615329a052eb8"
+      "sha256": "7c5521163579261418c56e8126b0389dd78be9e0931e5e6064749c7cc9df0edc"
     },
     {
       "path": "src/http/index.ts",

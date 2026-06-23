@@ -4,6 +4,7 @@ pub const SQLITE_SCHEMA: &str = include_str!("schema/sqlite_rtc.sql");
 pub mod completion_record;
 pub mod database;
 pub mod media_session;
+pub mod media_session_idempotency;
 pub mod persistence;
 pub mod provider_account;
 pub mod provider_event;
@@ -18,6 +19,9 @@ pub use database::{
     connect_rtc_persistence_from_env, is_rtc_database_healthy, persistence_from_database_pool,
 };
 pub use media_session::{RtcPostgresMediaSessionRepository, RtcSqliteMediaSessionRepository};
+pub use media_session_idempotency::{
+    RtcPostgresMediaSessionIdempotencyRepository, RtcSqliteMediaSessionIdempotencyRepository,
+};
 pub use persistence::{RtcPostgresPersistencePort, RtcSqlitePersistencePort};
 pub use provider_account::{
     RtcPostgresProviderAccountRepository, RtcSqliteProviderAccountRepository,
@@ -565,6 +569,24 @@ pub const RTC_TABLES: &[RtcTableContract] = &[
             "idx_rtc_provider_query_snapshot_provider_session_captured",
         ],
     },
+    RtcTableContract {
+        table_name: "rtc_media_session_idempotency",
+        required_columns: &[
+            "id",
+            "uuid",
+            "tenant_id",
+            "organization_id",
+            "idempotency_key",
+            "media_session_id",
+            "payload_hash",
+            "created_at",
+        ],
+        indexes: &[
+            "uk_rtc_media_session_idempotency_uuid",
+            "uk_rtc_media_session_idempotency_scope",
+            "idx_rtc_media_session_idempotency_session",
+        ],
+    },
 ];
 
 #[cfg(test)]
@@ -572,10 +594,12 @@ mod tests {
     use super::*;
     use sdkwork_communication_rtc_service::{
         RtcMediaSession, RtcMediaSessionCompletionInput, RtcMediaSessionCompletionRecord,
-        RtcMediaSessionEndSource, RtcMediaSessionMode, RtcMediaSessionStatus,
-        RtcPersistenceChangeSet, RtcPersistencePort, RtcProviderEventKind,
-        RtcProviderQueryJobRecord, RtcProviderQueryKind, RtcProviderQuerySnapshotRecord,
-        RtcProviderWebhookEventRecord,
+        RtcMediaSessionEndSource, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
+        RtcMediaSessionStatus, RtcPersistenceChangeSet, RtcPersistencePort,
+        RtcProviderEventKind, RtcProviderQueryJobRecord, RtcProviderQueryKind,
+        RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
+        RtcRuntimeLoadRequest, media_session_create_idempotency_payload_hash,
+        media_session_idempotency_record_id, utc_now_rfc3339_millis,
     };
     use sqlx::sqlite::SqlitePoolOptions;
 
@@ -790,6 +814,76 @@ mod tests {
         assert_eq!(
             stored_snapshots[0].provider_session_id.as_deref(),
             Some("acme:session-730")
+        );
+    }
+
+    #[tokio::test]
+    async fn sqlite_persistence_port_persists_and_resolves_media_session_idempotency() {
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect("sqlite::memory:")
+            .await
+            .expect("in-memory sqlite should start");
+        for statement in SQLITE_SCHEMA
+            .split(';')
+            .map(str::trim)
+            .filter(|statement| !statement.is_empty())
+        {
+            sqlx::query(statement)
+                .execute(&pool)
+                .await
+                .expect("rtc sqlite schema should apply");
+        }
+
+        let persistence = RtcSqlitePersistencePort::new(pool.clone());
+        let payload_hash = media_session_create_idempotency_payload_hash(
+            "room-default",
+            "video",
+            None,
+            None,
+            None,
+            false,
+            "{}",
+        );
+        let record = RtcMediaSessionIdempotencyRecord {
+            id: media_session_idempotency_record_id("730", "731", "create-session-once"),
+            tenant_id: "730".to_string(),
+            organization_id: "731".to_string(),
+            idempotency_key: "create-session-once".to_string(),
+            media_session_id: "session-730".to_string(),
+            payload_hash,
+            response_json: String::new(),
+            created_at: utc_now_rfc3339_millis(),
+        };
+
+        persistence
+            .persist_changes(RtcPersistenceChangeSet {
+                media_session_idempotencies: vec![record.clone()],
+                ..RtcPersistenceChangeSet::default()
+            })
+            .await
+            .expect("idempotency record should persist");
+
+        let resolved = persistence
+            .resolve_media_session_idempotency_record("730", "731", "create-session-once")
+            .await
+            .expect("idempotency lookup should work");
+        assert_eq!(
+            resolved.as_ref().map(|record| record.media_session_id.as_str()),
+            Some("session-730")
+        );
+
+        let snapshot = persistence
+            .load_runtime_snapshot(RtcRuntimeLoadRequest {
+                tenant_id: "730".to_string(),
+                organization_id: "731".to_string(),
+            })
+            .await
+            .expect("runtime snapshot should load");
+        assert_eq!(snapshot.media_session_idempotencies.len(), 1);
+        assert_eq!(
+            snapshot.media_session_idempotencies[0].media_session_id,
+            "session-730"
         );
     }
 

@@ -1,7 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderCredential, ProviderCredentialCommand } from "../types/providerCredential";
-import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
+import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
   items: ProviderCredential[];
@@ -12,10 +12,10 @@ export class ProviderCredentialService {
   private readonly client;
 
   constructor(
-    baseUrl: string,
+    baseUrlOrClient: RtcBackendClientSource,
     tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
   ) {
-    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+    this.client = resolveBackendRtcClient(baseUrlOrClient, tokenManagerOrOptions);
   }
 
   async list(

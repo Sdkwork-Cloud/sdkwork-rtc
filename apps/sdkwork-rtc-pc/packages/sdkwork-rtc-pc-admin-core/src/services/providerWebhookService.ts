@@ -1,7 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderWebhookEvent } from "../types/providerWebhookEvent";
-import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
+import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
   items: ProviderWebhookEvent[];
@@ -12,10 +12,10 @@ export class ProviderWebhookService {
   private readonly client;
 
   constructor(
-    baseUrl: string,
+    baseUrlOrClient: RtcBackendClientSource,
     tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
   ) {
-    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+    this.client = resolveBackendRtcClient(baseUrlOrClient, tokenManagerOrOptions);
   }
 
   async listEvents(params?: {

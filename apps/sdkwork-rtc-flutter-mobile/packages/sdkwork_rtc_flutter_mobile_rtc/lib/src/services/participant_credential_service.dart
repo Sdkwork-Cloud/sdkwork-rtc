@@ -1,7 +1,9 @@
 import 'package:sdkwork_rtc_flutter_mobile_core/sdkwork_rtc_flutter_mobile_core.dart';
 
+import 'rtc_command_idempotency.dart';
+
 class ParticipantCredentialService {
-  final AppApiClient _client;
+  final SdkworkAppClient _client;
 
   ParticipantCredentialService(this._client);
 
@@ -9,13 +11,18 @@ class ParticipantCredentialService {
     String mediaSessionId,
     String participantId, {
     String reason = 'join',
+    String? idempotencyKey,
   }) async {
-    final data = await _client.postJson(
-      '/rtc/media_sessions/${Uri.encodeComponent(mediaSessionId)}/participants/${Uri.encodeComponent(participantId)}/credential',
+    final response = await _client.rtcParticipantCredentials
+        .rtcMediaSessionsParticipantCredentialsIssue(
+      mediaSessionId,
+      participantId,
       {'reason': reason},
+      idempotencyKey ??
+          createRtcCommandIdempotencyKey('participant-credential-issue'),
     );
-    final credential = data['credential'];
-    if (credential is! String || credential.isEmpty) {
+    final credential = response?.data?.credential;
+    if (credential == null || credential.isEmpty) {
       throw StateError('RTC participant credential was not issued');
     }
     return credential;

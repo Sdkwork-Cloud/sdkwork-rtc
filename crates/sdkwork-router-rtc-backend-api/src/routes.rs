@@ -155,6 +155,7 @@ mod tests {
     use std::sync::{Arc, Mutex};
 
     use axum::{
+        Extension,
         body::Body,
         http::{Request, StatusCode},
     };
@@ -168,6 +169,9 @@ mod tests {
         RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord,
         RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord, RtcQualitySample, RtcRoom,
     };
+    use sdkwork_web_core::{
+        ServerRequestId, WebApiSurface, WebAuthMode, WebRequestContext, WebTransportFacts,
+    };
     use serde_json::{Value as JsonValue, json};
     use tower::ServiceExt;
 
@@ -176,13 +180,14 @@ mod tests {
         RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListQuery,
         RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcListData,
         RtcProviderQueryJobCreateRequest, RtcProviderRoute, RtcProviderRouteCommand,
-        RtcProviderRouteDisableRequest, RtcProviderWebhookReceiveRequest,
+        RtcProviderRouteDisableRequest, RtcProviderWebhookIngress,
     };
 
     #[tokio::test]
     async fn executable_router_delegates_provider_webhook_receive_to_service() {
         let service = Arc::new(FakeBackendService::default());
-        let router = build_sdkwork_rtc_backend_api_router(service.clone());
+        let router =
+            build_sdkwork_rtc_backend_api_router(service.clone()).layer(Extension(web_context()));
 
         let response = router
             .oneshot(
@@ -617,7 +622,7 @@ mod tests {
         fn receive_provider_webhook_event(
             &self,
             provider: String,
-            _request: RtcProviderWebhookReceiveRequest,
+            _ingress: RtcProviderWebhookIngress,
         ) -> RtcBackendApiFuture<RtcProviderWebhookEventRecord> {
             self.record("receive_provider_webhook_event");
             Box::pin(async move {
@@ -720,6 +725,27 @@ mod tests {
         ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::RtcProviderProfile> {
             self.record("configure_provider_capabilities");
             Self::unavailable()
+        }
+    }
+
+    fn web_context() -> WebRequestContext {
+        WebRequestContext {
+            request_id: ServerRequestId("test-request-id".to_owned()),
+            api_surface: WebApiSurface::BackendApi,
+            auth_mode: WebAuthMode::DualToken,
+            transport: WebTransportFacts {
+                path: "/backend/v3/api/rtc/provider_webhooks/volcengine/events".to_owned(),
+                method: "POST".to_owned(),
+                auth_token_present: false,
+                access_token_present: false,
+                api_key_present: false,
+                oauth_bearer_present: false,
+            },
+            principal: None,
+            locale: None,
+            client_kind: None,
+            operation: None,
+            trace_id: None,
         }
     }
 }

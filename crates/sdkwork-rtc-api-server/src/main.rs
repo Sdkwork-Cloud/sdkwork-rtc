@@ -1,5 +1,6 @@
 use axum::Router;
-use sdkwork_web_bootstrap::{ServiceRouterConfig, service_router};
+use sdkwork_communication_rtc_service::rtc_persistence_required;
+use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
 use std::sync::Arc;
 use tracing::info;
 
@@ -27,13 +28,20 @@ async fn main() -> anyhow::Result<()> {
     )
     .await;
 
+    let metrics = HttpMetricsRegistry::new();
+
     let service_router_config = if let Some(pool) = bootstrap.database_pool {
         ServiceRouterConfig {
             readiness: Some(Arc::new(RtcDatabaseReadinessCheck::new(pool))),
-            metrics: None,
+            metrics: Some(metrics.clone()),
+            contract_fallback: None,
         }
+    } else if rtc_persistence_required() {
+        ServiceRouterConfig::default().with_metrics(metrics.clone())
     } else {
-        ServiceRouterConfig::default().with_always_ready()
+        ServiceRouterConfig::default()
+            .with_always_ready()
+            .with_metrics(metrics)
     };
 
     let app = service_router(

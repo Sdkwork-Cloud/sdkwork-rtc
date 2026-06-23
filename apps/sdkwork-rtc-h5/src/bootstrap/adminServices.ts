@@ -9,6 +9,7 @@ import {
   ProviderSchemaService,
   ProviderWebhookService,
   RoomService,
+  createBackendRtcClient,
 } from "@sdkwork/rtc-h5-admin-core";
 
 import {
@@ -47,16 +48,18 @@ export function createAdminServices(): RtcAdminServices {
       }
     : { tokenManager };
 
+  const client = createBackendRtcClient(backendApiBaseUrl, clientOptions);
+
   return {
-    accounts: new ProviderAccountService(backendApiBaseUrl, clientOptions),
-    applications: new ProviderApplicationService(backendApiBaseUrl, clientOptions),
-    credentials: new ProviderCredentialService(backendApiBaseUrl, clientOptions),
-    profiles: new ProviderProfileService(backendApiBaseUrl, clientOptions),
-    routes: new ProviderRouteService(backendApiBaseUrl, clientOptions),
-    schemas: new ProviderSchemaService(backendApiBaseUrl, clientOptions),
-    rooms: new RoomService(backendApiBaseUrl, clientOptions),
-    plugins: new ProviderPluginService(backendApiBaseUrl, clientOptions),
-    webhooks: new ProviderWebhookService(backendApiBaseUrl, clientOptions),
-    queryJobs: new ProviderQueryJobService(backendApiBaseUrl, clientOptions),
+    accounts: new ProviderAccountService(client),
+    applications: new ProviderApplicationService(client),
+    credentials: new ProviderCredentialService(client),
+    profiles: new ProviderProfileService(client),
+    routes: new ProviderRouteService(client),
+    schemas: new ProviderSchemaService(client),
+    rooms: new RoomService(client),
+    plugins: new ProviderPluginService(client),
+    webhooks: new ProviderWebhookService(client),
+    queryJobs: new ProviderQueryJobService(client),
   };
 }

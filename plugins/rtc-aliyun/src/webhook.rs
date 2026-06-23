@@ -1,6 +1,7 @@
 use sdkwork_communication_rtc_service::{
     RtcContractError, RtcProviderEventKind, RtcProviderWebhookEvent,
-    RtcProviderWebhookParseRequest, rtc_provider_payload_hash,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, rtc_provider_payload_hash,
+    verify_provider_webhook_signature_hmac,
 };
 use serde_json::{Value as JsonValue, json};
 
@@ -122,6 +123,12 @@ pub(crate) fn parse_provider_webhook(
         raw_payload: request.raw_payload,
         normalized_event_json,
     })
+}
+
+pub(crate) fn verify_provider_webhook_signature(
+    request: RtcProviderWebhookVerifyRequest,
+) -> Result<(), RtcContractError> {
+    verify_provider_webhook_signature_hmac(request)
 }
 
 fn parse_payload(raw_payload: &str) -> Result<JsonValue, RtcContractError> {

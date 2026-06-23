@@ -31,6 +31,21 @@ function readNextCursor(data: Record<string, unknown> | undefined): string | und
   return typeof cursor === "string" && cursor.length > 0 ? cursor : undefined;
 }
 
+function createRtcCommandIdempotencyKey(scope: string): string {
+  const randomPart =
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `rtc-${scope}-${randomPart}`;
+}
+
+export interface MediaSessionCreateOptions {
+  idempotencyKey?: string;
+}
+
+export interface ParticipantCredentialIssueOptions {
+  idempotencyKey?: string;
+}
+
 export class MediaSessionService {
   constructor(private readonly client: RtcAppSdkClient) {}
 
@@ -56,8 +71,14 @@ export class MediaSessionService {
     return response.data;
   }
 
-  async create(body: RtcCreateMediaSessionRequest): Promise<RtcMediaSession> {
-    const response = await this.client.rtcMediaSessions.rtc.mediaSessions.create(body);
+  async create(
+    body: RtcCreateMediaSessionRequest,
+    options?: MediaSessionCreateOptions,
+  ): Promise<RtcMediaSession> {
+    const response = await this.client.rtcMediaSessions.rtc.mediaSessions.create(body, {
+      idempotencyKey:
+        options?.idempotencyKey ?? createRtcCommandIdempotencyKey("media-session-create"),
+    });
     if (!response.data) {
       throw new Error("Failed to create RTC media session");
     }
@@ -80,6 +101,13 @@ export class ProviderProfileService {
       profiles.find((profile) => profile.providerAppId);
     return preferred?.providerAppId ?? undefined;
   }
+
+  resolveDefaultProviderKey(profiles: readonly RtcActiveProviderProfile[]): string | undefined {
+    const preferred =
+      profiles.find((profile) => profile.isDefault && profile.provider) ??
+      profiles.find((profile) => profile.provider);
+    return preferred?.provider ?? undefined;
+  }
 }
 
 export class ParticipantCredentialService {
@@ -89,12 +117,18 @@ export class ParticipantCredentialService {
     mediaSessionId: string,
     participantId: string,
     reason = "join",
+    options?: ParticipantCredentialIssueOptions,
   ): Promise<string> {
     const response =
       await this.client.rtcParticipantCredentials.rtc.mediaSessions.participantCredentials.issue(
         mediaSessionId,
         participantId,
         { reason },
+        {
+          idempotencyKey:
+            options?.idempotencyKey ??
+            createRtcCommandIdempotencyKey("participant-credential-issue"),
+        },
       );
     if (!response.data?.credential) {
       throw new Error("RTC participant credential was not issued");

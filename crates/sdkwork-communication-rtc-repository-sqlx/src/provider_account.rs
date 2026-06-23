@@ -5,7 +5,9 @@ use sdkwork_communication_rtc_service::{
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value as JsonValue;
-use sqlx::{PgPool, Row, SqlitePool, postgres::PgRow, sqlite::SqliteRow};
+use sqlx::{
+    Executor, PgPool, Postgres, Row, Sqlite, SqlitePool, postgres::PgRow, sqlite::SqliteRow,
+};
 
 use crate::{RtcStorageError, RtcStorageResult};
 
@@ -24,6 +26,19 @@ impl RtcSqliteProviderAccountRepository {
         numeric_id: i64,
         account: &RtcProviderAccount,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_account_with(&self.pool, numeric_id, account)
+            .await
+    }
+
+    pub async fn upsert_provider_account_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        account: &RtcProviderAccount,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_provider_account_sql())
             .bind(numeric_id)
             .bind(&account.id)
@@ -69,7 +84,7 @@ impl RtcSqliteProviderAccountRepository {
                 "deleted_by",
                 account.deleted_by.as_deref(),
             )?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
         Ok(())
     }
@@ -159,6 +174,19 @@ impl RtcSqliteProviderAccountRepository {
         numeric_id: i64,
         application: &RtcProviderApplication,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_application_with(&self.pool, numeric_id, application)
+            .await
+    }
+
+    pub async fn upsert_provider_application_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        application: &RtcProviderApplication,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_provider_application_sql())
             .bind(numeric_id)
             .bind(&application.id)
@@ -210,7 +238,7 @@ impl RtcSqliteProviderAccountRepository {
                 "deleted_by",
                 application.deleted_by.as_deref(),
             )?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
         Ok(())
     }
@@ -300,6 +328,19 @@ impl RtcSqliteProviderAccountRepository {
         numeric_id: i64,
         credential: &RtcProviderCredential,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_credential_with(&self.pool, numeric_id, credential)
+            .await
+    }
+
+    pub async fn upsert_provider_credential_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        credential: &RtcProviderCredential,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_provider_credential_sql())
             .bind(numeric_id)
             .bind(&credential.id)
@@ -345,7 +386,7 @@ impl RtcSqliteProviderAccountRepository {
                     .unwrap_or("1970-01-01T00:00:00.000Z"),
             )
             .bind(parse_i64_field("version", &credential.version)?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
         Ok(())
     }
@@ -444,6 +485,19 @@ impl RtcPostgresProviderAccountRepository {
         numeric_id: i64,
         account: &RtcProviderAccount,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_account_with(&self.pool, numeric_id, account)
+            .await
+    }
+
+    pub async fn upsert_provider_account_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        account: &RtcProviderAccount,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_provider_account_sql())
             .bind(numeric_id)
             .bind(&account.id)
@@ -489,7 +543,7 @@ impl RtcPostgresProviderAccountRepository {
                 "deleted_by",
                 account.deleted_by.as_deref(),
             )?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
         Ok(())
     }
@@ -579,6 +633,19 @@ impl RtcPostgresProviderAccountRepository {
         numeric_id: i64,
         application: &RtcProviderApplication,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_application_with(&self.pool, numeric_id, application)
+            .await
+    }
+
+    pub async fn upsert_provider_application_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        application: &RtcProviderApplication,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_provider_application_sql())
             .bind(numeric_id)
             .bind(&application.id)
@@ -630,7 +697,7 @@ impl RtcPostgresProviderAccountRepository {
                 "deleted_by",
                 application.deleted_by.as_deref(),
             )?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
         Ok(())
     }
@@ -720,6 +787,19 @@ impl RtcPostgresProviderAccountRepository {
         numeric_id: i64,
         credential: &RtcProviderCredential,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_credential_with(&self.pool, numeric_id, credential)
+            .await
+    }
+
+    pub async fn upsert_provider_credential_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        credential: &RtcProviderCredential,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_provider_credential_sql())
             .bind(numeric_id)
             .bind(&credential.id)
@@ -765,7 +845,7 @@ impl RtcPostgresProviderAccountRepository {
                     .unwrap_or("1970-01-01T00:00:00.000Z"),
             )
             .bind(parse_i64_field("version", &credential.version)?)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
         Ok(())
     }

@@ -1,32 +1,41 @@
 use std::{
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, OnceLock},
     time::Duration,
 };
 
+fn reconcile_env_lock() -> std::sync::MutexGuard<'static, ()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(()))
+        .lock()
+        .expect("reconcile env lock")
+}
+
 use sdkwork_communication_rtc_service::{
     ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor, RtcContractError,
-    RtcCreateMediaSessionRequest, RtcMediaSessionMode, RtcParticipantCredential,
+    RtcCreateMediaSessionRequest, RtcMediaSession, RtcMediaSessionEndSource,
+    RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
+    RtcMediaSessionStatus, RtcParticipantCredential,
     RtcPersistenceChangeSet, RtcPersistenceFuture, RtcPersistencePort, RtcProviderAccountCommand,
     RtcProviderAccountDisableRequest, RtcProviderApplicationCommand,
     RtcProviderApplicationDisableRequest, RtcProviderCredentialCommand,
     RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole, RtcProviderCredentialStatus,
     RtcProviderEventKind, RtcProviderPluginFactory, RtcProviderPort, RtcProviderQueryKind,
     RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
-    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
+    RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
     RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture, RtcRuntimeLoadRequest,
     RtcSessionHandle, verify_hmac_sha256_payload,
 };
 use sdkwork_router_rtc_app_api::service::{
-    RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
+    RtcAppApiError, RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
     RtcIssueParticipantCredentialRequest, RtcListRequest,
 };
 use sdkwork_router_rtc_backend_api::service::{
     RtcBackendApiError, RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest,
     RtcProviderQueryJobCreateRequest, RtcProviderRouteCommand, RtcProviderRouteDisableRequest,
-    RtcProviderWebhookReceiveRequest,
+    RtcProviderWebhookIngress, RtcProviderWebhookReceiveRequest,
 };
 use sdkwork_rtc_service_host::{
-    MapRtcSecretResolver, RtcProductService, RtcProviderPluginRegistry,
+    MapRtcSecretResolver, RtcProductService, RtcProviderPluginRegistry, RtcSessionReconcileResult,
 };
 
 fn test_rtc_service(registry: RtcProviderPluginRegistry) -> RtcProductService {
@@ -71,6 +80,7 @@ async fn product_registry_registers_provider_plugins_through_standard_factory_sp
                 region: Some("cn-test".into()),
                 recording_requested: false,
                 metadata: serde_json::json!({ "purpose": "factory-plugin-spi" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -78,11 +88,94 @@ async fn product_registry_registers_provider_plugins_through_standard_factory_sp
 
     assert_eq!(
         session.provider_session_id.as_deref(),
-        Some("acme:session-1")
+        Some(format!("acme:{}", session.id).as_str())
     );
     assert_eq!(
         session.provider_profile_id.as_deref(),
         Some("profile-600-601-acme-default")
+    );
+}
+
+#[tokio::test]
+async fn product_service_create_media_session_honors_idempotency_key() {
+    let registry = RtcProviderPluginRegistry::new()
+        .with_provider(Arc::new(FakeProvider::new("acme", true)))
+        .expect("acme provider should register");
+    let service = test_rtc_service(registry).seed_default_room("610", "611", "612");
+    let request = RtcCreateAppMediaSessionRequest {
+        room_id: "room-default".into(),
+        media_mode: RtcMediaSessionMode::Video,
+        provider_profile_id: None,
+        provider: None,
+        region: None,
+        recording_requested: false,
+        metadata: serde_json::json!({}),
+        idempotency_key: Some("create-session-once".into()),
+    };
+    let first = service
+        .create_media_session(
+            "610".into(),
+            Some("611".into()),
+            "612".into(),
+            request.clone(),
+        )
+        .await
+        .expect("first create should succeed");
+    let second = service
+        .create_media_session(
+            "610".into(),
+            Some("611".into()),
+            "612".into(),
+            request,
+        )
+        .await
+        .expect("idempotent create should return existing session");
+    assert_eq!(first.id, second.id);
+    assert_eq!(
+        second.provider_session_id.as_deref(),
+        Some(format!("acme:{}", second.id).as_str())
+    );
+}
+
+#[tokio::test]
+async fn product_service_rejects_idempotent_create_replay_with_payload_mismatch() {
+    let registry = RtcProviderPluginRegistry::new()
+        .with_provider(Arc::new(FakeProvider::new("acme", true)))
+        .expect("acme provider should register");
+    let service = test_rtc_service(registry).seed_default_room("620", "621", "622");
+    let request = RtcCreateAppMediaSessionRequest {
+        room_id: "room-default".into(),
+        media_mode: RtcMediaSessionMode::Video,
+        provider_profile_id: None,
+        provider: None,
+        region: None,
+        recording_requested: false,
+        metadata: serde_json::json!({}),
+        idempotency_key: Some("create-session-fixed".into()),
+    };
+    service
+        .create_media_session(
+            "620".into(),
+            Some("621".into()),
+            "622".into(),
+            request.clone(),
+        )
+        .await
+        .expect("first create should succeed");
+    let mut mismatched_request = request;
+    mismatched_request.media_mode = RtcMediaSessionMode::Audio;
+    let error = service
+        .create_media_session(
+            "620".into(),
+            Some("621".into()),
+            "622".into(),
+            mismatched_request,
+        )
+        .await
+        .expect_err("payload mismatch should reject idempotent replay");
+    assert!(
+        matches!(error, RtcAppApiError::Conflict(_)),
+        "expected conflict, got {error:?}"
     );
 }
 
@@ -134,6 +227,7 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "provider-plugin-contract" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -144,7 +238,7 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
     );
     assert_eq!(
         session.provider_session_id.as_deref(),
-        Some("acme:session-1")
+        Some(format!("acme:{}", session.id).as_str())
     );
     assert_eq!(session.media_mode, RtcMediaSessionMode::Video);
 
@@ -156,19 +250,20 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
             RtcIssueParticipantCredentialRequest {
                 media_session_id: session.id.clone(),
                 participant_id: "participant-300".into(),
+                idempotency_key: None,
             },
         )
         .await
         .expect("participant credential should be issued through selected provider");
     assert_eq!(
         credential.credential,
-        "acme-token:900:session-1:participant-300"
+        format!("acme-token:900:{}:participant-300", session.id)
     );
 
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookReceiveRequest {
+            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
                 provider_profile_id: Some("profile-900-901-acme-default".into()),
                 external_event_id: None,
                 event_type: None,
@@ -178,11 +273,10 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
                     "eventType": "room_ended",
                     "eventId": "evt-1",
                     "roomId": "room-default",
-                    "sessionId": "session-1",
+                    "sessionId": session.id,
                     "recordingId": "recording-1"
                 }),
-                extra: Default::default(),
-            },
+            }),
         )
         .await
         .expect("provider webhook should be parsed and recorded through provider plugin");
@@ -190,7 +284,7 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
     assert_eq!(webhook_record.event_kind, RtcProviderEventKind::RoomEnded);
     assert_eq!(
         webhook_record.media_session_id.as_deref(),
-        Some("session-1")
+        Some(session.id.as_str())
     );
     assert_eq!(
         webhook_record.provider_profile_id.as_deref(),
@@ -221,7 +315,7 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
         query_job.query_kind,
         RtcProviderQueryKind::RecordingArtifacts
     );
-    assert_eq!(query_job.target_id, "acme:session-1");
+    assert_eq!(query_job.target_id, format!("acme:{}", session.id));
 
     let artifacts = service
         .list_recording_artifacts(
@@ -297,6 +391,7 @@ async fn product_service_exports_recordings_with_drive_import_context() {
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "drive-import-context" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -336,7 +431,7 @@ async fn product_service_exports_recordings_with_drive_import_context() {
     );
     assert_eq!(
         captured.provider_session_id.as_deref(),
-        Some("acme:session-1")
+        Some(format!("acme:{}", session.id).as_str())
     );
     assert!(
         captured
@@ -346,11 +441,12 @@ async fn product_service_exports_recordings_with_drive_import_context() {
         "provider query snapshot should be available to the Drive import boundary"
     );
 
+    let session_id = session.id.clone();
     let artifacts = service
         .list_recording_artifacts(
             "960".into(),
             Some("961".into()),
-            session.id,
+            session_id.clone(),
             RtcAppListQuery::default(),
         )
         .await
@@ -358,7 +454,10 @@ async fn product_service_exports_recordings_with_drive_import_context() {
     assert_eq!(artifacts.items.len(), 1);
     assert_eq!(
         artifacts.items[0].drive.drive_uri,
-        "drive://spaces/space-rtc-recordings/nodes/node-context-session-1"
+        format!(
+            "drive://spaces/space-rtc-recordings/nodes/node-context-{}",
+            session_id
+        )
     );
     assert_eq!(
         artifacts.items[0].source_provider_query_job_id.as_deref(),
@@ -410,6 +509,7 @@ async fn product_service_selects_only_active_provider_profiles_within_current_sc
                 region: None,
                 recording_requested: false,
                 metadata: serde_json::json!({ "purpose": "scoped-default-provider-selection" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -420,7 +520,7 @@ async fn product_service_selects_only_active_provider_profiles_within_current_sc
     );
     assert_eq!(
         selected.provider_session_id.as_deref(),
-        Some("acme:session-1")
+        Some(format!("acme:{}", selected.id).as_str())
     );
 
     service
@@ -449,6 +549,7 @@ async fn product_service_selects_only_active_provider_profiles_within_current_sc
                 region: None,
                 recording_requested: false,
                 metadata: serde_json::json!({ "purpose": "disabled-provider-profile" }),
+                idempotency_key: None,
             },
         )
         .await;
@@ -473,6 +574,7 @@ async fn product_service_selects_only_active_provider_profiles_within_current_sc
                 region: None,
                 recording_requested: false,
                 metadata: serde_json::json!({ "purpose": "wrong-scope-provider-profile" }),
+                idempotency_key: None,
             },
         )
         .await;
@@ -560,6 +662,7 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
                 region: Some("cn-east".into()),
                 recording_requested: false,
                 metadata: serde_json::json!({ "purpose": "region-route-provider-selection" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -570,7 +673,7 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
     );
     assert_eq!(
         routed.provider_session_id.as_deref(),
-        Some("backup:session-1")
+        Some(format!("backup:{}", routed.id).as_str())
     );
 
     let disabled_route_fallback = service
@@ -586,6 +689,7 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
                 region: Some("cn-disabled".into()),
                 recording_requested: false,
                 metadata: serde_json::json!({ "purpose": "disabled-region-route-fallback" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -596,7 +700,7 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
     );
     assert_eq!(
         disabled_route_fallback.provider_session_id.as_deref(),
-        Some("acme:session-2")
+        Some(format!("acme:{}", disabled_route_fallback.id).as_str())
     );
 }
 
@@ -1897,6 +2001,7 @@ async fn product_service_rejects_provider_webhook_when_provider_mismatches_sessi
                 region: None,
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "webhook-provider-mismatch" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -1909,7 +2014,7 @@ async fn product_service_rejects_provider_webhook_when_provider_mismatches_sessi
     let mismatched_webhook = service
         .receive_provider_webhook_event(
             "backup".into(),
-            RtcProviderWebhookReceiveRequest {
+            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
                 provider_profile_id: None,
                 external_event_id: None,
                 event_type: None,
@@ -1919,11 +2024,10 @@ async fn product_service_rejects_provider_webhook_when_provider_mismatches_sessi
                     "eventType": "room_ended",
                     "eventId": "evt-provider-mismatch",
                     "roomId": "room-default",
-                    "sessionId": "session-1",
+                    "sessionId": session.id,
                     "recordingId": "recording-provider-mismatch"
                 }),
-                extra: Default::default(),
-            },
+            }),
         )
         .await;
 
@@ -1955,6 +2059,7 @@ async fn product_service_rejects_provider_query_when_profile_does_not_match_sess
                 region: None,
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "query-provider-mismatch" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2013,6 +2118,7 @@ async fn product_service_resolves_provider_query_target_from_provider_session_be
                 region: None,
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "query-provider-session-resolution" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2159,6 +2265,7 @@ async fn product_service_records_completion_from_provider_room_ended_webhook() {
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "webhook-completion-contract" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2172,6 +2279,7 @@ async fn product_service_records_completion_from_provider_room_ended_webhook() {
             RtcIssueParticipantCredentialRequest {
                 media_session_id: session.id.clone(),
                 participant_id: "participant-702".into(),
+                idempotency_key: None,
             },
         )
         .await
@@ -2180,7 +2288,7 @@ async fn product_service_records_completion_from_provider_room_ended_webhook() {
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookReceiveRequest {
+            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
                 provider_profile_id: Some("profile-700-701-acme-default".into()),
                 external_event_id: None,
                 event_type: None,
@@ -2190,11 +2298,10 @@ async fn product_service_records_completion_from_provider_room_ended_webhook() {
                     "eventType": "room_ended",
                     "eventId": "evt-webhook-close",
                     "roomId": "room-default",
-                    "sessionId": "session-1",
+                    "sessionId": session.id,
                     "recordingId": "recording-webhook-close"
                 }),
-                extra: Default::default(),
-            },
+            }),
         )
         .await
         .expect("room ended webhook should be recorded through provider plugin");
@@ -2283,6 +2390,7 @@ async fn product_service_persists_completion_change_set_after_manual_close() {
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "persistent-completion-contract" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2296,6 +2404,7 @@ async fn product_service_persists_completion_change_set_after_manual_close() {
             RtcIssueParticipantCredentialRequest {
                 media_session_id: session.id.clone(),
                 participant_id: "participant-732".into(),
+                idempotency_key: None,
             },
         )
         .await
@@ -2376,6 +2485,7 @@ async fn product_service_persists_webhook_completion_change_set() {
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "persistent-webhook-completion" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2384,7 +2494,7 @@ async fn product_service_persists_webhook_completion_change_set() {
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookReceiveRequest {
+            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
                 provider_profile_id: Some("profile-740-741-acme-default".into()),
                 external_event_id: None,
                 event_type: None,
@@ -2394,11 +2504,10 @@ async fn product_service_persists_webhook_completion_change_set() {
                     "eventType": "room_ended",
                     "eventId": "evt-persist-webhook",
                     "roomId": "room-default",
-                    "sessionId": "session-1",
+                    "sessionId": session.id,
                     "recordingId": "recording-persist-webhook"
                 }),
-                extra: Default::default(),
-            },
+            }),
         )
         .await
         .expect("room ended webhook should complete the session");
@@ -2407,12 +2516,22 @@ async fn product_service_persists_webhook_completion_change_set() {
     let completion_batch = batches
         .iter()
         .find(|batch| {
+            batch.media_sessions.iter().any(|stored_session| {
+                stored_session.id == session.id
+                    && stored_session.status
+                        == sdkwork_communication_rtc_service::RtcMediaSessionStatus::Ended
+            })
+        })
+        .expect("webhook completion change set should be written to persistence");
+    assert!(
+        batches.iter().any(|batch| {
             batch
                 .webhook_events
                 .iter()
-                .any(|record| record.id == webhook_record.id)
-        })
-        .expect("webhook completion change set should be written to persistence");
+                .any(|record| record.id == webhook_record.id && record.status == "received")
+        }),
+        "webhook receipt must be persisted before processing side effects"
+    );
     assert!(
         completion_batch
             .media_sessions
@@ -2502,6 +2621,7 @@ async fn product_service_persists_active_session_participant_and_provider_config
                 region: Some("cn-east".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "persistent-active-facts" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2514,6 +2634,7 @@ async fn product_service_persists_active_session_participant_and_provider_config
             RtcIssueParticipantCredentialRequest {
                 media_session_id: session.id.clone(),
                 participant_id: "participant-752".into(),
+                idempotency_key: None,
             },
         )
         .await
@@ -2880,6 +3001,7 @@ async fn product_service_persists_active_provider_query_jobs_snapshots_and_artif
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "persistent-provider-query" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2965,6 +3087,7 @@ async fn product_service_resolves_provider_room_ended_webhook_by_active_room_ses
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "room-only-webhook-contract" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -2973,7 +3096,7 @@ async fn product_service_resolves_provider_room_ended_webhook_by_active_room_ses
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookReceiveRequest {
+            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
                 provider_profile_id: Some("profile-710-711-acme-default".into()),
                 external_event_id: None,
                 event_type: None,
@@ -2985,14 +3108,13 @@ async fn product_service_resolves_provider_room_ended_webhook_by_active_room_ses
                     "roomId": "room-default",
                     "recordingId": "recording-room-only"
                 }),
-                extra: Default::default(),
-            },
+            }),
         )
         .await
         .expect("room-only provider webhook should resolve active room session");
     assert_eq!(
         webhook_record.media_session_id.as_deref(),
-        Some("session-1")
+        Some(session.id.as_str())
     );
 
     let completion = RtcAppApiService::retrieve_media_session_completion_record(
@@ -3030,6 +3152,7 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
                 region: Some("cn-test".into()),
                 recording_requested: true,
                 metadata: serde_json::json!({ "purpose": "backend-organization-scope" }),
+                idempotency_key: None,
             },
         )
         .await
@@ -3056,7 +3179,7 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
     service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookReceiveRequest {
+            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
                 provider_profile_id: Some("profile-720-721-acme-default".into()),
                 external_event_id: None,
                 event_type: None,
@@ -3066,11 +3189,10 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
                     "eventType": "room_ended",
                     "eventId": "evt-org-scope",
                     "roomId": "room-default",
-                    "sessionId": "session-1",
+                    "sessionId": session.id,
                     "recordingId": "recording-org-scope"
                 }),
-                extra: Default::default(),
-            },
+            }),
         )
         .await
         .expect("provider webhook should create organization scoped event record");
@@ -3186,6 +3308,7 @@ struct FakeProvider {
     default_selected: bool,
     health_status: String,
     health_delay_ms: u64,
+    provider_reports_ended: bool,
 }
 
 struct ContextRecordingProvider {
@@ -3201,6 +3324,8 @@ struct FakeProviderFactory {
 #[derive(Default)]
 struct RecordingPersistence {
     batches: Mutex<Vec<RtcPersistenceChangeSet>>,
+    idempotency_records: Mutex<Vec<RtcMediaSessionIdempotencyRecord>>,
+    webhook_events: Mutex<Vec<RtcProviderWebhookEventRecord>>,
 }
 
 impl RecordingPersistence {
@@ -3231,6 +3356,73 @@ impl RtcPersistencePort for RecordingPersistence {
         _request: RtcRuntimeLoadRequest,
     ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet> {
         Box::pin(async { Ok(RtcPersistenceChangeSet::default()) })
+    }
+
+    fn resolve_media_session_idempotency_record<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _idempotency_key: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSessionIdempotencyRecord>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn claim_media_session_create_idempotency<'a>(
+        &'a self,
+        record: RtcMediaSessionIdempotencyRecord,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim> {
+        Box::pin(async move {
+            let mut records = self
+                .idempotency_records
+                .lock()
+                .expect("recording persistence lock");
+            if let Some(existing) = records.iter().find(|stored| {
+                stored.tenant_id == record.tenant_id
+                    && stored.organization_id == record.organization_id
+                    && stored.idempotency_key == record.idempotency_key
+            }) {
+                return Ok(RtcMediaSessionIdempotencyClaim::Existing(existing.clone()));
+            }
+            records.push(record);
+            Ok(RtcMediaSessionIdempotencyClaim::Claimed)
+        })
+    }
+
+    fn load_media_session<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSession>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn try_insert_webhook_event<'a>(
+        &'a self,
+        event: &'a RtcProviderWebhookEventRecord,
+    ) -> RtcPersistenceFuture<'a, bool> {
+        let event = event.clone();
+        Box::pin(async move {
+            let mut events = self.webhook_events.lock().expect("recording persistence lock");
+            let duplicate = events.iter().any(|stored| {
+                stored.tenant_id == event.tenant_id
+                    && stored.organization_id == event.organization_id
+                    && stored.provider == event.provider
+                    && stored.payload_hash == event.payload_hash
+            });
+            if duplicate {
+                return Ok(false);
+            }
+            events.push(event.clone());
+            self.batches
+                .lock()
+                .expect("recording persistence lock")
+                .push(RtcPersistenceChangeSet {
+                    webhook_events: vec![event],
+                    ..RtcPersistenceChangeSet::default()
+                });
+            Ok(true)
+        })
     }
 }
 
@@ -3263,7 +3455,13 @@ impl FakeProvider {
             default_selected,
             health_status: "healthy".into(),
             health_delay_ms: 0,
+            provider_reports_ended: false,
         }
+    }
+
+    fn with_provider_reports_ended(mut self) -> Self {
+        self.provider_reports_ended = true;
+        self
     }
 
     fn with_health_status(mut self, health_status: impl Into<String>) -> Self {
@@ -3538,6 +3736,20 @@ impl RtcProviderPort for FakeProvider {
         &self,
         request: RtcProviderQueryRequest,
     ) -> Result<RtcProviderQueryResult, RtcContractError> {
+        let reports_ended = self.provider_reports_ended
+            && request.query_kind == RtcProviderQueryKind::MediaSessionState;
+        let snapshot = if reports_ended {
+            serde_json::json!({
+                "providerSessionStatus": "ended",
+                "roomExists": false,
+            })
+        } else {
+            serde_json::json!({
+                "recordingArtifacts": [
+                    { "recordingId": "recording-1", "state": "ready" }
+                ]
+            })
+        };
         Ok(RtcProviderQueryResult {
             provider: self.provider.clone(),
             provider_profile_id: request.provider_profile_id,
@@ -3545,14 +3757,13 @@ impl RtcProviderPort for FakeProvider {
             room_id: request.room_id,
             rtc_session_id: request.rtc_session_id,
             provider_session_id: request.provider_session_id,
-            status: "synced".into(),
-            raw_provider_action: "FakeQueryRecordingArtifacts".into(),
-            result_snapshot_json: serde_json::json!({
-                "recordingArtifacts": [
-                    { "recordingId": "recording-1", "state": "ready" }
-                ]
-            })
-            .to_string(),
+            status: if reports_ended {
+                "ended".into()
+            } else {
+                "synced".into()
+            },
+            raw_provider_action: "FakeQueryProviderState".into(),
+            result_snapshot_json: snapshot.to_string(),
             next_cursor: None,
             queried_at: "2026-06-10T00:00:01.000Z".into(),
         })
@@ -3679,4 +3890,130 @@ fn provider_credential_command(
         expires_at: None,
         rotation_due_at: None,
     }
+}
+
+#[tokio::test]
+async fn product_service_reconciles_stale_active_sessions() {
+    let _env_lock = reconcile_env_lock();
+    let previous_max_age = std::env::var("SDKWORK_RTC_SESSION_MAX_AGE_SECONDS").ok();
+    let previous_grace = std::env::var("SDKWORK_RTC_SESSION_RECONCILE_GRACE_SECONDS").ok();
+    unsafe {
+        std::env::set_var("SDKWORK_RTC_SESSION_MAX_AGE_SECONDS", "0");
+        std::env::set_var("SDKWORK_RTC_SESSION_RECONCILE_GRACE_SECONDS", "0");
+    }
+
+    let registry = RtcProviderPluginRegistry::new()
+        .with_provider(Arc::new(FakeProvider::new("acme", true)))
+        .expect("provider should register");
+    let service = test_rtc_service(registry).seed_default_room("970", "971", "972");
+    let session = service
+        .create_media_session(
+            "970".into(),
+            Some("971".into()),
+            "972".into(),
+            RtcCreateAppMediaSessionRequest {
+                room_id: "room-default".into(),
+                media_mode: RtcMediaSessionMode::Video,
+                provider_profile_id: None,
+                provider: None,
+                region: Some("cn-test".into()),
+                recording_requested: false,
+                metadata: serde_json::json!({ "purpose": "session-reconciliation" }),
+                idempotency_key: None,
+            },
+        )
+        .await
+        .expect("media session should be created");
+    tokio::time::sleep(Duration::from_millis(5)).await;
+
+    let result: RtcSessionReconcileResult = service
+        .reconcile_stale_media_sessions()
+        .await
+        .expect("reconciliation should succeed");
+    assert_eq!(result.scanned, 1);
+    assert_eq!(result.closed, 1, "stale active session should close");
+    assert!(result.failures.is_empty());
+
+    let closed = RtcBackendApiService::retrieve_media_session(
+        &service,
+        "970".into(),
+        Some("971".into()),
+        session.id,
+    )
+    .await
+    .expect("closed session should be readable");
+    assert_eq!(closed.status, RtcMediaSessionStatus::Ended);
+    assert_eq!(
+        closed.end_source,
+        Some(RtcMediaSessionEndSource::SystemReconcile)
+    );
+
+    unsafe {
+        if let Some(value) = previous_max_age {
+            std::env::set_var("SDKWORK_RTC_SESSION_MAX_AGE_SECONDS", value);
+        } else {
+            std::env::remove_var("SDKWORK_RTC_SESSION_MAX_AGE_SECONDS");
+        }
+        if let Some(value) = previous_grace {
+            std::env::set_var("SDKWORK_RTC_SESSION_RECONCILE_GRACE_SECONDS", value);
+        } else {
+            std::env::remove_var("SDKWORK_RTC_SESSION_RECONCILE_GRACE_SECONDS");
+        }
+    }
+}
+
+#[tokio::test]
+async fn product_service_reconciles_provider_ended_drift_via_active_query() {
+    let _env_lock = reconcile_env_lock();
+    unsafe {
+        std::env::set_var("SDKWORK_RTC_SESSION_MAX_AGE_SECONDS", "86400");
+        std::env::set_var("SDKWORK_RTC_SESSION_RECONCILE_GRACE_SECONDS", "900");
+    }
+
+    let registry = RtcProviderPluginRegistry::new()
+        .with_provider(Arc::new(
+            FakeProvider::new("acme", true).with_provider_reports_ended(),
+        ))
+        .expect("provider should register");
+    let service = test_rtc_service(registry).seed_default_room("980", "981", "982");
+    let session = service
+        .create_media_session(
+            "980".into(),
+            Some("981".into()),
+            "982".into(),
+            RtcCreateAppMediaSessionRequest {
+                room_id: "room-default".into(),
+                media_mode: RtcMediaSessionMode::Video,
+                provider_profile_id: None,
+                provider: None,
+                region: Some("cn-test".into()),
+                recording_requested: false,
+                metadata: serde_json::json!({ "purpose": "provider-drift-reconciliation" }),
+                idempotency_key: None,
+            },
+        )
+        .await
+        .expect("media session should be created");
+
+    let result = service
+        .reconcile_stale_media_sessions()
+        .await
+        .expect("reconciliation should succeed");
+    assert_eq!(result.provider_queried, 1);
+    assert_eq!(result.provider_synced, 1);
+    assert_eq!(result.closed, 1);
+
+    let closed = RtcBackendApiService::retrieve_media_session(
+        &service,
+        "980".into(),
+        Some("981".into()),
+        session.id,
+    )
+    .await
+    .expect("closed session should be readable");
+    assert_eq!(closed.status, RtcMediaSessionStatus::Ended);
+    assert_eq!(
+        closed.end_source,
+        Some(RtcMediaSessionEndSource::ProviderStateSync)
+    );
 }

@@ -452,6 +452,9 @@ importers:
 
   apps/sdkwork-rtc-h5:
     dependencies:
+      '@sdkwork/auth-pc-react':
+        specifier: workspace:*
+        version: link:../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-pc-react
       '@sdkwork/auth-runtime-pc-react':
         specifier: workspace:*
         version: link:../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-runtime-pc-react

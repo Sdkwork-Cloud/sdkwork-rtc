@@ -1,9 +1,13 @@
 <view class="container">
   <view class="card">
     <text class="title">RTC App Sign In</text>
-    <text class="subtitle">Provide app-api credentials for media session access.</text>
+    <text class="subtitle">Sign in through Appbase IAM or provide explicit app-api credentials.</text>
+    <button class="primary" bindtap="onAppbaseLogin">Continue with Appbase</button>
+    <view class="divider">manual credential entry</view>
     <input class="field" placeholder="Access Token" value="{{accessToken}}" bindinput="onAccessTokenInput" />
     <input class="field" placeholder="User ID" value="{{userId}}" bindinput="onUserIdInput" />
-    <button class="primary" bindtap="onSubmit">Continue</button>
+    <input class="field" placeholder="Tenant ID" value="{{tenantId}}" bindinput="onTenantIdInput" />
+    <input class="field" placeholder="Organization ID" value="{{organizationId}}" bindinput="onOrganizationIdInput" />
+    <button class="secondary" bindtap="onSubmit">Continue</button>
   </view>
 </view>

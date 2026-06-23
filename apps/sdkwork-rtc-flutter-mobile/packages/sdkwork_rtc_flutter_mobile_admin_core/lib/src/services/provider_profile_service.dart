@@ -1,53 +1,61 @@
+import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart'
+    as generated;
+
+import '../admin_sdk_mapper.dart';
+import '../backend_rtc_client.dart';
 import '../models/provider_profile.dart';
-import 'backend_api_client.dart';
 
 class ProviderProfileService {
-  final BackendApiClient _client;
+  final SdkworkBackendClient _client;
 
   ProviderProfileService(this._client);
 
   Future<List<ProviderProfile>> list({String? provider}) async {
-    final query = <String, String>{};
-    if (provider != null) query['provider'] = provider;
-    final data = await _client.getJson(
-      '/rtc/provider_profiles',
-      query: query.isEmpty ? null : query,
+    final response = await _client.rtcProviderProfiles.list(
+      null,
+      null,
+      null,
+      null,
+      provider,
     );
-    final items = data['items'];
-    if (items is! List<dynamic>) return [];
-    return items
-        .whereType<Map<String, dynamic>>()
+    return backendResponseItems(response)
         .map(ProviderProfile.fromJson)
         .toList();
   }
 
   Future<ProviderProfile?> get(String id) async {
-    final data = await _client.getJson('/rtc/provider_profiles/$id');
-    return ProviderProfile.fromJson(data);
+    final response = await _client.rtcProviderProfiles.retrieve(id);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderProfile.fromJson(data);
   }
 
   Future<ProviderProfile?> create(ProviderProfileCommand command) async {
-    final data = await _client.postJson(
-      '/rtc/provider_profiles',
-      command.toJson(),
+    final response = await _client.rtcProviderProfiles.create(
+      generated.RtcProviderProfileCommand.fromJson(command.toJson()),
     );
-    return ProviderProfile.fromJson(data);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderProfile.fromJson(data);
   }
 
-  Future<ProviderProfile?> update(String id, ProviderProfileCommand command) async {
-    final data = await _client.patchJson(
-      '/rtc/provider_profiles/$id',
-      command.toJson(),
+  Future<ProviderProfile?> update(
+    String id,
+    ProviderProfileCommand command,
+  ) async {
+    final response = await _client.rtcProviderProfiles.update(
+      id,
+      generated.RtcProviderProfileCommand.fromJson(command.toJson()),
     );
-    return ProviderProfile.fromJson(data);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderProfile.fromJson(data);
   }
 
   Future<ProviderProfile?> disable(String id, {String? reason}) async {
-    final data = await _client.postJson(
-      '/rtc/provider_profiles/$id/disable',
-      {if (reason != null) 'reason': reason},
+    final response = await _client.rtcProviderProfiles.disable(
+      id,
+      generated.RtcProviderProfileDisableRequest(reason: reason),
     );
-    return ProviderProfile.fromJson(data);
+    final data = backendResponseData(response);
+    return data == null ? null : ProviderProfile.fromJson(data);
   }
 
   Future<Map<String, dynamic>?> verify(
@@ -55,13 +63,14 @@ class ProviderProfileService {
     String queryKind, {
     int? timeoutMs,
   }) async {
-    return _client.postJson(
-      '/rtc/provider_profiles/$id/verify',
-      {
-        'queryKind': queryKind,
-        if (timeoutMs != null) 'timeoutMs': timeoutMs,
-      },
+    final response = await _client.rtcProviderProfiles.verify(
+      id,
+      generated.RtcProviderProfileVerifyRequest(
+        queryKind: queryKind,
+        timeoutMs: timeoutMs,
+      ),
     );
+    return backendResponseData(response);
   }
 
   Future<ProviderProfile?> configureCapabilities(
@@ -69,13 +78,13 @@ class ProviderProfileService {
     List<String> enabledCapabilities,
     List<String> disabledCapabilities,
   ) async {
-    final data = await _client.postJson(
-      '/rtc/provider_profiles/$id/capabilities',
+    await _client.rtcProviderProfiles.capabilitiesConfigure(
+      id,
       {
         'enabledCapabilities': enabledCapabilities,
         'disabledCapabilities': disabledCapabilities,
       },
     );
-    return ProviderProfile.fromJson(data);
+    return get(id);
   }
 }

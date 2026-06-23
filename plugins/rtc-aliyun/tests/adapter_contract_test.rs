@@ -3,8 +3,9 @@ use std::sync::{Arc, Mutex};
 use sdkwork_communication_rtc_service::{
     RtcContractError, RtcCreateMediaSessionRequest, RtcMediaSessionMode, RtcProviderEventKind,
     RtcProviderPluginFactory, RtcProviderPort, RtcProviderQueryKind, RtcProviderQueryRequest,
-    RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactImportPort,
-    RtcRecordingArtifactImportRequest,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
+    RtcRecordingArtifactImportPort, RtcRecordingArtifactImportRequest,
+    sign_hmac_sha256_payload_hex,
 };
 use sdkwork_rtc_adapter_aliyun::{
     ALIYUN_RTC_PLUGIN_ID, AliyunRtcOpenApiExecutor, AliyunRtcOpenApiRequest,
@@ -195,6 +196,20 @@ fn test_aliyun_rtc_provider_implements_webhook_and_active_query_surface() {
     assert_eq!(parsed.room_id.as_deref(), Some("room_demo"));
     assert_eq!(parsed.participant_id.as_deref(), Some("u_guest"));
     assert_eq!(parsed.signature_header.as_deref(), Some("aliyun-signature"));
+
+    let webhook_payload = r#"{"eventType":"RoomUserJoin","eventId":"aliyun-event-1"}"#;
+    let webhook_secret = "aliyun-webhook-secret";
+    provider
+        .verify_provider_webhook_signature(RtcProviderWebhookVerifyRequest {
+            headers: Vec::new(),
+            raw_payload: webhook_payload.into(),
+            signature_header: Some(sign_hmac_sha256_payload_hex(
+                webhook_secret,
+                webhook_payload,
+            )),
+            webhook_secret: webhook_secret.into(),
+        })
+        .expect("aliyun webhook signature should verify");
 
     let session_scoped = provider
         .parse_provider_webhook(RtcProviderWebhookParseRequest {

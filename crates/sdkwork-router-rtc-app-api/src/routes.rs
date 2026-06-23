@@ -59,6 +59,9 @@ mod tests {
         RtcMediaSessionCompletionRecord, RtcParticipantCredential, RtcRoom, RtcRoomStatus,
     };
     use sdkwork_rtc_app_context::AppContext;
+    use sdkwork_web_core::{
+        ServerRequestId, WebApiSurface, WebAuthMode, WebRequestContext, WebTransportFacts,
+    };
     use serde_json::Value as JsonValue;
     use tower::ServiceExt;
 
@@ -72,7 +75,9 @@ mod tests {
     #[tokio::test]
     async fn executable_router_delegates_active_provider_profile_list_to_service() {
         let service = Arc::new(FakeAppService::default());
-        let router = build_sdkwork_rtc_app_api_router(service.clone()).layer(Extension(context()));
+        let router = build_sdkwork_rtc_app_api_router(service.clone())
+            .layer(Extension(web_context()))
+            .layer(Extension(context()));
 
         let response = router
             .oneshot(
@@ -258,6 +263,27 @@ mod tests {
             actor_id: "user-1".to_owned(),
             actor_kind: "user".to_owned(),
             device_id: None,
+        }
+    }
+
+    fn web_context() -> WebRequestContext {
+        WebRequestContext {
+            request_id: ServerRequestId("test-request-id".to_owned()),
+            api_surface: WebApiSurface::AppApi,
+            auth_mode: WebAuthMode::DualToken,
+            transport: WebTransportFacts {
+                path: "/app/v3/api/rtc/provider_profiles/active".to_owned(),
+                method: "GET".to_owned(),
+                auth_token_present: true,
+                access_token_present: true,
+                api_key_present: false,
+                oauth_bearer_present: false,
+            },
+            principal: None,
+            locale: None,
+            client_kind: None,
+            operation: None,
+            trace_id: None,
         }
     }
 }

@@ -82,8 +82,9 @@ pub struct RtcCloseMediaSessionRequest {
     pub reason: Option<String>,
 }
 
+/// Legacy wrapped webhook relay payload used by integration tests and internal relays.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RtcProviderWebhookReceiveRequest {
     pub provider_profile_id: Option<String>,
     pub external_event_id: Option<String>,
@@ -91,8 +92,111 @@ pub struct RtcProviderWebhookReceiveRequest {
     pub received_at: Option<String>,
     pub headers: JsonValue,
     pub payload: JsonValue,
-    #[serde(flatten)]
-    pub extra: std::collections::BTreeMap<String, JsonValue>,
+}
+
+/// HTTP-native provider webhook ingress. Signature verification uses `raw_body` bytes and
+/// `http_headers` from the inbound request; body-controlled header substitutes are ignored.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RtcProviderWebhookIngress {
+    pub provider_profile_id: Option<String>,
+    pub external_event_id: Option<String>,
+    pub event_type: Option<String>,
+    pub received_at: Option<String>,
+    pub http_headers: Vec<(String, String)>,
+    pub raw_body: String,
+}
+
+impl RtcProviderWebhookIngress {
+    pub fn from_http_request(
+        headers: &axum::http::HeaderMap,
+        body: &[u8],
+    ) -> Result<Self, RtcBackendApiError> {
+        let raw_body = std::str::from_utf8(body).map_err(|_| {
+            RtcBackendApiError::BadRequest("RTC provider webhook body must be valid UTF-8".into())
+        })?;
+        let http_headers = header_map_to_pairs(headers);
+        let metadata = serde_json::from_str::<serde_json::Value>(raw_body).ok();
+        let object = metadata.as_ref().and_then(|value| value.as_object());
+        Ok(Self {
+            provider_profile_id: optional_json_string(object, &["providerProfileId", "provider_profile_id"]),
+            external_event_id: optional_json_string(object, &["externalEventId", "external_event_id"]),
+            event_type: optional_json_string(object, &["eventType", "event_type"]),
+            received_at: optional_json_string(object, &["receivedAt", "received_at"]),
+            http_headers,
+            raw_body: raw_body.to_string(),
+        })
+    }
+
+    /// Builds ingress for wrapped relay/test payloads. HTTP headers must still be supplied
+    /// separately when exercising the HTTP handler; this helper signs the provider payload body.
+    pub fn from_wrapped_test_request(request: RtcProviderWebhookReceiveRequest) -> Self {
+        let raw_body = serde_json::to_string(&request.payload).unwrap_or_else(|_| "{}".into());
+        Self {
+            provider_profile_id: request.provider_profile_id,
+            external_event_id: request.external_event_id,
+            event_type: request.event_type,
+            received_at: request.received_at,
+            http_headers: json_headers_to_pairs(&request.headers),
+            raw_body,
+        }
+    }
+
+    pub fn provider_parse_payload(&self) -> String {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(&self.raw_body) {
+            if let Some(payload) = json.get("payload") {
+                if payload.is_object() || payload.is_array() {
+                    return serde_json::to_string(payload)
+                        .unwrap_or_else(|_| self.raw_body.clone());
+                }
+            }
+        }
+        self.raw_body.clone()
+    }
+}
+
+fn optional_json_string(
+    object: Option<&serde_json::Map<String, serde_json::Value>>,
+    keys: &[&str],
+) -> Option<String> {
+    let object = object?;
+    keys.iter()
+        .find_map(|key| object.get(*key))
+        .and_then(|value| value.as_str())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
+}
+
+pub fn header_map_to_pairs(headers: &axum::http::HeaderMap) -> Vec<(String, String)> {
+    headers
+        .iter()
+        .map(|(name, value)| {
+            (
+                name.as_str().to_string(),
+                value.to_str().unwrap_or_default().to_string(),
+            )
+        })
+        .collect()
+}
+
+pub fn json_headers_to_pairs(headers: &serde_json::Value) -> Vec<(String, String)> {
+    headers
+        .as_object()
+        .map(|object| {
+            object
+                .iter()
+                .map(|(key, value)| {
+                    (
+                        key.clone(),
+                        value
+                            .as_str()
+                            .map(str::to_string)
+                            .unwrap_or_else(|| value.to_string()),
+                    )
+                })
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -441,7 +545,7 @@ pub trait RtcBackendApiService: Send + Sync + 'static {
     fn receive_provider_webhook_event(
         &self,
         provider: String,
-        request: RtcProviderWebhookReceiveRequest,
+        ingress: RtcProviderWebhookIngress,
     ) -> RtcBackendApiFuture<RtcProviderWebhookEventRecord>;
 
     fn create_provider_query_job(

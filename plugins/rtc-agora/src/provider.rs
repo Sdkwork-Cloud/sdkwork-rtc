@@ -7,9 +7,9 @@ use sdkwork_communication_rtc_service::{
     RtcActiveSessionTracker, RtcContractError, RtcCreateMediaSessionRequest,
     RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
     RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
-    RtcProviderWebhookParseRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
-    RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture, RtcSessionHandle,
-    utc_now_rfc3339_millis,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
+    RtcRecordingArtifactExportRequest, RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture,
+    RtcSessionHandle, utc_now_rfc3339_millis,
 };
 
 use crate::config::AgoraRtcProviderConfig;
@@ -166,6 +166,13 @@ impl RtcProviderPort for AgoraRtcProvider {
         request: RtcProviderWebhookParseRequest,
     ) -> Result<RtcProviderWebhookEvent, RtcContractError> {
         webhook::parse_provider_webhook(request)
+    }
+
+    fn verify_provider_webhook_signature(
+        &self,
+        request: RtcProviderWebhookVerifyRequest,
+    ) -> Result<(), RtcContractError> {
+        webhook::verify_provider_webhook_signature(request)
     }
 
     fn query_provider_state(

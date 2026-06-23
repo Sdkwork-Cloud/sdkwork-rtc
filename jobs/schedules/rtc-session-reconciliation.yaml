@@ -1,0 +1,16 @@
+# RTC session reconciliation — heals IM/RTC drift and stale Active sessions.
+# Owner: sdkwork-rtc
+# Spec: ../sdkwork-specs/DEPLOYMENT_SPEC.md
+
+schedule:
+  id: rtc-session-reconciliation
+  cron: "*/15 * * * *"
+  timezone: UTC
+  enabled: true
+
+queue:
+  name: rtc-maintenance
+  binding: sdkwork-rtc-session-reconciliation
+
+runbook:
+  path: jobs/runbooks/rtc-session-reconciliation.md

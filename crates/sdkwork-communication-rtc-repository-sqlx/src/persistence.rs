@@ -1,18 +1,21 @@
 use std::collections::BTreeMap;
 
 use sdkwork_communication_rtc_service::{
-    RtcMediaSessionCompletionRecord, RtcPersistenceChangeSet, RtcPersistenceError,
+    RtcMediaSession, RtcMediaSessionCompletionRecord, RtcMediaSessionIdempotencyClaim,
+    RtcMediaSessionIdempotencyRecord, RtcPersistenceChangeSet, RtcPersistenceError,
     RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind, RtcProviderQueryJobRecord,
     RtcProviderQueryKind, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
     RtcRuntimeLoadRequest, utc_now_rfc3339_millis,
 };
-use sqlx::{PgPool, SqlitePool};
+use sqlx::{Executor, PgPool, Postgres, Sqlite, SqlitePool};
 
 use crate::{
-    RtcPostgresCompletionRecordRepository, RtcPostgresMediaSessionRepository,
-    RtcPostgresProviderAccountRepository, RtcPostgresProviderProfileRepository,
+    RtcPostgresCompletionRecordRepository, RtcPostgresMediaSessionIdempotencyRepository,
+    RtcPostgresMediaSessionRepository, RtcPostgresProviderAccountRepository,
+    RtcPostgresProviderEventRepository, RtcPostgresProviderProfileRepository,
     RtcPostgresProviderRouteRepository, RtcSqliteCompletionRecordRepository,
-    RtcSqliteMediaSessionRepository, RtcSqliteProviderAccountRepository,
+    RtcSqliteMediaSessionIdempotencyRepository, RtcSqliteMediaSessionRepository,
+    RtcSqliteProviderAccountRepository, RtcSqliteProviderEventRepository,
     RtcSqliteProviderProfileRepository, RtcSqliteProviderRouteRepository, RtcStorageError,
     RtcStorageResult,
 };
@@ -43,12 +46,28 @@ impl RtcSqlitePersistencePort {
         &self,
         changes: RtcPersistenceChangeSet,
     ) -> RtcStorageResult<()> {
-        let updated_at = change_timestamp(&changes);
-        let session_scope = session_scope_index(&changes);
+        let mut tx = self.pool.begin().await?;
+        match self.apply_sqlite_changes(&mut tx, &changes).await {
+            Ok(()) => tx.commit().await.map_err(Into::into),
+            Err(error) => {
+                let _ = tx.rollback().await;
+                Err(error)
+            }
+        }
+    }
+
+    async fn apply_sqlite_changes(
+        &self,
+        tx: &mut sqlx::Transaction<'_, Sqlite>,
+        changes: &RtcPersistenceChangeSet,
+    ) -> RtcStorageResult<()> {
+        let updated_at = change_timestamp(changes);
+        let session_scope = session_scope_index(changes);
 
         for account in &changes.provider_accounts {
             self.provider_accounts
-                .upsert_provider_account(
+                .upsert_provider_account_with(
+                    &mut **tx,
                     stable_numeric_id("provider_account", &account.id),
                     account,
                 )
@@ -56,7 +75,8 @@ impl RtcSqlitePersistencePort {
         }
         for application in &changes.provider_applications {
             self.provider_accounts
-                .upsert_provider_application(
+                .upsert_provider_application_with(
+                    &mut **tx,
                     stable_numeric_id("provider_application", &application.id),
                     application,
                 )
@@ -64,7 +84,8 @@ impl RtcSqlitePersistencePort {
         }
         for credential in &changes.provider_credentials {
             self.provider_accounts
-                .upsert_provider_credential(
+                .upsert_provider_credential_with(
+                    &mut **tx,
                     stable_numeric_id("provider_credential", &credential.id),
                     credential,
                 )
@@ -72,7 +93,8 @@ impl RtcSqlitePersistencePort {
         }
         for profile in &changes.provider_profiles {
             self.provider_profiles
-                .upsert_provider_profile(
+                .upsert_provider_profile_with(
+                    &mut **tx,
                     stable_numeric_id("provider_profile", &profile.id),
                     profile,
                 )
@@ -80,7 +102,8 @@ impl RtcSqlitePersistencePort {
         }
         for route in &changes.provider_routes {
             self.provider_routes
-                .upsert_provider_route(
+                .upsert_provider_route_with(
+                    &mut **tx,
                     stable_numeric_id("provider_route", &route.id),
                     route,
                     &updated_at,
@@ -89,12 +112,18 @@ impl RtcSqlitePersistencePort {
         }
         for room in &changes.rooms {
             self.media_sessions
-                .upsert_room(stable_numeric_id("room", &room.id), room, &updated_at)
+                .upsert_room_with(
+                    &mut **tx,
+                    stable_numeric_id("room", &room.id),
+                    room,
+                    &updated_at,
+                )
                 .await?;
         }
         for session in &changes.media_sessions {
             self.media_sessions
-                .upsert_media_session(
+                .upsert_media_session_with(
+                    &mut **tx,
                     stable_numeric_id("media_session", &session.id),
                     session,
                     &updated_at,
@@ -105,7 +134,8 @@ impl RtcSqlitePersistencePort {
             let (tenant_id, organization_id) =
                 scoped_session(&session_scope, &participant.session_id)?;
             self.media_sessions
-                .upsert_media_participant(
+                .upsert_media_participant_with(
+                    &mut **tx,
                     stable_numeric_id("media_participant", &participant.id),
                     tenant_id,
                     organization_id,
@@ -117,7 +147,8 @@ impl RtcSqlitePersistencePort {
         for track in &changes.media_tracks {
             let (tenant_id, organization_id) = scoped_session(&session_scope, &track.session_id)?;
             self.media_sessions
-                .upsert_media_track(
+                .upsert_media_track_with(
+                    &mut **tx,
                     stable_numeric_id("media_track", &track.id),
                     tenant_id,
                     organization_id,
@@ -129,7 +160,8 @@ impl RtcSqlitePersistencePort {
         for artifact in &changes.media_artifacts {
             let (_, organization_id) = scoped_session(&session_scope, &artifact.rtc_session_id)?;
             self.media_sessions
-                .upsert_media_artifact(
+                .upsert_media_artifact_with(
+                    &mut **tx,
                     stable_numeric_id("media_artifact", &artifact.id),
                     organization_id,
                     artifact,
@@ -140,7 +172,8 @@ impl RtcSqlitePersistencePort {
         for sample in &changes.quality_samples {
             let (tenant_id, organization_id) = scoped_session(&session_scope, &sample.session_id)?;
             self.media_sessions
-                .insert_quality_sample(
+                .insert_quality_sample_with(
+                    &mut **tx,
                     stable_numeric_id("quality_sample", &sample.id),
                     tenant_id,
                     organization_id,
@@ -149,19 +182,29 @@ impl RtcSqlitePersistencePort {
                 .await?;
         }
         for event in &changes.webhook_events {
-            upsert_sqlite_provider_webhook_event(&self.pool, event).await?;
+            upsert_sqlite_provider_webhook_event(&mut **tx, event).await?;
         }
         for job in &changes.provider_query_jobs {
-            upsert_sqlite_provider_query_job(&self.pool, job).await?;
+            upsert_sqlite_provider_query_job(&mut **tx, job).await?;
         }
         for snapshot in &changes.provider_query_snapshots {
-            upsert_sqlite_provider_query_snapshot(&self.pool, snapshot).await?;
+            upsert_sqlite_provider_query_snapshot(&mut **tx, snapshot).await?;
         }
         for completion in &changes.completion_records {
             self.completion_records
-                .upsert_completion_record(
+                .upsert_completion_record_with(
+                    tx,
                     stable_numeric_id("completion_record", &completion.id),
                     completion,
+                )
+                .await?;
+        }
+        for record in &changes.media_session_idempotencies {
+            RtcSqliteMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .upsert_idempotency_record_with(
+                    tx,
+                    stable_numeric_id("media_session_idempotency", &record.id),
+                    record,
                 )
                 .await?;
         }
@@ -213,12 +256,40 @@ impl RtcSqlitePersistencePort {
             .provider_routes
             .list_provider_routes(tenant_id, organization_id, None)
             .await?;
+        let media_sessions = self
+            .media_sessions
+            .list_media_sessions_for_scope(tenant_id, organization_id)
+            .await?;
+        let media_participants = media_sessions
+            .iter()
+            .flat_map(|session| session.participants.clone())
+            .collect::<Vec<_>>();
+        let mut media_tracks = Vec::new();
+        for session in &media_sessions {
+            media_tracks.extend(
+                self.media_sessions
+                    .list_media_tracks(session.id.as_str())
+                    .await?,
+            );
+        }
+        let webhook_events = RtcSqliteProviderEventRepository::new(self.pool.clone())
+            .list_webhook_events_for_scope(tenant_id, organization_id)
+            .await?;
+        let media_session_idempotencies =
+            RtcSqliteMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .list_idempotency_records_for_scope(tenant_id, organization_id)
+                .await?;
         Ok(RtcPersistenceChangeSet {
             provider_accounts,
             provider_applications,
             provider_credentials,
             provider_profiles,
             provider_routes,
+            media_sessions,
+            media_participants,
+            media_tracks,
+            webhook_events,
+            media_session_idempotencies,
             ..RtcPersistenceChangeSet::default()
         })
     }
@@ -242,6 +313,60 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
     ) -> RtcPersistenceFuture<'a, RtcPersistenceChangeSet> {
         Box::pin(async move {
             self.load_runtime_snapshot_inner(request)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn resolve_media_session_idempotency_record<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        idempotency_key: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSessionIdempotencyRecord>> {
+        Box::pin(async move {
+            RtcSqliteMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .resolve_idempotency_record_by_key(tenant_id, organization_id, idempotency_key)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn claim_media_session_create_idempotency<'a>(
+        &'a self,
+        record: RtcMediaSessionIdempotencyRecord,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim> {
+        Box::pin(async move {
+            RtcSqliteMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .claim_idempotency_record(
+                    stable_numeric_id("media_session_idempotency", &record.id),
+                    &record,
+                )
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn load_media_session<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSession>> {
+        Box::pin(async move {
+            self.media_sessions
+                .get_media_session_for_scope(tenant_id, organization_id, media_session_id)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn try_insert_webhook_event<'a>(
+        &'a self,
+        event: &'a RtcProviderWebhookEventRecord,
+    ) -> RtcPersistenceFuture<'a, bool> {
+        Box::pin(async move {
+            try_insert_sqlite_provider_webhook_event(&self.pool, event)
                 .await
                 .map_err(storage_to_persistence_error)
         })
@@ -274,12 +399,28 @@ impl RtcPostgresPersistencePort {
         &self,
         changes: RtcPersistenceChangeSet,
     ) -> RtcStorageResult<()> {
-        let updated_at = change_timestamp(&changes);
-        let session_scope = session_scope_index(&changes);
+        let mut tx = self.pool.begin().await?;
+        match self.apply_postgres_changes(&mut tx, &changes).await {
+            Ok(()) => tx.commit().await.map_err(Into::into),
+            Err(error) => {
+                let _ = tx.rollback().await;
+                Err(error)
+            }
+        }
+    }
+
+    async fn apply_postgres_changes(
+        &self,
+        tx: &mut sqlx::Transaction<'_, Postgres>,
+        changes: &RtcPersistenceChangeSet,
+    ) -> RtcStorageResult<()> {
+        let updated_at = change_timestamp(changes);
+        let session_scope = session_scope_index(changes);
 
         for account in &changes.provider_accounts {
             self.provider_accounts
-                .upsert_provider_account(
+                .upsert_provider_account_with(
+                    &mut **tx,
                     stable_numeric_id("provider_account", &account.id),
                     account,
                 )
@@ -287,7 +428,8 @@ impl RtcPostgresPersistencePort {
         }
         for application in &changes.provider_applications {
             self.provider_accounts
-                .upsert_provider_application(
+                .upsert_provider_application_with(
+                    &mut **tx,
                     stable_numeric_id("provider_application", &application.id),
                     application,
                 )
@@ -295,7 +437,8 @@ impl RtcPostgresPersistencePort {
         }
         for credential in &changes.provider_credentials {
             self.provider_accounts
-                .upsert_provider_credential(
+                .upsert_provider_credential_with(
+                    &mut **tx,
                     stable_numeric_id("provider_credential", &credential.id),
                     credential,
                 )
@@ -303,7 +446,8 @@ impl RtcPostgresPersistencePort {
         }
         for profile in &changes.provider_profiles {
             self.provider_profiles
-                .upsert_provider_profile(
+                .upsert_provider_profile_with(
+                    &mut **tx,
                     stable_numeric_id("provider_profile", &profile.id),
                     profile,
                 )
@@ -311,7 +455,8 @@ impl RtcPostgresPersistencePort {
         }
         for route in &changes.provider_routes {
             self.provider_routes
-                .upsert_provider_route(
+                .upsert_provider_route_with(
+                    &mut **tx,
                     stable_numeric_id("provider_route", &route.id),
                     route,
                     &updated_at,
@@ -320,12 +465,18 @@ impl RtcPostgresPersistencePort {
         }
         for room in &changes.rooms {
             self.media_sessions
-                .upsert_room(stable_numeric_id("room", &room.id), room, &updated_at)
+                .upsert_room_with(
+                    &mut **tx,
+                    stable_numeric_id("room", &room.id),
+                    room,
+                    &updated_at,
+                )
                 .await?;
         }
         for session in &changes.media_sessions {
             self.media_sessions
-                .upsert_media_session(
+                .upsert_media_session_with(
+                    &mut **tx,
                     stable_numeric_id("media_session", &session.id),
                     session,
                     &updated_at,
@@ -336,7 +487,8 @@ impl RtcPostgresPersistencePort {
             let (tenant_id, organization_id) =
                 scoped_session(&session_scope, &participant.session_id)?;
             self.media_sessions
-                .upsert_media_participant(
+                .upsert_media_participant_with(
+                    &mut **tx,
                     stable_numeric_id("media_participant", &participant.id),
                     tenant_id,
                     organization_id,
@@ -348,7 +500,8 @@ impl RtcPostgresPersistencePort {
         for track in &changes.media_tracks {
             let (tenant_id, organization_id) = scoped_session(&session_scope, &track.session_id)?;
             self.media_sessions
-                .upsert_media_track(
+                .upsert_media_track_with(
+                    &mut **tx,
                     stable_numeric_id("media_track", &track.id),
                     tenant_id,
                     organization_id,
@@ -360,7 +513,8 @@ impl RtcPostgresPersistencePort {
         for artifact in &changes.media_artifacts {
             let (_, organization_id) = scoped_session(&session_scope, &artifact.rtc_session_id)?;
             self.media_sessions
-                .upsert_media_artifact(
+                .upsert_media_artifact_with(
+                    &mut **tx,
                     stable_numeric_id("media_artifact", &artifact.id),
                     organization_id,
                     artifact,
@@ -371,7 +525,8 @@ impl RtcPostgresPersistencePort {
         for sample in &changes.quality_samples {
             let (tenant_id, organization_id) = scoped_session(&session_scope, &sample.session_id)?;
             self.media_sessions
-                .insert_quality_sample(
+                .insert_quality_sample_with(
+                    &mut **tx,
                     stable_numeric_id("quality_sample", &sample.id),
                     tenant_id,
                     organization_id,
@@ -380,19 +535,29 @@ impl RtcPostgresPersistencePort {
                 .await?;
         }
         for event in &changes.webhook_events {
-            upsert_postgres_provider_webhook_event(&self.pool, event).await?;
+            upsert_postgres_provider_webhook_event(&mut **tx, event).await?;
         }
         for job in &changes.provider_query_jobs {
-            upsert_postgres_provider_query_job(&self.pool, job).await?;
+            upsert_postgres_provider_query_job(&mut **tx, job).await?;
         }
         for snapshot in &changes.provider_query_snapshots {
-            upsert_postgres_provider_query_snapshot(&self.pool, snapshot).await?;
+            upsert_postgres_provider_query_snapshot(&mut **tx, snapshot).await?;
         }
         for completion in &changes.completion_records {
             self.completion_records
-                .upsert_completion_record(
+                .upsert_completion_record_with(
+                    tx,
                     stable_numeric_id("completion_record", &completion.id),
                     completion,
+                )
+                .await?;
+        }
+        for record in &changes.media_session_idempotencies {
+            RtcPostgresMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .upsert_idempotency_record_with(
+                    tx,
+                    stable_numeric_id("media_session_idempotency", &record.id),
+                    record,
                 )
                 .await?;
         }
@@ -444,12 +609,40 @@ impl RtcPostgresPersistencePort {
             .provider_routes
             .list_provider_routes(tenant_id, organization_id, None)
             .await?;
+        let media_sessions = self
+            .media_sessions
+            .list_media_sessions_for_scope(tenant_id, organization_id)
+            .await?;
+        let media_participants = media_sessions
+            .iter()
+            .flat_map(|session| session.participants.clone())
+            .collect::<Vec<_>>();
+        let mut media_tracks = Vec::new();
+        for session in &media_sessions {
+            media_tracks.extend(
+                self.media_sessions
+                    .list_media_tracks(session.id.as_str())
+                    .await?,
+            );
+        }
+        let webhook_events = RtcPostgresProviderEventRepository::new(self.pool.clone())
+            .list_webhook_events_for_scope(tenant_id, organization_id)
+            .await?;
+        let media_session_idempotencies =
+            RtcPostgresMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .list_idempotency_records_for_scope(tenant_id, organization_id)
+                .await?;
         Ok(RtcPersistenceChangeSet {
             provider_accounts,
             provider_applications,
             provider_credentials,
             provider_profiles,
             provider_routes,
+            media_sessions,
+            media_participants,
+            media_tracks,
+            webhook_events,
+            media_session_idempotencies,
             ..RtcPersistenceChangeSet::default()
         })
     }
@@ -477,12 +670,154 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
                 .map_err(storage_to_persistence_error)
         })
     }
+
+    fn resolve_media_session_idempotency_record<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        idempotency_key: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSessionIdempotencyRecord>> {
+        Box::pin(async move {
+            RtcPostgresMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .resolve_idempotency_record_by_key(tenant_id, organization_id, idempotency_key)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn claim_media_session_create_idempotency<'a>(
+        &'a self,
+        record: RtcMediaSessionIdempotencyRecord,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim> {
+        Box::pin(async move {
+            RtcPostgresMediaSessionIdempotencyRepository::new(self.pool.clone())
+                .claim_idempotency_record(
+                    stable_numeric_id("media_session_idempotency", &record.id),
+                    &record,
+                )
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn load_media_session<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSession>> {
+        Box::pin(async move {
+            self.media_sessions
+                .get_media_session_for_scope(tenant_id, organization_id, media_session_id)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn try_insert_webhook_event<'a>(
+        &'a self,
+        event: &'a RtcProviderWebhookEventRecord,
+    ) -> RtcPersistenceFuture<'a, bool> {
+        Box::pin(async move {
+            try_insert_postgres_provider_webhook_event(&self.pool, event)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
 }
 
-async fn upsert_sqlite_provider_webhook_event(
+async fn try_insert_sqlite_provider_webhook_event(
     pool: &SqlitePool,
     event: &RtcProviderWebhookEventRecord,
-) -> RtcStorageResult<()> {
+) -> RtcStorageResult<bool> {
+    let result = sqlx::query(
+        r#"
+        INSERT INTO rtc_provider_webhook_event (
+            id,
+            uuid,
+            tenant_id,
+            organization_id,
+            provider,
+            provider_profile_id,
+            provider_profile_dedupe_key,
+            external_event_id,
+            external_event_dedupe_key,
+            event_type,
+            event_kind,
+            room_id,
+            session_id,
+            participant_id,
+            recording_id,
+            payload_hash,
+            raw_payload,
+            normalized_event,
+            signature_header,
+            received_at,
+            processed_at,
+            status,
+            created_at,
+            updated_at,
+            version
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+        ON CONFLICT(
+            tenant_id,
+            organization_id,
+            provider,
+            provider_profile_dedupe_key,
+            external_event_dedupe_key,
+            payload_hash
+        ) DO NOTHING
+        "#,
+    )
+    .bind(stable_numeric_id("provider_webhook_event", &event.id))
+    .bind(&event.id)
+    .bind(parse_i64_field("tenant_id", &event.tenant_id)?)
+    .bind(parse_i64_field("organization_id", &event.organization_id)?)
+    .bind(&event.provider)
+    .bind(&event.provider_profile_id)
+    .bind(optional_dedupe_key(
+        event.provider_profile_id.as_deref(),
+        "__default_provider_profile__",
+    ))
+    .bind(&event.external_event_id)
+    .bind(optional_dedupe_key(
+        event.external_event_id.as_deref(),
+        event.payload_hash.as_str(),
+    ))
+    .bind(&event.event_type)
+    .bind(event_kind_to_str(&event.event_kind))
+    .bind(&event.room_id)
+    .bind(&event.media_session_id)
+    .bind(&event.participant_id)
+    .bind(&event.recording_id)
+    .bind(&event.payload_hash)
+    .bind(serde_json::to_string(&event.raw_payload)?)
+    .bind(serde_json::to_string(&event.normalized_event)?)
+    .bind(&event.signature_header)
+    .bind(&event.received_at)
+    .bind(&event.processed_at)
+    .bind(webhook_status_to_i32(&event.status)?)
+    .bind(&event.received_at)
+    .bind(
+        event
+            .processed_at
+            .as_deref()
+            .unwrap_or(event.received_at.as_str()),
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected() > 0)
+}
+
+async fn upsert_sqlite_provider_webhook_event<'e, E>(
+    executor: E,
+    event: &RtcProviderWebhookEventRecord,
+) -> RtcStorageResult<()>
+where
+    E: Executor<'e, Database = Sqlite>,
+{
     sqlx::query(
         r#"
         INSERT INTO rtc_provider_webhook_event (
@@ -568,16 +903,130 @@ async fn upsert_sqlite_provider_webhook_event(
             .as_deref()
             .unwrap_or(event.received_at.as_str()),
     )
-    .execute(pool)
+    .execute(executor)
     .await?;
 
     Ok(())
 }
 
-async fn upsert_postgres_provider_webhook_event(
+async fn try_insert_postgres_provider_webhook_event(
     pool: &PgPool,
     event: &RtcProviderWebhookEventRecord,
-) -> RtcStorageResult<()> {
+) -> RtcStorageResult<bool> {
+    let result = sqlx::query(
+        r#"
+        INSERT INTO rtc_provider_webhook_event (
+            id,
+            uuid,
+            tenant_id,
+            organization_id,
+            provider,
+            provider_profile_id,
+            provider_profile_dedupe_key,
+            external_event_id,
+            external_event_dedupe_key,
+            event_type,
+            event_kind,
+            room_id,
+            session_id,
+            participant_id,
+            recording_id,
+            payload_hash,
+            raw_payload,
+            normalized_event,
+            signature_header,
+            received_at,
+            processed_at,
+            status,
+            created_at,
+            updated_at,
+            version
+        )
+        VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            $7,
+            $8,
+            $9,
+            $10,
+            $11,
+            $12,
+            $13,
+            $14,
+            $15,
+            $16,
+            $17,
+            $18,
+            $19,
+            $20::text::timestamp,
+            NULLIF($21::text, '')::timestamp,
+            $22,
+            $23::text::timestamp,
+            $24::text::timestamp,
+            0
+        )
+        ON CONFLICT(
+            tenant_id,
+            organization_id,
+            provider,
+            provider_profile_dedupe_key,
+            external_event_dedupe_key,
+            payload_hash
+        ) DO NOTHING
+        "#,
+    )
+    .bind(stable_numeric_id("provider_webhook_event", &event.id))
+    .bind(&event.id)
+    .bind(parse_i64_field("tenant_id", &event.tenant_id)?)
+    .bind(parse_i64_field("organization_id", &event.organization_id)?)
+    .bind(&event.provider)
+    .bind(&event.provider_profile_id)
+    .bind(optional_dedupe_key(
+        event.provider_profile_id.as_deref(),
+        "__default_provider_profile__",
+    ))
+    .bind(&event.external_event_id)
+    .bind(optional_dedupe_key(
+        event.external_event_id.as_deref(),
+        event.payload_hash.as_str(),
+    ))
+    .bind(&event.event_type)
+    .bind(event_kind_to_str(&event.event_kind))
+    .bind(&event.room_id)
+    .bind(&event.media_session_id)
+    .bind(&event.participant_id)
+    .bind(&event.recording_id)
+    .bind(&event.payload_hash)
+    .bind(serde_json::to_string(&event.raw_payload)?)
+    .bind(serde_json::to_string(&event.normalized_event)?)
+    .bind(&event.signature_header)
+    .bind(&event.received_at)
+    .bind(event.processed_at.as_deref().unwrap_or(""))
+    .bind(webhook_status_to_i32(&event.status)?)
+    .bind(&event.received_at)
+    .bind(
+        event
+            .processed_at
+            .as_deref()
+            .unwrap_or(event.received_at.as_str()),
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected() > 0)
+}
+
+async fn upsert_postgres_provider_webhook_event<'e, E>(
+    executor: E,
+    event: &RtcProviderWebhookEventRecord,
+) -> RtcStorageResult<()>
+where
+    E: Executor<'e, Database = Postgres>,
+{
     sqlx::query(
         r#"
         INSERT INTO rtc_provider_webhook_event (
@@ -689,16 +1138,19 @@ async fn upsert_postgres_provider_webhook_event(
             .as_deref()
             .unwrap_or(event.received_at.as_str()),
     )
-    .execute(pool)
+    .execute(executor)
     .await?;
 
     Ok(())
 }
 
-async fn upsert_sqlite_provider_query_job(
-    pool: &SqlitePool,
+async fn upsert_sqlite_provider_query_job<'e, E>(
+    executor: E,
     job: &RtcProviderQueryJobRecord,
-) -> RtcStorageResult<()> {
+) -> RtcStorageResult<()>
+where
+    E: Executor<'e, Database = Sqlite>,
+{
     sqlx::query(
         r#"
         INSERT INTO rtc_provider_query_job (
@@ -763,16 +1215,19 @@ async fn upsert_sqlite_provider_query_job(
             .as_deref()
             .unwrap_or(job.requested_at.as_str()),
     )
-    .execute(pool)
+    .execute(executor)
     .await?;
 
     Ok(())
 }
 
-async fn upsert_sqlite_provider_query_snapshot(
-    pool: &SqlitePool,
+async fn upsert_sqlite_provider_query_snapshot<'e, E>(
+    executor: E,
     snapshot: &RtcProviderQuerySnapshotRecord,
-) -> RtcStorageResult<()> {
+) -> RtcStorageResult<()>
+where
+    E: Executor<'e, Database = Sqlite>,
+{
     sqlx::query(
         r#"
         INSERT INTO rtc_provider_query_snapshot (
@@ -821,16 +1276,19 @@ async fn upsert_sqlite_provider_query_snapshot(
     .bind(serde_json::to_string(&snapshot.snapshot_payload)?)
     .bind(&snapshot.captured_at)
     .bind(&snapshot.captured_at)
-    .execute(pool)
+    .execute(executor)
     .await?;
 
     Ok(())
 }
 
-async fn upsert_postgres_provider_query_job(
-    pool: &PgPool,
+async fn upsert_postgres_provider_query_job<'e, E>(
+    executor: E,
     job: &RtcProviderQueryJobRecord,
-) -> RtcStorageResult<()> {
+) -> RtcStorageResult<()>
+where
+    E: Executor<'e, Database = Postgres>,
+{
     sqlx::query(
         r#"
         INSERT INTO rtc_provider_query_job (
@@ -916,16 +1374,19 @@ async fn upsert_postgres_provider_query_job(
             .as_deref()
             .unwrap_or(job.requested_at.as_str()),
     )
-    .execute(pool)
+    .execute(executor)
     .await?;
 
     Ok(())
 }
 
-async fn upsert_postgres_provider_query_snapshot(
-    pool: &PgPool,
+async fn upsert_postgres_provider_query_snapshot<'e, E>(
+    executor: E,
     snapshot: &RtcProviderQuerySnapshotRecord,
-) -> RtcStorageResult<()> {
+) -> RtcStorageResult<()>
+where
+    E: Executor<'e, Database = Postgres>,
+{
     sqlx::query(
         r#"
         INSERT INTO rtc_provider_query_snapshot (
@@ -989,7 +1450,7 @@ async fn upsert_postgres_provider_query_snapshot(
     .bind(sqlx::types::Json(snapshot.snapshot_payload.clone()))
     .bind(&snapshot.captured_at)
     .bind(&snapshot.captured_at)
-    .execute(pool)
+    .execute(executor)
     .await?;
 
     Ok(())
@@ -1136,6 +1597,7 @@ fn optional_dedupe_key(value: Option<&str>, fallback: &str) -> String {
 
 fn storage_to_persistence_error(error: RtcStorageError) -> RtcPersistenceError {
     match error {
+        RtcStorageError::Conflict(message) => RtcPersistenceError::Conflict(message),
         RtcStorageError::Sqlx(sqlx::Error::Database(database_error))
             if database_error.is_unique_violation() =>
         {

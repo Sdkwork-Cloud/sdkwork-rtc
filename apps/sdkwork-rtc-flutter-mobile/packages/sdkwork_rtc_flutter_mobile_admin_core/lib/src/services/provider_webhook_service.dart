@@ -1,8 +1,9 @@
+import '../admin_sdk_mapper.dart';
+import '../backend_rtc_client.dart';
 import '../models/provider_webhook_event.dart';
-import 'backend_api_client.dart';
 
 class ProviderWebhookService {
-  final BackendApiClient _client;
+  final SdkworkBackendClient _client;
 
   ProviderWebhookService(this._client);
 
@@ -13,21 +14,14 @@ class ProviderWebhookService {
     String? search,
     String? sort,
   }) async {
-    final query = <String, String>{};
-    if (page != null) query['page'] = page.toString();
-    if (limit != null) query['pageSize'] = limit.toString();
-    if (cursor != null) query['cursor'] = cursor;
-    if (search != null) query['q'] = search;
-    if (sort != null) query['sort'] = sort;
-
-    final data = await _client.getJson(
-      '/rtc/provider_webhooks/events',
-      query: query.isEmpty ? null : query,
+    final response = await _client.rtcProviderWebhooks.eventsList(
+      page,
+      limit,
+      cursor,
+      sort,
+      search,
     );
-    final items = data['items'];
-    if (items is! List<dynamic>) return [];
-    return items
-        .whereType<Map<String, dynamic>>()
+    return backendResponseItems(response)
         .map(ProviderWebhookEvent.fromJson)
         .toList();
   }

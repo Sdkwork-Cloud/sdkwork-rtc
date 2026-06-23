@@ -3,15 +3,16 @@ import 'package:sdkwork_rtc_flutter_mobile_core/sdkwork_rtc_flutter_mobile_core.
 import '../models/active_provider_profile.dart';
 
 class ProviderProfileService {
-  final AppApiClient _client;
+  final SdkworkAppClient _client;
 
   ProviderProfileService(this._client);
 
   Future<List<RtcActiveProviderProfile>> listActive() async {
-    final data = await _client.getJson('/rtc/provider_profiles/active');
-    final items = data['items'];
-    if (items is! List<dynamic>) return [];
-    return items
+    final response = await _client.rtcProviderProfiles.activeList();
+    final data = response?.data;
+    final rawItems = data is Map<String, dynamic> ? data['items'] : null;
+    if (rawItems is! List<dynamic>) return [];
+    return rawItems
         .whereType<Map<String, dynamic>>()
         .map(RtcActiveProviderProfile.fromJson)
         .toList();

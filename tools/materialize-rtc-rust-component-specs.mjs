@@ -111,6 +111,17 @@ const components = [
     runtimeEntrypoints: ["Cargo.toml"],
   },
   {
+    crateDir: "crates/sdkwork-communication-rtc-worker",
+    name: "sdkwork-communication-rtc-worker",
+    displayName: "SDKWork Communication RTC Worker",
+    type: "rust-crate",
+    capability: "rtc",
+    publicExports: ["RtcWorker", "RtcWorkerJob", "RtcSessionReconcileResult"],
+    verify: "cargo test -p sdkwork-communication-rtc-worker",
+    routeManifest: null,
+    runtimeEntrypoints: ["Cargo.toml"],
+  },
+  {
     crateDir: "crates/sdkwork-rtc-api-server",
     name: "sdkwork-rtc-api-server",
     displayName: "SDKWork RTC API Server",

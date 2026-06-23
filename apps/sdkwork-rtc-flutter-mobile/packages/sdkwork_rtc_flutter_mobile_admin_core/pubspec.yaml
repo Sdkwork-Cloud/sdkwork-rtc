@@ -1,6 +1,7 @@
 name: sdkwork_rtc_flutter_mobile_admin_core
 description: SDKWork RTC Flutter Mobile Admin Core - Provider configuration management
 version: 0.1.0
+publish_to: none
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -9,4 +10,5 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.2.2
+  sdkwork_rtc_backend_sdk_generated_dart:
+    path: ../../../../sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-dart/generated/server-openapi

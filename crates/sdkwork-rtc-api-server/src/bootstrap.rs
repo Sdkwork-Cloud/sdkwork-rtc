@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use sdkwork_communication_rtc_repository_sqlx::connect_rtc_persistence_bootstrap_from_env;
 use sdkwork_database_sqlx::DatabasePool;
+use sdkwork_communication_rtc_service::rtc_persistence_required;
 use sdkwork_rtc_service_host::{
     RtcProductService, RtcProviderPluginRegistry, RtcProviderPluginRegistryError,
 };
@@ -73,6 +74,10 @@ pub async fn build_rtc_api_bootstrap(
         service
             .hydrate_from_persistence(tenant_id, organization_id)
             .await?;
+    } else if rtc_persistence_required() {
+        return Err(anyhow::anyhow!(
+            "RTC database persistence is required when SDKWORK_RTC_ENVIRONMENT is not development, dev, local, or test"
+        ));
     }
     Ok(RtcApiBootstrap {
         service: Arc::new(service),

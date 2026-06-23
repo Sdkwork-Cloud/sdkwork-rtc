@@ -40,6 +40,12 @@
       ],
       "@sdkwork/runtime-bootstrap": [
         "../../../sdkwork-appbase/packages/common/foundation/sdkwork-runtime-bootstrap/src/index.ts"
+      ],
+      "@sdkwork/rtc-sdk": [
+        "../../sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/index.ts"
+      ],
+      "@sdkwork/rtc-sdk-provider-volcengine": [
+        "../../sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/providers/rtc-sdk-provider-volcengine/index.d.ts"
       ]
     }
   },

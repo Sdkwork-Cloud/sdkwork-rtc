@@ -31,7 +31,7 @@ packages:
     source: sdk
     version: "0.0.0"
   http:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
@@ -70,6 +70,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.9.1"
+  sdkwork_rtc_backend_sdk_generated_dart:
+    dependency: "direct main"
+    description:
+      path: "../../../../sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-dart/generated/server-openapi"
+      relative: true
+    source: path
+    version: "0.1.0"
   sky_engine:
     dependency: transitive
     description: flutter

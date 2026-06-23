@@ -6,6 +6,7 @@ import { defineConfig, loadEnv } from "vite";
 const rtcH5Root = path.dirname(fileURLToPath(import.meta.url));
 const rtcRoot = path.resolve(rtcH5Root, "../..");
 const appbaseRoot = path.resolve(rtcRoot, "../sdkwork-appbase");
+const uiRoot = path.resolve(rtcRoot, "../sdkwork-ui/sdkwork-ui-pc-react");
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, rtcH5Root, "");
@@ -16,6 +17,11 @@ export default defineConfig(({ mode }) => {
             plugins: [react()],
     resolve: {
       alias: {
+        "@sdkwork/auth-pc-react": path.resolve(
+          appbaseRoot,
+          "packages/pc-react/iam/sdkwork-auth-pc-react/src/index.ts",
+        ),
+        "@sdkwork/ui-pc-react": path.resolve(uiRoot, "src/index.ts"),
         "@sdkwork/auth-runtime-pc-react": path.resolve(
           appbaseRoot,
           "packages/pc-react/iam/sdkwork-auth-runtime-pc-react/src/index.ts",

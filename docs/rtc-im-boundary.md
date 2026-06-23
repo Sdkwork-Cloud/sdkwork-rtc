@@ -82,6 +82,15 @@ Signaling must not import `@sdkwork/rtc-sdk`. Media must not re-implement call i
 
 IM gateway proxies `/im/v3/api/calls/{*path}` only. It must **not** proxy `/app/v3/api/rtc/{*path}` as IM-owned surface.
 
+## Cross-System Consistency
+
+| Concern | Owner | Contract |
+|---------|-------|------------|
+| Shared media session identity | IM + RTC | IM call workflow passes stable `mediaSessionId` from RTC create response; retries use the same idempotency key (`Idempotency-Key` / `x-idempotency-key`) on `rtc.mediaSessions.create`. |
+| Restart / multi-instance | RTC | RTC hydrates persisted media sessions from DB on bootstrap; in-memory state is a cache, not authority. |
+| Ended call / active media | Reconciliation | IM `calls.end` is signaling truth; RTC `media_sessions.close` is media truth. `jobs/runbooks/rtc-session-reconciliation.md` heals drift. |
+| Provider vs DB ordering | RTC | Provider side effects run after RTC persistence succeeds, or are compensated by reconciliation jobs. |
+
 ## Recording And Drive
 
 RTC stores recording **metadata** and canonical Drive references in RTC business tables. Binary recording files are stored through `sdkwork-drive`:

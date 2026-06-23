@@ -4,7 +4,7 @@ import type {
   ProviderApplication,
   ProviderApplicationCommand,
 } from "../types/providerApplication";
-import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
+import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
   items: ProviderApplication[];
@@ -15,10 +15,10 @@ export class ProviderApplicationService {
   private readonly client;
 
   constructor(
-    baseUrl: string,
+    baseUrlOrClient: RtcBackendClientSource,
     tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
   ) {
-    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+    this.client = resolveBackendRtcClient(baseUrlOrClient, tokenManagerOrOptions);
   }
 
   async list(

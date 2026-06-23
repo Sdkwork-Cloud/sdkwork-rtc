@@ -71,6 +71,7 @@ pub struct RtcCreateAppMediaSessionRequest {
     pub region: Option<String>,
     pub recording_requested: bool,
     pub metadata: JsonValue,
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -78,6 +79,7 @@ pub struct RtcCreateAppMediaSessionRequest {
 pub struct RtcIssueParticipantCredentialRequest {
     pub media_session_id: String,
     pub participant_id: String,
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]

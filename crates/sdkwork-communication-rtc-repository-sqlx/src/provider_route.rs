@@ -1,5 +1,8 @@
 use sdkwork_communication_rtc_service::{RtcProviderRoute, RtcProviderRouteStatus};
-use sqlx::{PgPool, Row, SqlitePool, postgres::PgRow, sqlite::SqliteRow};
+use sqlx::{
+    Executor, PgPool, Row, Sqlite, SqlitePool, postgres::PgRow, postgres::Postgres,
+    sqlite::SqliteRow,
+};
 
 use crate::{RtcStorageError, RtcStorageResult};
 
@@ -19,6 +22,20 @@ impl RtcSqliteProviderRouteRepository {
         route: &RtcProviderRoute,
         written_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_route_with(&self.pool, numeric_id, route, written_at)
+            .await
+    }
+
+    pub async fn upsert_provider_route_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        route: &RtcProviderRoute,
+        written_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(sqlite_upsert_provider_route_sql())
             .bind(numeric_id)
             .bind(&route.id)
@@ -31,7 +48,7 @@ impl RtcSqliteProviderRouteRepository {
             .bind(provider_route_status_to_i32(&route.status))
             .bind(written_at)
             .bind(written_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())
@@ -151,6 +168,20 @@ impl RtcPostgresProviderRouteRepository {
         route: &RtcProviderRoute,
         written_at: &str,
     ) -> RtcStorageResult<()> {
+        self.upsert_provider_route_with(&self.pool, numeric_id, route, written_at)
+            .await
+    }
+
+    pub async fn upsert_provider_route_with<'e, E>(
+        &self,
+        executor: E,
+        numeric_id: i64,
+        route: &RtcProviderRoute,
+        written_at: &str,
+    ) -> RtcStorageResult<()>
+    where
+        E: Executor<'e, Database = Postgres>,
+    {
         sqlx::query(postgres_upsert_provider_route_sql())
             .bind(numeric_id)
             .bind(&route.id)
@@ -163,7 +194,7 @@ impl RtcPostgresProviderRouteRepository {
             .bind(provider_route_status_to_i32(&route.status))
             .bind(written_at)
             .bind(written_at)
-            .execute(&self.pool)
+            .execute(executor)
             .await?;
 
         Ok(())

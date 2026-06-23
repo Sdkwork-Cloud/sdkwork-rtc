@@ -22,6 +22,7 @@ export function MediaSessionRoomPage({
 }: MediaSessionRoomPageProps) {
   const [session, setSession] = useState<RtcMediaSession | null>(null);
   const [providerAppId, setProviderAppId] = useState<string | undefined>();
+  const [providerKey, setProviderKey] = useState<string | undefined>();
   const [runtime, setRuntime] = useState<RtcMediaRuntimePort | null>(null);
   const [runtimeMessage, setRuntimeMessage] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,7 @@ export function MediaSessionRoomPage({
       ]);
       setSession(loadedSession);
       setProviderAppId(services.providerProfiles.resolveDefaultProviderAppId(profiles));
+      setProviderKey(services.providerProfiles.resolveDefaultProviderKey(profiles));
       const mediaRuntime = await runtimeFactory();
       setRuntime(mediaRuntime);
       setRuntimeMessage(mediaRuntime.getStatus().message);
@@ -78,6 +80,7 @@ export function MediaSessionRoomPage({
         participantId: participantId.trim(),
         token,
         displayName,
+        providerKey,
       });
       setRuntimeMessage(status.message);
     } catch (caught) {

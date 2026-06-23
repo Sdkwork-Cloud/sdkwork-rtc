@@ -73,6 +73,8 @@
         "response": "RtcMediaSessionResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-app-api"
@@ -175,6 +177,8 @@
         "response": "RtcParticipantCredentialResponse",
         "problem": "ProblemDetail"
       },
+      "rateLimitTier": "authCritical",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-app-api"

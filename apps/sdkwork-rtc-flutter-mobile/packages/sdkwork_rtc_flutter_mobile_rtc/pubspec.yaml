@@ -10,8 +10,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  rtc_sdk:
+    path: ../../../../sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-flutter
+  rtc_sdk_provider_volcengine:
+    path: ../../../../sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-flutter/providers/rtc_sdk_provider_volcengine
   sdkwork_rtc_flutter_mobile_core:
     path: ../sdkwork_rtc_flutter_mobile_core
+  sdkwork_rtc_app_sdk_generated_dart:
+    path: ../../../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-dart/generated/server-openapi
 
 dev_dependencies:
   flutter_test:

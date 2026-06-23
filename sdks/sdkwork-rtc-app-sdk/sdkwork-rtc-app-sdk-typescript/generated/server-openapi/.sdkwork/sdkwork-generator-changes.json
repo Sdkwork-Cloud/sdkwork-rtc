@@ -9,12 +9,13 @@
     "protocol": "http",
     "packageName": "sdkwork-rtc-app-sdk-generated-typescript"
   },
-  "changeFingerprint": "599bc352c939317ab250a499faa4121ec30609de256cd3cd51b27e977e6827ea",
+  "changeFingerprint": "ce7b320dfe31ee3038e1cf2cf28644d2c7ffc25cb899187396bdc4647478b578",
   "changes": {
     "createdGeneratedFiles": [],
     "updatedGeneratedFiles": [
       "README.md",
-      "src/http/client.ts"
+      "src/api/rtc-media-sessions.ts",
+      "src/api/rtc-participant-credentials.ts"
     ],
     "unchangedGeneratedFiles": [
       "bin/publish-core.mjs",
@@ -29,12 +30,11 @@
       "src/api/base.ts",
       "src/api/index.ts",
       "src/api/paths.ts",
-      "src/api/rtc-media-sessions.ts",
-      "src/api/rtc-participant-credentials.ts",
       "src/api/rtc-provider-profiles.ts",
       "src/api/rtc-recording-artifacts.ts",
       "src/api/rtc-rooms.ts",
       "src/auth/index.ts",
+      "src/http/client.ts",
       "src/http/index.ts",
       "src/index.ts",
       "src/sdk.ts",
@@ -79,28 +79,20 @@
       "custom/build-runtime.mjs",
       "custom/README.md"
     ],
-    "backedUpFiles": [
-      "src/http/client.ts"
-    ]
+    "backedUpFiles": []
   },
   "impact": {
     "schemaVersion": 1,
     "areas": [
       "api-surface",
-      "runtime",
       "documentation"
     ],
     "details": [
       {
         "area": "api-surface",
         "paths": [
-          "src/http/client.ts"
-        ]
-      },
-      {
-        "area": "runtime",
-        "paths": [
-          "src/http/client.ts"
+          "src/api/rtc-media-sessions.ts",
+          "src/api/rtc-participant-credentials.ts"
         ]
       },
       {
@@ -111,18 +103,18 @@
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, runtime, documentation. Verification is required."
+    "summary": "Detected impact areas: api-surface, documentation. Verification is required."
   },
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, runtime, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, runtime, documentation.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -140,7 +132,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, runtime, documentation.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -158,14 +150,12 @@
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "high",
+    "riskLevel": "medium",
     "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "backed-up-generated-files",
-      "manual-review-required",
       "verification-required"
     ]
   },

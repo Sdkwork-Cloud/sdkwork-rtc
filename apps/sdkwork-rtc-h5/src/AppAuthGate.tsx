@@ -1,13 +1,22 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
+  SdkworkIamAuthRoutes,
+  type SdkworkIamAuthRoutesProps,
+} from "@sdkwork/auth-pc-react";
+import {
   isRtcIamSessionAuthenticated,
   readRtcIamSessionTokens,
   RTC_IAM_SESSION_CHANGED_EVENT,
   type RtcIamSession,
 } from "@sdkwork/rtc-h5-core";
 
-import { RtcH5AuthLoginPage } from "./RtcH5AuthLoginPage";
+import { getRtcIamRuntimeForAuth } from "./bootstrap/rtcAppAuthRuntime";
+import {
+  resolveRtcAuthAppearance,
+  resolveRtcAuthLocale,
+  resolveRtcAuthRuntimeConfig,
+} from "./bootstrap/rtcAuthConfig";
 import { RTC_APP_HOME_PATH } from "./constants/appRoutes";
 
 export { RTC_APP_HOME_PATH };
@@ -82,9 +91,16 @@ export function AppAuthGate({ children, homePath = RTC_APP_HOME_PATH }: AppAuthG
     return <>{children}</>;
   }
 
-  if (isAuthPath) {
-    return <RtcH5AuthLoginPage homePath={homePath} />;
-  }
-
-  return null;
+  return (
+    <SdkworkIamAuthRoutes
+      appearance={resolveRtcAuthAppearance()}
+      basePath={AUTH_BASE_PATH}
+      getRuntime={getRtcIamRuntimeForAuth as SdkworkIamAuthRoutesProps["getRuntime"]}
+      homePath={homePath}
+      locale={resolveRtcAuthLocale()}
+      routerContextMode="external"
+      runtimeConfig={resolveRtcAuthRuntimeConfig()}
+      viewportMode="flow"
+    />
+  );
 }

@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/login/index",
+    "pages/auth-webview/index",
     "pages/media-sessions/index",
     "pages/media-session-room/index"
   ],

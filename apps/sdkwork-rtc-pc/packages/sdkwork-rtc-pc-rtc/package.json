@@ -7,6 +7,10 @@
   "dependencies": {
     "@sdkwork/rtc-pc-core": "workspace:*",
     "@sdkwork/rtc-sdk": "workspace:*",
+    "@sdkwork/rtc-sdk-provider-agora": "workspace:*",
+    "@sdkwork/rtc-sdk-provider-aliyun": "workspace:*",
+    "@sdkwork/rtc-sdk-provider-livekit": "workspace:*",
+    "@sdkwork/rtc-sdk-provider-tencent": "workspace:*",
     "@sdkwork/rtc-sdk-provider-volcengine": "workspace:*",
     "react": "catalog:",
     "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"

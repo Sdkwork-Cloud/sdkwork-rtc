@@ -23,6 +23,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
 var runtimeBundle_exports = {};
 __export(runtimeBundle_exports, {
   bootstrapRtcMiniProgram: () => bootstrapRtcMiniProgram,
+  buildAppbaseLoginUrl: () => buildAppbaseLoginUrl,
   configureRtcRuntime: () => configureRtcRuntime,
   createMediaSession: () => createMediaSession,
   getMediaSession: () => getMediaSession,
@@ -164,13 +165,6 @@ function installWeixinFetch() {
 }
 
 // packages/sdkwork-rtc-mp-core/src/session/appSession.ts
-var DEFAULT_APP_SESSION = {
-  accessToken: "dev-access-token",
-  authToken: "dev-auth-token",
-  tenantId: "default",
-  organizationId: "default",
-  userId: "user"
-};
 var DEFAULT_APP_PERMISSION_SCOPE = "rtc.media_session.read rtc.media_session.write";
 
 // packages/sdkwork-rtc-mp-core/src/session/appbaseAuthBridge.ts
@@ -191,25 +185,38 @@ function readParam(params, keys) {
   }
   return "";
 }
-function parseAppbaseCallbackSession(search = window.location.search, hash = window.location.hash) {
-  const hashQuery = hash.includes("?") ? hash.slice(hash.indexOf("?") + 1) : hash.replace(/^#/, "");
-  const params = new URLSearchParams(search);
-  for (const [key, value] of new URLSearchParams(hashQuery)) {
-    if (!params.has(key)) {
+function buildAppbaseLoginUrl(loginUrl, returnUrl) {
+  const target = new URL(loginUrl, window.location.origin);
+  target.searchParams.set("returnUrl", returnUrl);
+  return target.toString();
+}
+function parseAppbaseCallbackFromQuery(query) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
       params.set(key, value);
     }
   }
+  return parseAppbaseCallbackFromSearchParams(params);
+}
+function parseAppbaseCallbackFromSearchParams(params) {
   const accessToken = readParam(params, CALLBACK_KEYS.accessToken);
   if (!accessToken) {
     return null;
   }
   const authToken = readParam(params, CALLBACK_KEYS.authToken) || accessToken;
+  const tenantId = readParam(params, CALLBACK_KEYS.tenantId);
+  const organizationId = readParam(params, CALLBACK_KEYS.organizationId);
+  const userId = readParam(params, CALLBACK_KEYS.userId);
+  if (!tenantId || !organizationId || !userId) {
+    return null;
+  }
   return {
     accessToken,
     authToken,
-    tenantId: readParam(params, CALLBACK_KEYS.tenantId) || DEFAULT_APP_SESSION.tenantId,
-    organizationId: readParam(params, CALLBACK_KEYS.organizationId) || DEFAULT_APP_SESSION.organizationId,
-    userId: readParam(params, CALLBACK_KEYS.userId) || DEFAULT_APP_SESSION.userId
+    tenantId,
+    organizationId,
+    userId
   };
 }
 
@@ -365,6 +372,9 @@ var DefaultAuthTokenManager = class {
     return Date.now() + seconds * 1e3 >= this.tokens.expiresAt;
   }
 };
+function createTokenManager(tokens, events) {
+  return new DefaultAuthTokenManager(tokens, events);
+}
 function buildAuthHeaders(authMode, apiKey, tokenManager) {
   const headers = {};
   if (authMode === "apikey") {
@@ -2950,8 +2960,11 @@ var RtcMediaSessionsRtcMediaSessionsApi = class {
     return this.client.get(appendQueryString$3(appApiPath(`/rtc/media_sessions`), query));
   }
   /** Rtc media Sessions create. */
-  async create(body) {
-    return this.client.post(appApiPath(`/rtc/media_sessions`), body, void 0, void 0, "application/json");
+  async create(body, params) {
+    const requestHeaders = buildRequestHeaders$1({
+      "Idempotency-Key": { value: params == null ? void 0 : params.idempotencyKey, style: "simple", explode: false }
+    }, {});
+    return this.client.post(appApiPath(`/rtc/media_sessions`), body, void 0, requestHeaders, "application/json");
   }
   /** Rtc media Sessions retrieve. */
   async retrieve(mediaSessionId) {
@@ -3121,13 +3134,72 @@ function encodeQueryValue$3(value, allowReserved) {
   }
   return encoded.replace(/%3A/gi, ":").replace(/%2F/gi, "/").replace(/%3F/gi, "?").replace(/%23/gi, "#").replace(/%5B/gi, "[").replace(/%5D/gi, "]").replace(/%40/gi, "@").replace(/%21/gi, "!").replace(/%24/gi, "$").replace(/%26/gi, "&").replace(/%27/gi, "'").replace(/%28/gi, "(").replace(/%29/gi, ")").replace(/%2A/gi, "*").replace(/%2B/gi, "+").replace(/%2C/gi, ",").replace(/%3B/gi, ";").replace(/%3D/gi, "=");
 }
+function buildRequestHeaders$1(headers, cookies = {}) {
+  const requestHeaders = {};
+  for (const [name, parameter] of Object.entries(headers)) {
+    const serialized = serializeParameterValue$1(parameter);
+    if (serialized !== void 0) {
+      requestHeaders[name] = serialized;
+    }
+  }
+  const cookieHeader = buildCookieHeader$1(cookies);
+  if (cookieHeader) {
+    requestHeaders.Cookie = requestHeaders.Cookie ? `${requestHeaders.Cookie}; ${cookieHeader}` : cookieHeader;
+  }
+  return Object.keys(requestHeaders).length > 0 ? requestHeaders : void 0;
+}
+function buildCookieHeader$1(cookies) {
+  const pairs = [];
+  for (const [name, parameter] of Object.entries(cookies)) {
+    const serialized = serializeParameterValue$1(parameter);
+    if (serialized !== void 0) {
+      pairs.push(`${encodeURIComponent(name)}=${encodeURIComponent(serialized)}`);
+    }
+  }
+  return pairs.length > 0 ? pairs.join("; ") : void 0;
+}
+function serializeParameterValue$1(parameter) {
+  const value = parameter == null ? void 0 : parameter.value;
+  if (value === void 0 || value === null) {
+    return void 0;
+  }
+  if (parameter == null ? void 0 : parameter.contentType) {
+    return JSON.stringify(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeHeaderPrimitive$1(item)).join(",");
+  }
+  if (typeof value === "object" && value !== null) {
+    return serializeHeaderObject$1(value, (parameter == null ? void 0 : parameter.explode) === true);
+  }
+  return serializeHeaderPrimitive$1(value);
+}
+function serializeHeaderObject$1(value, explode) {
+  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== void 0 && entryValue !== null);
+  if (explode) {
+    return entries.map(([key, entryValue]) => `${key}=${serializeHeaderPrimitive$1(entryValue)}`).join(",");
+  }
+  return entries.flatMap(([key, entryValue]) => [key, serializeHeaderPrimitive$1(entryValue)]).join(",");
+}
+function serializeHeaderPrimitive$1(value) {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return String(value);
+}
 var RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsApi = class {
   constructor(client) {
     this.client = client;
   }
   /** Rtc media Sessions participant Credentials issue. */
-  async issue(mediaSessionId, participantId, body) {
-    return this.client.post(appApiPath(`/rtc/media_sessions/${serializePathParameter$2(mediaSessionId, { name: "mediaSessionId", style: "simple", explode: false })}/participants/${serializePathParameter$2(participantId, { name: "participantId", style: "simple", explode: false })}/credential`), body, void 0, void 0, "application/json");
+  async issue(mediaSessionId, participantId, body, params) {
+    const requestHeaders = buildRequestHeaders({
+      "Idempotency-Key": { value: params == null ? void 0 : params.idempotencyKey, style: "simple", explode: false }
+    }, {});
+    return this.client.post(appApiPath(`/rtc/media_sessions/${serializePathParameter$2(mediaSessionId, { name: "mediaSessionId", style: "simple", explode: false })}/participants/${serializePathParameter$2(participantId, { name: "participantId", style: "simple", explode: false })}/credential`), body, void 0, requestHeaders, "application/json");
   }
 };
 var RtcParticipantCredentialsRtcMediaSessionsApi = class {
@@ -3201,6 +3273,62 @@ function serializePathPrimitive$2(value) {
   }
   if (typeof value === "object") {
     return JSON.stringify(value);
+  }
+  return String(value);
+}
+function buildRequestHeaders(headers, cookies = {}) {
+  const requestHeaders = {};
+  for (const [name, parameter] of Object.entries(headers)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== void 0) {
+      requestHeaders[name] = serialized;
+    }
+  }
+  const cookieHeader = buildCookieHeader(cookies);
+  if (cookieHeader) {
+    requestHeaders.Cookie = requestHeaders.Cookie ? `${requestHeaders.Cookie}; ${cookieHeader}` : cookieHeader;
+  }
+  return Object.keys(requestHeaders).length > 0 ? requestHeaders : void 0;
+}
+function buildCookieHeader(cookies) {
+  const pairs = [];
+  for (const [name, parameter] of Object.entries(cookies)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== void 0) {
+      pairs.push(`${encodeURIComponent(name)}=${encodeURIComponent(serialized)}`);
+    }
+  }
+  return pairs.length > 0 ? pairs.join("; ") : void 0;
+}
+function serializeParameterValue(parameter) {
+  const value = parameter == null ? void 0 : parameter.value;
+  if (value === void 0 || value === null) {
+    return void 0;
+  }
+  if (parameter == null ? void 0 : parameter.contentType) {
+    return JSON.stringify(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeHeaderPrimitive(item)).join(",");
+  }
+  if (typeof value === "object" && value !== null) {
+    return serializeHeaderObject(value, (parameter == null ? void 0 : parameter.explode) === true);
+  }
+  return serializeHeaderPrimitive(value);
+}
+function serializeHeaderObject(value, explode) {
+  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== void 0 && entryValue !== null);
+  if (explode) {
+    return entries.map(([key, entryValue]) => `${key}=${serializeHeaderPrimitive(entryValue)}`).join(",");
+  }
+  return entries.flatMap(([key, entryValue]) => [key, serializeHeaderPrimitive(entryValue)]).join(",");
+}
+function serializeHeaderPrimitive(value) {
+  if (value instanceof Date) {
+    return value.toISOString();
   }
   return String(value);
 }
@@ -3739,21 +3867,6 @@ function createRtcAppSdkClient({
   });
 }
 
-// src/bootstrap/tokenManager.ts
-var activeTokenManager = null;
-function createTokenManager2(getAccessToken) {
-  return {
-    getAccessToken,
-    getAuthToken: getAccessToken
-  };
-}
-function setTokenManager(tokenManager) {
-  activeTokenManager = tokenManager;
-}
-function getTokenManager() {
-  return activeTokenManager != null ? activeTokenManager : void 0;
-}
-
 // src/bootstrap/hostAdapters.ts
 var activeHostAdapters = null;
 function registerHostAdapters() {
@@ -3771,7 +3884,7 @@ function getHostAdapters() {
 
 // src/bootstrap/appAuth.ts
 function parseStoredSession(raw) {
-  var _a, _b, _c, _d, _e;
+  var _a, _b, _c, _d, _e, _f, _g, _h;
   try {
     const parsed = JSON.parse(raw);
     if (!((_a = parsed.accessToken) == null ? void 0 : _a.trim())) {
@@ -3780,9 +3893,9 @@ function parseStoredSession(raw) {
     return {
       accessToken: parsed.accessToken.trim(),
       authToken: ((_b = parsed.authToken) == null ? void 0 : _b.trim()) || parsed.accessToken.trim(),
-      tenantId: ((_c = parsed.tenantId) == null ? void 0 : _c.trim()) || DEFAULT_APP_SESSION.tenantId,
-      organizationId: ((_d = parsed.organizationId) == null ? void 0 : _d.trim()) || DEFAULT_APP_SESSION.organizationId,
-      userId: ((_e = parsed.userId) == null ? void 0 : _e.trim()) || DEFAULT_APP_SESSION.userId
+      tenantId: (_d = (_c = parsed.tenantId) == null ? void 0 : _c.trim()) != null ? _d : "",
+      organizationId: (_f = (_e = parsed.organizationId) == null ? void 0 : _e.trim()) != null ? _f : "",
+      userId: (_h = (_g = parsed.userId) == null ? void 0 : _g.trim()) != null ? _h : ""
     };
   } catch {
     return null;
@@ -3819,16 +3932,16 @@ function saveAppSession(session) {
   (_a = getHostAdapters().secureStorage) == null ? void 0 : _a.setItem(RTC_MP_SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 function createAppTokenManager(session) {
-  return createTokenManager2(() => session.accessToken);
+  var _a;
+  const manager = createTokenManager();
+  (_a = manager.setTokens) == null ? void 0 : _a.call(manager, {
+    accessToken: session.accessToken,
+    authToken: session.authToken
+  });
+  return manager;
 }
 function consumeAppbaseCallbackSession(query) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (value) {
-      params.set(key, value);
-    }
-  }
-  const session = parseAppbaseCallbackSession(`?${params.toString()}`, "");
+  const session = parseAppbaseCallbackFromQuery(query);
   if (!session) {
     return null;
   }
@@ -3840,7 +3953,7 @@ function bootstrapAppAuth() {
   if (!session) {
     return null;
   }
-  setTokenManager(createAppTokenManager(session));
+  setTokenManager2(createAppTokenManager(session));
   return session;
 }
 
@@ -3898,7 +4011,7 @@ function initAppSdkClient() {
   appSdkClient = createRtcAppSdkClient({
     apiBaseUrl: environment.apiBaseUrl,
     session: loadAppSession(),
-    tokenManager: getTokenManager(),
+    tokenManager: getTokenManager2(),
     platform: "mp-weixin"
   });
   return appSdkClient;
@@ -3928,6 +4041,11 @@ function readNextCursor(data) {
   const cursor = data == null ? void 0 : data.nextCursor;
   return typeof cursor === "string" && cursor.length > 0 ? cursor : void 0;
 }
+function createRtcCommandIdempotencyKey(scope) {
+  var _a, _b, _c;
+  const randomPart = (_c = (_b = (_a = globalThis.crypto) == null ? void 0 : _a.randomUUID) == null ? void 0 : _b.call(_a)) != null ? _c : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `rtc-${scope}-${randomPart}`;
+}
 var MediaSessionService = class {
   constructor(client) {
     this.client = client;
@@ -3952,8 +4070,11 @@ var MediaSessionService = class {
     }
     return response.data;
   }
-  async create(body) {
-    const response = await this.client.rtcMediaSessions.rtc.mediaSessions.create(body);
+  async create(body, options) {
+    var _a;
+    const response = await this.client.rtcMediaSessions.rtc.mediaSessions.create(body, {
+      idempotencyKey: (_a = options == null ? void 0 : options.idempotencyKey) != null ? _a : createRtcCommandIdempotencyKey("media-session-create")
+    });
     if (!response.data) {
       throw new Error("Failed to create RTC media session");
     }
@@ -3978,14 +4099,17 @@ var ParticipantCredentialService = class {
   constructor(client) {
     this.client = client;
   }
-  async issue(mediaSessionId, participantId, reason = "join") {
-    var _a;
+  async issue(mediaSessionId, participantId, reason = "join", options) {
+    var _a, _b;
     const response = await this.client.rtcParticipantCredentials.rtc.mediaSessions.participantCredentials.issue(
       mediaSessionId,
       participantId,
-      { reason }
+      { reason },
+      {
+        idempotencyKey: (_a = options == null ? void 0 : options.idempotencyKey) != null ? _a : createRtcCommandIdempotencyKey("participant-credential-issue")
+      }
     );
-    if (!((_a = response.data) == null ? void 0 : _a.credential)) {
+    if (!((_b = response.data) == null ? void 0 : _b.credential)) {
       throw new Error("RTC participant credential was not issued");
     }
     return response.data.credential;

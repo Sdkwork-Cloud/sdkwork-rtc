@@ -5,7 +5,7 @@ import type {
   ProviderQueryJobCreateCommand,
   ProviderQuerySnapshot,
 } from "../types/providerQueryJob";
-import { createBackendRtcClient, type RtcBackendClientOptions } from "./backendClient";
+import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface SnapshotListResponse {
   items: ProviderQuerySnapshot[];
@@ -16,10 +16,10 @@ export class ProviderQueryJobService {
   private readonly client;
 
   constructor(
-    baseUrl: string,
+    baseUrlOrClient: RtcBackendClientSource,
     tokenManagerOrOptions?: AuthTokenManager | RtcBackendClientOptions,
   ) {
-    this.client = createBackendRtcClient(baseUrl, tokenManagerOrOptions);
+    this.client = resolveBackendRtcClient(baseUrlOrClient, tokenManagerOrOptions);
   }
 
   async create(command: ProviderQueryJobCreateCommand): Promise<ProviderQueryJob> {

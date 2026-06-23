@@ -90,7 +90,11 @@ const result = await client.rtcMediaSessions.rtc.mediaSessions.list(params);
 const mediaSessionId = '1';
 const participantId = '1';
 const body = {};
-const result = await client.rtcParticipantCredentials.rtc.mediaSessions.participantCredentials.issue(mediaSessionId, participantId, body);
+const idempotencyKey = 'Idempotency-Key';
+const params = {
+  idempotencyKey,
+};
+const result = await client.rtcParticipantCredentials.rtc.mediaSessions.participantCredentials.issue(mediaSessionId, participantId, body, params);
 ```
 
 ### rtc_recording_artifacts

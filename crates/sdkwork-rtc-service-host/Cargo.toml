@@ -11,6 +11,7 @@ sdkwork-drive-workspace-service.workspace = true
 sdkwork-router-rtc-app-api.workspace = true
 sdkwork-router-rtc-backend-api.workspace = true
 serde_json.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 sdkwork-drive-config.workspace = true

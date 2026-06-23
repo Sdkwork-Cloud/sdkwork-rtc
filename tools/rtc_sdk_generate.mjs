@@ -12,7 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HTTP_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
-const OFFICIAL_LANGUAGE_ORDER = ["typescript", "rust", "java", "python", "go"];
+const OFFICIAL_LANGUAGE_ORDER = ["typescript", "dart", "rust", "java", "python", "go"];
 const DEFAULT_LANGUAGE = "typescript";
 const STANDARD_PROFILE = "sdkwork-v3";
 const GENERATOR_BIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "sdkwork-sdk-generator", "bin", "sdkgen.js");
@@ -96,15 +96,46 @@ const families = [
   },
 ];
 
-function fail(message) {
-  process.stderr.write(`[rtc_sdk_generate] ${message}\n`);
-  process.exit(1);
+function resolveGeneratedTypescriptOutput(family) {
+  return path.join(
+    workspaceRoot,
+    "sdks",
+    family.familyName,
+    `${family.familyName}-${DEFAULT_LANGUAGE}`,
+    "generated",
+    "server-openapi",
+  );
+}
+
+function ensureGeneratedTypescriptDist(family) {
+  const outputPath = resolveGeneratedTypescriptOutput(family);
+  const distIndex = path.join(outputPath, "dist", "index.d.ts");
+  if (existsSync(distIndex)) {
+    return;
+  }
+  const packageJson = path.join(outputPath, "package.json");
+  if (!existsSync(packageJson)) {
+    throw new Error(`missing generated TypeScript package for ${family.familyName}`);
+  }
+  const install = spawnSync("npm", ["install"], { cwd: outputPath, stdio: "inherit" });
+  if (install.status !== 0) {
+    throw new Error(`failed to install generated TypeScript SDK deps for ${family.familyName}`);
+  }
+  const build = spawnSync("npm", ["run", "build"], { cwd: outputPath, stdio: "inherit" });
+  if (build.status !== 0) {
+    throw new Error(`failed to build generated TypeScript SDK dist for ${family.familyName}`);
+  }
 }
 
 function resolveRoot(relativeOrAbsolute) {
   return path.isAbsolute(relativeOrAbsolute)
     ? relativeOrAbsolute
     : path.resolve(workspaceRoot, relativeOrAbsolute);
+}
+
+function fail(message) {
+  process.stderr.write(`[rtc_sdk_generate] ${message}\n`);
+  process.exit(1);
 }
 
 function readJson(filePath) {
@@ -306,11 +337,13 @@ function languageEntries(family) {
     name:
       language === "typescript"
         ? `@sdkwork/${family.familyName}`
-        : language === "java"
-          ? `com.sdkwork:${family.familyName}`
-          : language === "go"
-            ? `github.com/sdkwork/${family.familyName}`
-            : family.familyName,
+        : language === "dart"
+          ? family.familyName.replaceAll("-", "_")
+          : language === "java"
+            ? `com.sdkwork:${family.familyName}`
+            : language === "go"
+              ? `github.com/sdkwork/${family.familyName}`
+              : family.familyName,
     version: "0.1.0",
   }));
 }
@@ -357,6 +390,7 @@ function syncFamily(family) {
   }
   const openapi = readJson(sourceOpenapiPath);
   const operations = validateOpenapi(family, openapi);
+  ensureGeneratedTypescriptDist(family);
   const familyRoot = path.join(workspaceRoot, "sdks", family.familyName);
   const authorityPath = path.join(familyRoot, "openapi", `${family.authorityName}.openapi.json`);
   const sdkgenPath = path.join(familyRoot, "openapi", `${family.authorityName}.sdkgen.json`);

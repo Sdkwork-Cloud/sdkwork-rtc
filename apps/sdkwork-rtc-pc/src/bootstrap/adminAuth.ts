@@ -1,8 +1,9 @@
 import {
-  createTokenManager,
-  setTokenManager,
+  createTokenManager as createSdkworkTokenManager,
   type AuthTokenManager,
-} from "./tokenManager";
+} from "@sdkwork/sdk-common";
+
+import { setTokenManager } from "./tokenManager";
 
 export interface RtcAdminSession {
   accessToken: string;
@@ -99,7 +100,12 @@ export function buildAdminSdkHeaders(session: RtcAdminSession): Record<string, s
 }
 
 export function createAdminTokenManager(session: RtcAdminSession): AuthTokenManager {
-  return createTokenManager(() => session.accessToken);
+  const manager = createSdkworkTokenManager();
+  manager.setTokens?.({
+    accessToken: session.accessToken,
+    authToken: session.authToken,
+  });
+  return manager;
 }
 
 export function bootstrapAdminAuth(): RtcAdminSession | null {

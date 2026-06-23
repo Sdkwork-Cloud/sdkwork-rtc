@@ -63,6 +63,7 @@ Page({
       success: () => wx.showToast({ title: "Credential copied", icon: "success" }),
     });
   },
+  async onIssueCredential() {
     const participantId = String(this.data.participantId || "").trim();
     if (!participantId) {
       wx.showToast({ title: "Participant ID required", icon: "none" });

@@ -4,6 +4,14 @@ import type { HttpClient } from '../http/client';
 import type { RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest, RtcProviderApplicationListResponse, RtcProviderApplicationResponse } from '../types';
 
 
+export interface RtcProviderApplicationsRtcProviderApplicationsUpdateParams {
+  idempotencyKey?: string;
+}
+
+export interface RtcProviderApplicationsRtcProviderApplicationsDisableParams {
+  idempotencyKey?: string;
+}
+
 export class RtcProviderApplicationsRtcProviderApplicationsApi {
   private client: HttpClient;
 
@@ -18,13 +26,25 @@ export class RtcProviderApplicationsRtcProviderApplicationsApi {
   }
 
 /** Rtc provider Applications update. */
-  async update(providerApplicationId: string, body?: RtcProviderApplicationCommand): Promise<RtcProviderApplicationResponse> {
-    return this.client.patch<RtcProviderApplicationResponse>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(providerApplicationId: string, body?: RtcProviderApplicationCommand, params?: RtcProviderApplicationsRtcProviderApplicationsUpdateParams): Promise<RtcProviderApplicationResponse> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.patch<RtcProviderApplicationResponse>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Applications disable. */
-  async disable(providerApplicationId: string, body: RtcProviderApplicationDisableRequest): Promise<RtcProviderApplicationResponse> {
-    return this.client.post<RtcProviderApplicationResponse>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/disable`), body, undefined, undefined, 'application/json');
+  async disable(providerApplicationId: string, body: RtcProviderApplicationDisableRequest, params?: RtcProviderApplicationsRtcProviderApplicationsDisableParams): Promise<RtcProviderApplicationResponse> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.post<RtcProviderApplicationResponse>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/disable`), body, undefined, requestHeaders, 'application/json');
   }
 }
 
@@ -34,6 +54,10 @@ export interface RtcProviderApplicationsRtcProviderAccountsApplicationsListParam
   cursor?: string;
   sort?: string;
   q?: string;
+}
+
+export interface RtcProviderApplicationsRtcProviderAccountsApplicationsCreateParams {
+  idempotencyKey?: string;
 }
 
 export class RtcProviderApplicationsRtcProviderAccountsApplicationsApi {
@@ -57,8 +81,14 @@ export class RtcProviderApplicationsRtcProviderAccountsApplicationsApi {
   }
 
 /** Rtc provider Accounts applications create. */
-  async create(providerAccountId: string, body: RtcProviderApplicationCommand): Promise<RtcProviderApplicationResponse> {
-    return this.client.post<RtcProviderApplicationResponse>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}/applications`), body, undefined, undefined, 'application/json');
+  async create(providerAccountId: string, body: RtcProviderApplicationCommand, params?: RtcProviderApplicationsRtcProviderAccountsApplicationsCreateParams): Promise<RtcProviderApplicationResponse> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.post<RtcProviderApplicationResponse>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}/applications`), body, undefined, requestHeaders, 'application/json');
   }
 }
 
@@ -331,4 +361,79 @@ function encodeQueryValue(value: string, allowReserved: boolean): string {
     .replace(/%2C/gi, ',')
     .replace(/%3B/gi, ';')
     .replace(/%3D/gi, '=');
+}
+function buildRequestHeaders(
+  headers: Record<string, HeaderParameterSpec | undefined>,
+  cookies: Record<string, HeaderParameterSpec | undefined> = {},
+): Record<string, string> | undefined {
+  const requestHeaders: Record<string, string> = {};
+
+  for (const [name, parameter] of Object.entries(headers)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      requestHeaders[name] = serialized;
+    }
+  }
+
+  const cookieHeader = buildCookieHeader(cookies);
+  if (cookieHeader) {
+    requestHeaders.Cookie = requestHeaders.Cookie
+      ? `${requestHeaders.Cookie}; ${cookieHeader}`
+      : cookieHeader;
+  }
+
+  return Object.keys(requestHeaders).length > 0 ? requestHeaders : undefined;
+}
+
+interface HeaderParameterSpec {
+  value: unknown;
+  style: string;
+  explode: boolean;
+  contentType?: string;
+}
+
+function buildCookieHeader(cookies: Record<string, HeaderParameterSpec | undefined>): string | undefined {
+  const pairs: string[] = [];
+  for (const [name, parameter] of Object.entries(cookies)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      pairs.push(`${encodeURIComponent(name)}=${encodeURIComponent(serialized)}`);
+    }
+  }
+  return pairs.length > 0 ? pairs.join('; ') : undefined;
+}
+
+function serializeParameterValue(parameter: HeaderParameterSpec | undefined): string | undefined {
+  const value = parameter?.value;
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (parameter?.contentType) {
+    return JSON.stringify(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeHeaderPrimitive(item)).join(',');
+  }
+  if (typeof value === 'object' && value !== null) {
+    return serializeHeaderObject(value as Record<string, unknown>, parameter?.explode === true);
+  }
+  return serializeHeaderPrimitive(value);
+}
+
+function serializeHeaderObject(value: Record<string, unknown>, explode: boolean): string {
+  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+  if (explode) {
+    return entries.map(([key, entryValue]) => `${key}=${serializeHeaderPrimitive(entryValue)}`).join(',');
+  }
+  return entries.flatMap(([key, entryValue]) => [key, serializeHeaderPrimitive(entryValue)]).join(',');
+}
+
+function serializeHeaderPrimitive(value: unknown): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return String(value);
 }

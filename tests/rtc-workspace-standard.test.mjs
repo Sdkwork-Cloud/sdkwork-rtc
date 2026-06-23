@@ -68,7 +68,9 @@ test("sdkwork-rtc mini program root exposes user RTC surface packages", () => {
     `${appRoot}/src/app.json must include media session room page`,
   );
   const appConfig = JSON.parse(read(`${appRoot}/sdkwork.app.config.json`));
-  assert.equal(appConfig.app?.runtime?.family, "mini-program");
+  assert.equal(appConfig.schemaVersion, 3, `${appRoot} must use App Manifest Standard v3`);
+  assert.equal(appConfig.kind, "sdkwork.app");
+  assert.equal(appConfig.runtime?.family, "mini-program");
   const rtcPackageSource = read(`${appRoot}/packages/sdkwork-rtc-mp-rtc/package.json`);
   assert.match(rtcPackageSource, /sdkwork-rtc-app-sdk-generated-typescript/u, "sdkwork-rtc-mp-rtc must depend on the generated app SDK");
 });
@@ -194,6 +196,22 @@ test("sdkwork-rtc authority workspace declares root component spec", () => {
   assert.ok(spec.contracts?.topologySpec, "root component spec must reference topology authority");
   assert.deepEqual(spec.contracts?.databasePrefixRegistries, ["specs/database-prefix-registry.json"]);
   assert.deepEqual(spec.contracts?.databaseTableRegistries, ["specs/database-table-registry.json"]);
+});
+
+test("sdkwork-rtc runnable app roots use App Manifest Standard v3", () => {
+  for (const appRoot of [
+    "apps/sdkwork-rtc-pc",
+    "apps/sdkwork-rtc-h5",
+    "apps/sdkwork-rtc-flutter-mobile",
+    "apps/sdkwork-rtc-mini-program",
+  ]) {
+    const appConfig = JSON.parse(read(`${appRoot}/sdkwork.app.config.json`));
+    assert.equal(appConfig.schemaVersion, 3, `${appRoot}/sdkwork.app.config.json must use schemaVersion 3`);
+    assert.equal(appConfig.kind, "sdkwork.app", `${appRoot}/sdkwork.app.config.json must use kind sdkwork.app`);
+    assert.ok(appConfig.app?.key, `${appRoot} manifest must declare app.key`);
+    assert.ok(appConfig.publish?.platforms?.length, `${appRoot} manifest must declare publish.platforms`);
+    assert.ok(appConfig.environments?.production, `${appRoot} manifest must declare production environment`);
+  }
 });
 
 test("sdkwork-rtc runnable app roots declare component specs", () => {
@@ -345,8 +363,10 @@ test("sdkwork-rtc client surfaces use app-scoped IAM session storage keys", () =
   ]) {
     const source = read(filePath);
     assert.doesNotMatch(source, /["']sdkwork\.rtc\.app\.session["']/u, `${filePath} must not hardcode legacy session storage key`);
+    assert.doesNotMatch(source, /dev-access-token/u, `${filePath} must not default to development access tokens`);
     assert.match(source, /constants\/sessionStorageKey/u, `${filePath} must import canonical session storage key`);
   }
+  assert.match(read("apps/sdkwork-rtc-mini-program/src/pages/login/index.js"), /onAppbaseLogin/u);
   assert.match(
     read("apps/sdkwork-rtc-mini-program/src/app.js"),
     /constants\/sessionStorageKey/u,
@@ -384,16 +404,12 @@ test("sdkwork-rtc PC app integrates appbase auth runtime factory", () => {
   assert.match(read("pnpm-workspace.yaml"), /sdkwork-auth-pc-react/u);
 });
 
-test("sdkwork-rtc H5 app integrates appbase auth runtime at bootstrap without auth-pc-react UI", () => {
+test("sdkwork-rtc H5 app integrates appbase auth runtime and shared IAM auth routes", () => {
   const h5Package = JSON.parse(read("apps/sdkwork-rtc-h5/package.json"));
   const corePackage = JSON.parse(read("apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/package.json"));
   assert.equal(h5Package.dependencies?.["@sdkwork/auth-runtime-pc-react"], "workspace:*");
+  assert.equal(h5Package.dependencies?.["@sdkwork/auth-pc-react"], "workspace:*");
   assert.equal(h5Package.dependencies?.["react-router-dom"], "^7.17.0");
-  assert.equal(
-    h5Package.dependencies?.["@sdkwork/auth-pc-react"],
-    undefined,
-    "H5 defers auth-pc-react UI until dedicated H5 auth surface exists",
-  );
   assert.equal(
     corePackage.dependencies?.["@sdkwork/auth-runtime-pc-react"],
     undefined,
@@ -402,9 +418,10 @@ test("sdkwork-rtc H5 app integrates appbase auth runtime at bootstrap without au
   assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/rtcAppAuthRuntime.ts"), /platform:\s*"h5"/u);
   assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/iamRuntime.ts"), /createRtcAppAuthRuntime/u);
   assert.match(read("apps/sdkwork-rtc-h5/src/bootstrap/environment.ts"), /VITE_SDKWORK_RTC_H5_APPBASE_APP_API_BASE_URL/u);
-  assert.match(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /RtcH5AuthLoginPage/u);
+  assert.match(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /SdkworkIamAuthRoutes/u);
   assert.match(read("apps/sdkwork-rtc-h5/src/App.tsx"), /HashRouter/u);
-  assert.doesNotMatch(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /SdkworkIamAuthRoutes/u);
+  assert.doesNotMatch(read("apps/sdkwork-rtc-h5/src/AppAuthGate.tsx"), /RtcH5AuthLoginPage/u);
+  assert.match(read("apps/sdkwork-rtc-h5/vite.config.ts"), /@sdkwork\/auth-pc-react/u);
   assert.ok(
     exists("apps/sdkwork-rtc-h5/src/__tests__/h5-architecture.contract.test.ts"),
     "rtc h5 app must declare architecture contract tests",
@@ -524,6 +541,42 @@ test("sdkwork-rtc provider webhook ingress declares framework rate-limit tier", 
   const backendBuild = read("crates/sdkwork-router-rtc-backend-api/build.rs");
   assert.match(backendBuild, /rateLimitTier/u);
   assert.match(backendBuild, /with_rate_limit_tier/u);
+});
+
+test("sdkwork-rtc mutation routes declare framework rate-limit tiers and idempotency", () => {
+  for (const manifestPath of [
+    "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
+    "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+  ]) {
+    const manifest = JSON.parse(read(manifestPath));
+    const mutationRoutes = manifest.routes.filter((route) =>
+      ["POST", "PUT", "PATCH", "DELETE"].includes(route.method),
+    );
+    assert.ok(mutationRoutes.length > 0, `${manifestPath} must declare mutation routes`);
+    for (const route of mutationRoutes) {
+      assert.ok(
+        route.rateLimitTier,
+        `${route.operationId} must declare rateLimitTier`,
+      );
+    }
+    const credentialRoute = manifest.routes.find(
+      (route) => route.operationId === "rtc.mediaSessions.participantCredentials.issue",
+    );
+    if (credentialRoute) {
+      assert.equal(credentialRoute.rateLimitTier, "authCritical");
+      assert.equal(credentialRoute.idempotent, true);
+    }
+    const createRoute = manifest.routes.find(
+      (route) => route.operationId === "rtc.mediaSessions.create",
+    );
+    if (createRoute) {
+      assert.equal(createRoute.idempotent, true);
+    }
+  }
+
+  const appWebBootstrap = read("crates/sdkwork-router-rtc-app-api/src/web_bootstrap.rs");
+  assert.match(appWebBootstrap, /RateLimitPolicy/u);
+  assert.match(appWebBootstrap, /enabled: true/u);
 });
 
 test("sdkwork-rtc manifests and tools use standard paths and route crate names", () => {

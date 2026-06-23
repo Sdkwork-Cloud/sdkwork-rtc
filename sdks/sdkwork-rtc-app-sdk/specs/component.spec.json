@@ -13,6 +13,7 @@
     "status": "standardizing",
     "languages": [
       "typescript",
+      "dart",
       "rust",
       "java",
       "python",
