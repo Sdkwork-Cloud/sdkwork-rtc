@@ -124,7 +124,7 @@ When aligning a sibling `sdkwork-im` checkout:
 2. Migrate `sdkwork-rtc-core` usage to `sdkwork-communication-rtc-service`.
 3. Remove `sdks/sdkwork-rtc-sdk` from IM; consume `../../../sdkwork-rtc/sdks/sdkwork-rtc-sdk` through the shared workspace package layout only.
 4. Keep `CallService` on `@sdkwork/im-sdk` and `RtcMediaService` on `@sdkwork/rtc-sdk`.
-5. Ensure gateway uses `services/sdkwork-im-gateway` and routes calls, not RTC app API.
+5. Ensure gateway uses `services/sdkwork-im-cloud-gateway` and routes calls, not RTC app API.
 
 ## Verification
 

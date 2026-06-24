@@ -33,8 +33,8 @@
     "test:topology-contract": "node --test tests/rtc-topology-contract.test.mjs",
     "test:topology-baggage": "node --test tests/rtc-topology-baggage.test.mjs",
     "test:topology-packaging": "node scripts/gateway-cloud-bundle.mjs bundle --version 0.0.0-test && node scripts/gateway-cloud-bundle.mjs validate --version 0.0.0-test",
-    "gateway:bundle:cloud": "node scripts/gateway-cloud-bundle.mjs bundle",
-    "gateway:bundle:validate:cloud": "node scripts/gateway-cloud-bundle.mjs validate",
+    "gateway:package:cloud": "node scripts/gateway-cloud-bundle.mjs bundle",
+    "gateway:validate:cloud": "node scripts/gateway-cloud-bundle.mjs validate",
     "gateway:matrix:cloud": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs print-matrix --root . --spec specs/topology.spec.json --profile platform-config-bundle",
     "gateway:matrix": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs print-matrix --root . --spec specs/topology.spec.json --profile all",
     "typecheck": "tsc --noEmit",
@@ -49,7 +49,8 @@
     "db:drift": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . drift",
     "db:drift:check": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . drift-check",
     "db:bootstrap": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . bootstrap",
-    "test:contract:database": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root ."
+    "test:contract:database": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root .",
+    "topology:plan": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs plan --root . --spec specs/topology.spec.json"
   },
   "dependencies": {
     "@sdkwork/app-topology": "file:../sdkwork-app-topology"

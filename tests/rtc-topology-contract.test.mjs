@@ -44,15 +44,15 @@ test('declares v2 topology spec and profile env files for sdkwork-rtc', async ()
   assert.equal(spec.kind, 'sdkwork.app.topology');
   assert.equal(spec.appId, 'sdkwork-rtc');
   assert.equal(spec.archetype, 'application-http-gateway');
-  assert.equal(spec.defaults.developmentProfileId, 'self-hosted.split-services.development');
+  assert.equal(spec.defaults.developmentProfileId, 'standalone.split-services.development');
   assert.ok(spec.surfaces['application.public-ingress']);
   assert.ok(spec.surfaces['platform.api-gateway']);
 
   for (const profileId of [
-    'self-hosted.split-services.development',
-    'self-hosted.unified-process.development',
-    'cloud-hosted.split-services.development',
-    'cloud-hosted.split-services.production',
+    'standalone.split-services.development',
+    'standalone.unified-process.development',
+    'cloud.split-services.development',
+    'cloud.split-services.production',
   ]) {
     const profilePath = spec.profileFiles[profileId];
     assert.equal(await exists(profilePath), true, `${profilePath} should exist`);
@@ -106,7 +106,7 @@ test('declares cloud gateway config bundles referenced by topology spec', async 
 
 test('gateway cloud bundle and package matrix scripts are wired', async () => {
   const packageJson = await readJson('package.json');
-  assert.match(packageJson.scripts['gateway:bundle:cloud'], /gateway-cloud-bundle\.mjs bundle/);
+  assert.match(packageJson.scripts['gateway:package:cloud'], /gateway-cloud-bundle\.mjs bundle/);
   assert.match(packageJson.scripts['gateway:matrix:cloud'], /print-matrix/);
 
   const bundleScript = await read('scripts/gateway-cloud-bundle.mjs');

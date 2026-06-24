@@ -51,6 +51,12 @@ No `sdkwork.app.config.json` is present at this root. This repository is the RTC
 - `tests/`: repository-level contract, migration, and static verification tests.
 - Root-level `packages/` is not allowed in this RTC authority workspace. App packages must live under `apps/<app-root>/packages/`.
 
+## Documentation Canon
+
+- [docs/README.md](docs/README.md)
+- [docs/product/prd/PRD.md](docs/product/prd/PRD.md)
+- [docs/architecture/tech/TECH_ARCHITECTURE.md](docs/architecture/tech/TECH_ARCHITECTURE.md)
+
 ## Spec Resolution Order
 
 1. Read this `AGENTS.md` and any nearer component-level `AGENTS.md`.

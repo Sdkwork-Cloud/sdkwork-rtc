@@ -31,7 +31,7 @@ const sdkworkImPcChatPackage = resolveImRelativePath([
   "apps/sdkwork-chat-pc/packages/sdkwork-clawchat-pc-chat",
 ]);
 const sdkworkImGatewayPath = resolveImRelativePath([
-  "services/sdkwork-im-gateway/src/lib.rs",
+  "services/sdkwork-im-cloud-gateway/src/lib.rs",
   "services/web-gateway/src/lib.rs",
 ]);
 
@@ -497,7 +497,7 @@ test(
   }
 
   const gatewayManifest = readFileSync(
-    workspacePath(SdkworkImRoot, "services/sdkwork-im-gateway/Cargo.toml"),
+    workspacePath(SdkworkImRoot, "services/sdkwork-im-cloud-gateway/Cargo.toml"),
     "utf8",
   );
   assert.doesNotMatch(gatewayManifest, /sdkwork-rtc-state-store/);
@@ -654,7 +654,7 @@ test("sdkwork-rtc HTTP surfaces expose RTC media capabilities without signaling"
 test("sdkwork-im gateway does not expose RTC through IM API prefixes", {
   skip: skipWithoutSdkworkImGateway,
 }, () => {
-  const gatewayTextFiles = listTextFiles(SdkworkImRoot, "services/sdkwork-im-gateway").filter(
+  const gatewayTextFiles = listTextFiles(SdkworkImRoot, "services/sdkwork-im-cloud-gateway").filter(
     (relativePath) => /\.(rs|md|toml|json|yaml|yml)$/.test(relativePath),
   );
   const gatewayMatches = findPatternMatches(SdkworkImRoot, gatewayTextFiles, [

@@ -12,7 +12,7 @@ sdkwork-rtc.
 
 - Config schemas.
 - Development, test, staging, and production examples without secrets.
-- Topology profiles under `topology/` and cloud gateway bundles under `sdkwork-api-gateway.sdkwork-rtc.*.toml`.
+- Topology profiles under `topology/` and cloud gateway bundles under `sdkwork-api-cloud-gateway.sdkwork-rtc.*.toml`.
 - Provider config templates using placeholder values.
 
 ## Forbidden Content

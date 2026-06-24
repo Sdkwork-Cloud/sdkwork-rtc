@@ -103,7 +103,7 @@ pnpm run verify
 
 ## Local Development (Topology)
 
-Default dev profile: `self-hosted.split-services.development`
+Default dev profile: `standalone.split-services.development`
 
 ```powershell
 pnpm dev                                                    # PC admin UI + RTC API server
@@ -127,3 +127,10 @@ The migration audit also checks that old appbase and Craw Chat RTC authority sou
 ```powershell
 pnpm run test:contract:migration
 ```
+
+## Documentation Canon
+
+- [docs/README.md](docs/README.md)
+- [docs/product/prd/PRD.md](docs/product/prd/PRD.md)
+- [docs/architecture/tech/TECH_ARCHITECTURE.md](docs/architecture/tech/TECH_ARCHITECTURE.md)
+

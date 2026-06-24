@@ -1,208 +1,242 @@
 {
-    "schemaVersion":  2,
-    "kind":  "sdkwork.app.topology",
-    "appId":  "sdkwork-rtc",
-    "archetype":  "application-http-gateway",
-    "profileRoot":  "configs/topology",
-    "profilePattern":  "{hosting}.{serviceLayout}.{environment}.env",
-    "vocabulary":  {
-                       "hosting":  {
-                                       "allowed":  [
-                                                       "self-hosted",
-                                                       "cloud-hosted"
-                                                   ]
-                                   },
-                       "serviceLayout":  {
-                                             "allowed":  [
-                                                             "unified-process",
-                                                             "split-services"
-                                                         ]
-                                         },
-                       "environment":  {
-                                           "allowed":  [
-                                                           "development",
-                                                           "production"
-                                                       ]
-                                       },
-                       "connectivityPlane":  {
-                                                 "allowed":  [
-                                                                 "application",
-                                                                 "platform",
-                                                                 "operations"
-                                                             ]
-                                             }
-                   },
-    "defaults":  {
-                     "developmentProfileId":  "self-hosted.split-services.development",
-                     "productionProfileId":  "cloud-hosted.split-services.production",
-                     "desktopBuildProfileId":  "cloud-hosted.split-services.production",
-                     "gatewayBind":  "127.0.0.1:3900"
-                 },
-    "profileFiles":  {
-                         "self-hosted.split-services.development":  "configs/topology/self-hosted.split-services.development.env",
-                         "self-hosted.unified-process.development":  "configs/topology/self-hosted.unified-process.development.env",
-                         "self-hosted.split-services.production":  "configs/topology/self-hosted.split-services.production.env",
-                         "cloud-hosted.split-services.development":  "configs/topology/cloud-hosted.split-services.development.env",
-                         "cloud-hosted.split-services.production":  "configs/topology/cloud-hosted.split-services.production.env"
-                     },
-    "envKeys":  {
-                    "hosting":  "SDKWORK_RTC_HOSTING",
-                    "serviceLayout":  "SDKWORK_RTC_SERVICE_LAYOUT",
-                    "environment":  "SDKWORK_RTC_ENVIRONMENT",
-                    "profileId":  "SDKWORK_RTC_PROFILE_ID",
-                    "clientHosting":  "VITE_SDKWORK_RTC_PC_HOSTING",
-                    "gatewayAutostart":  "SDKWORK_RTC_PLATFORM_API_GATEWAY_AUTOSTART",
-                    "standaloneGatewayBind":  "SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND",
-                    "cloudGatewayBind":  "SDKWORK_API_GATEWAY_BIND",
-                    "cloudGatewayConfig":  "SDKWORK_API_GATEWAY_CONFIG",
-                    "clientApiGatewayBaseUrl":  "VITE_SDKWORK_RTC_PC_PLATFORM_API_GATEWAY_HTTP_URL",
-                    "apiGatewayBaseUrl":  "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL"
-                },
-    "surfaces":  {
-                     "application.public-ingress":  {
-                                                        "connectivityPlane":  "application",
-                                                        "protocols":  [
-                                                                          "http"
-                                                                      ],
-                                                        "bindEnv":  "SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND",
-                                                        "httpUrlEnv":  "SDKWORK_RTC_APPLICATION_PUBLIC_HTTP_URL",
-                                                        "clientHttpEnv":  "VITE_SDKWORK_RTC_PC_APPLICATION_PUBLIC_HTTP_URL"
-                                                    },
-                     "platform.api-gateway":  {
-                                                  "connectivityPlane":  "platform",
-                                                  "protocols":  [
-                                                                    "http"
-                                                                ],
-                                                  "owner":  "sdkwork-api-gateway",
-                                                  "bindEnv":  "SDKWORK_API_GATEWAY_BIND",
-                                                  "httpUrlEnv":  "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL",
-                                                  "clientHttpEnv":  "VITE_SDKWORK_RTC_PC_PLATFORM_API_GATEWAY_HTTP_URL",
-                                                  "autostartEnv":  "SDKWORK_RTC_PLATFORM_API_GATEWAY_AUTOSTART"
-                                              }
-                 },
-    "cloudPublicHosts":  {
-                             "application.public-ingress":  {
-                                                                "httpHost":  "rtc.sdkwork.com"
-                                                            },
-                             "platform.api-gateway":  {
-                                                          "httpHost":  "api.sdkwork.com"
-                                                      }
-                         },
-    "database":  {
-                     "appPrefix":  "SDKWORK_RTC"
-                 },
-    "components":  {
-                       "applicationApiServer":  {
-                                                    "crate":  "sdkwork-rtc-api-server",
-                                                    "binary":  "sdkwork-rtc-api-server"
-                                                },
-                       "cloudGateway":  {
-                                            "crate":  "sdkwork-api-gateway-api-server",
-                                            "binary":  "sdkwork-api-gateway",
-                                            "repository":  "sdkwork-api-gateway",
-                                            "configGlob":  "configs/sdkwork-api-gateway.sdkwork-rtc.{profile}.toml"
-                                        }
-                   },
-    "orchestration":  {
-                          "profiles":  {
-                                           "self-hosted.split-services.development":  {
-                                                                                          "processes":  [
-                                                                                                            {
-                                                                                                                "id":  "application.public-ingress",
-                                                                                                                "crate":  "sdkwork-rtc-api-server",
-                                                                                                                "binary":  "sdkwork-rtc-api-server",
-                                                                                                                "required":  true
-                                                                                                            },
-                                                                                                            {
-                                                                                                                "id":  "pc-renderer",
-                                                                                                                "package":  "apps/sdkwork-rtc-pc",
-                                                                                                                "script":  "dev",
-                                                                                                                "required":  false
-                                                                                                            }
-                                                                                                        ],
-                                                                                          "healthSurfaces":  [
-                                                                                                                 "application.public-ingress"
-                                                                                                             ]
-                                                                                      },
-                                           "self-hosted.unified-process.development":  {
-                                                                                           "processes":  [
-                                                                                                             {
-                                                                                                                 "id":  "application.public-ingress",
-                                                                                                                 "crate":  "sdkwork-rtc-api-server",
-                                                                                                                 "binary":  "sdkwork-rtc-api-server",
-                                                                                                                 "required":  true
-                                                                                                             }
-                                                                                                         ],
-                                                                                           "capabilitySubset":  [
-                                                                                                                    "application-http"
-                                                                                                                ],
-                                                                                           "healthSurfaces":  [
-                                                                                                                  "application.public-ingress"
-                                                                                                              ]
-                                                                                       },
-                                           "cloud-hosted.split-services.development":  {
-                                                                                           "processes":  [
-                                                                                                             {
-                                                                                                                 "id":  "platform.api-gateway",
-                                                                                                                 "crate":  "sdkwork-api-gateway-api-server",
-                                                                                                                 "binary":  "sdkwork-api-gateway",
-                                                                                                                 "repository":  "sdkwork-api-gateway",
-                                                                                                                 "required":  true
-                                                                                                             },
-                                                                                                             {
-                                                                                                                 "id":  "application.public-ingress",
-                                                                                                                 "crate":  "sdkwork-rtc-api-server",
-                                                                                                                 "binary":  "sdkwork-rtc-api-server",
-                                                                                                                 "required":  true
-                                                                                                             },
-                                                                                                             {
-                                                                                                                 "id":  "pc-renderer",
-                                                                                                                 "package":  "apps/sdkwork-rtc-pc",
-                                                                                                                 "script":  "dev",
-                                                                                                                 "required":  false
-                                                                                                             }
-                                                                                                         ],
-                                                                                           "healthSurfaces":  [
-                                                                                                                  "platform.api-gateway",
-                                                                                                                  "application.public-ingress"
-                                                                                                              ]
-                                                                                       }
-                                       }
-                      },
-    "packaging":  {
-                      "cloudConfigFiles":  [
-                                               "sdkwork-api-gateway.sdkwork-rtc.development.toml",
-                                               "sdkwork-api-gateway.sdkwork-rtc.production.toml"
-                                           ],
-                      "targets":  [
-                                      {
-                                          "id":  "platform-config-bundle-tar-gz",
-                                          "profile":  "platform-config-bundle",
-                                          "platform":  "all",
-                                          "architecture":  "all",
-                                          "formats":  [
-                                                          "tar.gz"
-                                                      ],
-                                          "runner":  "ubuntu-24.04",
-                                          "outputGlob":  "dist/cloud-config/sdkwork-rtc-api-gateway-config-*.tar.gz"
-                                      }
-                                  ]
-                  },
-    "scripts":  {
-                    "rtcDev":  "scripts/rtc-dev.mjs",
-                    "gatewayCloudBundle":  "scripts/gateway-cloud-bundle.mjs"
-                },
-    "retired":  {
-                    "vocabulary":  {
-                                       "topology":  [
-                                                        "standalone",
-                                                        "cloud"
-                                                    ]
-                                   },
-                    "envKeys":  [
-                                    "SDKWORK_RTC_API_BIND",
-                                    "VITE_RTC_API_BASE_URL",
-                                    "VITE_RTC_BACKEND_API_BASE_URL"
-                                ]
-                }
+  "schemaVersion": 2,
+  "kind": "sdkwork.app.topology",
+  "appId": "sdkwork-rtc",
+  "archetype": "application-http-gateway",
+  "profileRoot": "configs/topology",
+  "profilePattern": "{deploymentProfile}.{serviceLayout}.{environment}.env",
+  "vocabulary": {
+    "serviceLayout": {
+      "allowed": [
+        "unified-process",
+        "split-services"
+      ]
+    },
+    "environment": {
+      "allowed": [
+        "development",
+        "production"
+      ]
+    },
+    "connectivityPlane": {
+      "allowed": [
+        "application",
+        "platform",
+        "operations"
+      ]
+    },
+    "deploymentProfile": {
+      "allowed": [
+        "standalone",
+        "cloud"
+      ]
+    }
+  },
+  "defaults": {
+    "developmentProfileId": "standalone.split-services.development",
+    "productionProfileId": "cloud.split-services.production",
+    "desktopBuildProfileId": "cloud.split-services.production",
+    "gatewayBind": "127.0.0.1:3900"
+  },
+  "profileFiles": {
+    "standalone.split-services.development": "configs/topology/standalone.split-services.development.env",
+    "standalone.unified-process.development": "configs/topology/standalone.unified-process.development.env",
+    "standalone.split-services.production": "configs/topology/standalone.split-services.production.env",
+    "cloud.split-services.development": "configs/topology/cloud.split-services.development.env",
+    "cloud.split-services.production": "configs/topology/cloud.split-services.production.env",
+    "standalone.unified-process.production": "configs/topology/standalone.unified-process.production.env"
+  },
+  "envKeys": {
+    "serviceLayout": "SDKWORK_RTC_SERVICE_LAYOUT",
+    "environment": "SDKWORK_RTC_ENVIRONMENT",
+    "profileId": "SDKWORK_RTC_PROFILE_ID",
+    "gatewayAutostart": "SDKWORK_RTC_PLATFORM_API_GATEWAY_AUTOSTART",
+    "standaloneGatewayBind": "SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND",
+    "cloudGatewayBind": "SDKWORK_API_CLOUD_GATEWAY_BIND",
+    "cloudGatewayConfig": "SDKWORK_API_CLOUD_GATEWAY_CONFIG",
+    "clientApiGatewayBaseUrl": "VITE_SDKWORK_RTC_PC_PLATFORM_API_GATEWAY_HTTP_URL",
+    "apiGatewayBaseUrl": "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL",
+    "deploymentProfile": "SDKWORK_RTC_DEPLOYMENT_PROFILE",
+    "clientDeploymentProfile": "VITE_SDKWORK_RTC_PC_DEPLOYMENT_PROFILE"
+  },
+  "surfaces": {
+    "application.public-ingress": {
+      "connectivityPlane": "application",
+      "protocols": [
+        "http"
+      ],
+      "bindEnv": "SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND",
+      "httpUrlEnv": "SDKWORK_RTC_APPLICATION_PUBLIC_HTTP_URL",
+      "clientHttpEnv": "VITE_SDKWORK_RTC_PC_APPLICATION_PUBLIC_HTTP_URL"
+    },
+    "platform.api-gateway": {
+      "connectivityPlane": "platform",
+      "protocols": [
+        "http"
+      ],
+      "owner": "sdkwork-api-cloud-gateway",
+      "bindEnv": "SDKWORK_API_CLOUD_GATEWAY_BIND",
+      "httpUrlEnv": "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL",
+      "clientHttpEnv": "VITE_SDKWORK_RTC_PC_PLATFORM_API_GATEWAY_HTTP_URL",
+      "autostartEnv": "SDKWORK_RTC_PLATFORM_API_GATEWAY_AUTOSTART"
+    }
+  },
+  "cloudPublicHosts": {
+    "application.public-ingress": {
+      "httpHost": "rtc.sdkwork.com"
+    },
+    "platform.api-gateway": {
+      "httpHost": "api.sdkwork.com"
+    }
+  },
+  "database": {
+    "appPrefix": "SDKWORK_RTC"
+  },
+  "components": {
+    "applicationApiServer": {
+      "crate": "sdkwork-rtc-api-server",
+      "binary": "sdkwork-rtc-api-server"
+    },
+    "cloudGateway": {
+      "crate": "sdkwork-api-cloud-gateway-api-server",
+      "binary": "sdkwork-api-cloud-gateway",
+      "repository": "sdkwork-api-cloud-gateway",
+      "configGlob": "configs/sdkwork-api-cloud-gateway.sdkwork-rtc.{profile}.toml"
+    }
+  },
+  "orchestration": {
+    "profiles": {
+      "standalone.split-services.development": {
+        "processes": [
+          {
+            "id": "application.public-ingress",
+            "crate": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-api-server",
+            "required": true
+          },
+          {
+            "id": "pc-renderer",
+            "package": "apps/sdkwork-rtc-pc",
+            "script": "dev",
+            "required": false
+          }
+        ],
+        "healthSurfaces": [
+          "application.public-ingress"
+        ]
+      },
+      "standalone.unified-process.development": {
+        "processes": [
+          {
+            "id": "application.public-ingress",
+            "crate": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-api-server",
+            "required": true
+          }
+        ],
+        "capabilitySubset": [
+          "application-http"
+        ],
+        "healthSurfaces": [
+          "application.public-ingress"
+        ]
+      },
+      "cloud.split-services.development": {
+        "processes": [
+          {
+            "id": "platform.api-gateway",
+            "crate": "sdkwork-api-cloud-gateway-api-server",
+            "binary": "sdkwork-api-cloud-gateway",
+            "repository": "sdkwork-api-cloud-gateway",
+            "required": true
+          },
+          {
+            "id": "application.public-ingress",
+            "crate": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-api-server",
+            "required": true
+          },
+          {
+            "id": "pc-renderer",
+            "package": "apps/sdkwork-rtc-pc",
+            "script": "dev",
+            "required": false
+          }
+        ],
+        "healthSurfaces": [
+          "platform.api-gateway",
+          "application.public-ingress"
+        ]
+      },
+      "cloud.split-services.production": {
+        "processes": [
+          {
+            "id": "platform.api-gateway",
+            "crate": "sdkwork-api-cloud-gateway-api-server",
+            "binary": "sdkwork-api-cloud-gateway",
+            "repository": "sdkwork-api-cloud-gateway",
+            "required": false
+          },
+          {
+            "id": "application.public-ingress",
+            "crate": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-api-server",
+            "required": true
+          },
+          {
+            "id": "pc-renderer",
+            "package": "apps/sdkwork-rtc-pc",
+            "script": "dev",
+            "required": false
+          }
+        ],
+        "healthSurfaces": [
+          "application.public-ingress",
+          "platform.api-gateway"
+        ]
+      }
+    }
+  },
+  "packaging": {
+    "cloudConfigFiles": [
+      "sdkwork-api-cloud-gateway.sdkwork-rtc.development.toml",
+      "sdkwork-api-cloud-gateway.sdkwork-rtc.production.toml"
+    ],
+    "targets": [
+      {
+        "id": "platform-config-bundle-tar-gz",
+        "profile": "platform-config-bundle",
+        "platform": "all",
+        "architecture": "all",
+        "formats": [
+          "tar.gz"
+        ],
+        "runner": "ubuntu-24.04",
+        "outputGlob": "dist/cloud-config/sdkwork-rtc-api-gateway-config-*.tar.gz"
+      }
+    ]
+  },
+  "scripts": {
+    "rtcDev": "scripts/rtc-dev.mjs",
+    "gatewayCloudBundle": "scripts/gateway-cloud-bundle.mjs"
+  },
+  "retired": {
+    "vocabulary": {
+      "topology": [
+        "standalone",
+        "cloud"
+      ],
+      "hosting": [
+        "self-hosted",
+        "cloud-hosted"
+      ]
+    },
+    "envKeys": [
+      "SDKWORK_RTC_API_BIND",
+      "VITE_RTC_API_BASE_URL",
+      "VITE_RTC_BACKEND_API_BASE_URL",
+      "SDKWORK_RTC_HOSTING",
+      "VITE_SDKWORK_RTC_PC_HOSTING"
+    ]
+  }
 }

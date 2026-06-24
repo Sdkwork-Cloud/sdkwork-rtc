@@ -8,9 +8,9 @@ Platform standard: `../../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 
 | Profile id | Command |
 | --- | --- |
-| `self-hosted.split-services.development` | `pnpm dev`, `pnpm dev:browser:postgres:split-services:standalone:local`, `pnpm dev:flutter-android` |
-| `cloud-hosted.split-services.development` | `pnpm dev:browser:postgres:split-services:cloud` |
-| `self-hosted.unified-process.development` | `pnpm dev:server` |
-| `cloud-hosted.split-services.production` | packaging / release |
+| `standalone.split-services.development` | `pnpm dev`, `pnpm dev:browser:postgres:split-services:standalone:local`, `pnpm dev:flutter-android` |
+| `cloud.split-services.development` | `pnpm dev:browser:postgres:split-services:cloud` |
+| `standalone.unified-process.development` | `pnpm dev:server` |
+| `cloud.split-services.production` | packaging / release |
 
 Loader: `scripts/lib/rtc-topology.mjs` → `@sdkwork/app-topology`.
