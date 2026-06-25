@@ -3867,6 +3867,18 @@ function createRtcAppSdkClient({
   });
 }
 
+// src/bootstrap/tokenManager.ts
+var activeTokenManager;
+function setTokenManager(tokenManager) {
+  activeTokenManager = tokenManager;
+}
+function getTokenManager() {
+  return activeTokenManager;
+}
+function createTokenManager2() {
+  return createTokenManager();
+}
+
 // src/bootstrap/hostAdapters.ts
 var activeHostAdapters = null;
 function registerHostAdapters() {
@@ -3933,7 +3945,7 @@ function saveAppSession(session) {
 }
 function createAppTokenManager(session) {
   var _a;
-  const manager = createTokenManager();
+  const manager = createTokenManager2();
   (_a = manager.setTokens) == null ? void 0 : _a.call(manager, {
     accessToken: session.accessToken,
     authToken: session.authToken
@@ -3953,7 +3965,7 @@ function bootstrapAppAuth() {
   if (!session) {
     return null;
   }
-  setTokenManager2(createAppTokenManager(session));
+  setTokenManager(createAppTokenManager(session));
   return session;
 }
 
@@ -4011,7 +4023,7 @@ function initAppSdkClient() {
   appSdkClient = createRtcAppSdkClient({
     apiBaseUrl: environment.apiBaseUrl,
     session: loadAppSession(),
-    tokenManager: getTokenManager2(),
+    tokenManager: getTokenManager(),
     platform: "mp-weixin"
   });
   return appSdkClient;

@@ -51,6 +51,13 @@
       "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     },
     {
+      "id": "sdkwork-id",
+      "repository": "Sdkwork-Cloud/sdkwork-id",
+      "ref": "main",
+      "refInput": "SDKWORK_ID_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
+    },
+    {
       "id": "sdkwork-sdk-generator",
       "repository": "Sdkwork-Cloud/sdkwork-sdk-generator",
       "ref": "main",
@@ -108,7 +115,7 @@
       {
         "name": "Package RTC cloud gateway config bundle",
         "shell": "pwsh",
-        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_VARIANT) {\n  'config-bundle' { pnpm gateway:package:cloud }\n  default { Write-Host \"Skipping RTC package archive for profile $($env:SDKWORK_PACKAGE_VARIANT)\" }\n}"
+        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_VARIANT) {\n  'config-bundle' { pnpm gateway:package:cloud }\n  'server' { node scripts/package-server.mjs package }\n  default { Write-Host \"Skipping RTC package archive for profile $($env:SDKWORK_PACKAGE_VARIANT)\" }\n}"
       }
     ],
     "sbom": [
@@ -122,7 +129,7 @@
       {
         "name": "Validate RTC cloud gateway config bundle",
         "shell": "pwsh",
-        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_VARIANT) {\n  'config-bundle' { pnpm gateway:validate:cloud }\n  default { Write-Host \"Skipping RTC package validation for profile $($env:SDKWORK_PACKAGE_VARIANT)\" }\n}"
+        "run": "$ErrorActionPreference = \"Stop\"\nswitch ($env:SDKWORK_PACKAGE_VARIANT) {\n  'config-bundle' { pnpm gateway:validate:cloud }\n  'server' { node scripts/package-server.mjs validate }\n  default { Write-Host \"Skipping RTC package validation for profile $($env:SDKWORK_PACKAGE_VARIANT)\" }\n}"
       }
     ]
   },
@@ -140,7 +147,8 @@
         "artifacts/release/**/*"
       ],
       "deploymentProfile": "standalone",
-      "runtimeTarget": "server"
+      "runtimeTarget": "server",
+      "variant": "server"
     },
     {
       "id": "container-noarch-cloud-container-config-bundle-tar-gz",

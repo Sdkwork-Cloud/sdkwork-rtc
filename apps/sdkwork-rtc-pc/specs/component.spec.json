@@ -10,9 +10,14 @@
     "domain": "rtc",
     "capability": "rtc",
     "surface": "app",
-    "languages": ["typescript"],
+    "languages": [
+      "typescript"
+    ],
     "generated": false,
-    "manifests": ["package.json", "sdkwork.app.config.json"]
+    "manifests": [
+      "package.json",
+      "sdkwork.app.config.json"
+    ]
   },
   "canonicalSpecs": [
     {
@@ -27,14 +32,24 @@
     }
   ],
   "contracts": {
-    "publicExports": ["src/main.tsx"],
-    "runtimeEntrypoints": ["package.json#scripts.dev"],
+    "publicExports": [
+      "src/main.tsx"
+    ],
+    "runtimeEntrypoints": [
+      "package.json#scripts.dev"
+    ],
     "sdkClients": [],
-    "sdkDependencies": ["sdkwork-rtc-app-sdk"],
+    "sdkDependencies": [
+      "sdkwork-rtc-app-sdk"
+    ],
     "dependencyApiExports": [],
-    "dependencyApiSurfaces": []
+    "dependencyApiSurfaces": [],
+    "dependencyComposition": "specs/dependency.composition.json"
   },
   "verification": {
-    "commands": ["pnpm run typecheck", "pnpm run build"]
+    "commands": [
+      "pnpm run typecheck",
+      "pnpm run build"
+    ]
   }
 }

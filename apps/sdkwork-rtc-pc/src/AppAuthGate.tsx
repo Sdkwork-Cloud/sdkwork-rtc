@@ -93,7 +93,9 @@ export function AppAuthGate({ children, homePath = RTC_APP_HOME_PATH }: AppAuthG
     <SdkworkIamAuthRoutes
       appearance={resolveRtcAuthAppearance()}
       basePath={AUTH_BASE_PATH}
-      getRuntime={getRtcIamRuntimeForAuth as SdkworkIamAuthRoutesProps["getRuntime"]}
+      getRuntime={
+        getRtcIamRuntimeForAuth as unknown as SdkworkIamAuthRoutesProps["getRuntime"]
+      }
       homePath={homePath}
       locale={resolveRtcAuthLocale()}
       routerContextMode="external"

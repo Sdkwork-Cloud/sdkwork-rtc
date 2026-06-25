@@ -81,6 +81,12 @@ pub struct RtcRuntimeLoadRequest {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RtcTenantOrganizationScope {
+    pub tenant_id: String,
+    pub organization_id: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum RtcMediaSessionIdempotencyClaim {
     Claimed,
     Existing(RtcMediaSessionIdempotencyRecord),
@@ -121,6 +127,11 @@ pub trait RtcPersistencePort: Send + Sync {
         &'a self,
         event: &'a RtcProviderWebhookEventRecord,
     ) -> RtcPersistenceFuture<'a, bool>;
+
+    /// Distinct tenant scopes with media sessions that may require reconciliation.
+    fn list_active_reconcile_scopes<'a>(
+        &'a self,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>>;
 }
 
 #[derive(Clone, Debug, Default)]
@@ -171,5 +182,11 @@ impl RtcPersistencePort for NoopRtcPersistencePort {
         _event: &'a RtcProviderWebhookEventRecord,
     ) -> RtcPersistenceFuture<'a, bool> {
         Box::pin(async { Ok(true) })
+    }
+
+    fn list_active_reconcile_scopes<'a>(
+        &'a self,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>> {
+        Box::pin(async { Ok(Vec::new()) })
     }
 }

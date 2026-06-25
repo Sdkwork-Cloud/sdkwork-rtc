@@ -118,8 +118,14 @@ impl RtcProviderWebhookIngress {
         let metadata = serde_json::from_str::<serde_json::Value>(raw_body).ok();
         let object = metadata.as_ref().and_then(|value| value.as_object());
         Ok(Self {
-            provider_profile_id: optional_json_string(object, &["providerProfileId", "provider_profile_id"]),
-            external_event_id: optional_json_string(object, &["externalEventId", "external_event_id"]),
+            provider_profile_id: optional_json_string(
+                object,
+                &["providerProfileId", "provider_profile_id"],
+            ),
+            external_event_id: optional_json_string(
+                object,
+                &["externalEventId", "external_event_id"],
+            ),
             event_type: optional_json_string(object, &["eventType", "event_type"]),
             received_at: optional_json_string(object, &["receivedAt", "received_at"]),
             http_headers,

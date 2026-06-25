@@ -1,13 +1,12 @@
 use axum::Router;
 use sdkwork_communication_rtc_service::rtc_persistence_required;
+use sdkwork_rtc_api_server::{
+    bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap},
+    readiness::RtcDatabaseReadinessCheck,
+};
 use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
 use std::sync::Arc;
 use tracing::info;
-
-mod bootstrap;
-mod readiness;
-use bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap};
-use readiness::RtcDatabaseReadinessCheck;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

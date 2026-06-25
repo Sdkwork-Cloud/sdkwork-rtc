@@ -26,6 +26,36 @@ sdkwork-rtc.
 - `../sdkwork-specs/DEPLOYMENT_SPEC.md`
 - `../sdkwork-specs/RELEASE_SPEC.md`
 
+## Kubernetes
+
+See `kubernetes/README.md` for cloud split-services manifests (`rtc-api-server`, `rtc-reconcile` CronJob).
+
+## systemd (standalone appliance)
+
+- `systemd/sdkwork-rtc-api-server.service` — API server unit
+- `systemd/sdkwork-rtc-reconcile.service` + `sdkwork-rtc-reconcile.timer` — periodic reconciliation
+
+## Docker
+
+See `docker/README.md` for multi-stage image build and local compose example.
+
+## Server archive
+
+`node scripts/package-server.mjs package` produces `artifacts/release/server/sdkwork-rtc-<version>-<platform>-<arch>-server.tar.gz`
+with `sdkwork-rtc-api-server` and `sdkwork-rtc-reconcile` binaries.
+
+## Templates
+
+- `templates/server.env.example` — production environment keys (non-secret)
+
 ## Verification
 
 Run `node --test tests/rtc-workspace-standard.test.mjs`.
+
+## Operator documentation
+
+See `docs/guides/operator/deployment.md` for production rollout, environment keys, and go-live verification.
+
+## Build output
+
+Local and CI package output under `artifacts/release/` is gitignored; publish via GitHub Actions (`package.yml`, `rtc-server-image.yml`).

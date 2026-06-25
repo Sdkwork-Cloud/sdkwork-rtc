@@ -8,7 +8,7 @@ Detect and heal operational drift between IM call state and RTC media sessions, 
 
 1. **Stale Active sessions** — `rtc_media_session.status = Active` with `started_at` older than provider profile TTL + grace window.
 2. **Orphan provider rooms** — provider session exists without matching RTC row (requires provider active query).
-3. **Ended IM call / Active RTC** — when IM reports call ended but RTC session is still `Active` (IM owns signaling; RTC owns media data per `docs/rtc-im-boundary.md`).
+3. **Ended IM call / Active RTC** — IM `calls.end` is signaling truth; RTC `media_sessions.close` is media truth. RTC worker does **not** call IM APIs (see `docs/rtc-im-boundary.md`). Cross-service healing is owned by `sdkwork-im` orchestration or platform jobs that invoke RTC close after IM end.
 
 ## Actions
 
@@ -20,4 +20,11 @@ Detect and heal operational drift between IM call state and RTC media sessions, 
 
 ## Worker implementation
 
-Rust worker crate: `crates/sdkwork-communication-rtc-worker/` exposes `RtcWorker::run_job(RtcWorkerJob::SessionReconciliation)`, which runs stale TTL close, provider drift sync, and failed-session compensation in one pass.
+Runnable binary: `sdkwork-rtc-reconcile` (`crates/sdkwork-rtc-api-server/src/bin/reconcile.rs`).
+
+Library crate: `crates/sdkwork-communication-rtc-worker/` exposes `RtcWorker::run_job(RtcWorkerJob::SessionReconciliation)`, which runs stale TTL close, provider drift sync, and failed-session compensation in one pass.
+
+Hydration:
+
+- Discovers tenant scopes from `rtc_media_session` rows in `Preparing`, `Active`, `Closing`, or `Failed` status.
+- Optional override: `SDKWORK_RTC_RECONCILE_TENANT_SCOPES=tenant:org,tenant:org`.

@@ -1,13 +1,13 @@
-import type { SdkworkAppClient } from "sdkwork-rtc-app-sdk-generated-typescript";
+import type { RtcAppSdkClient } from "@sdkwork/rtc-pc-core/sdk";
 
 type MediaSessionRetrieveResponse = Awaited<
-  ReturnType<SdkworkAppClient["rtcMediaSessions"]["rtc"]["mediaSessions"]["retrieve"]>
+  ReturnType<RtcAppSdkClient["rtcMediaSessions"]["rtc"]["mediaSessions"]["retrieve"]>
 >;
 
 export type RtcMediaSession = NonNullable<MediaSessionRetrieveResponse["data"]>;
 
 export type RtcCreateMediaSessionRequest = Parameters<
-  SdkworkAppClient["rtcMediaSessions"]["rtc"]["mediaSessions"]["create"]
+  RtcAppSdkClient["rtcMediaSessions"]["rtc"]["mediaSessions"]["create"]
 >[0];
 
 export type RtcMediaParticipant = RtcMediaSession["participants"][number];

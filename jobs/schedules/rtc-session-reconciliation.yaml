@@ -10,7 +10,7 @@ schedule:
 
 queue:
   name: rtc-maintenance
-  binding: sdkwork-rtc-session-reconciliation
+  binding: sdkwork-rtc-reconcile
 
 runbook:
   path: jobs/runbooks/rtc-session-reconciliation.md

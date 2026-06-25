@@ -595,11 +595,11 @@ mod tests {
     use sdkwork_communication_rtc_service::{
         RtcMediaSession, RtcMediaSessionCompletionInput, RtcMediaSessionCompletionRecord,
         RtcMediaSessionEndSource, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
-        RtcMediaSessionStatus, RtcPersistenceChangeSet, RtcPersistencePort,
-        RtcProviderEventKind, RtcProviderQueryJobRecord, RtcProviderQueryKind,
-        RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
-        RtcRuntimeLoadRequest, media_session_create_idempotency_payload_hash,
-        media_session_idempotency_record_id, utc_now_rfc3339_millis,
+        RtcMediaSessionStatus, RtcPersistenceChangeSet, RtcPersistencePort, RtcProviderEventKind,
+        RtcProviderQueryJobRecord, RtcProviderQueryKind, RtcProviderQuerySnapshotRecord,
+        RtcProviderWebhookEventRecord, RtcRuntimeLoadRequest,
+        media_session_create_idempotency_payload_hash, media_session_idempotency_record_id,
+        utc_now_rfc3339_millis,
     };
     use sqlx::sqlite::SqlitePoolOptions;
 
@@ -869,7 +869,9 @@ mod tests {
             .await
             .expect("idempotency lookup should work");
         assert_eq!(
-            resolved.as_ref().map(|record| record.media_session_id.as_str()),
+            resolved
+                .as_ref()
+                .map(|record| record.media_session_id.as_str()),
             Some("session-730")
         );
 

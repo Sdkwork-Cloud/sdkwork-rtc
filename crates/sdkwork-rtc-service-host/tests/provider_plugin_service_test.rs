@@ -14,16 +14,16 @@ use sdkwork_communication_rtc_service::{
     ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor, RtcContractError,
     RtcCreateMediaSessionRequest, RtcMediaSession, RtcMediaSessionEndSource,
     RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
-    RtcMediaSessionStatus, RtcParticipantCredential,
-    RtcPersistenceChangeSet, RtcPersistenceFuture, RtcPersistencePort, RtcProviderAccountCommand,
-    RtcProviderAccountDisableRequest, RtcProviderApplicationCommand,
-    RtcProviderApplicationDisableRequest, RtcProviderCredentialCommand,
-    RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole, RtcProviderCredentialStatus,
-    RtcProviderEventKind, RtcProviderPluginFactory, RtcProviderPort, RtcProviderQueryKind,
-    RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
-    RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
-    RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture, RtcRuntimeLoadRequest,
-    RtcSessionHandle, verify_hmac_sha256_payload,
+    RtcMediaSessionStatus, RtcParticipantCredential, RtcPersistenceChangeSet, RtcPersistenceFuture,
+    RtcPersistencePort, RtcProviderAccountCommand, RtcProviderAccountDisableRequest,
+    RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest,
+    RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole,
+    RtcProviderCredentialStatus, RtcProviderEventKind, RtcProviderPluginFactory, RtcProviderPort,
+    RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
+    RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest,
+    RtcRecordingArtifact, RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture,
+    RtcRuntimeLoadRequest, RtcSessionHandle, RtcTenantOrganizationScope,
+    verify_hmac_sha256_payload,
 };
 use sdkwork_router_rtc_app_api::service::{
     RtcAppApiError, RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
@@ -122,12 +122,7 @@ async fn product_service_create_media_session_honors_idempotency_key() {
         .await
         .expect("first create should succeed");
     let second = service
-        .create_media_session(
-            "610".into(),
-            Some("611".into()),
-            "612".into(),
-            request,
-        )
+        .create_media_session("610".into(), Some("611".into()), "612".into(), request)
         .await
         .expect("idempotent create should return existing session");
     assert_eq!(first.id, second.id);
@@ -263,20 +258,22 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
-                provider_profile_id: Some("profile-900-901-acme-default".into()),
-                external_event_id: None,
-                event_type: None,
-                received_at: Some("2026-06-10T00:00:00.000Z".into()),
-                headers: serde_json::json!({ "X-Acme-Signature": "sig-1" }),
-                payload: serde_json::json!({
-                    "eventType": "room_ended",
-                    "eventId": "evt-1",
-                    "roomId": "room-default",
-                    "sessionId": session.id,
-                    "recordingId": "recording-1"
-                }),
-            }),
+            RtcProviderWebhookIngress::from_wrapped_test_request(
+                RtcProviderWebhookReceiveRequest {
+                    provider_profile_id: Some("profile-900-901-acme-default".into()),
+                    external_event_id: None,
+                    event_type: None,
+                    received_at: Some("2026-06-10T00:00:00.000Z".into()),
+                    headers: serde_json::json!({ "X-Acme-Signature": "sig-1" }),
+                    payload: serde_json::json!({
+                        "eventType": "room_ended",
+                        "eventId": "evt-1",
+                        "roomId": "room-default",
+                        "sessionId": session.id,
+                        "recordingId": "recording-1"
+                    }),
+                },
+            ),
         )
         .await
         .expect("provider webhook should be parsed and recorded through provider plugin");
@@ -2014,20 +2011,22 @@ async fn product_service_rejects_provider_webhook_when_provider_mismatches_sessi
     let mismatched_webhook = service
         .receive_provider_webhook_event(
             "backup".into(),
-            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
-                provider_profile_id: None,
-                external_event_id: None,
-                event_type: None,
-                received_at: Some("2026-06-10T00:06:00.000Z".into()),
-                headers: serde_json::json!({ "X-Backup-Signature": "sig-mismatch" }),
-                payload: serde_json::json!({
-                    "eventType": "room_ended",
-                    "eventId": "evt-provider-mismatch",
-                    "roomId": "room-default",
-                    "sessionId": session.id,
-                    "recordingId": "recording-provider-mismatch"
-                }),
-            }),
+            RtcProviderWebhookIngress::from_wrapped_test_request(
+                RtcProviderWebhookReceiveRequest {
+                    provider_profile_id: None,
+                    external_event_id: None,
+                    event_type: None,
+                    received_at: Some("2026-06-10T00:06:00.000Z".into()),
+                    headers: serde_json::json!({ "X-Backup-Signature": "sig-mismatch" }),
+                    payload: serde_json::json!({
+                        "eventType": "room_ended",
+                        "eventId": "evt-provider-mismatch",
+                        "roomId": "room-default",
+                        "sessionId": session.id,
+                        "recordingId": "recording-provider-mismatch"
+                    }),
+                },
+            ),
         )
         .await;
 
@@ -2288,20 +2287,22 @@ async fn product_service_records_completion_from_provider_room_ended_webhook() {
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
-                provider_profile_id: Some("profile-700-701-acme-default".into()),
-                external_event_id: None,
-                event_type: None,
-                received_at: Some("2026-06-10T00:03:00.000Z".into()),
-                headers: serde_json::json!({ "X-Acme-Signature": "sig-webhook-close" }),
-                payload: serde_json::json!({
-                    "eventType": "room_ended",
-                    "eventId": "evt-webhook-close",
-                    "roomId": "room-default",
-                    "sessionId": session.id,
-                    "recordingId": "recording-webhook-close"
-                }),
-            }),
+            RtcProviderWebhookIngress::from_wrapped_test_request(
+                RtcProviderWebhookReceiveRequest {
+                    provider_profile_id: Some("profile-700-701-acme-default".into()),
+                    external_event_id: None,
+                    event_type: None,
+                    received_at: Some("2026-06-10T00:03:00.000Z".into()),
+                    headers: serde_json::json!({ "X-Acme-Signature": "sig-webhook-close" }),
+                    payload: serde_json::json!({
+                        "eventType": "room_ended",
+                        "eventId": "evt-webhook-close",
+                        "roomId": "room-default",
+                        "sessionId": session.id,
+                        "recordingId": "recording-webhook-close"
+                    }),
+                },
+            ),
         )
         .await
         .expect("room ended webhook should be recorded through provider plugin");
@@ -2494,20 +2495,22 @@ async fn product_service_persists_webhook_completion_change_set() {
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
-                provider_profile_id: Some("profile-740-741-acme-default".into()),
-                external_event_id: None,
-                event_type: None,
-                received_at: Some("2026-06-10T00:12:00.000Z".into()),
-                headers: serde_json::json!({ "X-Acme-Signature": "sig-persist-webhook" }),
-                payload: serde_json::json!({
-                    "eventType": "room_ended",
-                    "eventId": "evt-persist-webhook",
-                    "roomId": "room-default",
-                    "sessionId": session.id,
-                    "recordingId": "recording-persist-webhook"
-                }),
-            }),
+            RtcProviderWebhookIngress::from_wrapped_test_request(
+                RtcProviderWebhookReceiveRequest {
+                    provider_profile_id: Some("profile-740-741-acme-default".into()),
+                    external_event_id: None,
+                    event_type: None,
+                    received_at: Some("2026-06-10T00:12:00.000Z".into()),
+                    headers: serde_json::json!({ "X-Acme-Signature": "sig-persist-webhook" }),
+                    payload: serde_json::json!({
+                        "eventType": "room_ended",
+                        "eventId": "evt-persist-webhook",
+                        "roomId": "room-default",
+                        "sessionId": session.id,
+                        "recordingId": "recording-persist-webhook"
+                    }),
+                },
+            ),
         )
         .await
         .expect("room ended webhook should complete the session");
@@ -3096,19 +3099,21 @@ async fn product_service_resolves_provider_room_ended_webhook_by_active_room_ses
     let webhook_record = service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
-                provider_profile_id: Some("profile-710-711-acme-default".into()),
-                external_event_id: None,
-                event_type: None,
-                received_at: Some("2026-06-10T00:04:00.000Z".into()),
-                headers: serde_json::json!({ "X-Acme-Signature": "sig-room-only" }),
-                payload: serde_json::json!({
-                    "eventType": "room_ended",
-                    "eventId": "evt-room-only",
-                    "roomId": "room-default",
-                    "recordingId": "recording-room-only"
-                }),
-            }),
+            RtcProviderWebhookIngress::from_wrapped_test_request(
+                RtcProviderWebhookReceiveRequest {
+                    provider_profile_id: Some("profile-710-711-acme-default".into()),
+                    external_event_id: None,
+                    event_type: None,
+                    received_at: Some("2026-06-10T00:04:00.000Z".into()),
+                    headers: serde_json::json!({ "X-Acme-Signature": "sig-room-only" }),
+                    payload: serde_json::json!({
+                        "eventType": "room_ended",
+                        "eventId": "evt-room-only",
+                        "roomId": "room-default",
+                        "recordingId": "recording-room-only"
+                    }),
+                },
+            ),
         )
         .await
         .expect("room-only provider webhook should resolve active room session");
@@ -3179,20 +3184,22 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
     service
         .receive_provider_webhook_event(
             "acme".into(),
-            RtcProviderWebhookIngress::from_wrapped_test_request(RtcProviderWebhookReceiveRequest {
-                provider_profile_id: Some("profile-720-721-acme-default".into()),
-                external_event_id: None,
-                event_type: None,
-                received_at: Some("2026-06-10T00:05:00.000Z".into()),
-                headers: serde_json::json!({ "X-Acme-Signature": "sig-org-scope" }),
-                payload: serde_json::json!({
-                    "eventType": "room_ended",
-                    "eventId": "evt-org-scope",
-                    "roomId": "room-default",
-                    "sessionId": session.id,
-                    "recordingId": "recording-org-scope"
-                }),
-            }),
+            RtcProviderWebhookIngress::from_wrapped_test_request(
+                RtcProviderWebhookReceiveRequest {
+                    provider_profile_id: Some("profile-720-721-acme-default".into()),
+                    external_event_id: None,
+                    event_type: None,
+                    received_at: Some("2026-06-10T00:05:00.000Z".into()),
+                    headers: serde_json::json!({ "X-Acme-Signature": "sig-org-scope" }),
+                    payload: serde_json::json!({
+                        "eventType": "room_ended",
+                        "eventId": "evt-org-scope",
+                        "roomId": "room-default",
+                        "sessionId": session.id,
+                        "recordingId": "recording-org-scope"
+                    }),
+                },
+            ),
         )
         .await
         .expect("provider webhook should create organization scoped event record");
@@ -3403,7 +3410,10 @@ impl RtcPersistencePort for RecordingPersistence {
     ) -> RtcPersistenceFuture<'a, bool> {
         let event = event.clone();
         Box::pin(async move {
-            let mut events = self.webhook_events.lock().expect("recording persistence lock");
+            let mut events = self
+                .webhook_events
+                .lock()
+                .expect("recording persistence lock");
             let duplicate = events.iter().any(|stored| {
                 stored.tenant_id == event.tenant_id
                     && stored.organization_id == event.organization_id
@@ -3423,6 +3433,12 @@ impl RtcPersistencePort for RecordingPersistence {
                 });
             Ok(true)
         })
+    }
+
+    fn list_active_reconcile_scopes<'a>(
+        &'a self,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>> {
+        Box::pin(async { Ok(Vec::new()) })
     }
 }
 

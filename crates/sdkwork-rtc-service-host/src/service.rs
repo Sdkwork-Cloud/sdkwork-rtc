@@ -5,30 +5,31 @@ use std::time::Instant;
 use sdkwork_communication_rtc_service::{
     NoopRtcPersistencePort, ProviderHealthSnapshot, RtcActiveSessionTracker, RtcContractError,
     RtcCreateMediaSessionRequest, RtcListWindow, RtcListWindowParams, RtcMediaArtifact,
-    RtcMediaArtifactDescriptor, RtcMediaParticipant, RtcMediaSession, RtcMediaSessionCompletionInput,
-    RtcMediaSessionCompletionRecord, RtcMediaSessionEndSource,
+    RtcMediaArtifactDescriptor, RtcMediaParticipant, RtcMediaSession,
+    RtcMediaSessionCompletionInput, RtcMediaSessionCompletionRecord, RtcMediaSessionEndSource,
     RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
-    RtcMediaSessionStatus, RtcMediaTrack, RtcMediaTrackKind, RtcMediaTrackSource, RtcMediaTrackStatus,
-    RtcParticipantCredential, RtcParticipantCredentialContext, RtcParticipantRole,
-    RtcParticipantState, RtcPersistenceChangeSet, RtcPersistenceError, RtcPersistencePort,
-    RtcProviderAccount, RtcProviderAccountCommand, RtcProviderAccountDisableRequest,
-    RtcProviderAccountStatus, RtcProviderApplication, RtcProviderApplicationCommand,
-    RtcProviderApplicationDisableRequest, RtcProviderApplicationStatus,
-    RtcProviderCapabilitySnapshot, RtcProviderCredential, RtcProviderCredentialCommand,
-    RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole, RtcProviderCredentialStatus,
-    RtcProviderEventKind, RtcProviderHealthStatus, RtcProviderProfile, RtcProviderProfileCommand,
-    RtcProviderProfileDisableRequest, RtcProviderProfileStatus, RtcProviderProfileVerification,
-    RtcProviderProfileVerifyCheck, RtcProviderProfileVerifyCheckStatus,
-    RtcProviderProfileVerifyKind, RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResult,
-    RtcProviderQueryJobRecord, RtcProviderQueryKind, RtcProviderQueryRequest,
-    RtcProviderQueryResult, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEvent,
-    RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest,
-    RtcQualitySample, RtcRecordingArtifactExportRequest, RtcRecordingArtifactKind,
-    RtcRecordingArtifactStatus, RtcRoom, RtcRoomStatus, RtcRuntimeLoadRequest,
-    apply_list_window, media_session_create_idempotency_payload_hash,
-    media_session_idempotency_record_id, participant_credential_issue_idempotency_key,
-    participant_credential_issue_idempotency_payload_hash, rfc3339_age_ms,
-    utc_now_rfc3339_millis, validate_provider_webhook_freshness,
+    RtcMediaSessionStatus, RtcMediaTrack, RtcMediaTrackKind, RtcMediaTrackSource,
+    RtcMediaTrackStatus, RtcParticipantCredential, RtcParticipantCredentialContext,
+    RtcParticipantRole, RtcParticipantState, RtcPersistenceChangeSet, RtcPersistenceError,
+    RtcPersistencePort, RtcProviderAccount, RtcProviderAccountCommand,
+    RtcProviderAccountDisableRequest, RtcProviderAccountStatus, RtcProviderApplication,
+    RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest,
+    RtcProviderApplicationStatus, RtcProviderCapabilitySnapshot, RtcProviderCredential,
+    RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole,
+    RtcProviderCredentialStatus, RtcProviderEventKind, RtcProviderHealthStatus, RtcProviderProfile,
+    RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileStatus,
+    RtcProviderProfileVerification, RtcProviderProfileVerifyCheck,
+    RtcProviderProfileVerifyCheckStatus, RtcProviderProfileVerifyKind,
+    RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord,
+    RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult,
+    RtcProviderQuerySnapshotRecord, RtcProviderWebhookEvent, RtcProviderWebhookEventRecord,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcQualitySample,
+    RtcRecordingArtifactExportRequest, RtcRecordingArtifactKind, RtcRecordingArtifactStatus,
+    RtcRoom, RtcRoomStatus, RtcRuntimeLoadRequest, RtcTenantOrganizationScope, apply_list_window,
+    media_session_create_idempotency_payload_hash, media_session_idempotency_record_id,
+    participant_credential_issue_idempotency_key,
+    participant_credential_issue_idempotency_payload_hash, rfc3339_age_ms, utc_now_rfc3339_millis,
+    validate_provider_webhook_freshness,
 };
 use sdkwork_router_rtc_app_api::service::{
     RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture, RtcAppApiService,
@@ -193,13 +194,45 @@ impl RtcProductService {
                 },
             );
         }
-        state.restore_session_sequence_from_sessions();
         drop(state);
         for (tenant_id, session_id) in active_sessions {
             self.active_session_tracker
                 .open(tenant_id.as_str(), session_id.as_str());
         }
         Ok(())
+    }
+
+    pub async fn list_reconcile_scopes(
+        &self,
+    ) -> Result<Vec<RtcTenantOrganizationScope>, RtcPersistenceError> {
+        if let Ok(raw) = std::env::var("SDKWORK_RTC_RECONCILE_TENANT_SCOPES") {
+            let scopes = parse_reconcile_tenant_scopes(raw.as_str())
+                .map_err(RtcPersistenceError::Unavailable)?;
+            if !scopes.is_empty() {
+                return Ok(scopes);
+            }
+        }
+        let mut scopes = self.persistence.list_active_reconcile_scopes().await?;
+        if scopes.is_empty() {
+            scopes.push(RtcTenantOrganizationScope {
+                tenant_id: std::env::var("SDKWORK_RTC_RECONCILE_TENANT_ID")
+                    .or_else(|_| std::env::var("SDKWORK_RTC_HYDRATE_TENANT_ID"))
+                    .unwrap_or_else(|_| "default".into()),
+                organization_id: std::env::var("SDKWORK_RTC_RECONCILE_ORGANIZATION_ID")
+                    .or_else(|_| std::env::var("SDKWORK_RTC_HYDRATE_ORGANIZATION_ID"))
+                    .unwrap_or_else(|_| "default".into()),
+            });
+        }
+        Ok(scopes)
+    }
+
+    pub async fn hydrate_for_reconciliation(&self) -> Result<usize, RtcPersistenceError> {
+        let scopes = self.list_reconcile_scopes().await?;
+        for scope in &scopes {
+            self.hydrate_from_persistence(scope.tenant_id.clone(), scope.organization_id.clone())
+                .await?;
+        }
+        Ok(scopes.len())
     }
 
     pub async fn reconcile_stale_media_sessions(
@@ -476,8 +509,11 @@ impl RtcProductService {
                     return Ok(session);
                 }
             }
-            let cache_key =
-                media_session_idempotency_key(tenant_id.as_str(), organization_id.as_str(), idempotency_key);
+            let cache_key = media_session_idempotency_key(
+                tenant_id.as_str(),
+                organization_id.as_str(),
+                idempotency_key,
+            );
             let mut state = self.state.lock().expect("rtc product state lock");
             state.create_idempotency.insert(
                 cache_key,
@@ -536,14 +572,11 @@ impl RtcProductService {
                 let failed_at = utc_now_rfc3339_millis();
                 let failed_session = {
                     let mut state = self.state.lock().expect("rtc product state lock");
-                    let stored = state
-                        .sessions
-                        .get_mut(session_id.as_str())
-                        .ok_or_else(|| {
-                            RtcAppApiError::NotFound(format!(
-                                "RTC media session not found: {session_id}"
-                            ))
-                        })?;
+                    let stored = state.sessions.get_mut(session_id.as_str()).ok_or_else(|| {
+                        RtcAppApiError::NotFound(format!(
+                            "RTC media session not found: {session_id}"
+                        ))
+                    })?;
                     stored.status = RtcMediaSessionStatus::Failed;
                     stored.ended_at = Some(failed_at.clone());
                     stored.end_reason = Some(contract_error_message(&error));
@@ -575,14 +608,9 @@ impl RtcProductService {
         let persist_result = async {
             let (room, provider_profile, session) = {
                 let mut state = self.state.lock().expect("rtc product state lock");
-                let stored = state
-                    .sessions
-                    .get_mut(session_id.as_str())
-                    .ok_or_else(|| {
-                        RtcProductError::NotFound(format!(
-                            "RTC media session not found: {session_id}"
-                        ))
-                    })?;
+                let stored = state.sessions.get_mut(session_id.as_str()).ok_or_else(|| {
+                    RtcProductError::NotFound(format!("RTC media session not found: {session_id}"))
+                })?;
                 stored.status = initial_status;
                 stored.connected_at = connected_at;
                 stored.provider_session_id = Some(provider_session_id.clone());
@@ -638,8 +666,9 @@ impl RtcProductService {
                 if let Some(stored) = state.sessions.get_mut(session_id.as_str()) {
                     stored.status = RtcMediaSessionStatus::Failed;
                     stored.ended_at = Some(failed_at.clone());
-                    stored.end_reason =
-                        Some("RTC provider session persistence failed after provider create".into());
+                    stored.end_reason = Some(
+                        "RTC provider session persistence failed after provider create".into(),
+                    );
                     stored.end_source = Some(RtcMediaSessionEndSource::Unknown);
                     stored.provider_session_id = Some(provider_session_id);
                     stored.clone()
@@ -712,7 +741,10 @@ impl RtcProductService {
             );
             if let Some(cached) = {
                 let state = self.state.lock().expect("rtc product state lock");
-                state.credential_idempotency.get(cache_key.as_str()).cloned()
+                state
+                    .credential_idempotency
+                    .get(cache_key.as_str())
+                    .cloned()
             } {
                 return Ok(cached);
             }
@@ -753,13 +785,16 @@ impl RtcProductService {
                 RtcMediaSessionIdempotencyClaim::Existing(existing) => {
                     if let Some(cached) = {
                         let state = self.state.lock().expect("rtc product state lock");
-                        state.credential_idempotency.get(cache_key.as_str()).cloned()
+                        state
+                            .credential_idempotency
+                            .get(cache_key.as_str())
+                            .cloned()
                     } {
                         return Ok(cached);
                     }
-                    if let Some(credential) =
-                        participant_credential_from_idempotency_response(existing.response_json.as_str())
-                    {
+                    if let Some(credential) = participant_credential_from_idempotency_response(
+                        existing.response_json.as_str(),
+                    ) {
                         let mut state = self.state.lock().expect("rtc product state lock");
                         state
                             .credential_idempotency
@@ -767,8 +802,7 @@ impl RtcProductService {
                         return Ok(credential);
                     }
                     return Err(RtcAppApiError::Conflict(
-                        "RTC participant credential idempotency key is already in use"
-                            .to_string(),
+                        "RTC participant credential idempotency key is already in use".to_string(),
                     ));
                 }
             }
@@ -2437,7 +2471,8 @@ impl RtcProductService {
             }
         }
         for (tenant_id, media_session_id, _provider_session_id) in failed_compensation_candidates {
-            match self.compensate_failed_provider_session(tenant_id.as_str(), media_session_id.as_str())
+            match self
+                .compensate_failed_provider_session(tenant_id.as_str(), media_session_id.as_str())
             {
                 Ok(true) => result.compensated += 1,
                 Ok(false) => {}
@@ -2851,8 +2886,7 @@ impl RtcProductService {
         request: &RtcCreateAppMediaSessionRequest,
     ) -> Result<Option<RtcMediaSession>, RtcProductError> {
         let incoming_payload_hash = media_session_create_idempotency_payload_for_request(request);
-        let cache_key =
-            media_session_idempotency_key(tenant_id, organization_id, idempotency_key);
+        let cache_key = media_session_idempotency_key(tenant_id, organization_id, idempotency_key);
         let cached_entry = {
             let state = self.state.lock().expect("rtc product state lock");
             state.create_idempotency.get(cache_key.as_str()).cloned()
@@ -2861,11 +2895,7 @@ impl RtcProductService {
             Some(entry)
         } else if let Some(record) = self
             .persistence
-            .resolve_media_session_idempotency_record(
-                tenant_id,
-                organization_id,
-                idempotency_key,
-            )
+            .resolve_media_session_idempotency_record(tenant_id, organization_id, idempotency_key)
             .await
             .map_err(RtcProductError::from)?
         {
@@ -2874,9 +2904,7 @@ impl RtcProductService {
                 payload_hash: record.payload_hash,
             };
             let mut state = self.state.lock().expect("rtc product state lock");
-            state
-                .create_idempotency
-                .insert(cache_key, entry.clone());
+            state.create_idempotency.insert(cache_key, entry.clone());
             Some(entry)
         } else {
             None
@@ -3185,9 +3213,10 @@ impl RtcProductService {
             RtcProviderEventKind::ParticipantLeft => {
                 self.process_participant_left_webhook(record).await
             }
-            RtcProviderEventKind::QualitySample => self.process_quality_sample_webhook(record).await,
-            RtcProviderEventKind::RecordingCompleted
-            | RtcProviderEventKind::RecordingStarted => {
+            RtcProviderEventKind::QualitySample => {
+                self.process_quality_sample_webhook(record).await
+            }
+            RtcProviderEventKind::RecordingCompleted | RtcProviderEventKind::RecordingStarted => {
                 self.process_recording_webhook(record).await
             }
             _ => self.mark_webhook_processed(record).await,
@@ -3365,13 +3394,12 @@ impl RtcProductService {
                 .find(|participant| {
                     participant.session_id == media_session_id
                         && (participant.id == participant_id
-                            || participant
-                                .provider_participant_id
-                                .as_deref()
-                                .is_some_and(|value| {
+                            || participant.provider_participant_id.as_deref().is_some_and(
+                                |value| {
                                     value == participant_id
                                         || value == provider_participant_ref.as_str()
-                                }))
+                                },
+                            ))
                 })
                 .map(|participant| participant.id.clone())
                 .unwrap_or_else(|| participant_id.to_string());
@@ -3423,9 +3451,8 @@ impl RtcProductService {
             let session_snapshot = if let Some(session) = state.sessions.get_mut(media_session_id) {
                 session.last_provider_webhook_event_id = Some(record.id.clone());
                 session.participant_count = joined_count;
-                session.max_concurrent_participants = session
-                    .max_concurrent_participants
-                    .max(joined_count);
+                session.max_concurrent_participants =
+                    session.max_concurrent_participants.max(joined_count);
                 session.clone()
             } else {
                 return Err(RtcProductError::NotFound(format!(
@@ -3489,13 +3516,12 @@ impl RtcProductService {
                 .find(|participant| {
                     participant.session_id == media_session_id
                         && (participant.id == participant_id
-                            || participant
-                                .provider_participant_id
-                                .as_deref()
-                                .is_some_and(|value| {
+                            || participant.provider_participant_id.as_deref().is_some_and(
+                                |value| {
                                     value == participant_id
                                         || value == provider_participant_ref.as_str()
-                                }))
+                                },
+                            ))
                 })
                 .map(|participant| participant.id.clone())
                 .unwrap_or_else(|| participant_id.to_string());
@@ -3728,17 +3754,17 @@ impl RtcProductService {
         record: &RtcProviderWebhookEventRecord,
     ) -> Result<RtcProviderWebhookEventRecord, RtcProductError> {
         let mut state = self.state.lock().expect("rtc product state lock");
-        let processed_record = if let Some(stored_record) = state.webhook_events.get_mut(record.id.as_str())
-        {
-            stored_record.status = "processed".to_string();
-            stored_record.processed_at = Some(record.received_at.clone());
-            stored_record.clone()
-        } else {
-            let mut processed = record.clone();
-            processed.status = "processed".to_string();
-            processed.processed_at = Some(record.received_at.clone());
-            processed
-        };
+        let processed_record =
+            if let Some(stored_record) = state.webhook_events.get_mut(record.id.as_str()) {
+                stored_record.status = "processed".to_string();
+                stored_record.processed_at = Some(record.received_at.clone());
+                stored_record.clone()
+            } else {
+                let mut processed = record.clone();
+                processed.status = "processed".to_string();
+                processed.processed_at = Some(record.received_at.clone());
+                processed
+            };
         Ok(processed_record)
     }
 
@@ -5255,37 +5281,15 @@ struct RtcProductState {
     create_idempotency: BTreeMap<String, RtcMediaSessionIdempotencyCacheEntry>,
     credential_idempotency: BTreeMap<String, RtcParticipantCredential>,
     webhook_dedupe_keys: std::collections::BTreeSet<String>,
-    next_session_sequence: u64,
     next_artifact_sequence: u64,
-    next_webhook_event_sequence: u64,
     next_provider_query_snapshot_sequence: u64,
     next_provider_route_sequence: u64,
 }
 
 impl RtcProductState {
-    fn next_session_id(&mut self) -> String {
-        new_media_session_id()
-    }
-
-    fn restore_session_sequence_from_sessions(&mut self) {
-        let max_sequence = self
-            .sessions
-            .keys()
-            .filter_map(|session_id| session_id.strip_prefix("session-"))
-            .filter_map(|suffix| suffix.parse::<u64>().ok())
-            .max()
-            .unwrap_or(0);
-        self.next_session_sequence = self.next_session_sequence.max(max_sequence);
-    }
-
     fn next_media_artifact_id(&mut self) -> String {
         self.next_artifact_sequence += 1;
         format!("artifact-{}", self.next_artifact_sequence)
-    }
-
-    fn next_webhook_event_id(&mut self) -> String {
-        self.next_webhook_event_sequence += 1;
-        format!("webhook-event-{}", self.next_webhook_event_sequence)
     }
 
     fn next_provider_query_snapshot_id(&mut self) -> String {
@@ -6745,14 +6749,7 @@ fn quality_sample_from_webhook_record(
         participant_id: record.participant_id.clone(),
         latency_ms: json_u32_field(
             &payload,
-            &[
-                "latencyMs",
-                "latency_ms",
-                "rtt",
-                "Rtt",
-                "RTT",
-                "delay",
-            ],
+            &["latencyMs", "latency_ms", "rtt", "Rtt", "RTT", "delay"],
         ),
         packet_loss_rate: json_string_field(
             &payload,
@@ -6764,10 +6761,7 @@ fn quality_sample_from_webhook_record(
                 "lossRate",
             ],
         ),
-        jitter_ms: json_u32_field(
-            &payload,
-            &["jitterMs", "jitter_ms", "jitter", "Jitter"],
-        ),
+        jitter_ms: json_u32_field(&payload, &["jitterMs", "jitter_ms", "jitter", "Jitter"]),
         bitrate_kbps: json_u32_field(
             &payload,
             &[
@@ -6828,6 +6822,31 @@ fn webhook_record_dedupe_key(record: &RtcProviderWebhookEventRecord) -> String {
     )
 }
 
+fn parse_reconcile_tenant_scopes(raw: &str) -> Result<Vec<RtcTenantOrganizationScope>, String> {
+    let mut scopes = Vec::new();
+    for segment in raw
+        .split(',')
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        let (tenant_id, organization_id) = segment.split_once(':').ok_or_else(|| {
+            format!(
+                "invalid SDKWORK_RTC_RECONCILE_TENANT_SCOPES segment `{segment}`; expected tenant_id:organization_id"
+            )
+        })?;
+        if tenant_id.is_empty() || organization_id.is_empty() {
+            return Err(format!(
+                "invalid SDKWORK_RTC_RECONCILE_TENANT_SCOPES segment `{segment}`; tenant_id and organization_id must be non-empty"
+            ));
+        }
+        scopes.push(RtcTenantOrganizationScope {
+            tenant_id: tenant_id.to_string(),
+            organization_id: organization_id.to_string(),
+        });
+    }
+    Ok(scopes)
+}
+
 fn session_requires_reconcile(session: &RtcMediaSession, state: &RtcProductState) -> bool {
     let started_at = match session.started_at.as_deref() {
         Some(value) => value,
@@ -6839,9 +6858,7 @@ fn session_requires_reconcile(session: &RtcMediaSession, state: &RtcProductState
     };
     match session.status {
         RtcMediaSessionStatus::Preparing => {
-            age_ms
-                > session_reconcile_preparing_max_age_ms()
-                    .saturating_mul(1_000)
+            age_ms > session_reconcile_preparing_max_age_ms().saturating_mul(1_000)
         }
         RtcMediaSessionStatus::Active => {
             let profile = session
@@ -6896,7 +6913,8 @@ fn provider_query_indicates_session_ended(result: &RtcProviderQueryResult) -> bo
     if provider_status_token_indicates_ended(result.status.as_str()) {
         return true;
     }
-    let Ok(snapshot) = serde_json::from_str::<serde_json::Value>(&result.result_snapshot_json) else {
+    let Ok(snapshot) = serde_json::from_str::<serde_json::Value>(&result.result_snapshot_json)
+    else {
         return false;
     };
     if snapshot.get("roomExists").and_then(|value| value.as_bool()) == Some(false) {

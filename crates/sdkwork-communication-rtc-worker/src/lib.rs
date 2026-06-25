@@ -18,14 +18,28 @@ impl RtcWorker {
         &self.service
     }
 
-    pub async fn run_job(
-        &self,
-        job: RtcWorkerJob,
-    ) -> Result<RtcSessionReconcileResult, String> {
+    pub async fn run_job(&self, job: RtcWorkerJob) -> Result<RtcSessionReconcileResult, String> {
         match job {
             RtcWorkerJob::SessionReconciliation => {
                 self.service.reconcile_stale_media_sessions().await
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sdkwork_rtc_service_host::RtcProviderPluginRegistry;
+
+    #[tokio::test]
+    async fn session_reconciliation_job_returns_empty_result_on_fresh_service() {
+        let worker = RtcWorker::new(RtcProductService::new(RtcProviderPluginRegistry::new()));
+        let result = worker
+            .run_job(RtcWorkerJob::SessionReconciliation)
+            .await
+            .expect("reconciliation should succeed");
+        assert_eq!(result.scanned, 0);
+        assert!(result.failures.is_empty());
     }
 }

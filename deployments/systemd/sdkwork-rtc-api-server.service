@@ -1,0 +1,14 @@
+[Unit]
+Description=SDKWork RTC API Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/sdkwork/rtc
+EnvironmentFile=/etc/sdkwork/rtc/server.env
+ExecStart=/opt/sdkwork/rtc/bin/sdkwork-rtc-api-server
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

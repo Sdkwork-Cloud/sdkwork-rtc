@@ -5,7 +5,7 @@ use sdkwork_communication_rtc_service::{
     RtcMediaSessionIdempotencyRecord, RtcPersistenceChangeSet, RtcPersistenceError,
     RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind, RtcProviderQueryJobRecord,
     RtcProviderQueryKind, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
-    RtcRuntimeLoadRequest, utc_now_rfc3339_millis,
+    RtcRuntimeLoadRequest, RtcTenantOrganizationScope, utc_now_rfc3339_millis,
 };
 use sqlx::{Executor, PgPool, Postgres, Sqlite, SqlitePool};
 
@@ -371,6 +371,17 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
                 .map_err(storage_to_persistence_error)
         })
     }
+
+    fn list_active_reconcile_scopes<'a>(
+        &'a self,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_active_reconcile_scopes()
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -720,6 +731,17 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
     ) -> RtcPersistenceFuture<'a, bool> {
         Box::pin(async move {
             try_insert_postgres_provider_webhook_event(&self.pool, event)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn list_active_reconcile_scopes<'a>(
+        &'a self,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_active_reconcile_scopes()
                 .await
                 .map_err(storage_to_persistence_error)
         })

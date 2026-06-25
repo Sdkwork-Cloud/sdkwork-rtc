@@ -4,9 +4,9 @@ use std::thread;
 use std::time::Duration;
 
 use sdkwork_communication_rtc_service::{
-    ProviderHealthSnapshot, ProviderPluginDescriptor, RtcContractError, RtcCreateMediaSessionRequest,
-    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
-    RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
+    ProviderHealthSnapshot, ProviderPluginDescriptor, RtcContractError,
+    RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcParticipantCredentialContext,
+    RtcProviderPort, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
     RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture, RtcSessionHandle,
 };
@@ -21,9 +21,7 @@ pub fn provider_call_timeout_ms() -> u64 {
         .unwrap_or(DEFAULT_PROVIDER_TIMEOUT_MS)
 }
 
-pub fn wrap_provider_with_timeout(
-    provider: Arc<dyn RtcProviderPort>,
-) -> Arc<dyn RtcProviderPort> {
+pub fn wrap_provider_with_timeout(provider: Arc<dyn RtcProviderPort>) -> Arc<dyn RtcProviderPort> {
     Arc::new(TimeoutRtcProviderPort {
         inner: provider,
         timeout_ms: provider_call_timeout_ms(),
@@ -36,7 +34,11 @@ struct TimeoutRtcProviderPort {
 }
 
 impl TimeoutRtcProviderPort {
-    fn run_with_timeout<T, F>(&self, operation: &'static str, callback: F) -> Result<T, RtcContractError>
+    fn run_with_timeout<T, F>(
+        &self,
+        operation: &'static str,
+        callback: F,
+    ) -> Result<T, RtcContractError>
     where
         T: Send + 'static,
         F: FnOnce(Arc<dyn RtcProviderPort>) -> Result<T, RtcContractError> + Send + 'static,

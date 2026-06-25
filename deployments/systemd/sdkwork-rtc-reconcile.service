@@ -1,0 +1,9 @@
+[Unit]
+Description=SDKWork RTC Session Reconciliation
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sdkwork/rtc
+EnvironmentFile=/etc/sdkwork/rtc/server.env
+ExecStart=/opt/sdkwork/rtc/bin/sdkwork-rtc-reconcile

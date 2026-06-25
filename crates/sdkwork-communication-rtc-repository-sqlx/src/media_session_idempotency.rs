@@ -37,10 +37,7 @@ impl RtcSqliteMediaSessionIdempotencyRepository {
         .fetch_optional(&mut **transaction)
         .await?;
 
-        if let Some(existing) = row
-            .map(sqlite_row_to_idempotency_record)
-            .transpose()?
-        {
+        if let Some(existing) = row.map(sqlite_row_to_idempotency_record).transpose()? {
             if idempotency_payload_mismatch(
                 existing.payload_hash.as_str(),
                 record.payload_hash.as_str(),
@@ -245,10 +242,7 @@ impl RtcPostgresMediaSessionIdempotencyRepository {
         .fetch_optional(&mut **transaction)
         .await?;
 
-        if let Some(existing) = row
-            .map(postgres_row_to_idempotency_record)
-            .transpose()?
-        {
+        if let Some(existing) = row.map(postgres_row_to_idempotency_record).transpose()? {
             if idempotency_payload_mismatch(
                 existing.payload_hash.as_str(),
                 record.payload_hash.as_str(),
@@ -476,8 +470,10 @@ fn postgres_row_to_idempotency_record(
 }
 
 fn parse_i64_field(field: &'static str, value: &str) -> RtcStorageResult<i64> {
-    value.parse::<i64>().map_err(|_| RtcStorageError::InvalidEnumValue {
-        field,
-        value: value.to_string(),
-    })
+    value
+        .parse::<i64>()
+        .map_err(|_| RtcStorageError::InvalidEnumValue {
+            field,
+            value: value.to_string(),
+        })
 }

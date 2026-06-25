@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rtc-reconcile-runtime
+  namespace: sdkwork-rtc
+data:
+  SDKWORK_RTC_DATABASE_ENGINE: postgresql
+  SDKWORK_RTC_DATABASE_HOST: db.example.com
+  SDKWORK_RTC_DATABASE_PORT: "5432"
+  SDKWORK_RTC_DATABASE_NAME: sdkwork_rtc
+  SDKWORK_RTC_DATABASE_SCHEMA: public
+  SDKWORK_RTC_DATABASE_SSL_MODE: require
+  SDKWORK_RTC_DATABASE_MAX_CONNECTIONS: "10"
+  # Optional explicit scopes override DB discovery:
+  # SDKWORK_RTC_RECONCILE_TENANT_SCOPES: "100:0,200:0"
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability.svc:4318

@@ -10,9 +10,14 @@
     "domain": "rtc",
     "capability": "rtc",
     "surface": "app",
-    "languages": ["dart"],
+    "languages": [
+      "dart"
+    ],
     "generated": false,
-    "manifests": ["pubspec.yaml", "sdkwork.app.config.json"]
+    "manifests": [
+      "pubspec.yaml",
+      "sdkwork.app.config.json"
+    ]
   },
   "canonicalSpecs": [
     {
@@ -27,14 +32,24 @@
     }
   ],
   "contracts": {
-    "publicExports": ["lib/main.dart"],
-    "runtimeEntrypoints": ["pubspec.yaml#environment.sdk"],
+    "publicExports": [
+      "lib/main.dart"
+    ],
+    "runtimeEntrypoints": [
+      "pubspec.yaml#environment.sdk"
+    ],
     "sdkClients": [],
-    "sdkDependencies": ["sdkwork-rtc-app-sdk"],
+    "sdkDependencies": [
+      "sdkwork-rtc-app-sdk"
+    ],
     "dependencyApiExports": [],
-    "dependencyApiSurfaces": []
+    "dependencyApiSurfaces": [],
+    "dependencyComposition": "specs/dependency.composition.json"
   },
   "verification": {
-    "commands": ["flutter analyze", "flutter test"]
+    "commands": [
+      "flutter analyze",
+      "flutter test"
+    ]
   }
 }

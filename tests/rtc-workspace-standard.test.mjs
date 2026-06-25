@@ -162,6 +162,7 @@ test("sdkwork-rtc declares GitHub packaging workflow manifest", () => {
   assert.ok(exists("sdkwork.workflow.json"), "sdkwork.workflow.json must exist");
   assert.ok(exists(".github/workflows/package.yml"), ".github/workflows/package.yml must exist");
   assert.ok(exists(".github/workflows/rtc-governance.yml"), ".github/workflows/rtc-governance.yml must exist");
+  assert.ok(exists(".github/workflows/rtc-server-image.yml"), ".github/workflows/rtc-server-image.yml must exist");
   assert.ok(exists("scripts/prepare-ci-dependencies.mjs"), "scripts/prepare-ci-dependencies.mjs must exist");
   const workflow = JSON.parse(read("sdkwork.workflow.json"));
   assert.equal(workflow.app?.id, "sdkwork-rtc");
@@ -179,6 +180,7 @@ test("sdkwork-rtc declares GitHub packaging workflow manifest", () => {
   assert.ok(dependencyIds.includes("sdkwork-web-framework"), "sdkwork.workflow.json must declare sdkwork-web-framework");
   assert.ok(dependencyIds.includes("sdkwork-database"), "sdkwork.workflow.json must declare sdkwork-database");
   assert.ok(dependencyIds.includes("sdkwork-utils"), "sdkwork.workflow.json must declare sdkwork-utils");
+  assert.ok(dependencyIds.includes("sdkwork-id"), "sdkwork.workflow.json must declare sdkwork-id for database and container builds");
   assert.ok(verificationDependencyIds.includes("sdkwork-im"), "sdkwork.workflow.json must declare sdkwork-im for migration boundary verification");
   assert.ok(verificationDependencyIds.includes("sdkwork-core"), "sdkwork.workflow.json must declare sdkwork-core for migration boundary verification");
   assert.equal(workflow.toolchains?.flutter, "stable", "sdkwork.workflow.json must declare flutter toolchain for mobile verification");
@@ -594,4 +596,40 @@ test("sdkwork-rtc manifests and tools use standard paths and route crate names",
     assert.doesNotMatch(source, /sdkwork-rtc-core|sdkwork-rtc-storage-sqlx|sdkwork-rtc-product|sdkwork-routes-rtc-/u, `${filePath} must not reference legacy Rust crate names`);
     assert.match(source, /sdkwork-router-rtc-(app|backend)-api|sdkwork-communication-rtc-(service|repository-sqlx)|apis[\\/](app-api|backend-api)[\\/]communication/u, `${filePath} must reference standard names or API paths`);
   }
+});
+
+test("sdkwork-rtc ships production deployment manifests and reconcile binary", () => {
+  for (const filePath of [
+    "deployments/kubernetes/README.md",
+    "deployments/kubernetes/cloud-split-services/namespace.yaml",
+    "deployments/kubernetes/cloud-split-services/rtc-api-server/deployment.yaml",
+    "deployments/kubernetes/cloud-split-services/rtc-api-server/service.yaml",
+    "deployments/kubernetes/cloud-split-services/rtc-reconcile/cronjob.yaml",
+    "deployments/templates/server.env.example",
+    "deployments/docker/Dockerfile",
+    "deployments/docker/README.md",
+    "deployments/docker/docker-compose.standalone.example.yaml",
+    "deployments/systemd/sdkwork-rtc-api-server.service",
+    "docs/guides/operator/deployment.md",
+    "scripts/package-server.mjs",
+    "crates/sdkwork-rtc-api-server/src/bin/reconcile.rs",
+  ]) {
+    assert.ok(exists(filePath), `${filePath} must exist`);
+  }
+
+  const apiServerCargo = read("crates/sdkwork-rtc-api-server/Cargo.toml");
+  assert.match(apiServerCargo, /name = "sdkwork-rtc-reconcile"/u);
+  assert.match(
+    read("jobs/schedules/rtc-session-reconciliation.yaml"),
+    /binding: sdkwork-rtc-reconcile/u,
+  );
+
+  const packageJson = JSON.parse(read("package.json"));
+  assert.match(packageJson.scripts["package:server"], /package-server\.mjs package/u);
+
+  const packageServer = read("scripts/package-server.mjs");
+  assert.match(packageServer, /sdkwork-rtc-api-server/u);
+  assert.match(packageServer, /sdkwork-rtc-reconcile/u);
+  assert.match(read("deployments/docker/Dockerfile"), /sdkwork-rtc-reconcile/u);
+  assert.match(read(".github/workflows/rtc-server-image.yml"), /ghcr\.io\/sdkwork\/rtc-api-server/u);
 });

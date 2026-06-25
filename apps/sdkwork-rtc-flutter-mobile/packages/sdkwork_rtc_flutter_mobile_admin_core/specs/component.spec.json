@@ -12,13 +12,22 @@
     "capability": "admin-core",
     "surface": "backend-admin",
     "status": "ready",
-    "languages": ["dart"],
+    "languages": [
+      "dart"
+    ],
     "generated": false,
     "private": true,
-    "manifests": ["pubspec.yaml"]
+    "manifests": [
+      "pubspec.yaml"
+    ]
   },
   "contracts": {
-    "publicExports": ["."],
-    "sdkClients": ["sdkwork-rtc-backend-sdk"]
+    "publicExports": [
+      "."
+    ],
+    "sdkClients": [
+      "sdkwork-rtc-backend-sdk"
+    ],
+    "dependencyComposition": "../../../specs/dependency.composition.json"
   }
 }

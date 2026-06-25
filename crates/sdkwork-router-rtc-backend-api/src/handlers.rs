@@ -816,7 +816,9 @@ pub async fn receive_provider_webhook_event(
         .map_err(|error| RtcBackendHandlerError::from_api_error(error, request_id.clone()))?;
     let result = map_handler_error(
         &request_id,
-        service.receive_provider_webhook_event(provider, ingress).await,
+        service
+            .receive_provider_webhook_event(provider, ingress)
+            .await,
     )?;
     Ok(Json(RtcApiEnvelope::ok(result, request_id)))
 }

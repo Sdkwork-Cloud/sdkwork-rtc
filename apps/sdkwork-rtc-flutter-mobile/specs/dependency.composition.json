@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.dependency.composition",
+  "applicationCode": "rtc",
+  "clientArchitecture": "flutter-mobile",
+  "surfaces": [
+    {
+      "surface": "app",
+      "corePackage": "sdkwork_rtc_flutter_mobile_core",
+      "sdkClients": [],
+      "reusableModules": [],
+      "hostAdapters": [],
+      "dependencyApiExports": [],
+      "dependencyApiSurfaces": []
+    },
+    {
+      "surface": "backend-admin",
+      "corePackage": "sdkwork_rtc_flutter_mobile_admin_core",
+      "sdkClients": [],
+      "reusableModules": [],
+      "hostAdapters": [],
+      "dependencyApiExports": [],
+      "dependencyApiSurfaces": []
+    }
+  ],
+  "buildToolEntries": {
+    "pnpm": {
+      "workspacePackages": [
+        "sdkwork_rtc_flutter_mobile_core",
+        "sdkwork_rtc_flutter_mobile_admin_core"
+      ]
+    }
+  }
+}

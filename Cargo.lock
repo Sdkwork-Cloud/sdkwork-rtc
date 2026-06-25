@@ -1710,7 +1710,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
-name = "sdkwork-appbase-iam-bootstrap"
+name = "sdkwork-iam-bootstrap"
 version = "0.1.0"
 dependencies = [
  "chrono",
@@ -1748,6 +1748,7 @@ name = "sdkwork-communication-rtc-worker"
 version = "0.1.0"
 dependencies = [
  "sdkwork-rtc-service-host",
+ "tokio",
 ]
 
 [[package]]
@@ -1784,6 +1785,7 @@ dependencies = [
  "sdkwork-database-sqlx",
  "serde",
  "serde_json",
+ "sqlx",
  "thiserror",
  "tokio",
  "tracing",
@@ -1866,6 +1868,7 @@ name = "sdkwork-drive-observability"
 version = "0.1.0"
 dependencies = [
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1966,7 +1969,7 @@ dependencies = [
  "password-hash",
  "rand_core 0.6.4",
  "reqwest",
- "sdkwork-appbase-iam-bootstrap",
+ "sdkwork-iam-bootstrap",
  "sdkwork-database-sqlx",
  "sdkwork-iam-context-service",
  "sdkwork-utils-rust",
@@ -2093,6 +2096,7 @@ dependencies = [
  "axum",
  "sdkwork-communication-rtc-repository-sqlx",
  "sdkwork-communication-rtc-service",
+ "sdkwork-communication-rtc-worker",
  "sdkwork-database-sqlx",
  "sdkwork-router-rtc-app-api",
  "sdkwork-router-rtc-backend-api",

@@ -20,7 +20,9 @@ import {
   resolveSurfaceHttpUrl,
   shouldAutostartGateway,
   waitForHttpHealthy,
+  IAM_APPLICATION_BOOTSTRAP_ENV,
 } from './lib/rtc-topology.mjs';
+import { mergeRepoDevBootstrapAccessTokenEnv } from '../../sdkwork-iam/scripts/dev/create-dev-bootstrap-access-token-env.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -277,9 +279,14 @@ async function main() {
   const profileId =
     resolveDevProfileId(settings.hosting, settings.serviceLayout) || DEFAULT_DEV_PROFILE_ID;
   const profileEnv = loadProfile(profileId);
-  const runtimeEnv = mergeRuntimeEnv(process.env, profileEnv, resolveIamDevEnv(process.env), {
-    SDKWORK_RTC_PROFILE_ID: profileId,
-    SDKWORK_RTC_DEV_MODE: '1',
+  const runtimeEnv = mergeRepoDevBootstrapAccessTokenEnv({
+    repoRoot: REPO_ROOT,
+    manifestPath: 'apps/sdkwork-rtc-pc/sdkwork.app.config.json',
+    appId: 'sdkwork-rtc-pc',
+    env: mergeRuntimeEnv(process.env, profileEnv, resolveIamDevEnv(process.env), IAM_APPLICATION_BOOTSTRAP_ENV, {
+      SDKWORK_RTC_PROFILE_ID: profileId,
+      SDKWORK_RTC_DEV_MODE: '1',
+    }),
   });
 
   const processes = buildServerProcesses(profileId, runtimeEnv);

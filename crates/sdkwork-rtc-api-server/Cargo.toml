@@ -4,15 +4,24 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[lib]
+name = "sdkwork_rtc_api_server"
+path = "src/lib.rs"
+
 [[bin]]
 name = "sdkwork-rtc-api-server"
 path = "src/main.rs"
+
+[[bin]]
+name = "sdkwork-rtc-reconcile"
+path = "src/bin/reconcile.rs"
 
 [dependencies]
 anyhow = "1.0.98"
 axum.workspace = true
 sdkwork-communication-rtc-repository-sqlx.workspace = true
 sdkwork-communication-rtc-service.workspace = true
+sdkwork-communication-rtc-worker.workspace = true
 sdkwork-database-sqlx.workspace = true
 sdkwork-rtc-adapter-agora.workspace = true
 sdkwork-rtc-adapter-aliyun.workspace = true

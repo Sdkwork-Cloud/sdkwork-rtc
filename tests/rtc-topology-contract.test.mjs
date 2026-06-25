@@ -86,11 +86,20 @@ test('rtc dev orchestrator uses topology adapter helpers', async () => {
   assert.match(devScript, /listOrchestrationProcesses/);
   assert.match(devScript, /resolveSurfaceHttpUrl/);
   assert.match(devScript, /resolveIamDevEnv/);
+  assert.match(devScript, /IAM_APPLICATION_BOOTSTRAP_ENV/);
   assert.match(devScript, /resolveCloudGatewayConfigPath/);
   assert.match(devScript, /shouldAutostartGateway/);
   assert.match(devScript, /--config/);
   assert.match(devScript, /--hosting is retired/u);
   assert.match(devScript, /--topology is retired/u);
+});
+
+test('rtc topology adapter exports IAM application bootstrap env aliases', async () => {
+  const topologyAdapter = await read('scripts/lib/rtc-topology.mjs');
+  assert.match(topologyAdapter, /export const IAM_APPLICATION_BOOTSTRAP_ENV/u);
+  assert.match(topologyAdapter, /SDKWORK_APP_ROOT/u);
+  assert.match(topologyAdapter, /SDKWORK_IAM_APP_ROOT/u);
+  assert.match(topologyAdapter, /SDKWORK_RTC_APP_ROOT/u);
 });
 
 test('declares cloud gateway config bundles referenced by topology spec', async () => {

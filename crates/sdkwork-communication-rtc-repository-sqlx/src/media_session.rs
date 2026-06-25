@@ -5,7 +5,7 @@ use sdkwork_communication_rtc_service::{
     RtcMediaSessionStatus, RtcMediaSource, RtcMediaTrack, RtcMediaTrackKind, RtcMediaTrackSource,
     RtcMediaTrackStatus, RtcParticipantRole, RtcParticipantState, RtcQualitySample,
     RtcRecordingArtifactKind, RtcRecordingArtifactStatus, RtcRoom, RtcRoomStatus,
-    rtc_provider_payload_hash,
+    RtcTenantOrganizationScope, rtc_provider_payload_hash,
 };
 use serde::de::DeserializeOwned;
 use sqlx::{
@@ -467,6 +467,27 @@ impl RtcSqliteMediaSessionRepository {
             sessions.push(sqlite_row_to_media_session(row, participants)?);
         }
         Ok(sessions)
+    }
+
+    pub async fn list_active_reconcile_scopes(
+        &self,
+    ) -> RtcStorageResult<Vec<RtcTenantOrganizationScope>> {
+        const SQL: &str = r#"
+            SELECT DISTINCT tenant_id, organization_id
+            FROM rtc_media_session
+            WHERE status IN (1, 2, 3, 5)
+              AND deleted_at IS NULL
+            ORDER BY tenant_id ASC, organization_id ASC
+        "#;
+        let rows = sqlx::query(SQL).fetch_all(&self.pool).await?;
+        rows.into_iter()
+            .map(|row| {
+                Ok(RtcTenantOrganizationScope {
+                    tenant_id: sqlite_i64_column_to_string(&row, "tenant_id")?,
+                    organization_id: sqlite_i64_column_to_string(&row, "organization_id")?,
+                })
+            })
+            .collect()
     }
 
     pub async fn get_media_session_for_scope(
@@ -947,6 +968,27 @@ impl RtcPostgresMediaSessionRepository {
             sessions.push(postgres_row_to_media_session(row, participants)?);
         }
         Ok(sessions)
+    }
+
+    pub async fn list_active_reconcile_scopes(
+        &self,
+    ) -> RtcStorageResult<Vec<RtcTenantOrganizationScope>> {
+        const SQL: &str = r#"
+            SELECT DISTINCT tenant_id, organization_id
+            FROM rtc_media_session
+            WHERE status IN (1, 2, 3, 5)
+              AND deleted_at IS NULL
+            ORDER BY tenant_id ASC, organization_id ASC
+        "#;
+        let rows = sqlx::query(SQL).fetch_all(&self.pool).await?;
+        rows.into_iter()
+            .map(|row| {
+                Ok(RtcTenantOrganizationScope {
+                    tenant_id: postgres_i64_column_to_string(&row, "tenant_id")?,
+                    organization_id: postgres_i64_column_to_string(&row, "organization_id")?,
+                })
+            })
+            .collect()
     }
 
     pub async fn get_media_session_for_scope(

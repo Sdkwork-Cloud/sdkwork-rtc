@@ -11,12 +11,19 @@
     "declaredDomain": "communication",
     "capability": "core",
     "status": "ready",
-    "languages": ["dart"],
+    "languages": [
+      "dart"
+    ],
     "generated": false,
     "private": true,
-    "manifests": ["pubspec.yaml"]
+    "manifests": [
+      "pubspec.yaml"
+    ]
   },
   "contracts": {
-    "publicExports": ["."]
+    "publicExports": [
+      "."
+    ],
+    "dependencyComposition": "../../../specs/dependency.composition.json"
   }
 }

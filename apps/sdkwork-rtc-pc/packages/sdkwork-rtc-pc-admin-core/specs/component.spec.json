@@ -12,13 +12,22 @@
     "capability": "admin-core",
     "surface": "backend-admin",
     "status": "ready",
-    "languages": ["typescript"],
+    "languages": [
+      "typescript"
+    ],
     "generated": false,
     "private": true,
-    "manifests": ["package.json"]
+    "manifests": [
+      "package.json"
+    ]
   },
   "contracts": {
-    "publicExports": ["."],
-    "sdkClients": ["sdkwork-rtc-backend-sdk-generated-typescript"]
+    "publicExports": [
+      "."
+    ],
+    "sdkClients": [
+      "sdkwork-rtc-backend-sdk-generated-typescript"
+    ],
+    "dependencyComposition": "../../../specs/dependency.composition.json"
   }
 }
