@@ -17,6 +17,7 @@ name = "sdkwork-rtc-reconcile"
 path = "src/bin/reconcile.rs"
 
 [dependencies]
+sdkwork_rtc_gateway_assembly = { package = "sdkwork-rtc-gateway-assembly", path = "../sdkwork-rtc-gateway-assembly" }
 anyhow = "1.0.98"
 axum.workspace = true
 sdkwork-communication-rtc-repository-sqlx.workspace = true
@@ -28,8 +29,8 @@ sdkwork-rtc-adapter-aliyun.workspace = true
 sdkwork-rtc-adapter-livekit.workspace = true
 sdkwork-rtc-adapter-tencent.workspace = true
 sdkwork-rtc-adapter-volcengine.workspace = true
-sdkwork-router-rtc-app-api.workspace = true
-sdkwork-router-rtc-backend-api.workspace = true
+sdkwork-routes-rtc-app-api.workspace = true
+sdkwork-routes-rtc-backend-api.workspace = true
 sdkwork-rtc-service-host.workspace = true
 sdkwork-web-bootstrap.workspace = true
 sqlx.workspace = true
@@ -37,3 +38,7 @@ tokio.workspace = true
 tower.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+
+[[bin]]
+name = "sdkwork-rtc-standalone-gateway"
+path = "src/main.rs"

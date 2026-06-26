@@ -6,10 +6,10 @@ Reserved Python provider package boundary for Twilio Video.
 - plugin id: `rtc-twilio`
 - driver id: `sdkwork-rtc-driver-twilio`
 - package identity: `sdkwork-rtc-sdk-provider-twilio`
-- directory path: `providers/sdkwork_rtc_sdk_provider_twilio`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_twilio/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_twilio/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_twilio/sdkwork_rtc_sdk_provider_twilio/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_twilio`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_twilio/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_twilio/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_twilio/sdkwork_ai_prod_sdk_provider_twilio/__init__.py`
 - source symbol: `RtcProviderTwilioPackageContract`
 - builtin provider: `false`
 - status: `future-runtime-bridge-only`

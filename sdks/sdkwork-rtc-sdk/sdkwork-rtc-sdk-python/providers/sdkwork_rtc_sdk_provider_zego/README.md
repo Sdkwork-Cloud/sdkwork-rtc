@@ -6,10 +6,10 @@ Reserved Python provider package boundary for ZEGO RTC.
 - plugin id: `rtc-zego`
 - driver id: `sdkwork-rtc-driver-zego`
 - package identity: `sdkwork-rtc-sdk-provider-zego`
-- directory path: `providers/sdkwork_rtc_sdk_provider_zego`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_zego/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_zego/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_zego/sdkwork_rtc_sdk_provider_zego/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_zego`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_zego/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_zego/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_zego/sdkwork_ai_prod_sdk_provider_zego/__init__.py`
 - source symbol: `RtcProviderZegoPackageContract`
 - builtin provider: `false`
 - status: `future-runtime-bridge-only`

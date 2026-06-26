@@ -4,13 +4,13 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const path = resolve(root, "crates/sdkwork-router-rtc-backend-api/src/handlers.rs");
+const path = resolve(root, "crates/sdkwork-routes-rtc-backend-api/src/handlers.rs");
 let content = readFileSync(path, "utf8");
 
 if (!content.includes("use sdkwork_web_core::WebRequestContext")) {
   content = content.replace(
-    "use sdkwork_rtc_app_context::AppContext;",
-    "use sdkwork_rtc_app_context::AppContext;\nuse sdkwork_web_core::WebRequestContext;",
+    "use sdkwork_ai_prod_app_context::AppContext;",
+    "use sdkwork_ai_prod_app_context::AppContext;\nuse sdkwork_web_core::WebRequestContext;",
   );
 }
 

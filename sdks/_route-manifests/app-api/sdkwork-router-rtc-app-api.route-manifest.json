@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "sdkwork.route.manifest",
-  "packageName": "sdkwork-router-rtc-app-api",
+  "packageName": "sdkwork-routes-rtc-app-api",
   "surface": "app-api",
   "owner": "sdkwork-rtc",
   "domain": "rtc",
@@ -10,8 +10,8 @@
   "sdkFamily": "sdkwork-rtc-app-sdk",
   "prefix": "/app/v3/api",
   "source": {
-    "crateRoot": "crates/sdkwork-router-rtc-app-api/src",
-    "crateImport": "sdkwork_router_rtc_app_api"
+    "crateRoot": "crates/sdkwork-routes-rtc-app-api/src",
+    "crateImport": "sdkwork_routes_rtc_app_api"
   },
   "routes": [
     {
@@ -44,8 +44,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -80,8 +80,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -114,8 +114,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -148,8 +148,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -184,8 +184,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -218,8 +218,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -252,8 +252,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -286,8 +286,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     },
     {
@@ -320,8 +320,8 @@
         "apiAuthority": "sdkwork-rtc-app-api"
       },
       "source": {
-        "packageName": "sdkwork-router-rtc-app-api",
-        "file": "crates/sdkwork-router-rtc-app-api/src/paths.rs"
+        "packageName": "sdkwork-routes-rtc-app-api",
+        "file": "crates/sdkwork-routes-rtc-app-api/src/paths.rs"
       }
     }
   ]

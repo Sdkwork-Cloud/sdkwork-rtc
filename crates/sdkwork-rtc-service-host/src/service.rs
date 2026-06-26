@@ -31,13 +31,13 @@ use sdkwork_communication_rtc_service::{
     participant_credential_issue_idempotency_payload_hash, rfc3339_age_ms, utc_now_rfc3339_millis,
     validate_provider_webhook_freshness,
 };
-use sdkwork_router_rtc_app_api::service::{
+use sdkwork_routes_rtc_app_api::service::{
     RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture, RtcAppApiService,
     RtcAppListQuery, RtcCreateAppMediaSessionRequest, RtcIssueParticipantCredentialRequest,
     RtcListRequest, RtcMediaArtifactListData as RtcAppMediaArtifactListData,
     RtcMediaSessionListData, RtcRoomListData,
 };
-use sdkwork_router_rtc_backend_api::service::{
+use sdkwork_routes_rtc_backend_api::service::{
     RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListQuery,
     RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcListData, RtcMediaArtifactListData,
     RtcMediaSessionListData as RtcBackendMediaSessionListData, RtcProviderAccountListData,
@@ -5169,7 +5169,7 @@ impl RtcBackendApiService for RtcProductService {
         organization_id: Option<String>,
         actor_id: String,
         provider_profile_id: String,
-        request: sdkwork_router_rtc_backend_api::service::RtcProviderCapabilityConfig,
+        request: sdkwork_routes_rtc_backend_api::service::RtcProviderCapabilityConfig,
     ) -> RtcBackendApiFuture<sdkwork_communication_rtc_service::RtcProviderProfile> {
         let service = self.clone();
         Box::pin(async move {

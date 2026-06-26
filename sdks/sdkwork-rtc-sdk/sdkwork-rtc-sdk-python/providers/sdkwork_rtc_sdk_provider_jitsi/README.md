@@ -6,10 +6,10 @@ Reserved Python provider package boundary for Jitsi Meet.
 - plugin id: `rtc-jitsi`
 - driver id: `sdkwork-rtc-driver-jitsi`
 - package identity: `sdkwork-rtc-sdk-provider-jitsi`
-- directory path: `providers/sdkwork_rtc_sdk_provider_jitsi`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_jitsi/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_jitsi/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_jitsi/sdkwork_rtc_sdk_provider_jitsi/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_jitsi`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_jitsi/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_jitsi/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_jitsi/sdkwork_ai_prod_sdk_provider_jitsi/__init__.py`
 - source symbol: `RtcProviderJitsiPackageContract`
 - builtin provider: `false`
 - status: `future-runtime-bridge-only`

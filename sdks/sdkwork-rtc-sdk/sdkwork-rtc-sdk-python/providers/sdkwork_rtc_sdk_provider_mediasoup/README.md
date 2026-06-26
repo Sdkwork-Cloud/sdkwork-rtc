@@ -6,10 +6,10 @@ Reserved Python provider package boundary for mediasoup RTC.
 - plugin id: `rtc-mediasoup`
 - driver id: `sdkwork-rtc-driver-mediasoup`
 - package identity: `sdkwork-rtc-sdk-provider-mediasoup`
-- directory path: `providers/sdkwork_rtc_sdk_provider_mediasoup`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_mediasoup/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_mediasoup/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_mediasoup/sdkwork_rtc_sdk_provider_mediasoup/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_mediasoup`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_mediasoup/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_mediasoup/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_mediasoup/sdkwork_ai_prod_sdk_provider_mediasoup/__init__.py`
 - source symbol: `RtcProviderMediasoupPackageContract`
 - builtin provider: `false`
 - status: `future-runtime-bridge-only`

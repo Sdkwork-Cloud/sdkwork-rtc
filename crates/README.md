@@ -12,7 +12,7 @@ sdkwork-rtc.
 
 - `sdkwork-communication-rtc-service/` business service logic and service ports.
 - `sdkwork-communication-rtc-repository-sqlx/` SQLx schema, row mapping, and repository implementation.
-- `sdkwork-router-rtc-app-api/` and `sdkwork-router-rtc-backend-api/` route adapters.
+- `sdkwork-routes-rtc-app-api/` and `sdkwork-routes-rtc-backend-api/` route adapters.
 - `sdkwork-rtc-service-host/` in-process service container.
 - Supporting RTC registry, context, and OpenAPI helper crates.
 

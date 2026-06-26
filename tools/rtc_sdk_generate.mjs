@@ -75,9 +75,9 @@ const families = [
     authorityName: "sdkwork-rtc-app-api",
     sdkType: "app",
     apiPrefix: "/app/v3/api",
-    sourceRouteCrate: "sdkwork-router-rtc-app-api",
+    sourceRouteCrate: "sdkwork-routes-rtc-app-api",
     routeManifest:
-      "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
+      "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
     sourceOpenapi: "apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
     defaultBaseUrl: "http://127.0.0.1:18088",
     sdkDependencies: [providerRuntimeSdkDependency, driveAppSdkDependency],
@@ -87,9 +87,9 @@ const families = [
     authorityName: "sdkwork-rtc-backend-api",
     sdkType: "backend",
     apiPrefix: "/backend/v3/api",
-    sourceRouteCrate: "sdkwork-router-rtc-backend-api",
+    sourceRouteCrate: "sdkwork-routes-rtc-backend-api",
     routeManifest:
-      "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+      "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
     sourceOpenapi: "apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json",
     defaultBaseUrl: "http://127.0.0.1:18088",
     sdkDependencies: [providerRuntimeSdkDependency, driveBackendSdkDependency],

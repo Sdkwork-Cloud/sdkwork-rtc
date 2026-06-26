@@ -6,10 +6,10 @@ Reserved Python provider package boundary for Tencent RTC.
 - plugin id: `rtc-tencent`
 - driver id: `sdkwork-rtc-driver-tencent`
 - package identity: `sdkwork-rtc-sdk-provider-tencent`
-- directory path: `providers/sdkwork_rtc_sdk_provider_tencent`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_tencent/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_tencent/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_tencent/sdkwork_rtc_sdk_provider_tencent/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_tencent`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_tencent/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_tencent/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_tencent/sdkwork_ai_prod_sdk_provider_tencent/__init__.py`
 - source symbol: `RtcProviderTencentPackageContract`
 - builtin provider: `true`
 - status: `future-runtime-bridge-only`

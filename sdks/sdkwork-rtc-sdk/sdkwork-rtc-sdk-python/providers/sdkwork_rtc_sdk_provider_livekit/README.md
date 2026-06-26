@@ -6,10 +6,10 @@ Reserved Python provider package boundary for LiveKit RTC.
 - plugin id: `rtc-livekit`
 - driver id: `sdkwork-rtc-driver-livekit`
 - package identity: `sdkwork-rtc-sdk-provider-livekit`
-- directory path: `providers/sdkwork_rtc_sdk_provider_livekit`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_livekit/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_livekit/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_livekit/sdkwork_rtc_sdk_provider_livekit/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_livekit`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_livekit/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_livekit/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_livekit/sdkwork_ai_prod_sdk_provider_livekit/__init__.py`
 - source symbol: `RtcProviderLivekitPackageContract`
 - builtin provider: `true`
 - status: `future-runtime-bridge-only`

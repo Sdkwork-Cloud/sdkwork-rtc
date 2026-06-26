@@ -111,7 +111,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-rtc-api-server",
-            "binary": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           },
           {
@@ -130,7 +130,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-rtc-api-server",
-            "binary": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           }
         ],
@@ -153,7 +153,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-rtc-api-server",
-            "binary": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           },
           {
@@ -180,7 +180,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-rtc-api-server",
-            "binary": "sdkwork-rtc-api-server",
+            "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           },
           {

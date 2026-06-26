@@ -266,7 +266,7 @@ export function runRtcSdkSmoke(workspaceRoot) {
     {
       label: 'python:compileall',
       command: 'python',
-      args: ['-m', 'compileall', '-q', 'sdkwork-rtc-sdk-python/sdkwork_rtc_sdk'],
+      args: ['-m', 'compileall', '-q', 'sdkwork-rtc-sdk-python/sdkwork_ai_prod_sdk'],
       cwd: workspaceRoot,
     },
     {

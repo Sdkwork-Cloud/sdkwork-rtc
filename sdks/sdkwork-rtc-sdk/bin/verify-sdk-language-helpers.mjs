@@ -367,7 +367,7 @@ export function getReservedLanguageRootPublicContract(languageEntry) {
       };
     case 'python':
       return {
-        relativePath: 'sdkwork_rtc_sdk/__init__.py',
+        relativePath: 'sdkwork_ai_prod_sdk/__init__.py',
         patterns: [
           /from \.provider_catalog import \(/,
           /from \.provider_package_catalog import \(/,

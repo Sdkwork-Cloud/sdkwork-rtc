@@ -1,0 +1,30 @@
+{
+  "kind": "sdkwork.gateway.assembly",
+  "schemaVersion": 1,
+  "applicationCode": "rtc",
+  "packageName": "sdkwork-rtc-gateway-assembly",
+  "crateDir": "crates/sdkwork-rtc-gateway-assembly",
+  "generatedAt": "2026-06-25T13:08:05.599Z",
+  "routeCrates": [
+    {
+      "packageName": "sdkwork-routes-rtc-app-api",
+      "memberDir": "crates/sdkwork-routes-rtc-app-api",
+      "libName": "sdkwork_routes_rtc_app_api",
+      "surface": "app-api",
+      "pathPrefix": null,
+      "mountOrder": 0,
+      "hasGatewayMount": true,
+      "hasGatewayRouteManifest": false
+    },
+    {
+      "packageName": "sdkwork-routes-rtc-backend-api",
+      "memberDir": "crates/sdkwork-routes-rtc-backend-api",
+      "libName": "sdkwork_routes_rtc_backend_api",
+      "surface": "backend-api",
+      "pathPrefix": null,
+      "mountOrder": 1,
+      "hasGatewayMount": true,
+      "hasGatewayRouteManifest": false
+    }
+  ]
+}

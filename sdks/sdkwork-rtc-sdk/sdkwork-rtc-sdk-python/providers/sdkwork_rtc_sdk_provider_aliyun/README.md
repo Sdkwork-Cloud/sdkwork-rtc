@@ -6,10 +6,10 @@ Reserved Python provider package boundary for Aliyun RTC.
 - plugin id: `rtc-aliyun`
 - driver id: `sdkwork-rtc-driver-aliyun`
 - package identity: `sdkwork-rtc-sdk-provider-aliyun`
-- directory path: `providers/sdkwork_rtc_sdk_provider_aliyun`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_aliyun/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_aliyun/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_aliyun/sdkwork_rtc_sdk_provider_aliyun/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_aliyun`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_aliyun/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_aliyun/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_aliyun/sdkwork_ai_prod_sdk_provider_aliyun/__init__.py`
 - source symbol: `RtcProviderAliyunPackageContract`
 - builtin provider: `true`
 - status: `future-runtime-bridge-only`

@@ -5119,7 +5119,7 @@ dependencies:
     path: ../..
   ${vendorSdkPackage}: ${vendorSdkVersion}
 
-sdkwork_rtc_provider:
+sdkwork_ai_prod_provider:
   providerKey: ${provider.providerKey}
   pluginId: ${provider.pluginId}
   driverId: ${provider.driverId}
@@ -5935,7 +5935,7 @@ version: 0.1.0
 environment:
   sdk: ">=3.4.0 <4.0.0"
 
-sdkwork_rtc_provider:
+sdkwork_ai_prod_provider:
   providerKey: ${provider.providerKey}
   pluginId: ${provider.pluginId}
   driverId: ${provider.driverId}
@@ -11862,7 +11862,7 @@ export 'src/rtc_data_source.dart';
     case 'python':
       return [
         {
-          relativePath: `${languageEntry.workspace}/sdkwork_rtc_sdk/__init__.py`,
+          relativePath: `${languageEntry.workspace}/sdkwork_ai_prod_sdk/__init__.py`,
           content: lines(`
 from .capability_catalog import (
     RtcCapabilityCatalog,

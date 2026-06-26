@@ -6,7 +6,7 @@ Flutter mobile application for SDKWork RTC. Native iOS and Android experience fo
 
 - Root: `FLUTTER_APP_MOBILE_ARCHITECTURE_SPEC.md`
 - SDK: `sdkwork-rtc-app-sdk` (generated Dart)
-- Packages: `sdkwork_rtc_flutter_mobile_core`, `sdkwork_rtc_flutter_mobile_commons`, `sdkwork_rtc_flutter_mobile_shell`, `sdkwork_rtc_flutter_mobile_rtc`
+- Packages: `sdkwork_ai_prod_flutter_mobile_core`, `sdkwork_ai_prod_flutter_mobile_commons`, `sdkwork_ai_prod_flutter_mobile_shell`, `sdkwork_ai_prod_flutter_mobile_rtc`
 
 ## Development
 

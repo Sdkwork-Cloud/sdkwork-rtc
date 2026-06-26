@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Local component contract for `sdkwork-router-rtc-app-api`.
+Local component contract for `sdkwork-routes-rtc-app-api`.
 
 ## Owner
 
@@ -11,5 +11,5 @@ sdkwork-rtc.
 ## Verification
 
 ```powershell
-cargo test -p sdkwork-router-rtc-app-api
+cargo test -p sdkwork-routes-rtc-app-api
 ```

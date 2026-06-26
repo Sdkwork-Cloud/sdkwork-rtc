@@ -6,10 +6,10 @@ Reserved Python provider package boundary for Volcengine RTC.
 - plugin id: `rtc-volcengine`
 - driver id: `sdkwork-rtc-driver-volcengine`
 - package identity: `sdkwork-rtc-sdk-provider-volcengine`
-- directory path: `providers/sdkwork_rtc_sdk_provider_volcengine`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_volcengine/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_volcengine/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_volcengine/sdkwork_rtc_sdk_provider_volcengine/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_volcengine`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_volcengine/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_volcengine/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_volcengine/sdkwork_ai_prod_sdk_provider_volcengine/__init__.py`
 - source symbol: `RtcProviderVolcenginePackageContract`
 - builtin provider: `true`
 - status: `future-runtime-bridge-only`

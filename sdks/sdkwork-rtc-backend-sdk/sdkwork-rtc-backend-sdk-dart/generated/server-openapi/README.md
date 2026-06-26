@@ -5,13 +5,13 @@ Generated SDKWork v3 dual-token transport SDK.
 ## Installation
 
 ```bash
-dart pub add sdkwork_rtc_backend_sdk_generated_dart
+dart pub add sdkwork_ai_prod_backend_sdk_generated_dart
 ```
 
 ## Quick Start
 
 ```dart
-import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart';
+import 'package:sdkwork_ai_prod_backend_sdk_generated_dart/sdkwork_ai_prod_backend_sdk_generated_dart.dart';
 
 final client = SdkworkBackendClient(
   config: const SdkConfig(

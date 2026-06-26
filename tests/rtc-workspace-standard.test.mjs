@@ -52,7 +52,7 @@ test("sdkwork-rtc keeps app packages under app surface roots", () => {
     "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-shell/package.json",
     "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-rtc/package.json",
     "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-host/package.json",
-    "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc/pubspec.yaml",
+    "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_rtc/pubspec.yaml",
   ]) {
     assert.ok(exists(packagePath), `${packagePath} must exist`);
   }
@@ -122,8 +122,8 @@ test("sdkwork-rtc uses responsibility-specific Rust crate names", () => {
   for (const cratePath of [
     "crates/sdkwork-communication-rtc-service/Cargo.toml",
     "crates/sdkwork-communication-rtc-repository-sqlx/Cargo.toml",
-    "crates/sdkwork-router-rtc-app-api/Cargo.toml",
-    "crates/sdkwork-router-rtc-backend-api/Cargo.toml",
+    "crates/sdkwork-routes-rtc-app-api/Cargo.toml",
+    "crates/sdkwork-routes-rtc-backend-api/Cargo.toml",
     "crates/sdkwork-rtc-service-host/Cargo.toml",
   ]) {
     assert.ok(exists(cratePath), `${cratePath} must exist`);
@@ -236,11 +236,11 @@ test("sdkwork-rtc runnable app roots declare component specs", () => {
 
 test("sdkwork-rtc flutter mobile packages declare component specs", () => {
   for (const [packageDir, capability] of [
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core", "core"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_shell", "shell"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_commons", "commons"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_admin_core", "admin-core"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc", "rtc"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_core", "core"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_shell", "shell"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_commons", "commons"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_admin_core", "admin-core"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_rtc", "rtc"],
   ]) {
     const specPath = `${packageDir}/specs/component.spec.json`;
     assert.ok(exists(specPath), `${specPath} must exist`);
@@ -289,8 +289,8 @@ test("sdkwork-rtc core Rust runtime crates declare component specs", () => {
   for (const crateDir of [
     "crates/sdkwork-communication-rtc-service",
     "crates/sdkwork-communication-rtc-repository-sqlx",
-    "crates/sdkwork-router-rtc-app-api",
-    "crates/sdkwork-router-rtc-backend-api",
+    "crates/sdkwork-routes-rtc-app-api",
+    "crates/sdkwork-routes-rtc-backend-api",
     "crates/sdkwork-rtc-service-host",
     "crates/sdkwork-rtc-api-server",
     "crates/sdkwork-rtc-app-context",
@@ -329,11 +329,11 @@ test("sdkwork-rtc integrates sdkwork-database framework for persistence bootstra
 });
 
 test("sdkwork-rtc route crates do not keep legacy auth middleware modules", () => {
-  assert.equal(exists("crates/sdkwork-router-rtc-app-api/src/middleware.rs"), false);
-  assert.equal(exists("crates/sdkwork-router-rtc-backend-api/src/middleware.rs"), false);
+  assert.equal(exists("crates/sdkwork-routes-rtc-app-api/src/middleware.rs"), false);
+  assert.equal(exists("crates/sdkwork-routes-rtc-backend-api/src/middleware.rs"), false);
   for (const filePath of [
-    "crates/sdkwork-router-rtc-app-api/src/web_bootstrap.rs",
-    "crates/sdkwork-router-rtc-backend-api/src/web_bootstrap.rs",
+    "crates/sdkwork-routes-rtc-app-api/src/web_bootstrap.rs",
+    "crates/sdkwork-routes-rtc-backend-api/src/web_bootstrap.rs",
   ]) {
     const source = read(filePath);
     assert.doesNotMatch(source, /resolve_app_context/u, `${filePath} must inject AppContext from WebRequestContext`);
@@ -344,7 +344,7 @@ test("sdkwork-rtc client surfaces use app-scoped IAM session storage keys", () =
   const pcIamSession = read("apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/src/session/iamSession.ts");
   const h5IamSession = read("apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/src/session/iamSession.ts");
   const mpSessionKey = read("apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/src/session/sessionStorageKey.ts");
-  const flutterSession = read("apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core/lib/src/session/app_session.dart");
+  const flutterSession = read("apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_core/lib/src/session/app_session.dart");
 
   assert.match(pcIamSession, /sdkwork-rtc-pc:session:v1/u);
   assert.match(h5IamSession, /sdkwork-rtc-h5:session:v1/u);
@@ -460,16 +460,16 @@ test("sdkwork-rtc integrates sdkwork-web-framework for HTTP route crates", () =>
   }
 
   for (const filePath of [
-    "crates/sdkwork-router-rtc-app-api/src/web_bootstrap.rs",
-    "crates/sdkwork-router-rtc-backend-api/src/web_bootstrap.rs",
-    "crates/sdkwork-router-rtc-app-api/build.rs",
-    "crates/sdkwork-router-rtc-backend-api/build.rs",
+    "crates/sdkwork-routes-rtc-app-api/src/web_bootstrap.rs",
+    "crates/sdkwork-routes-rtc-backend-api/src/web_bootstrap.rs",
+    "crates/sdkwork-routes-rtc-app-api/build.rs",
+    "crates/sdkwork-routes-rtc-backend-api/build.rs",
   ]) {
     assert.ok(exists(filePath), `${filePath} must exist`);
   }
 
-  const appRoutes = read("crates/sdkwork-router-rtc-app-api/src/routes.rs");
-  const backendRoutes = read("crates/sdkwork-router-rtc-backend-api/src/routes.rs");
+  const appRoutes = read("crates/sdkwork-routes-rtc-app-api/src/routes.rs");
+  const backendRoutes = read("crates/sdkwork-routes-rtc-backend-api/src/routes.rs");
   assert.doesNotMatch(appRoutes, /enforce_app_route_auth/u, "app-api routes must not keep custom auth middleware");
   assert.doesNotMatch(backendRoutes, /enforce_backend_route_auth/u, "backend-api routes must not keep custom auth middleware");
 });
@@ -494,8 +494,8 @@ test("sdkwork-rtc integrates sdkwork-utils for shared Rust and TypeScript helper
 
 test("sdkwork-rtc route manifests declare WebRequestContext and apiSurface", () => {
   for (const manifestPath of [
-    "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
-    "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+    "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+    "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
   ]) {
     const manifest = JSON.parse(read(manifestPath));
     assert.ok(Array.isArray(manifest.routes) && manifest.routes.length > 0, `${manifestPath} must declare routes`);
@@ -528,7 +528,7 @@ test("sdkwork-rtc api-server wires database readiness when persistence pool is c
 
 test("sdkwork-rtc provider webhook ingress declares framework rate-limit tier", () => {
   const backendManifest = JSON.parse(
-    read("sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json"),
+    read("sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json"),
   );
   const webhookRoute = backendManifest.routes.find(
     (route) => route.operationId === "rtc.providerWebhooks.events.receive",
@@ -536,19 +536,19 @@ test("sdkwork-rtc provider webhook ingress declares framework rate-limit tier", 
   assert.ok(webhookRoute, "backend manifest must declare provider webhook receive route");
   assert.equal(webhookRoute.rateLimitTier, "openApiDefault");
 
-  const backendWebBootstrap = read("crates/sdkwork-router-rtc-backend-api/src/web_bootstrap.rs");
+  const backendWebBootstrap = read("crates/sdkwork-routes-rtc-backend-api/src/web_bootstrap.rs");
   assert.match(backendWebBootstrap, /RateLimitPolicy/u);
   assert.match(backendWebBootstrap, /enabled: true/u);
 
-  const backendBuild = read("crates/sdkwork-router-rtc-backend-api/build.rs");
+  const backendBuild = read("crates/sdkwork-routes-rtc-backend-api/build.rs");
   assert.match(backendBuild, /rateLimitTier/u);
   assert.match(backendBuild, /with_rate_limit_tier/u);
 });
 
 test("sdkwork-rtc mutation routes declare framework rate-limit tiers and idempotency", () => {
   for (const manifestPath of [
-    "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
-    "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+    "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+    "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
   ]) {
     const manifest = JSON.parse(read(manifestPath));
     const mutationRoutes = manifest.routes.filter((route) =>
@@ -576,7 +576,7 @@ test("sdkwork-rtc mutation routes declare framework rate-limit tiers and idempot
     }
   }
 
-  const appWebBootstrap = read("crates/sdkwork-router-rtc-app-api/src/web_bootstrap.rs");
+  const appWebBootstrap = read("crates/sdkwork-routes-rtc-app-api/src/web_bootstrap.rs");
   assert.match(appWebBootstrap, /RateLimitPolicy/u);
   assert.match(appWebBootstrap, /enabled: true/u);
 });
@@ -594,7 +594,7 @@ test("sdkwork-rtc manifests and tools use standard paths and route crate names",
     const source = read(filePath);
     assert.doesNotMatch(source, /generated[\\/]openapi/u, `${filePath} must not reference generated/openapi`);
     assert.doesNotMatch(source, /sdkwork-rtc-core|sdkwork-rtc-storage-sqlx|sdkwork-rtc-product|sdkwork-routes-rtc-/u, `${filePath} must not reference legacy Rust crate names`);
-    assert.match(source, /sdkwork-router-rtc-(app|backend)-api|sdkwork-communication-rtc-(service|repository-sqlx)|apis[\\/](app-api|backend-api)[\\/]communication/u, `${filePath} must reference standard names or API paths`);
+    assert.match(source, /sdkwork-routes-rtc-(app|backend)-api|sdkwork-communication-rtc-(service|repository-sqlx)|apis[\\/](app-api|backend-api)[\\/]communication/u, `${filePath} must reference standard names or API paths`);
   }
 });
 

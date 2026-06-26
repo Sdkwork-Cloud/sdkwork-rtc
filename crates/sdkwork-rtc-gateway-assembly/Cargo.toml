@@ -1,0 +1,16 @@
+[package]
+name = "sdkwork-rtc-gateway-assembly"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+description = "Generated gateway assembly for sdkwork-rtc application HTTP plane."
+
+[lib]
+name = "sdkwork_rtc_gateway_assembly"
+path = "src/lib.rs"
+
+[dependencies]
+axum.workspace = true
+tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
+sdkwork_routes_rtc_app_api = { package = "sdkwork-routes-rtc-app-api", path = "../sdkwork-routes-rtc-app-api" }
+sdkwork_routes_rtc_backend_api = { package = "sdkwork-routes-rtc-backend-api", path = "../sdkwork-routes-rtc-backend-api" }

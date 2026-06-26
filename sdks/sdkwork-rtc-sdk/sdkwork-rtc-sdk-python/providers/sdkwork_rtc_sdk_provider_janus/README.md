@@ -6,10 +6,10 @@ Reserved Python provider package boundary for Janus RTC.
 - plugin id: `rtc-janus`
 - driver id: `sdkwork-rtc-driver-janus`
 - package identity: `sdkwork-rtc-sdk-provider-janus`
-- directory path: `providers/sdkwork_rtc_sdk_provider_janus`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_janus/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_janus/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_janus/sdkwork_rtc_sdk_provider_janus/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_janus`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_janus/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_janus/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_janus/sdkwork_ai_prod_sdk_provider_janus/__init__.py`
 - source symbol: `RtcProviderJanusPackageContract`
 - builtin provider: `false`
 - status: `future-runtime-bridge-only`

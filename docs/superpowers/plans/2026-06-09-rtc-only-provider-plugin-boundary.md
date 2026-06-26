@@ -87,9 +87,9 @@ Expected: pass after implementation.
 ### Task 3: Backend API And OpenAPI Materialization
 
 **Files:**
-- Modify: `crates/sdkwork-router-rtc-backend-api/src/lib.rs`
+- Modify: `crates/sdkwork-routes-rtc-backend-api/src/lib.rs`
 - Modify: `sdks/materialize-rtc-v3-openapi-boundaries.mjs`
-- Regenerate: `sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json`
+- Regenerate: `sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json`
 - Regenerate: `apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json`
 - Regenerate: `sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.openapi.json`
 - Regenerate: `sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.sdkgen.json`

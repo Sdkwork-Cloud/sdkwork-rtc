@@ -203,7 +203,7 @@ support boundaries, and maturity tiers stay exact and verifiable.
 | Swift | `Sources/RtcSdk/RtcLanguageWorkspaceCatalog.swift` | `RtcSdk` | Yes | No | `reserved` |
 | Kotlin | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcLanguageWorkspaceCatalog.kt` | `com.sdkwork:rtc-sdk` | Yes | No | `reserved` |
 | Go | `rtcstandard/language_workspace_catalog.go` | `github.com/sdkwork/rtc-sdk` | Yes | No | `reserved` |
-| Python | `sdkwork_rtc_sdk/language_workspace_catalog.py` | `sdkwork-rtc-sdk` | Yes | No | `reserved` |
+| Python | `sdkwork_ai_prod_sdk/language_workspace_catalog.py` | `sdkwork-rtc-sdk` | Yes | No | `reserved` |
 
 ## Language Provider Package Boundary Matrix
 
@@ -230,7 +230,7 @@ support boundaries, and maturity tiers stay exact and verifiable.
 | Swift | `swift-package-manager` | `Package.swift` | `Sources/RtcSdk/RtcStandardContract.swift` |
 | Kotlin | `gradle-kotlin-dsl` | `build.gradle.kts` | `src/main/kotlin/com/sdkwork/rtc/standard/RtcStandardContract.kt` |
 | Go | `go-modules` | `go.mod` | `rtcstandard/contract.go` |
-| Python | `pyproject` | `pyproject.toml` | `sdkwork_rtc_sdk/standard_contract.py` |
+| Python | `pyproject` | `pyproject.toml` | `sdkwork_ai_prod_sdk/standard_contract.py` |
 
 ## Reserved Language Metadata Scaffold Matrix
 
@@ -243,7 +243,7 @@ support boundaries, and maturity tiers stay exact and verifiable.
 | Swift | `Sources/RtcSdk/RtcProviderCatalog.swift` | `Sources/RtcSdk/RtcProviderPackageCatalog.swift` | `Sources/RtcSdk/RtcProviderActivationCatalog.swift` | `Sources/RtcSdk/RtcCapabilityCatalog.swift` | `Sources/RtcSdk/RtcProviderExtensionCatalog.swift` | `Sources/RtcSdk/RtcProviderSelection.swift` |
 | Kotlin | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderCatalog.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderPackageCatalog.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderActivationCatalog.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcCapabilityCatalog.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderExtensionCatalog.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderSelection.kt` |
 | Go | `rtcstandard/provider_catalog.go` | `rtcstandard/provider_package_catalog.go` | `rtcstandard/provider_activation_catalog.go` | `rtcstandard/capability_catalog.go` | `rtcstandard/provider_extension_catalog.go` | `rtcstandard/provider_selection.go` |
-| Python | `sdkwork_rtc_sdk/provider_catalog.py` | `sdkwork_rtc_sdk/provider_package_catalog.py` | `sdkwork_rtc_sdk/provider_activation_catalog.py` | `sdkwork_rtc_sdk/capability_catalog.py` | `sdkwork_rtc_sdk/provider_extension_catalog.py` | `sdkwork_rtc_sdk/provider_selection.py` |
+| Python | `sdkwork_ai_prod_sdk/provider_catalog.py` | `sdkwork_ai_prod_sdk/provider_package_catalog.py` | `sdkwork_ai_prod_sdk/provider_activation_catalog.py` | `sdkwork_ai_prod_sdk/capability_catalog.py` | `sdkwork_ai_prod_sdk/provider_extension_catalog.py` | `sdkwork_ai_prod_sdk/provider_selection.py` |
 
 ## Reserved Language Resolution Scaffold Matrix
 
@@ -256,7 +256,7 @@ support boundaries, and maturity tiers stay exact and verifiable.
 | Swift | `Sources/RtcSdk/RtcDriverManager.swift` | `Sources/RtcSdk/RtcDataSource.swift` | `Sources/RtcSdk/RtcProviderSupport.swift` | `Sources/RtcSdk/RtcProviderPackageLoader.swift` |
 | Kotlin | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcDriverManager.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcDataSource.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderSupport.kt` | `src/main/kotlin/com/sdkwork/rtc/metadata/RtcProviderPackageLoader.kt` |
 | Go | `rtcstandard/driver_manager.go` | `rtcstandard/data_source.go` | `rtcstandard/provider_support.go` | `rtcstandard/provider_package_loader.go` |
-| Python | `sdkwork_rtc_sdk/driver_manager.py` | `sdkwork_rtc_sdk/data_source.py` | `sdkwork_rtc_sdk/provider_support.py` | `sdkwork_rtc_sdk/provider_package_loader.py` |
+| Python | `sdkwork_ai_prod_sdk/driver_manager.py` | `sdkwork_ai_prod_sdk/data_source.py` | `sdkwork_ai_prod_sdk/provider_support.py` | `sdkwork_ai_prod_sdk/provider_package_loader.py` |
 
 ## Reserved Language Provider Package Scaffold Matrix
 
@@ -269,7 +269,7 @@ support boundaries, and maturity tiers stay exact and verifiable.
 | Swift | `providers/provider-package-scaffold.md` | `Providers/RtcSdkProvider{providerPascal}` | `RtcSdkProvider{providerPascal}` | `Package.swift` | `README.md` | `Sources/RtcSdkProvider{providerPascal}/RtcProvider{providerPascal}PackageContract.swift` | `RtcProvider{providerPascal}PackageContract` | `{providerPascal}` | `{providerPascal}` | `future-runtime-bridge-only` | `reserved` | `false` | `RtcSdkProviderVolcengine` | `Providers/RtcSdkProviderVolcengine/Package.swift` | `Providers/RtcSdkProviderVolcengine/README.md` | `Providers/RtcSdkProviderVolcengine/Sources/RtcSdkProviderVolcengine/RtcProviderVolcenginePackageContract.swift` | `RtcProviderVolcenginePackageContract` |
 | Kotlin | `providers/provider-package-scaffold.md` | `providers/rtc-sdk-provider-{providerKey}` | `com.sdkwork:rtc-sdk-provider-{providerKey}` | `build.gradle.kts` | `README.md` | `src/main/kotlin/com/sdkwork/rtc/provider/{providerKey}/RtcProvider{providerPascal}PackageContract.kt` | `RtcProvider{providerPascal}PackageContract` | `{providerKey}` | `{providerKey}`, `{providerPascal}` | `future-runtime-bridge-only` | `reserved` | `false` | `com.sdkwork:rtc-sdk-provider-volcengine` | `providers/rtc-sdk-provider-volcengine/build.gradle.kts` | `providers/rtc-sdk-provider-volcengine/README.md` | `providers/rtc-sdk-provider-volcengine/src/main/kotlin/com/sdkwork/rtc/provider/volcengine/RtcProviderVolcenginePackageContract.kt` | `RtcProviderVolcenginePackageContract` |
 | Go | `providers/provider-package-scaffold.md` | `providers/rtc-sdk-provider-{providerKey}` | `github.com/sdkwork/rtc-sdk-provider-{providerKey}` | `go.mod` | `README.md` | `provider_package_contract.go` | `RtcProvider{providerPascal}PackageContract` | `{providerKey}` | `{providerPascal}` | `future-runtime-bridge-only` | `reserved` | `false` | `github.com/sdkwork/rtc-sdk-provider-volcengine` | `providers/rtc-sdk-provider-volcengine/go.mod` | `providers/rtc-sdk-provider-volcengine/README.md` | `providers/rtc-sdk-provider-volcengine/provider_package_contract.go` | `RtcProviderVolcenginePackageContract` |
-| Python | `providers/provider-package-scaffold.md` | `providers/sdkwork_rtc_sdk_provider_{providerKey}` | `sdkwork-rtc-sdk-provider-{providerKey}` | `pyproject.toml` | `README.md` | `sdkwork_rtc_sdk_provider_{providerKey}/__init__.py` | `RtcProvider{providerPascal}PackageContract` | `{providerKey}` | `{providerKey}`, `{providerPascal}` | `future-runtime-bridge-only` | `reserved` | `false` | `sdkwork-rtc-sdk-provider-volcengine` | `providers/sdkwork_rtc_sdk_provider_volcengine/pyproject.toml` | `providers/sdkwork_rtc_sdk_provider_volcengine/README.md` | `providers/sdkwork_rtc_sdk_provider_volcengine/sdkwork_rtc_sdk_provider_volcengine/__init__.py` | `RtcProviderVolcenginePackageContract` |
+| Python | `providers/provider-package-scaffold.md` | `providers/sdkwork_ai_prod_sdk_provider_{providerKey}` | `sdkwork-rtc-sdk-provider-{providerKey}` | `pyproject.toml` | `README.md` | `sdkwork_ai_prod_sdk_provider_{providerKey}/__init__.py` | `RtcProvider{providerPascal}PackageContract` | `{providerKey}` | `{providerKey}`, `{providerPascal}` | `future-runtime-bridge-only` | `reserved` | `false` | `sdkwork-rtc-sdk-provider-volcengine` | `providers/sdkwork_ai_prod_sdk_provider_volcengine/pyproject.toml` | `providers/sdkwork_ai_prod_sdk_provider_volcengine/README.md` | `providers/sdkwork_ai_prod_sdk_provider_volcengine/sdkwork_ai_prod_sdk_provider_volcengine/__init__.py` | `RtcProviderVolcenginePackageContract` |
 
 ## Language Provider Activation Matrix
 

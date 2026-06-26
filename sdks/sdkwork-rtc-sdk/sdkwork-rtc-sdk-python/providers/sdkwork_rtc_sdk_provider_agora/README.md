@@ -6,10 +6,10 @@ Reserved Python provider package boundary for Agora RTC.
 - plugin id: `rtc-agora`
 - driver id: `sdkwork-rtc-driver-agora`
 - package identity: `sdkwork-rtc-sdk-provider-agora`
-- directory path: `providers/sdkwork_rtc_sdk_provider_agora`
-- manifest path: `providers/sdkwork_rtc_sdk_provider_agora/pyproject.toml`
-- readme path: `providers/sdkwork_rtc_sdk_provider_agora/README.md`
-- source path: `providers/sdkwork_rtc_sdk_provider_agora/sdkwork_rtc_sdk_provider_agora/__init__.py`
+- directory path: `providers/sdkwork_ai_prod_sdk_provider_agora`
+- manifest path: `providers/sdkwork_ai_prod_sdk_provider_agora/pyproject.toml`
+- readme path: `providers/sdkwork_ai_prod_sdk_provider_agora/README.md`
+- source path: `providers/sdkwork_ai_prod_sdk_provider_agora/sdkwork_ai_prod_sdk_provider_agora/__init__.py`
 - source symbol: `RtcProviderAgoraPackageContract`
 - builtin provider: `true`
 - status: `future-runtime-bridge-only`

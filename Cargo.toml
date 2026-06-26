@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/sdkwork-rtc-gateway-assembly",
     "plugins/rtc-aliyun",
     "plugins/rtc-agora",
     "plugins/rtc-tencent",
@@ -12,8 +13,8 @@ members = [
     "crates/sdkwork-communication-rtc-service",
     "crates/sdkwork-rtc-openapi",
     "crates/sdkwork-communication-rtc-repository-sqlx",
-    "crates/sdkwork-router-rtc-app-api",
-    "crates/sdkwork-router-rtc-backend-api",
+    "crates/sdkwork-routes-rtc-app-api",
+    "crates/sdkwork-routes-rtc-backend-api",
     "crates/sdkwork-rtc-service-host",
     "crates/sdkwork-communication-rtc-worker",
     "crates/sdkwork-rtc-api-server",
@@ -49,8 +50,8 @@ sdkwork-rtc-adapter-aliyun = { path = "plugins/rtc-aliyun" }
 sdkwork-rtc-adapter-livekit = { path = "plugins/rtc-livekit" }
 sdkwork-rtc-adapter-tencent = { path = "plugins/rtc-tencent" }
 sdkwork-rtc-adapter-volcengine = { path = "plugins/rtc-volcengine" }
-sdkwork-router-rtc-app-api = { path = "crates/sdkwork-router-rtc-app-api" }
-sdkwork-router-rtc-backend-api = { path = "crates/sdkwork-router-rtc-backend-api" }
+sdkwork-routes-rtc-app-api = { path = "crates/sdkwork-routes-rtc-app-api" }
+sdkwork-routes-rtc-backend-api = { path = "crates/sdkwork-routes-rtc-backend-api" }
 sdkwork-rtc-service-host = { path = "crates/sdkwork-rtc-service-host" }
 sdkwork-communication-rtc-worker = { path = "crates/sdkwork-communication-rtc-worker" }
 sdkwork-rtc-api-server = { path = "crates/sdkwork-rtc-api-server" }

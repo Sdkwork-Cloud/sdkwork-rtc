@@ -1990,7 +1990,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-router-rtc-app-api"
+name = "sdkwork-routes-rtc-app-api"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -2009,7 +2009,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-router-rtc-backend-api"
+name = "sdkwork-routes-rtc-backend-api"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -2098,8 +2098,8 @@ dependencies = [
  "sdkwork-communication-rtc-service",
  "sdkwork-communication-rtc-worker",
  "sdkwork-database-sqlx",
- "sdkwork-router-rtc-app-api",
- "sdkwork-router-rtc-backend-api",
+ "sdkwork-routes-rtc-app-api",
+ "sdkwork-routes-rtc-backend-api",
  "sdkwork-rtc-adapter-agora",
  "sdkwork-rtc-adapter-aliyun",
  "sdkwork-rtc-adapter-livekit",
@@ -2153,8 +2153,8 @@ dependencies = [
  "sdkwork-drive-storage-contract",
  "sdkwork-drive-storage-local",
  "sdkwork-drive-workspace-service",
- "sdkwork-router-rtc-app-api",
- "sdkwork-router-rtc-backend-api",
+ "sdkwork-routes-rtc-app-api",
+ "sdkwork-routes-rtc-backend-api",
  "serde_json",
  "sqlx",
  "tokio",

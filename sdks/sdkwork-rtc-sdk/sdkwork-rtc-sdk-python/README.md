@@ -35,7 +35,7 @@ Default provider contract:
 
 Language workspace catalog:
 
-- workspace catalog: `sdkwork_rtc_sdk/language_workspace_catalog.py`
+- workspace catalog: `sdkwork_ai_prod_sdk/language_workspace_catalog.py`
 - workspace catalog entries also keep `workspaceCatalogRelativePath`,
   `defaultProviderContract`, `providerSelectionContract`, `providerSupportContract`,
   `providerActivationContract`, any declared `runtimeBaseline`,
@@ -61,17 +61,17 @@ Package scaffold:
 
 - build system: pyproject
 - manifest: `pyproject.toml`
-- contract scaffold: `sdkwork_rtc_sdk/standard_contract.py`
+- contract scaffold: `sdkwork_ai_prod_sdk/standard_contract.py`
 
 
 Metadata scaffold:
 
-- provider catalog: `sdkwork_rtc_sdk/provider_catalog.py`
-- provider package catalog: `sdkwork_rtc_sdk/provider_package_catalog.py`
-- provider activation catalog: `sdkwork_rtc_sdk/provider_activation_catalog.py`
-- capability catalog: `sdkwork_rtc_sdk/capability_catalog.py`
-- provider extension catalog: `sdkwork_rtc_sdk/provider_extension_catalog.py`
-- provider selection: `sdkwork_rtc_sdk/provider_selection.py`
+- provider catalog: `sdkwork_ai_prod_sdk/provider_catalog.py`
+- provider package catalog: `sdkwork_ai_prod_sdk/provider_package_catalog.py`
+- provider activation catalog: `sdkwork_ai_prod_sdk/provider_activation_catalog.py`
+- capability catalog: `sdkwork_ai_prod_sdk/capability_catalog.py`
+- provider extension catalog: `sdkwork_ai_prod_sdk/provider_extension_catalog.py`
+- provider selection: `sdkwork_ai_prod_sdk/provider_selection.py`
 - lookup helper naming contract: `lookupHelperNamingStandard`
 - lookup helper naming profiles: `lower-camel-rtc`, `upper-camel-rtc`, `snake-case-rtc`
 - explicit lookup helpers stay mandatory for metadata catalogs:
@@ -86,20 +86,20 @@ Metadata scaffold:
 
 Resolution scaffold:
 
-- driver manager: `sdkwork_rtc_sdk/driver_manager.py`
-- data source: `sdkwork_rtc_sdk/data_source.py`
-- provider support: `sdkwork_rtc_sdk/provider_support.py`
-- provider package loader: `sdkwork_rtc_sdk/provider_package_loader.py`
+- driver manager: `sdkwork_ai_prod_sdk/driver_manager.py`
+- data source: `sdkwork_ai_prod_sdk/data_source.py`
+- provider support: `sdkwork_ai_prod_sdk/provider_support.py`
+- provider package loader: `sdkwork_ai_prod_sdk/provider_package_loader.py`
 
 
 Provider package scaffold:
 
 - scaffold: `providers/provider-package-scaffold.md`
-- directory pattern: `providers/sdkwork_rtc_sdk_provider_{providerKey}`
+- directory pattern: `providers/sdkwork_ai_prod_sdk_provider_{providerKey}`
 - package pattern: `sdkwork-rtc-sdk-provider-{providerKey}`
 - manifest file name: `pyproject.toml`
 - readme file name: `README.md`
-- source file pattern: `sdkwork_rtc_sdk_provider_{providerKey}/__init__.py`
+- source file pattern: `sdkwork_ai_prod_sdk_provider_{providerKey}/__init__.py`
 - source symbol pattern: `RtcProvider{providerPascal}PackageContract`
 - template tokens: `{providerKey}`
 - source template tokens: `{providerKey}`, `{providerPascal}`

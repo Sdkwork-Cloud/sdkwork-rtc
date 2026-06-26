@@ -1,4 +1,5 @@
 import { HashRouter, Navigate, useLocation } from "react-router-dom";
+import { SdkworkSessionAuthBrowserRoot } from '@sdkwork/auth-pc-react';
 
 import { AdminApp } from "./AdminApp";
 import { AppAuthGate, RTC_APP_HOME_PATH } from "./AppAuthGate";
@@ -32,7 +33,9 @@ function AppShell() {
 export default function App() {
   return (
     <HashRouter>
+      <SdkworkSessionAuthBrowserRoot>
       <AppShell />
+          </SdkworkSessionAuthBrowserRoot>
     </HashRouter>
   );
 }

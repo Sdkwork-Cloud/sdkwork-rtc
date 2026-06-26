@@ -8,7 +8,7 @@ const rtcRoot = resolve(__dirname, "..");
 
 const routeSources = [
   {
-    packageName: "sdkwork-router-rtc-app-api",
+    packageName: "sdkwork-routes-rtc-app-api",
     surface: "app-api",
     owner: "sdkwork-rtc",
     domain: "rtc",
@@ -23,15 +23,15 @@ const routeSources = [
     apiContext: "AppRequestContext",
     sdkType: "app",
     authMode: "dual-token",
-    path: resolve(rtcRoot, "crates/sdkwork-router-rtc-app-api/src/paths.rs"),
+    path: resolve(rtcRoot, "crates/sdkwork-routes-rtc-app-api/src/paths.rs"),
     arrayName: "RTC_APP_ROUTES",
     routeType: "RtcAppRoute",
     manifestPath:
-      "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
+      "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
     sourceOpenapiPath: "apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
   },
   {
-    packageName: "sdkwork-router-rtc-backend-api",
+    packageName: "sdkwork-routes-rtc-backend-api",
     surface: "backend-api",
     owner: "sdkwork-rtc",
     domain: "rtc",
@@ -46,11 +46,11 @@ const routeSources = [
     apiContext: "BackendRequestContext",
     sdkType: "backend",
     authMode: "dual-token",
-    path: resolve(rtcRoot, "crates/sdkwork-router-rtc-backend-api/src/paths.rs"),
+    path: resolve(rtcRoot, "crates/sdkwork-routes-rtc-backend-api/src/paths.rs"),
     arrayName: "RTC_BACKEND_ROUTES",
     routeType: "RtcBackendRoute",
     manifestPath:
-      "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+      "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
     sourceOpenapiPath: "apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json",
   },
 ];

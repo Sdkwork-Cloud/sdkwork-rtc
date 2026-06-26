@@ -61,8 +61,8 @@ const requiredRtcPaths = [
   "crates/sdkwork-communication-rtc-repository-sqlx/src/lib.rs",
   "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
   "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/sqlite_rtc.sql",
-  "crates/sdkwork-router-rtc-app-api/src/lib.rs",
-  "crates/sdkwork-router-rtc-backend-api/src/lib.rs",
+  "crates/sdkwork-routes-rtc-app-api/src/lib.rs",
+  "crates/sdkwork-routes-rtc-backend-api/src/lib.rs",
 ];
 
 const forbiddenRtcSignalingPaths = [
@@ -626,7 +626,7 @@ test("sdkwork-rtc HTTP surfaces expose RTC media capabilities without signaling"
   assert.deepEqual(rtcMatches, []);
 
   const appRouteSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-router-rtc-app-api/src/paths.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-routes-rtc-app-api/src/paths.rs"),
     "utf8",
   );
   for (const required of [
@@ -775,11 +775,11 @@ test("sdkwork-rtc active contracts use media runtime names instead of call signa
   const contractFiles = [
     "crates/sdkwork-communication-rtc-service/src/lib.rs",
     "crates/sdkwork-rtc-service-host/src/lib.rs",
-    "crates/sdkwork-router-rtc-app-api/src/lib.rs",
-    "crates/sdkwork-router-rtc-backend-api/src/lib.rs",
+    "crates/sdkwork-routes-rtc-app-api/src/lib.rs",
+    "crates/sdkwork-routes-rtc-backend-api/src/lib.rs",
     "sdks/materialize-rtc-v3-openapi-boundaries.mjs",
-    "sdks/_route-manifests/app-api/sdkwork-router-rtc-app-api.route-manifest.json",
-    "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+    "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+    "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
     "sdks/sdkwork-rtc-app-sdk/openapi/sdkwork-rtc-app-api.openapi.json",
     "sdks/sdkwork-rtc-app-sdk/openapi/sdkwork-rtc-app-api.sdkgen.json",
     "sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.openapi.json",
@@ -1682,9 +1682,9 @@ test("sdkwork-rtc storage persists complete post-session media completion record
 
 test("sdkwork-rtc backend control plane uses media session resources only", () => {
   const routeAndContractFiles = [
-    "crates/sdkwork-router-rtc-backend-api/src/paths.rs",
+    "crates/sdkwork-routes-rtc-backend-api/src/paths.rs",
     "sdks/materialize-rtc-v3-openapi-boundaries.mjs",
-    "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+    "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
     "sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.openapi.json",
     "sdks/sdkwork-rtc-backend-sdk/openapi/sdkwork-rtc-backend-api.sdkgen.json",
     "sdks/sdkwork-rtc-backend-sdk/specs/component.spec.json",
@@ -1701,7 +1701,7 @@ test("sdkwork-rtc backend control plane uses media session resources only", () =
   assert.deepEqual(matches, []);
 
   const backendRouteSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-router-rtc-backend-api/src/paths.rs"),
+    workspacePath(rtcRoot, "crates/sdkwork-routes-rtc-backend-api/src/paths.rs"),
     "utf8",
   );
   assert.match(backendRouteSource, /\/backend\/v3\/api\/rtc\/media_sessions/);
@@ -1827,13 +1827,13 @@ test("sdkwork-rtc recording artifacts use dedicated RTC Drive spaces", () => {
 test("sdkwork-rtc route crates expose executable app and backend API routers", () => {
   const routeCrates = [
     {
-      root: "crates/sdkwork-router-rtc-app-api",
-      lib: "crates/sdkwork-router-rtc-app-api/src/lib.rs",
-      service: "crates/sdkwork-router-rtc-app-api/src/service.rs",
-      handlers: "crates/sdkwork-router-rtc-app-api/src/handlers.rs",
-      routes: "crates/sdkwork-router-rtc-app-api/src/routes.rs",
+      root: "crates/sdkwork-routes-rtc-app-api",
+      lib: "crates/sdkwork-routes-rtc-app-api/src/lib.rs",
+      service: "crates/sdkwork-routes-rtc-app-api/src/service.rs",
+      handlers: "crates/sdkwork-routes-rtc-app-api/src/handlers.rs",
+      routes: "crates/sdkwork-routes-rtc-app-api/src/routes.rs",
       expectedTrait: "RtcAppApiService",
-      expectedBuilder: "build_sdkwork_rtc_app_api_router",
+      expectedBuilder: "build_sdkwork_ai_prod_app_api_router",
       expectedPrefix: "/app/v3/api",
       expectedHandlerNames: [
         "list_rooms",
@@ -1845,13 +1845,13 @@ test("sdkwork-rtc route crates expose executable app and backend API routers", (
       ],
     },
     {
-      root: "crates/sdkwork-router-rtc-backend-api",
-      lib: "crates/sdkwork-router-rtc-backend-api/src/lib.rs",
-      service: "crates/sdkwork-router-rtc-backend-api/src/service.rs",
-      handlers: "crates/sdkwork-router-rtc-backend-api/src/handlers.rs",
-      routes: "crates/sdkwork-router-rtc-backend-api/src/routes.rs",
+      root: "crates/sdkwork-routes-rtc-backend-api",
+      lib: "crates/sdkwork-routes-rtc-backend-api/src/lib.rs",
+      service: "crates/sdkwork-routes-rtc-backend-api/src/service.rs",
+      handlers: "crates/sdkwork-routes-rtc-backend-api/src/handlers.rs",
+      routes: "crates/sdkwork-routes-rtc-backend-api/src/routes.rs",
       expectedTrait: "RtcBackendApiService",
-      expectedBuilder: "build_sdkwork_rtc_backend_api_router",
+      expectedBuilder: "build_sdkwork_ai_prod_backend_api_router",
       expectedPrefix: "/backend/v3/api",
       expectedHandlerNames: [
         "list_provider_profiles",
@@ -2683,7 +2683,7 @@ test("sdkwork-rtc app and backend APIs expose typed operation DTOs for generated
     readFileSync(
       workspacePath(
         rtcRoot,
-        "sdks/_route-manifests/backend-api/sdkwork-router-rtc-backend-api.route-manifest.json",
+        "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
       ),
       "utf8",
     ),

@@ -25,11 +25,11 @@ use sdkwork_communication_rtc_service::{
     RtcRuntimeLoadRequest, RtcSessionHandle, RtcTenantOrganizationScope,
     verify_hmac_sha256_payload,
 };
-use sdkwork_router_rtc_app_api::service::{
+use sdkwork_routes_rtc_app_api::service::{
     RtcAppApiError, RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
     RtcIssueParticipantCredentialRequest, RtcListRequest,
 };
-use sdkwork_router_rtc_backend_api::service::{
+use sdkwork_routes_rtc_backend_api::service::{
     RtcBackendApiError, RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest,
     RtcProviderQueryJobCreateRequest, RtcProviderRouteCommand, RtcProviderRouteDisableRequest,
     RtcProviderWebhookIngress, RtcProviderWebhookReceiveRequest,
@@ -336,7 +336,7 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
             Some("901".into()),
             "902".into(),
             session.id.clone(),
-            sdkwork_router_rtc_backend_api::service::RtcCloseMediaSessionRequest {
+            sdkwork_routes_rtc_backend_api::service::RtcCloseMediaSessionRequest {
                 reason: Some("host_closed".into()),
             },
         )
@@ -553,7 +553,7 @@ async fn product_service_selects_only_active_provider_profiles_within_current_sc
     assert!(
         matches!(
             disabled_selection,
-            Err(sdkwork_router_rtc_app_api::service::RtcAppApiError::Unavailable(_))
+            Err(sdkwork_routes_rtc_app_api::service::RtcAppApiError::Unavailable(_))
         ),
         "disabled RTC provider profiles must not be selectable by app clients"
     );
@@ -578,7 +578,7 @@ async fn product_service_selects_only_active_provider_profiles_within_current_sc
     assert!(
         matches!(
             wrong_scope_selection,
-            Err(sdkwork_router_rtc_app_api::service::RtcAppApiError::NotFound(_))
+            Err(sdkwork_routes_rtc_app_api::service::RtcAppApiError::NotFound(_))
         ),
         "provider profiles from another organization must not be selectable"
     );
@@ -622,7 +622,7 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
                 region: Some("cn-east".into()),
                 priority: 1,
                 status: Some(
-                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Active,
+                    sdkwork_routes_rtc_backend_api::service::RtcProviderRouteStatus::Active,
                 ),
             },
         )
@@ -639,7 +639,7 @@ async fn product_service_selects_provider_profile_from_active_region_route() {
                 region: Some("cn-disabled".into()),
                 priority: 1,
                 status: Some(
-                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Disabled,
+                    sdkwork_routes_rtc_backend_api::service::RtcProviderRouteStatus::Disabled,
                 ),
             },
         )
@@ -729,7 +729,7 @@ async fn product_service_retrieves_updates_and_disables_provider_route() {
                 region: Some("cn-north".into()),
                 priority: 10,
                 status: Some(
-                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Active,
+                    sdkwork_routes_rtc_backend_api::service::RtcProviderRouteStatus::Active,
                 ),
             },
         )
@@ -755,7 +755,7 @@ async fn product_service_retrieves_updates_and_disables_provider_route() {
                 region: Some("cn-south".into()),
                 priority: 5,
                 status: Some(
-                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Active,
+                    sdkwork_routes_rtc_backend_api::service::RtcProviderRouteStatus::Active,
                 ),
             },
         )
@@ -778,7 +778,7 @@ async fn product_service_retrieves_updates_and_disables_provider_route() {
         .expect("provider route should be disabled");
     assert_eq!(
         disabled.status,
-        sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Disabled
+        sdkwork_routes_rtc_backend_api::service::RtcProviderRouteStatus::Disabled
     );
 }
 
@@ -2232,7 +2232,7 @@ async fn product_service_rejects_provider_route_when_profile_is_outside_current_
                 region: Some("cn-test".into()),
                 priority: 10,
                 status: Some(
-                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Active,
+                    sdkwork_routes_rtc_backend_api::service::RtcProviderRouteStatus::Active,
                 ),
             },
         )
@@ -2417,7 +2417,7 @@ async fn product_service_persists_completion_change_set_after_manual_close() {
             Some("731".into()),
             "732".into(),
             session.id.clone(),
-            sdkwork_router_rtc_backend_api::service::RtcCloseMediaSessionRequest {
+            sdkwork_routes_rtc_backend_api::service::RtcCloseMediaSessionRequest {
                 reason: Some("host_closed".into()),
             },
         )
@@ -2605,7 +2605,7 @@ async fn product_service_persists_active_session_participant_and_provider_config
                 region: Some("cn-east".into()),
                 priority: 1,
                 status: Some(
-                    sdkwork_router_rtc_backend_api::service::RtcProviderRouteStatus::Active,
+                    sdkwork_routes_rtc_backend_api::service::RtcProviderRouteStatus::Active,
                 ),
             },
         )

@@ -49,7 +49,7 @@
 - Create: `rust-toolchain.toml`
 - Create: `crates/sdkwork-communication-rtc-service/*`
 - Create: `crates/sdkwork-communication-rtc-repository-sqlx/*`
-- Create: `crates/sdkwork-router-rtc-backend-api/*`
+- Create: `crates/sdkwork-routes-rtc-backend-api/*`
 
 - [ ] Add focused Rust crates for core contract metadata, storage schema contracts, and backend route catalogs.
 - [ ] Add SQL schema files for Postgres and SQLite.
