@@ -1,13 +1,13 @@
 # RTC Production Deployment
 
-Operator guide for shipping `sdkwork-rtc-api-server` and `sdkwork-rtc-reconcile` to production.
+Operator guide for shipping `sdkwork-rtc-standalone-gateway` and `sdkwork-rtc-reconcile` to production.
 
 ## Release artifacts
 
 | Artifact | Path / registry | Contents |
 | --- | --- | --- |
-| Server archive | `artifacts/release/server/sdkwork-rtc-*-server.tar.gz` | `sdkwork-rtc-api-server`, `sdkwork-rtc-reconcile`, systemd units, env template |
-| Container image | `ghcr.io/sdkwork/rtc-api-server` | Both binaries under `/opt/sdkwork/rtc/bin/` |
+| Server archive | `artifacts/release/server/sdkwork-rtc-*-server.tar.gz` | `sdkwork-rtc-standalone-gateway`, `sdkwork-rtc-reconcile`, systemd units, env template |
+| Container image | `ghcr.io/sdkwork/rtc-standalone-gateway` | Both binaries under `/opt/sdkwork/rtc/bin/` |
 | Gateway config bundle | `dist/config-bundle/` | Cloud ingress / gateway topology (when using split gateway) |
 
 Build locally:
@@ -38,7 +38,7 @@ Production **requires** database persistence. The API server refuses to start wi
 Manifests: `deployments/kubernetes/cloud-split-services/`
 
 1. Create namespace and ConfigMaps from `*.example.yaml` (replace placeholders).
-2. Deploy `rtc-api-server` Deployment + Service (port `18088`, health at `/healthz`, metrics at `/metrics`).
+2. Deploy `rtc-standalone-gateway` Deployment + Service (port `18088`, health at `/healthz`, metrics at `/metrics`).
 3. Schedule `rtc-reconcile` CronJob (see `jobs/schedules/rtc-session-reconciliation.yaml`).
 
 ### systemd (standalone appliance)
@@ -46,7 +46,7 @@ Manifests: `deployments/kubernetes/cloud-split-services/`
 Units: `deployments/systemd/`
 
 1. Install binaries from the server archive to `/opt/sdkwork/rtc/bin/`.
-2. Enable `sdkwork-rtc-api-server.service`.
+2. Enable `sdkwork-rtc-standalone-gateway.service`.
 3. Enable `sdkwork-rtc-reconcile.timer` for periodic reconciliation.
 
 ### Docker / compose

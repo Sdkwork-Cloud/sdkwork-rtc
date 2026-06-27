@@ -9,9 +9,9 @@ export interface RtcAppSession {
 export const DEFAULT_APP_SESSION: RtcAppSession = {
   accessToken: "dev-access-token",
   authToken: "dev-auth-token",
-  tenantId: "default",
+  tenantId: "100001",
   organizationId: "default",
-  userId: "user",
+  userId: "1",
 };
 
 export const DEFAULT_APP_PERMISSION_SCOPE = "rtc.media_session.read rtc.media_session.write";

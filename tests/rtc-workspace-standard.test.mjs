@@ -292,7 +292,7 @@ test("sdkwork-rtc core Rust runtime crates declare component specs", () => {
     "crates/sdkwork-routes-rtc-app-api",
     "crates/sdkwork-routes-rtc-backend-api",
     "crates/sdkwork-rtc-service-host",
-    "crates/sdkwork-rtc-api-server",
+    "crates/sdkwork-rtc-standalone-gateway",
     "crates/sdkwork-rtc-app-context",
     "crates/sdkwork-rtc-openapi",
     "crates/sdkwork-rtc-api-registry",
@@ -310,7 +310,7 @@ test("sdkwork-rtc core Rust runtime crates declare component specs", () => {
 test("sdkwork-rtc integrates sdkwork-database framework for persistence bootstrap", () => {
   const repositoryCargo = read("crates/sdkwork-communication-rtc-repository-sqlx/Cargo.toml");
   const databaseModule = read("crates/sdkwork-communication-rtc-repository-sqlx/src/database.rs");
-  const apiBootstrap = read("crates/sdkwork-rtc-api-server/src/bootstrap.rs");
+  const apiBootstrap = read("crates/sdkwork-rtc-standalone-gateway/src/bootstrap.rs");
 
   for (const dependency of [
     "sdkwork-database-config",
@@ -324,8 +324,8 @@ test("sdkwork-rtc integrates sdkwork-database framework for persistence bootstra
   assert.match(databaseModule, /HealthChecker/u, "repository must expose sdkwork-database health checks");
   assert.match(databaseModule, /rtc_database_env_values_explicitly_configured/u, "repository must keep pure RTC database env detection");
   assert.doesNotMatch(databaseModule, /persistence_from_legacy_database_url/u, "repository must not keep legacy direct sqlx pool bootstrap");
-  assert.match(apiBootstrap, /connect_rtc_persistence_bootstrap_from_env/u, "api-server must bootstrap persistence through repository database module");
-  assert.doesNotMatch(apiBootstrap, /create_pool_from_env/u, "api-server must not duplicate sdkwork-database pool bootstrap");
+  assert.match(apiBootstrap, /connect_rtc_persistence_bootstrap_from_env/u, "standalone-gateway must bootstrap persistence through repository database module");
+  assert.doesNotMatch(apiBootstrap, /create_pool_from_env/u, "standalone-gateway must not duplicate sdkwork-database pool bootstrap");
 });
 
 test("sdkwork-rtc route crates do not keep legacy auth middleware modules", () => {
@@ -506,10 +506,10 @@ test("sdkwork-rtc route manifests declare WebRequestContext and apiSurface", () 
   }
 });
 
-test("sdkwork-rtc api-server wires database readiness when persistence pool is configured", () => {
-  const mainSource = read("crates/sdkwork-rtc-api-server/src/main.rs");
-  const bootstrapSource = read("crates/sdkwork-rtc-api-server/src/bootstrap.rs");
-  const readinessSource = read("crates/sdkwork-rtc-api-server/src/readiness.rs");
+test("sdkwork-rtc standalone-gateway wires database readiness when persistence pool is configured", () => {
+  const mainSource = read("crates/sdkwork-rtc-standalone-gateway/src/main.rs");
+  const bootstrapSource = read("crates/sdkwork-rtc-standalone-gateway/src/bootstrap.rs");
+  const readinessSource = read("crates/sdkwork-rtc-standalone-gateway/src/readiness.rs");
   const databaseModule = read("crates/sdkwork-communication-rtc-repository-sqlx/src/database.rs");
 
   assert.match(databaseModule, /connect_rtc_persistence_bootstrap_from_env/u);
@@ -602,22 +602,22 @@ test("sdkwork-rtc ships production deployment manifests and reconcile binary", (
   for (const filePath of [
     "deployments/kubernetes/README.md",
     "deployments/kubernetes/cloud-split-services/namespace.yaml",
-    "deployments/kubernetes/cloud-split-services/rtc-api-server/deployment.yaml",
-    "deployments/kubernetes/cloud-split-services/rtc-api-server/service.yaml",
+    "deployments/kubernetes/cloud-split-services/rtc-standalone-gateway/deployment.yaml",
+    "deployments/kubernetes/cloud-split-services/rtc-standalone-gateway/service.yaml",
     "deployments/kubernetes/cloud-split-services/rtc-reconcile/cronjob.yaml",
     "deployments/templates/server.env.example",
     "deployments/docker/Dockerfile",
     "deployments/docker/README.md",
     "deployments/docker/docker-compose.standalone.example.yaml",
-    "deployments/systemd/sdkwork-rtc-api-server.service",
+    "deployments/systemd/sdkwork-rtc-standalone-gateway.service",
     "docs/guides/operator/deployment.md",
     "scripts/package-server.mjs",
-    "crates/sdkwork-rtc-api-server/src/bin/reconcile.rs",
+    "crates/sdkwork-rtc-standalone-gateway/src/bin/reconcile.rs",
   ]) {
     assert.ok(exists(filePath), `${filePath} must exist`);
   }
 
-  const apiServerCargo = read("crates/sdkwork-rtc-api-server/Cargo.toml");
+  const apiServerCargo = read("crates/sdkwork-rtc-standalone-gateway/Cargo.toml");
   assert.match(apiServerCargo, /name = "sdkwork-rtc-reconcile"/u);
   assert.match(
     read("jobs/schedules/rtc-session-reconciliation.yaml"),
@@ -628,8 +628,8 @@ test("sdkwork-rtc ships production deployment manifests and reconcile binary", (
   assert.match(packageJson.scripts["package:server"], /package-server\.mjs package/u);
 
   const packageServer = read("scripts/package-server.mjs");
-  assert.match(packageServer, /sdkwork-rtc-api-server/u);
+  assert.match(packageServer, /sdkwork-rtc-standalone-gateway/u);
   assert.match(packageServer, /sdkwork-rtc-reconcile/u);
   assert.match(read("deployments/docker/Dockerfile"), /sdkwork-rtc-reconcile/u);
-  assert.match(read(".github/workflows/rtc-server-image.yml"), /ghcr\.io\/sdkwork\/rtc-api-server/u);
+  assert.match(read(".github/workflows/rtc-server-image.yml"), /ghcr\.io\/sdkwork\/rtc-standalone-gateway/u);
 });

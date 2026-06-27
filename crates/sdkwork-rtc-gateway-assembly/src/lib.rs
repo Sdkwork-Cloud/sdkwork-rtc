@@ -1,17 +1,11 @@
-//! Generated gateway assembly for sdkwork-rtc.
+//! Gateway assembly for sdkwork-rtc.
 
+mod bootstrap;
 mod generated;
 
-pub struct ApplicationAssembly {
-    pub router: axum::Router,
-}
-
-pub async fn assemble_application_router() -> ApplicationAssembly {
-    let mut router = axum::Router::new();
-    router = router.merge(sdkwork_routes_rtc_app_api::gateway_mount());
-    router = router.merge(sdkwork_routes_rtc_backend_api::gateway_mount());
-    ApplicationAssembly { router }
-}
+pub use bootstrap::{
+    assemble_application_router, assemble_application_router_with_service, ApplicationAssembly,
+};
 
 pub fn assembly_route_count() -> usize {
     generated::ROUTE_CRATE_COUNT

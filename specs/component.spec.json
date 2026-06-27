@@ -99,7 +99,7 @@
       "sdks/sdkwork-rtc-backend-sdk"
     ],
     "runtimeEntrypoints": [
-      "crates/sdkwork-rtc-api-server/src/main.rs",
+      "crates/sdkwork-rtc-standalone-gateway/src/main.rs",
       "package.json#scripts.verify"
     ],
     "routeManifest": [

@@ -7,7 +7,7 @@ const {
 
 Page({
   data: {
-    userId: "user",
+    userId: "1",
     sessions: [],
     loading: false,
     creating: false,
@@ -24,7 +24,7 @@ Page({
     }
     try {
       const session = JSON.parse(raw);
-      this.setData({ userId: session.userId || "user" });
+      this.setData({ userId: session.userId || "1" });
       bootstrapRtcMiniProgram();
       this.loadSessions();
     } catch {

@@ -28,11 +28,11 @@ sdkwork-rtc.
 
 ## Kubernetes
 
-See `kubernetes/README.md` for cloud split-services manifests (`rtc-api-server`, `rtc-reconcile` CronJob).
+See `kubernetes/README.md` for cloud split-services manifests (`rtc-standalone-gateway`, `rtc-reconcile` CronJob).
 
 ## systemd (standalone appliance)
 
-- `systemd/sdkwork-rtc-api-server.service` — API server unit
+- `systemd/sdkwork-rtc-standalone-gateway.service` — API server unit
 - `systemd/sdkwork-rtc-reconcile.service` + `sdkwork-rtc-reconcile.timer` — periodic reconciliation
 
 ## Docker
@@ -42,7 +42,7 @@ See `docker/README.md` for multi-stage image build and local compose example.
 ## Server archive
 
 `node scripts/package-server.mjs package` produces `artifacts/release/server/sdkwork-rtc-<version>-<platform>-<arch>-server.tar.gz`
-with `sdkwork-rtc-api-server` and `sdkwork-rtc-reconcile` binaries.
+with `sdkwork-rtc-standalone-gateway` and `sdkwork-rtc-reconcile` binaries.
 
 ## Templates
 

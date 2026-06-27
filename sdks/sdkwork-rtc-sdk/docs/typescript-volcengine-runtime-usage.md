@@ -78,7 +78,7 @@ const rtcClient = await dataSource.createClient();
 await rtcClient.join({
   sessionId: 'media-session-1',
   roomId: 'provider-room-1',
-  participantId: 'user-1',
+  participantId: '1',
   token: 'provider-issued-token',
 });
 

@@ -1486,7 +1486,7 @@ mod tests {
                 "roomId": "room-1"
             },
             "providerResponse": {
-                "onlineUsers": ["user-1", "user-2"]
+                "onlineUsers": ["1", "user-2"]
             }
         })
         .to_string();

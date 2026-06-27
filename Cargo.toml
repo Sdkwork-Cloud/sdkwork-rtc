@@ -17,7 +17,7 @@ members = [
     "crates/sdkwork-routes-rtc-backend-api",
     "crates/sdkwork-rtc-service-host",
     "crates/sdkwork-communication-rtc-worker",
-    "crates/sdkwork-rtc-api-server",
+    "crates/sdkwork-rtc-standalone-gateway",
 ]
 
 [workspace.package]
@@ -54,7 +54,7 @@ sdkwork-routes-rtc-app-api = { path = "crates/sdkwork-routes-rtc-app-api" }
 sdkwork-routes-rtc-backend-api = { path = "crates/sdkwork-routes-rtc-backend-api" }
 sdkwork-rtc-service-host = { path = "crates/sdkwork-rtc-service-host" }
 sdkwork-communication-rtc-worker = { path = "crates/sdkwork-communication-rtc-worker" }
-sdkwork-rtc-api-server = { path = "crates/sdkwork-rtc-api-server" }
+sdkwork-rtc-standalone-gateway = { path = "crates/sdkwork-rtc-standalone-gateway" }
 sdkwork-drive-config = { path = "../sdkwork-drive/crates/sdkwork-drive-config" }
 sdkwork-drive-storage-contract = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-contract" }
 sdkwork-drive-storage-local = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-local" }

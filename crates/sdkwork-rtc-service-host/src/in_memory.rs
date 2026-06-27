@@ -15,7 +15,7 @@ impl InMemoryRtcRepository {
         Self {
             rooms: vec![RtcRoom {
                 id: "room-daily-sync".to_string(),
-                tenant_id: "tenant-1".to_string(),
+                tenant_id: "100001".to_string(),
                 organization_id: "org-1".to_string(),
                 owner_user_id: "user-host".to_string(),
                 title: "Daily Sync".to_string(),
@@ -24,7 +24,7 @@ impl InMemoryRtcRepository {
             sessions: vec![RtcMediaSession {
                 id: "session-daily-sync".to_string(),
                 room_id: "room-daily-sync".to_string(),
-                tenant_id: "tenant-1".to_string(),
+                tenant_id: "100001".to_string(),
                 organization_id: "org-1".to_string(),
                 owner_user_id: "user-host".to_string(),
                 media_mode: RtcMediaSessionMode::Video,

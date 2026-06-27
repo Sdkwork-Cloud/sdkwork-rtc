@@ -1,12 +1,15 @@
+use std::sync::Arc;
+
 use axum::Router;
-use sdkwork_communication_rtc_service::rtc_persistence_required;
-use sdkwork_rtc_api_server::{
+use sdkwork_rtc_gateway_assembly::assemble_application_router_with_service;
+use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
+use tracing::info;
+
+use sdkwork_rtc_standalone_gateway::{
     bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap},
     readiness::RtcDatabaseReadinessCheck,
 };
-use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
-use std::sync::Arc;
-use tracing::info;
+use sdkwork_communication_rtc_service::rtc_persistence_required;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -18,23 +21,14 @@ async fn main() -> anyhow::Result<()> {
     let bootstrap = build_rtc_api_bootstrap(registry).await?;
     let service = bootstrap.service;
 
-    let app_router = sdkwork_routes_rtc_app_api::wrap_router_with_web_framework_from_env(
-        sdkwork_routes_rtc_app_api::build_sdkwork_rtc_app_api_router(service.clone()),
-    )
-    .await;
-    let backend_router = sdkwork_routes_rtc_backend_api::wrap_router_with_web_framework_from_env(
-        sdkwork_routes_rtc_backend_api::build_sdkwork_rtc_backend_api_router(service),
-    )
-    .await;
+    let assembly = assemble_application_router_with_service(service).await;
 
     let metrics = HttpMetricsRegistry::new();
 
     let service_router_config = if let Some(pool) = bootstrap.database_pool {
-        ServiceRouterConfig {
-            readiness: Some(Arc::new(RtcDatabaseReadinessCheck::new(pool))),
-            metrics: Some(metrics.clone()),
-            contract_fallback: None,
-        }
+        ServiceRouterConfig::default()
+            .with_readiness_check(Arc::new(RtcDatabaseReadinessCheck::new(pool)))
+            .with_metrics(metrics.clone())
     } else if rtc_persistence_required() {
         ServiceRouterConfig::default().with_metrics(metrics.clone())
     } else {
@@ -43,20 +37,17 @@ async fn main() -> anyhow::Result<()> {
             .with_metrics(metrics)
     };
 
-    let app = service_router(
-        Router::new().merge(app_router).merge(backend_router),
-        service_router_config,
-    );
+    let app = service_router(assembly.router, service_router_config);
 
     let bind_addr = std::env::var("SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND")
         .unwrap_or_else(|_| "127.0.0.1:18088".into());
     let listener = tokio::net::TcpListener::bind(bind_addr.as_str()).await?;
-    info!(%bind_addr, "sdkwork-rtc-api-server listening");
+    info!(%bind_addr, "sdkwork-rtc-standalone-gateway listening");
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await?;
-    info!("sdkwork-rtc-api-server stopped");
+    info!("sdkwork-rtc-standalone-gateway stopped");
     Ok(())
 }
 

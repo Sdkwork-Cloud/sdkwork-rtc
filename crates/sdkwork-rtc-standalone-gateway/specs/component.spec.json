@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "kind": "sdkwork.component.spec",
   "component": {
-    "name": "sdkwork-rtc-api-server",
+    "name": "sdkwork-rtc-standalone-gateway",
     "displayName": "SDKWork RTC API Server",
     "version": "0.1.0",
     "type": "rust-crate",
-    "root": "sdkwork-rtc/crates/sdkwork-rtc-api-server",
+    "root": "sdkwork-rtc/crates/sdkwork-rtc-standalone-gateway",
     "domain": "communication",
     "declaredDomain": null,
     "capability": "rtc",
@@ -93,7 +93,7 @@
   },
   "verification": {
     "commands": [
-      "cargo test -p sdkwork-rtc-api-server"
+      "cargo test -p sdkwork-rtc-standalone-gateway"
     ]
   },
   "metadata": {

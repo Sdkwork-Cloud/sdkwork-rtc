@@ -628,7 +628,7 @@ mod tests {
             Box::pin(async move {
                 Ok(RtcProviderWebhookEventRecord {
                     id: "webhook-event-1".into(),
-                    tenant_id: "tenant-1".into(),
+                    tenant_id: "100001".into(),
                     organization_id: "org-1".into(),
                     provider,
                     provider_profile_id: Some("profile-volcengine".into()),

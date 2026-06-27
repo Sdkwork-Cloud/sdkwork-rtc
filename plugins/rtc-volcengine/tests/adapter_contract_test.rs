@@ -106,7 +106,7 @@ fn test_volcengine_rtc_provider_implements_webhook_and_active_query_surface() {
         "cn-shanghai",
     );
 
-    let artifact = provider.export_recording_artifact("t_demo", "rtc_demo");
+    let artifact = provider.export_recording_artifact("100001", "rtc_demo");
     assert!(
         matches!(artifact, Err(RtcContractError::Unavailable(_))),
         "volcengine recording export must fail closed until a Drive importer is configured"
@@ -245,7 +245,7 @@ fn test_volcengine_rtc_recording_export_uses_injected_drive_importer() {
     .with_recording_importer(importer.clone());
 
     let artifact = provider
-        .export_recording_artifact("t_demo", "rtc_demo")
+        .export_recording_artifact("100001", "rtc_demo")
         .expect("volcengine rtc artifact export should call the Drive importer")
         .expect("fake Drive importer should return an artifact");
 
@@ -258,7 +258,7 @@ fn test_volcengine_rtc_recording_export_uses_injected_drive_importer() {
     let requests = importer.requests();
     assert_eq!(requests.len(), 1);
     assert_eq!(requests[0].provider, "volcengine");
-    assert_eq!(requests[0].tenant_id, "t_demo");
+    assert_eq!(requests[0].tenant_id, "100001");
     assert_eq!(requests[0].rtc_session_id, "rtc_demo");
 }
 
@@ -346,7 +346,7 @@ fn test_volcengine_active_query_builds_signed_open_api_request_when_credentials_
     assert!(!query.result_snapshot_json.contains("volc-secret-value"));
 
     let credential = provider
-        .issue_participant_credential("t_demo", "room_demo", "u_host", None)
+        .issue_participant_credential("100001", "room_demo", "u_host", None)
         .expect("volcengine signed credential should be generated");
     assert!(credential.credential.starts_with("001volc-app-id"));
     assert!(!credential.credential.contains("volcengine-token:"));
@@ -465,7 +465,7 @@ fn assert_media_session_contract<P: RtcProviderPort + ?Sized>(
 ) {
     let session = provider
         .create_session(RtcCreateMediaSessionRequest {
-            tenant_id: "t_demo".into(),
+            tenant_id: "100001".into(),
             rtc_session_id: rtc_session_id.into(),
             media_mode,
             room_id: Some(format!("room_{rtc_session_id}")),
@@ -487,7 +487,7 @@ fn assert_requested_region_overrides_provider_default<P: RtcProviderPort + ?Size
 ) {
     let session = provider
         .create_session(RtcCreateMediaSessionRequest {
-            tenant_id: "t_demo".into(),
+            tenant_id: "100001".into(),
             rtc_session_id: rtc_session_id.into(),
             media_mode: RtcMediaSessionMode::Video,
             room_id: Some(format!("room_{rtc_session_id}")),

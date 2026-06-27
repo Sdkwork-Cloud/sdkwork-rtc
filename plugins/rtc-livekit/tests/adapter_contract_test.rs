@@ -106,14 +106,14 @@ fn test_livekit_rtc_provider_implements_contract_surface() {
     );
 
     let credential = provider
-        .issue_participant_credential("t_demo", "rtc_demo", "u_peer", None)
+        .issue_participant_credential("100001", "rtc_demo", "1009", None)
         .expect("livekit rtc credential should succeed");
     assert_eq!(
         credential.credential,
-        "livekit-token:t_demo:rtc_demo:u_peer"
+        "livekit-token:100001:rtc_demo:1009"
     );
 
-    let artifact = provider.export_recording_artifact("t_demo", "rtc_demo");
+    let artifact = provider.export_recording_artifact("100001", "rtc_demo");
     assert!(
         matches!(artifact, Err(RtcContractError::Unavailable(_))),
         "livekit recording export must fail closed until a Drive importer is configured"
@@ -137,7 +137,7 @@ fn test_livekit_rtc_provider_issues_signed_token_when_credentials_configured() {
     });
 
     let credential = provider
-        .issue_participant_credential("t_demo", "room_demo", "u_host", None)
+        .issue_participant_credential("100001", "room_demo", "u_host", None)
         .expect("livekit signed credential should be generated");
     assert!(credential.credential.matches('.').count() >= 2);
     assert!(!credential.credential.contains("livekit-token:"));
@@ -155,7 +155,7 @@ fn test_livekit_rtc_recording_export_uses_injected_drive_importer() {
     .with_recording_importer(importer.clone());
 
     let artifact = provider
-        .export_recording_artifact("t_demo", "rtc_demo")
+        .export_recording_artifact("100001", "rtc_demo")
         .expect("livekit rtc artifact export should call the Drive importer")
         .expect("fake Drive importer should return an artifact");
 
@@ -168,7 +168,7 @@ fn test_livekit_rtc_recording_export_uses_injected_drive_importer() {
     let requests = importer.requests();
     assert_eq!(requests.len(), 1);
     assert_eq!(requests[0].provider, "livekit");
-    assert_eq!(requests[0].tenant_id, "t_demo");
+    assert_eq!(requests[0].tenant_id, "100001");
     assert_eq!(requests[0].rtc_session_id, "rtc_demo");
 }
 
@@ -197,7 +197,7 @@ fn test_livekit_rtc_provider_implements_webhook_and_active_query_surface() {
                     "sid": "RM_demo"
                 },
                 "participant": {
-                    "identity": "u_guest",
+                    "identity": "2",
                     "sid": "PA_guest"
                 },
                 "createdAt": 1781000000
@@ -209,7 +209,7 @@ fn test_livekit_rtc_provider_implements_webhook_and_active_query_surface() {
     assert_eq!(parsed.external_event_id.as_deref(), Some("livekit-event-1"));
     assert_eq!(parsed.event_kind, RtcProviderEventKind::ParticipantJoined);
     assert_eq!(parsed.room_id.as_deref(), Some("room_demo"));
-    assert_eq!(parsed.participant_id.as_deref(), Some("u_guest"));
+    assert_eq!(parsed.participant_id.as_deref(), Some("2"));
     assert_eq!(
         parsed.signature_header.as_deref(),
         Some("Bearer livekit-webhook-token")
@@ -410,7 +410,7 @@ fn assert_media_session_contract<P: RtcProviderPort + ?Sized>(
 ) {
     let session = provider
         .create_session(RtcCreateMediaSessionRequest {
-            tenant_id: "t_demo".into(),
+            tenant_id: "100001".into(),
             rtc_session_id: rtc_session_id.into(),
             media_mode,
             room_id: Some(format!("room_{rtc_session_id}")),
@@ -432,7 +432,7 @@ fn assert_requested_region_overrides_provider_default<P: RtcProviderPort + ?Size
 ) {
     let session = provider
         .create_session(RtcCreateMediaSessionRequest {
-            tenant_id: "t_demo".into(),
+            tenant_id: "100001".into(),
             rtc_session_id: rtc_session_id.into(),
             media_mode: RtcMediaSessionMode::Video,
             room_id: Some(format!("room_{rtc_session_id}")),

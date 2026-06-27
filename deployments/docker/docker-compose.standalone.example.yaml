@@ -14,8 +14,8 @@ services:
       timeout: 5s
       retries: 5
 
-  rtc-api-server:
-    image: ghcr.io/sdkwork/rtc-api-server:latest
+  rtc-standalone-gateway:
+    image: ghcr.io/sdkwork/rtc-standalone-gateway:latest
     depends_on:
       postgres:
         condition: service_healthy

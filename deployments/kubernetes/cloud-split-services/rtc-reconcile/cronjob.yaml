@@ -26,7 +26,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: rtc-reconcile
-              image: ghcr.io/sdkwork/rtc-api-server:latest
+              image: ghcr.io/sdkwork/rtc-standalone-gateway:latest
               imagePullPolicy: IfNotPresent
               command:
                 - /opt/sdkwork/rtc/bin/sdkwork-rtc-reconcile
@@ -34,7 +34,7 @@ spec:
                 - configMapRef:
                     name: rtc-reconcile-runtime
                 - secretRef:
-                    name: rtc-api-server-secrets
+                    name: rtc-standalone-gateway-secrets
                     optional: true
               env:
                 - name: SDKWORK_RTC_ENVIRONMENT

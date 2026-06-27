@@ -20,9 +20,9 @@ export const DEFAULT_ADMIN_PERMISSION_SCOPE = "rtc.*";
 export const DEFAULT_ADMIN_SESSION: RtcAdminSession = {
   accessToken: "dev-access-token",
   authToken: "dev-auth-token",
-  tenantId: "default",
+  tenantId: "100001",
   organizationId: "default",
-  userId: "admin",
+  userId: "1",
 };
 
 function parseStoredAdminSession(raw: string): RtcAdminSession | null {

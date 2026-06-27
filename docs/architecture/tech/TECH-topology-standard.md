@@ -31,7 +31,7 @@ pnpm dev:server
 
 | Surface id | Plane | Service |
 | --- | --- | --- |
-| `application.public-ingress` | application | `sdkwork-rtc-api-server` (`/app/v3/api/rtc/*`, `/backend/v3/api/rtc/*`) |
+| `application.public-ingress` | application | `sdkwork-rtc-standalone-gateway` (`/app/v3/api/rtc/*`, `/backend/v3/api/rtc/*`) |
 | `platform.api-gateway` | platform | `sdkwork-api-cloud-gateway` (sibling repo, IAM and shared SDKs) |
 
 Product OpenAPI SDKs use `application.public-ingress`. IAM and platform SDKs use `platform.api-gateway`.

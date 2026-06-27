@@ -9,7 +9,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const APP_ID = 'sdkwork-rtc';
-const SERVER_BINARIES = ['sdkwork-rtc-api-server', 'sdkwork-rtc-reconcile'];
+const SERVER_BINARIES = ['sdkwork-rtc-standalone-gateway', 'sdkwork-rtc-reconcile'];
 const SERVER_PROFILE = 'server';
 const DEFAULT_DEPLOYMENT_PROFILE = 'standalone';
 const SUPPORTED_FORMAT = 'tar.gz';
@@ -283,7 +283,7 @@ async function packageServer(context) {
 }
 
 function runCargoBuild(context) {
-  const args = ['build', '--release', '-p', 'sdkwork-rtc-api-server'];
+  const args = ['build', '--release', '-p', 'sdkwork-rtc-standalone-gateway'];
   if (context.rustTarget) {
     args.push('--target', context.rustTarget);
   }
@@ -298,7 +298,7 @@ async function copyPackageAssets(stageRoot) {
     ['deployments/templates/server.env.example', 'config/server.env.example'],
     ['configs/rtc-runtime.env.example', 'config/rtc-runtime.env.example'],
     ['configs/topology/cloud.split-services.production.env', 'config/cloud.split-services.production.env'],
-    ['deployments/systemd/sdkwork-rtc-api-server.service', 'deployments/systemd/sdkwork-rtc-api-server.service'],
+    ['deployments/systemd/sdkwork-rtc-standalone-gateway.service', 'deployments/systemd/sdkwork-rtc-standalone-gateway.service'],
     ['deployments/systemd/sdkwork-rtc-reconcile.service', 'deployments/systemd/sdkwork-rtc-reconcile.service'],
     ['deployments/systemd/sdkwork-rtc-reconcile.timer', 'deployments/systemd/sdkwork-rtc-reconcile.timer'],
   ];
@@ -323,8 +323,8 @@ async function copyIfExists(relativeSource, destination) {
 function renderInstallGuide(context) {
   const apiBinary =
     context.platform === 'windows'
-      ? '.\\bin\\sdkwork-rtc-api-server.exe'
-      : './bin/sdkwork-rtc-api-server';
+      ? '.\\bin\\sdkwork-rtc-standalone-gateway.exe'
+      : './bin/sdkwork-rtc-standalone-gateway';
   const reconcileBinary =
     context.platform === 'windows'
       ? '.\\bin\\sdkwork-rtc-reconcile.exe'
@@ -337,7 +337,7 @@ Target: ${context.platform}/${context.architecture}
 
 ## Install layout
 
-- \`bin/sdkwork-rtc-api-server\` — RTC app/backend HTTP API
+- \`bin/sdkwork-rtc-standalone-gateway\` — RTC app/backend HTTP API
 - \`bin/sdkwork-rtc-reconcile\` — session reconciliation worker
 - \`config/server.env.example\` — production environment template
 - \`deployments/systemd/\` — optional systemd units
@@ -438,7 +438,7 @@ async function validateArchive(context) {
 
   const listing = run('tar', ['-tzf', context.archivePath], { cwd: appRoot, capture: true });
   const requiredEntries = [
-  `${context.stageName}/bin/sdkwork-rtc-api-server`,
+  `${context.stageName}/bin/sdkwork-rtc-standalone-gateway`,
   `${context.stageName}/bin/sdkwork-rtc-reconcile`,
   `${context.stageName}/config/server.env.example`,
   `${context.stageName}/install-manifest.json`,
@@ -446,7 +446,7 @@ async function validateArchive(context) {
   `${context.stageName}/INSTALL.md`,
   ];
   if (context.platform === 'windows') {
-    requiredEntries[0] = `${context.stageName}/bin/sdkwork-rtc-api-server.exe`;
+    requiredEntries[0] = `${context.stageName}/bin/sdkwork-rtc-standalone-gateway.exe`;
     requiredEntries[1] = `${context.stageName}/bin/sdkwork-rtc-reconcile.exe`;
   }
 

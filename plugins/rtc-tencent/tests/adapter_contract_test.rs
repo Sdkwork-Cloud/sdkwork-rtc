@@ -117,14 +117,14 @@ fn test_tencent_rtc_provider_implements_contract_surface() {
     );
 
     let credential = provider
-        .issue_participant_credential("t_demo", "rtc_demo", "u_peer", None)
+        .issue_participant_credential("100001", "rtc_demo", "1009", None)
         .expect("tencent rtc credential should succeed");
     assert_eq!(
         credential.credential,
-        "tencent-token:t_demo:rtc_demo:u_peer"
+        "tencent-token:100001:rtc_demo:1009"
     );
 
-    let artifact = provider.export_recording_artifact("t_demo", "rtc_demo");
+    let artifact = provider.export_recording_artifact("100001", "rtc_demo");
     assert!(
         matches!(artifact, Err(RtcContractError::Unavailable(_))),
         "tencent recording export must fail closed until a Drive importer is configured"
@@ -156,7 +156,7 @@ fn test_tencent_rtc_recording_export_uses_injected_drive_importer() {
     .with_recording_importer(importer.clone());
 
     let artifact = provider
-        .export_recording_artifact("t_demo", "rtc_demo")
+        .export_recording_artifact("100001", "rtc_demo")
         .expect("tencent rtc artifact export should call the Drive importer")
         .expect("fake Drive importer should return an artifact");
 
@@ -169,7 +169,7 @@ fn test_tencent_rtc_recording_export_uses_injected_drive_importer() {
     let requests = importer.requests();
     assert_eq!(requests.len(), 1);
     assert_eq!(requests[0].provider, "tencent");
-    assert_eq!(requests[0].tenant_id, "t_demo");
+    assert_eq!(requests[0].tenant_id, "100001");
     assert_eq!(requests[0].rtc_session_id, "rtc_demo");
 }
 
@@ -218,7 +218,7 @@ fn test_tencent_rtc_provider_implements_webhook_and_active_query_surface() {
                 "SdkAppId": 1400000000,
                 "RoomId": "room_demo",
                 "SessionId": "rtc_session_webhook",
-                "UserId": "u_guest",
+                "UserId": "2",
                 "EventTime": 1781000000
             }"#
             .into(),
@@ -236,7 +236,7 @@ fn test_tencent_rtc_provider_implements_webhook_and_active_query_surface() {
         parsed.provider_session_id.as_deref(),
         Some("tencent:rtc_session_webhook")
     );
-    assert_eq!(parsed.participant_id.as_deref(), Some("u_guest"));
+    assert_eq!(parsed.participant_id.as_deref(), Some("2"));
     assert_eq!(parsed.signature_header.as_deref(), Some("sig-demo"));
 
     let webhook_payload = r#"{"EventType":"104","EventId":"tc-event-1"}"#;
@@ -396,7 +396,7 @@ fn test_tencent_active_query_builds_signed_open_api_request_when_credentials_are
     assert!(!query.result_snapshot_json.contains("tencent-secret-value"));
 
     let credential = provider
-        .issue_participant_credential("t_demo", "room_demo", "u_guest", None)
+        .issue_participant_credential("100001", "room_demo", "2", None)
         .expect("tencent signed credential should be generated");
     assert!(!credential.credential.contains("tencent-token:"));
     assert!(!credential.credential.contains("tencent-usersig-secret"));
@@ -517,7 +517,7 @@ fn assert_media_session_contract<P: RtcProviderPort + ?Sized>(
 ) {
     let session = provider
         .create_session(RtcCreateMediaSessionRequest {
-            tenant_id: "t_demo".into(),
+            tenant_id: "100001".into(),
             rtc_session_id: rtc_session_id.into(),
             media_mode,
             room_id: Some(format!("room_{rtc_session_id}")),
@@ -539,7 +539,7 @@ fn assert_requested_region_overrides_provider_default<P: RtcProviderPort + ?Size
 ) {
     let session = provider
         .create_session(RtcCreateMediaSessionRequest {
-            tenant_id: "t_demo".into(),
+            tenant_id: "100001".into(),
             rtc_session_id: rtc_session_id.into(),
             media_mode: RtcMediaSessionMode::Video,
             room_id: Some(format!("room_{rtc_session_id}")),

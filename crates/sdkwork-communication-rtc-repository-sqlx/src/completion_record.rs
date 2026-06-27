@@ -1088,9 +1088,9 @@ mod tests {
         RtcMediaSession {
             id: "session-1".to_string(),
             room_id: "room-1".to_string(),
-            tenant_id: "100".to_string(),
-            organization_id: "200".to_string(),
-            owner_user_id: "300".to_string(),
+            tenant_id: "100001".to_string(),
+            organization_id: "0".to_string(),
+            owner_user_id: "1".to_string(),
             media_mode: RtcMediaSessionMode::Video,
             status: RtcMediaSessionStatus::Ended,
             provider_profile_id: Some("provider-volcengine-default".to_string()),
@@ -1112,7 +1112,7 @@ mod tests {
                 RtcMediaParticipant {
                     id: "participant-1".to_string(),
                     session_id: "session-1".to_string(),
-                    user_id: "300".to_string(),
+                    user_id: "1".to_string(),
                     display_name: "Host".to_string(),
                     role: RtcParticipantRole::Host,
                     state: RtcParticipantState::Left,
@@ -1129,7 +1129,7 @@ mod tests {
                 RtcMediaParticipant {
                     id: "participant-2".to_string(),
                     session_id: "session-1".to_string(),
-                    user_id: "301".to_string(),
+                    user_id: "2".to_string(),
                     display_name: "Guest".to_string(),
                     role: RtcParticipantRole::Guest,
                     state: RtcParticipantState::Left,

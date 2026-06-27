@@ -48,11 +48,11 @@ coverage = "rtc-backend-api-upstream-routes"
 
 [[upstreams]]
 serviceId = "sdkwork-rtc-app-api"
-baseUrl = "http://sdkwork-rtc-api-server:18088"
+baseUrl = "http://sdkwork-rtc-standalone-gateway:18088"
 
 [[upstreams]]
 serviceId = "sdkwork-rtc-backend-api"
-baseUrl = "http://sdkwork-rtc-api-server:18088"
+baseUrl = "http://sdkwork-rtc-standalone-gateway:18088"
 
 [cors]
 allowAnyOrigin = false

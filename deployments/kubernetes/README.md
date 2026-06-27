@@ -7,22 +7,22 @@ Cloud split-services topology for production RTC authority.
 | Path | Purpose |
 |------|---------|
 | `cloud-split-services/namespace.yaml` | `sdkwork-rtc` namespace |
-| `cloud-split-services/rtc-api-server/` | API server Deployment, Service, runtime ConfigMap |
+| `cloud-split-services/rtc-standalone-gateway/` | Standalone gateway Deployment, Service, runtime ConfigMap |
 | `cloud-split-services/rtc-reconcile/` | Session reconciliation CronJob (`sdkwork-rtc-reconcile`) |
 
 ## Prerequisites
 
-1. Materialize secrets from `deployments/templates/server.env.example` into cluster Secrets (`rtc-api-server-secrets`).
+1. Materialize secrets from `deployments/templates/server.env.example` into cluster Secrets (`rtc-standalone-gateway-secrets`).
 2. Apply `configmap.example.yaml` files with production database and tenant values.
 3. Build/publish container image that ships:
-   - `/opt/sdkwork/rtc/bin/sdkwork-rtc-api-server`
+   - `/opt/sdkwork/rtc/bin/sdkwork-rtc-standalone-gateway`
    - `/opt/sdkwork/rtc/bin/sdkwork-rtc-reconcile`
 
 ## Apply order
 
 ```powershell
 kubectl apply -f deployments/kubernetes/cloud-split-services/namespace.yaml
-kubectl apply -f deployments/kubernetes/cloud-split-services/rtc-api-server/
+kubectl apply -f deployments/kubernetes/cloud-split-services/rtc-standalone-gateway/
 kubectl apply -f deployments/kubernetes/cloud-split-services/rtc-reconcile/
 ```
 

@@ -2,9 +2,9 @@
 
 ## Image
 
-`ghcr.io/sdkwork/rtc-api-server` ships:
+`ghcr.io/sdkwork/rtc-standalone-gateway` ships:
 
-- `/opt/sdkwork/rtc/bin/sdkwork-rtc-api-server`
+- `/opt/sdkwork/rtc/bin/sdkwork-rtc-standalone-gateway`
 - `/opt/sdkwork/rtc/bin/sdkwork-rtc-reconcile`
 
 ## Build
@@ -12,7 +12,7 @@
 Run from the SDKWork workspace root (sibling repositories must be present):
 
 ```powershell
-docker build -f sdkwork-rtc/deployments/docker/Dockerfile -t ghcr.io/sdkwork/rtc-api-server:latest .
+docker build -f sdkwork-rtc/deployments/docker/Dockerfile -t ghcr.io/sdkwork/rtc-standalone-gateway:latest .
 ```
 
 Required sibling repositories:

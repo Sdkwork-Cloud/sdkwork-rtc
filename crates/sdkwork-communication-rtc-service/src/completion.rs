@@ -470,9 +470,9 @@ mod tests {
         let session = RtcMediaSession {
             id: "session-1".to_string(),
             room_id: "room-1".to_string(),
-            tenant_id: "tenant-1".to_string(),
+            tenant_id: "100001".to_string(),
             organization_id: "org-1".to_string(),
-            owner_user_id: "user-1".to_string(),
+            owner_user_id: "1".to_string(),
             media_mode: RtcMediaSessionMode::Video,
             status: RtcMediaSessionStatus::Ended,
             provider_profile_id: Some("provider-volcengine".to_string()),
@@ -494,7 +494,7 @@ mod tests {
                 RtcMediaParticipant {
                     id: "participant-1".to_string(),
                     session_id: "session-1".to_string(),
-                    user_id: "user-1".to_string(),
+                    user_id: "1".to_string(),
                     display_name: "Host".to_string(),
                     role: RtcParticipantRole::Host,
                     state: RtcParticipantState::Left,
@@ -529,7 +529,7 @@ mod tests {
         };
 
         let recording = RtcRecordingArtifact::drive_backed_recording(
-            "tenant-1",
+            "100001",
             "session-1",
             "space-rtc-user-1",
             "node-recording-1",
@@ -537,7 +537,7 @@ mod tests {
         )
         .into_media_artifact(RtcMediaArtifactDescriptor {
             id: "artifact-1".into(),
-            owner_user_id: "user-1".into(),
+            owner_user_id: "1".into(),
             artifact_kind: RtcRecordingArtifactKind::Recording,
             artifact_status: RtcRecordingArtifactStatus::Ready,
             media_role: "rtc_recording".into(),

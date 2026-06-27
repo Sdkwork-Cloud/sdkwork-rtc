@@ -20,7 +20,7 @@ Detect and heal operational drift between IM call state and RTC media sessions, 
 
 ## Worker implementation
 
-Runnable binary: `sdkwork-rtc-reconcile` (`crates/sdkwork-rtc-api-server/src/bin/reconcile.rs`).
+Runnable binary: `sdkwork-rtc-reconcile` (`crates/sdkwork-rtc-standalone-gateway/src/bin/reconcile.rs`).
 
 Library crate: `crates/sdkwork-communication-rtc-worker/` exposes `RtcWorker::run_job(RtcWorkerJob::SessionReconciliation)`, which runs stale TTL close, provider drift sync, and failed-session compensation in one pass.
 

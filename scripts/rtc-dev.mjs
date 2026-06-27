@@ -135,7 +135,7 @@ function createPlatformGatewayProcess(env) {
     args: [
       'run',
       '-p',
-      'sdkwork-api-cloud-gateway-api-server',
+      'sdkwork-api-cloud-gateway',
       '--bin',
       'sdkwork-api-cloud-gateway',
       '--',
@@ -153,9 +153,9 @@ function createPlatformGatewayProcess(env) {
 
 function createRtcApiServerProcess(env) {
   return {
-    label: 'sdkwork-rtc-api-server',
+    label: 'sdkwork-rtc-standalone-gateway',
     command: cargoCommand(),
-    args: ['run', '-p', 'sdkwork-rtc-api-server'],
+    args: ['run', '-p', 'sdkwork-rtc-standalone-gateway'],
     cwd: REPO_ROOT,
     env,
   };

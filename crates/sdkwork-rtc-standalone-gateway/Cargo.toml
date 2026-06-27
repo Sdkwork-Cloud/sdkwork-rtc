@@ -1,20 +1,16 @@
 [package]
-name = "sdkwork-rtc-api-server"
+name = "sdkwork-rtc-standalone-gateway"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [lib]
-name = "sdkwork_rtc_api_server"
+name = "sdkwork_rtc_standalone_gateway"
 path = "src/lib.rs"
 
 [[bin]]
-name = "sdkwork-rtc-api-server"
+name = "sdkwork-rtc-standalone-gateway"
 path = "src/main.rs"
-
-[[bin]]
-name = "sdkwork-rtc-reconcile"
-path = "src/bin/reconcile.rs"
 
 [dependencies]
 sdkwork_rtc_gateway_assembly = { package = "sdkwork-rtc-gateway-assembly", path = "../sdkwork-rtc-gateway-assembly" }
@@ -29,8 +25,6 @@ sdkwork-rtc-adapter-aliyun.workspace = true
 sdkwork-rtc-adapter-livekit.workspace = true
 sdkwork-rtc-adapter-tencent.workspace = true
 sdkwork-rtc-adapter-volcengine.workspace = true
-sdkwork-routes-rtc-app-api.workspace = true
-sdkwork-routes-rtc-backend-api.workspace = true
 sdkwork-rtc-service-host.workspace = true
 sdkwork-web-bootstrap.workspace = true
 sqlx.workspace = true
@@ -39,6 +33,3 @@ tower.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 
-[[bin]]
-name = "sdkwork-rtc-standalone-gateway"
-path = "src/main.rs"

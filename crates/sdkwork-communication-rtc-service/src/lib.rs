@@ -1399,7 +1399,7 @@ mod tests {
     #[test]
     fn drive_backed_recording_artifact_uses_drive_media_source() {
         let artifact = RtcRecordingArtifact::drive_backed_recording(
-            "tenant-1",
+            "100001",
             "rtc-session-1",
             "space-rtc-user-1",
             "node-recording-1",
@@ -1442,14 +1442,14 @@ mod tests {
     #[test]
     fn rtc_media_artifact_list_models_multiple_drive_backed_records_for_one_session() {
         let recording = RtcRecordingArtifact::drive_backed_recording(
-            "tenant-1",
+            "100001",
             "rtc-session-1",
             "space-rtc-user-1",
             "node-recording-1",
             Some("1".to_string()),
         );
         let transcript = RtcRecordingArtifact::drive_backed_recording(
-            "tenant-1",
+            "100001",
             "rtc-session-1",
             "space-rtc-user-1",
             "node-transcript-1",
@@ -1457,7 +1457,7 @@ mod tests {
         )
         .into_media_artifact(RtcMediaArtifactDescriptor {
             id: "record-transcript-1".into(),
-            owner_user_id: "user-1".into(),
+            owner_user_id: "1".into(),
             artifact_kind: RtcRecordingArtifactKind::Transcript,
             artifact_status: RtcRecordingArtifactStatus::Ready,
             media_role: "rtc_transcript".into(),
@@ -1466,7 +1466,7 @@ mod tests {
         });
         let recording = recording.into_media_artifact(RtcMediaArtifactDescriptor {
             id: "record-recording-1".into(),
-            owner_user_id: "user-1".into(),
+            owner_user_id: "1".into(),
             artifact_kind: RtcRecordingArtifactKind::Recording,
             artifact_status: RtcRecordingArtifactStatus::Ready,
             media_role: "rtc_recording".into(),
@@ -1474,14 +1474,14 @@ mod tests {
             ended_at: "2026-06-06T00:10:00.000Z".into(),
         });
         let records =
-            RtcMediaArtifactList::new("tenant-1", "rtc-session-1", vec![recording, transcript]);
+            RtcMediaArtifactList::new("100001", "rtc-session-1", vec![recording, transcript]);
 
         assert_eq!(records.items.len(), 2);
         assert!(
             records
                 .items
                 .iter()
-                .all(|record| record.tenant_id == "tenant-1"
+                .all(|record| record.tenant_id == "100001"
                     && record.rtc_session_id == "rtc-session-1"
                     && record.drive.is_canonical()
                     && record.resource.source == RtcMediaSource::Drive)
@@ -1503,9 +1503,9 @@ mod tests {
     fn summarizes_rtc_workspace_without_transport_state() {
         let rooms = vec![RtcRoom {
             id: "room-1".to_string(),
-            tenant_id: "tenant-1".to_string(),
+            tenant_id: "100001".to_string(),
             organization_id: "org-1".to_string(),
-            owner_user_id: "user-1".to_string(),
+            owner_user_id: "1".to_string(),
             title: "Daily sync".to_string(),
             status: RtcRoomStatus::Active,
         }];
@@ -1513,9 +1513,9 @@ mod tests {
             RtcMediaSession {
                 id: "session-1".to_string(),
                 room_id: "room-1".to_string(),
-                tenant_id: "tenant-1".to_string(),
+                tenant_id: "100001".to_string(),
                 organization_id: "org-1".to_string(),
-                owner_user_id: "user-1".to_string(),
+                owner_user_id: "1".to_string(),
                 media_mode: RtcMediaSessionMode::Video,
                 status: RtcMediaSessionStatus::Active,
                 provider_profile_id: Some("provider-volcengine".to_string()),
@@ -1537,7 +1537,7 @@ mod tests {
                     RtcMediaParticipant {
                         id: "participant-1".to_string(),
                         session_id: "session-1".to_string(),
-                        user_id: "user-1".to_string(),
+                        user_id: "1".to_string(),
                         display_name: "Host".to_string(),
                         role: RtcParticipantRole::Host,
                         state: RtcParticipantState::Joined,
@@ -1573,9 +1573,9 @@ mod tests {
             RtcMediaSession {
                 id: "session-2".to_string(),
                 room_id: "room-1".to_string(),
-                tenant_id: "tenant-1".to_string(),
+                tenant_id: "100001".to_string(),
                 organization_id: "org-1".to_string(),
-                owner_user_id: "user-1".to_string(),
+                owner_user_id: "1".to_string(),
                 media_mode: RtcMediaSessionMode::Audio,
                 status: RtcMediaSessionStatus::Ended,
                 provider_profile_id: None,

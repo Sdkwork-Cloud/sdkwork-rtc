@@ -140,9 +140,9 @@ mod tests {
             Box::pin(async move {
                 Ok(RtcRoom {
                     id: room_id,
-                    tenant_id: "tenant-1".to_owned(),
+                    tenant_id: "100001".to_owned(),
                     organization_id: "org-1".to_owned(),
-                    owner_user_id: "user-1".to_owned(),
+                    owner_user_id: "1".to_owned(),
                     title: "Room".to_owned(),
                     status: RtcRoomStatus::Active,
                 })
@@ -250,9 +250,9 @@ mod tests {
 
     fn context() -> AppContext {
         AppContext {
-            tenant_id: "tenant-1".to_owned(),
+            tenant_id: "100001".to_owned(),
             organization_id: Some("org-1".to_owned()),
-            user_id: "user-1".to_owned(),
+            user_id: "1".to_owned(),
             session_id: Some("session-1".to_owned()),
             app_id: Some("app-1".to_owned()),
             environment: Some("test".to_owned()),
@@ -260,7 +260,7 @@ mod tests {
             auth_level: Some("user".to_owned()),
             data_scope: BTreeSet::from(["organization".to_owned()]),
             permission_scope: BTreeSet::from(["rtc.*".to_owned()]),
-            actor_id: "user-1".to_owned(),
+            actor_id: "1".to_owned(),
             actor_kind: "user".to_owned(),
             device_id: None,
         }

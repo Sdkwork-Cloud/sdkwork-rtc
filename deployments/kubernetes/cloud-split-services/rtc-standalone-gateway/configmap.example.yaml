@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: rtc-api-server-runtime
+  name: rtc-standalone-gateway-runtime
   namespace: sdkwork-rtc
 data:
   SDKWORK_RTC_DATABASE_ENGINE: postgresql

@@ -1,12 +1,12 @@
 [Unit]
-Description=SDKWork RTC API Server
+Description=SDKWork RTC Standalone Gateway
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/opt/sdkwork/rtc
 EnvironmentFile=/etc/sdkwork/rtc/server.env
-ExecStart=/opt/sdkwork/rtc/bin/sdkwork-rtc-api-server
+ExecStart=/opt/sdkwork/rtc/bin/sdkwork-rtc-standalone-gateway
 Restart=on-failure
 RestartSec=5
 

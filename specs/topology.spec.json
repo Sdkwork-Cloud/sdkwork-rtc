@@ -94,11 +94,11 @@
   },
   "components": {
     "applicationApiServer": {
-      "crate": "sdkwork-rtc-api-server",
-      "binary": "sdkwork-rtc-api-server"
+      "crate": "sdkwork-rtc-standalone-gateway",
+      "binary": "sdkwork-rtc-standalone-gateway"
     },
     "cloudGateway": {
-      "crate": "sdkwork-api-cloud-gateway-api-server",
+      "crate": "sdkwork-api-cloud-gateway",
       "binary": "sdkwork-api-cloud-gateway",
       "repository": "sdkwork-api-cloud-gateway",
       "configGlob": "configs/sdkwork-api-cloud-gateway.sdkwork-rtc.{profile}.toml"
@@ -110,7 +110,7 @@
         "processes": [
           {
             "id": "application.public-ingress",
-            "crate": "sdkwork-rtc-api-server",
+            "crate": "sdkwork-rtc-standalone-gateway",
             "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           },
@@ -129,7 +129,7 @@
         "processes": [
           {
             "id": "application.public-ingress",
-            "crate": "sdkwork-rtc-api-server",
+            "crate": "sdkwork-rtc-standalone-gateway",
             "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           }
@@ -145,14 +145,14 @@
         "processes": [
           {
             "id": "platform.api-gateway",
-            "crate": "sdkwork-api-cloud-gateway-api-server",
+            "crate": "sdkwork-api-cloud-gateway",
             "binary": "sdkwork-api-cloud-gateway",
             "repository": "sdkwork-api-cloud-gateway",
             "required": true
           },
           {
             "id": "application.public-ingress",
-            "crate": "sdkwork-rtc-api-server",
+            "crate": "sdkwork-rtc-standalone-gateway",
             "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           },
@@ -172,14 +172,14 @@
         "processes": [
           {
             "id": "platform.api-gateway",
-            "crate": "sdkwork-api-cloud-gateway-api-server",
+            "crate": "sdkwork-api-cloud-gateway",
             "binary": "sdkwork-api-cloud-gateway",
             "repository": "sdkwork-api-cloud-gateway",
             "required": false
           },
           {
             "id": "application.public-ingress",
-            "crate": "sdkwork-rtc-api-server",
+            "crate": "sdkwork-rtc-standalone-gateway",
             "binary": "sdkwork-rtc-standalone-gateway",
             "required": true
           },
