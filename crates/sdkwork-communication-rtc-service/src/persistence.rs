@@ -92,6 +92,21 @@ pub enum RtcMediaSessionIdempotencyClaim {
     Existing(RtcMediaSessionIdempotencyRecord),
 }
 
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RtcRecordingArtifactLifecycleReconcileResult {
+    pub scanned: usize,
+    pub soft_deleted: usize,
+    pub hard_deleted: usize,
+    pub skipped: usize,
+    pub failures: Vec<String>,
+}
+
+pub struct RtcRecordingLifecycleReconcileQuery {
+    pub batch_size: u32,
+    pub soft_delete_cutoff: String,
+    pub hard_delete_cutoff: String,
+}
+
 pub trait RtcPersistencePort: Send + Sync {
     fn persist_changes<'a>(
         &'a self,
@@ -132,6 +147,12 @@ pub trait RtcPersistencePort: Send + Sync {
     fn list_active_reconcile_scopes<'a>(
         &'a self,
     ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>>;
+
+    /// Returns lifecycle candidates older than the supplied day thresholds.
+    fn list_recording_artifact_lifecycle_candidates<'a>(
+        &'a self,
+        query: RtcRecordingLifecycleReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>>;
 }
 
 #[derive(Clone, Debug, Default)]
@@ -187,6 +208,13 @@ impl RtcPersistencePort for NoopRtcPersistencePort {
     fn list_active_reconcile_scopes<'a>(
         &'a self,
     ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>> {
+        Box::pin(async { Ok(Vec::new()) })
+    }
+
+    fn list_recording_artifact_lifecycle_candidates<'a>(
+        &'a self,
+        _query: RtcRecordingLifecycleReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>> {
         Box::pin(async { Ok(Vec::new()) })
     }
 }

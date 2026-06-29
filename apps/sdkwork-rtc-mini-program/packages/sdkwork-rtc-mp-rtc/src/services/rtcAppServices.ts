@@ -1,3 +1,4 @@
+import { readSdkWorkItem, readSdkWorkListPage } from "@sdkwork/rtc-mp-core/sdk";
 import type {
   RtcActiveProviderProfile,
   RtcCreateMediaSessionRequest,
@@ -16,19 +17,6 @@ export interface MediaSessionListParams {
 export interface MediaSessionListResult {
   items: RtcMediaSession[];
   nextCursor?: string;
-}
-
-function readListItems<T>(data: Record<string, unknown> | undefined): T[] {
-  if (!data) {
-    return [];
-  }
-  const items = data.items;
-  return Array.isArray(items) ? (items as T[]) : [];
-}
-
-function readNextCursor(data: Record<string, unknown> | undefined): string | undefined {
-  const cursor = data?.nextCursor;
-  return typeof cursor === "string" && cursor.length > 0 ? cursor : undefined;
 }
 
 function createRtcCommandIdempotencyKey(scope: string): string {
@@ -57,18 +45,12 @@ export class MediaSessionService {
       q: params?.search,
       sort: params?.sort,
     });
-    return {
-      items: readListItems<RtcMediaSession>(response.data),
-      nextCursor: readNextCursor(response.data),
-    };
+    return readSdkWorkListPage<RtcMediaSession>(response.data);
   }
 
   async get(mediaSessionId: string): Promise<RtcMediaSession> {
     const response = await this.client.rtcMediaSessions.rtc.mediaSessions.retrieve(mediaSessionId);
-    if (!response.data) {
-      throw new Error(`RTC media session not found: ${mediaSessionId}`);
-    }
-    return response.data;
+    return readSdkWorkItem<RtcMediaSession>(response.data);
   }
 
   async create(
@@ -79,10 +61,7 @@ export class MediaSessionService {
       idempotencyKey:
         options?.idempotencyKey ?? createRtcCommandIdempotencyKey("media-session-create"),
     });
-    if (!response.data) {
-      throw new Error("Failed to create RTC media session");
-    }
-    return response.data;
+    return readSdkWorkItem<RtcMediaSession>(response.data);
   }
 }
 
@@ -92,7 +71,7 @@ export class ProviderProfileService {
   async listActive(): Promise<RtcActiveProviderProfile[]> {
     const response =
       await this.client.rtcProviderProfiles.rtc.providerProfiles.active.list();
-    return readListItems<RtcActiveProviderProfile>(response.data);
+    return readSdkWorkListPage<RtcActiveProviderProfile>(response.data).items;
   }
 
   resolveDefaultProviderAppId(profiles: readonly RtcActiveProviderProfile[]): string | undefined {
@@ -100,6 +79,13 @@ export class ProviderProfileService {
       profiles.find((profile) => profile.isDefault && profile.providerAppId) ??
       profiles.find((profile) => profile.providerAppId);
     return preferred?.providerAppId ?? undefined;
+  }
+
+  resolveDefaultProviderKey(profiles: readonly RtcActiveProviderProfile[]): string | undefined {
+    const preferred =
+      profiles.find((profile) => profile.isDefault && profile.provider) ??
+      profiles.find((profile) => profile.provider);
+    return preferred?.provider ?? undefined;
   }
 }
 
@@ -123,10 +109,11 @@ export class ParticipantCredentialService {
             createRtcCommandIdempotencyKey("participant-credential-issue"),
         },
       );
-    if (!response.data?.credential) {
+    const credential = readSdkWorkItem<{ credential: string }>(response.data);
+    if (!credential.credential) {
       throw new Error("RTC participant credential was not issued");
     }
-    return response.data.credential;
+    return credential.credential;
   }
 }
 

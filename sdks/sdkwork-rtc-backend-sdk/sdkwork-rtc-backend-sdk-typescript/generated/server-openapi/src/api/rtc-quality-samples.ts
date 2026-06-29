@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcQualitySampleListResponse } from '../types';
+import type { SdkWorkListResponse } from '../types';
 
 
 export interface RtcQualitySamplesRtcQualitySamplesListParams {
@@ -21,7 +21,7 @@ export class RtcQualitySamplesRtcQualitySamplesApi {
 
 
 /** Rtc quality Samples list. */
-  async list(params?: RtcQualitySamplesRtcQualitySamplesListParams): Promise<RtcQualitySampleListResponse> {
+  async list(params?: RtcQualitySamplesRtcQualitySamplesListParams): Promise<SdkWorkListResponse> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,7 +29,7 @@ export class RtcQualitySamplesRtcQualitySamplesApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<RtcQualitySampleListResponse>(appendQueryString(backendApiPath(`/rtc/quality_samples`), query));
+    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/quality_samples`), query));
   }
 }
 

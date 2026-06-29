@@ -41,6 +41,16 @@
       "@sdkwork/runtime-bootstrap": [
         "../../../sdkwork-appbase/packages/common/foundation/sdkwork-runtime-bootstrap/src/index.ts"
       ],
+      "@sdkwork/sdk-common": ["./node_modules/@sdkwork/sdk-common/dist/index.d.ts"],
+      "sdkwork-rtc-app-sdk-generated-typescript": [
+        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/index.d.ts"
+      ],
+      "sdkwork-rtc-app-sdk-generated-typescript/types": [
+        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/types/index.d.ts"
+      ],
+      "sdkwork-rtc-backend-sdk-generated-typescript": [
+        "../../sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/dist/index.d.ts"
+      ],
       "@sdkwork/rtc-sdk": [
         "../../sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/index.ts"
       ],

@@ -5,11 +5,11 @@ use sdkwork_rtc_gateway_assembly::assemble_application_router_with_service;
 use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
 use tracing::info;
 
+use sdkwork_communication_rtc_service::rtc_persistence_required;
 use sdkwork_rtc_standalone_gateway::{
     bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap},
     readiness::RtcDatabaseReadinessCheck,
 };
-use sdkwork_communication_rtc_service::rtc_persistence_required;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

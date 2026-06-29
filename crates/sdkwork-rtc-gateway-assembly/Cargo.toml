@@ -14,12 +14,8 @@ anyhow = "1.0.98"
 axum.workspace = true
 sdkwork-communication-rtc-repository-sqlx.workspace = true
 sdkwork-communication-rtc-service.workspace = true
-sdkwork-rtc-adapter-agora.workspace = true
-sdkwork-rtc-adapter-aliyun.workspace = true
-sdkwork-rtc-adapter-livekit.workspace = true
-sdkwork-rtc-adapter-tencent.workspace = true
-sdkwork-rtc-adapter-volcengine.workspace = true
 sdkwork-rtc-service-host.workspace = true
+sdkwork-rtc-plugin-bootstrap.workspace = true
 sdkwork_routes_rtc_app_api = { package = "sdkwork-routes-rtc-app-api", path = "../sdkwork-routes-rtc-app-api" }
 sdkwork_routes_rtc_backend_api = { package = "sdkwork-routes-rtc-backend-api", path = "../sdkwork-routes-rtc-backend-api" }
 tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }

@@ -1,6 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderCredential, ProviderCredentialCommand } from "../types/providerCredential";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -39,9 +40,10 @@ export class ProviderCredentialService {
           sort: params?.sort,
         },
       );
+    const page = readSdkWorkListPage<ProviderCredential>(response.data);
     return {
-      items: (response.data?.items ?? []) as ProviderCredential[],
-      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+      items: page.items,
+      nextCursor: page.nextCursor ?? null,
     };
   }
 
@@ -51,7 +53,7 @@ export class ProviderCredentialService {
     if (!response.data) {
       throw new Error(`RTC provider credential not found: ${id}`);
     }
-    return response.data as ProviderCredential;
+    return readSdkWorkItem<ProviderCredential>(response.data);
   }
 
   async create(
@@ -68,7 +70,7 @@ export class ProviderCredentialService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider credential data");
     }
-    return response.data as ProviderCredential;
+    return readSdkWorkItem<ProviderCredential>(response.data);
   }
 
   async update(id: string, command: ProviderCredentialCommand): Promise<ProviderCredential> {
@@ -82,7 +84,7 @@ export class ProviderCredentialService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider credential data");
     }
-    return response.data as ProviderCredential;
+    return readSdkWorkItem<ProviderCredential>(response.data);
   }
 
   async revoke(id: string, reason?: string): Promise<ProviderCredential> {
@@ -92,6 +94,6 @@ export class ProviderCredentialService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider credential data");
     }
-    return response.data as ProviderCredential;
+    return readSdkWorkItem<ProviderCredential>(response.data);
   }
 }

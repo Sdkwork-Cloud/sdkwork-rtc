@@ -119,10 +119,7 @@ fn test_tencent_rtc_provider_implements_contract_surface() {
     let credential = provider
         .issue_participant_credential("100001", "rtc_demo", "1009", None)
         .expect("tencent rtc credential should succeed");
-    assert_eq!(
-        credential.credential,
-        "tencent-token:100001:rtc_demo:1009"
-    );
+    assert_eq!(credential.credential, "tencent-token:100001:rtc_demo:1009");
 
     let artifact = provider.export_recording_artifact("100001", "rtc_demo");
     assert!(

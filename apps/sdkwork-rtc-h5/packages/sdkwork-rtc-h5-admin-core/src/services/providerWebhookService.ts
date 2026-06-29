@@ -1,6 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderWebhookEvent } from "../types/providerWebhookEvent";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -32,9 +33,10 @@ export class ProviderWebhookService {
       q: params?.search,
       sort: params?.sort,
     });
+    const page = readSdkWorkListPage<ProviderWebhookEvent>(response.data);
     return {
-      items: (response.data?.items ?? []) as ProviderWebhookEvent[],
-      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+      items: page.items,
+      nextCursor: page.nextCursor ?? null,
     };
   }
 }

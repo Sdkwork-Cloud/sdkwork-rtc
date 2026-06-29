@@ -14,6 +14,8 @@ sdkwork-rtc.
 - Development, test, staging, and production examples without secrets.
 - Topology profiles under `topology/` and cloud gateway bundles under `sdkwork-api-cloud-gateway.sdkwork-rtc.*.toml`.
 - Provider config templates using placeholder values.
+- Provider registry manifests under `provider-registry/`.
+- Recording artifact lifecycle policy under `recording-policy/`.
 
 ## Forbidden Content
 

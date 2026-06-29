@@ -1878,13 +1878,12 @@ dependencies = [
 name = "sdkwork-drive-security"
 version = "0.1.0"
 dependencies = [
- "hmac",
  "http",
  "jsonwebtoken",
  "reqwest",
+ "sdkwork-utils-rust",
  "serde",
  "serde_json",
- "sha2",
  "tokio",
  "tracing",
 ]
@@ -1917,7 +1916,6 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
- "hmac",
  "reqwest",
  "sdkwork-database-config",
  "sdkwork-database-id",
@@ -1932,7 +1930,6 @@ dependencies = [
  "sdkwork-utils-rust",
  "serde",
  "serde_json",
- "sha2",
  "sqlx",
  "tokio",
  "tracing",
@@ -2111,31 +2108,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-rtc-api-server"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "sdkwork-communication-rtc-repository-sqlx",
- "sdkwork-communication-rtc-service",
- "sdkwork-communication-rtc-worker",
- "sdkwork-database-sqlx",
- "sdkwork-rtc-adapter-agora",
- "sdkwork-rtc-adapter-aliyun",
- "sdkwork-rtc-adapter-livekit",
- "sdkwork-rtc-adapter-tencent",
- "sdkwork-rtc-adapter-volcengine",
- "sdkwork-rtc-gateway-assembly",
- "sdkwork-rtc-service-host",
- "sdkwork-web-bootstrap",
- "sqlx",
- "tokio",
- "tower",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "sdkwork-rtc-app-context"
 version = "0.1.0"
 dependencies = [
@@ -2167,11 +2139,7 @@ dependencies = [
  "sdkwork-communication-rtc-service",
  "sdkwork-routes-rtc-app-api",
  "sdkwork-routes-rtc-backend-api",
- "sdkwork-rtc-adapter-agora",
- "sdkwork-rtc-adapter-aliyun",
- "sdkwork-rtc-adapter-livekit",
- "sdkwork-rtc-adapter-tencent",
- "sdkwork-rtc-adapter-volcengine",
+ "sdkwork-rtc-plugin-bootstrap",
  "sdkwork-rtc-service-host",
  "tokio",
 ]
@@ -2182,6 +2150,19 @@ version = "0.1.0"
 dependencies = [
  "sdkwork-rtc-api-registry",
  "serde_json",
+]
+
+[[package]]
+name = "sdkwork-rtc-plugin-bootstrap"
+version = "0.1.0"
+dependencies = [
+ "sdkwork-communication-rtc-service",
+ "sdkwork-rtc-adapter-agora",
+ "sdkwork-rtc-adapter-aliyun",
+ "sdkwork-rtc-adapter-livekit",
+ "sdkwork-rtc-adapter-tencent",
+ "sdkwork-rtc-adapter-volcengine",
+ "sdkwork-rtc-service-host",
 ]
 
 [[package]]
@@ -2199,6 +2180,27 @@ dependencies = [
  "sqlx",
  "tokio",
  "uuid",
+]
+
+[[package]]
+name = "sdkwork-rtc-standalone-gateway"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "sdkwork-communication-rtc-repository-sqlx",
+ "sdkwork-communication-rtc-service",
+ "sdkwork-communication-rtc-worker",
+ "sdkwork-database-sqlx",
+ "sdkwork-rtc-gateway-assembly",
+ "sdkwork-rtc-plugin-bootstrap",
+ "sdkwork-rtc-service-host",
+ "sdkwork-web-bootstrap",
+ "sqlx",
+ "tokio",
+ "tower",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -2269,7 +2271,9 @@ dependencies = [
  "getrandom 0.2.17",
  "hmac",
  "http",
+ "percent-encoding",
  "rsa",
+ "sdkwork-utils-rust",
  "sdkwork-web-contract",
  "serde",
  "serde_json",

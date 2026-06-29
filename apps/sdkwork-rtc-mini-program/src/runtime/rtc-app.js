@@ -3867,6 +3867,28 @@ function createRtcAppSdkClient({
   });
 }
 
+// packages/sdkwork-rtc-mp-core/src/sdk/sdkWorkEnvelope.ts
+function readSdkWorkListPage(data) {
+  var _a, _b;
+  if (!data) {
+    return { items: [] };
+  }
+  const nextCursor = (_a = data.pageInfo) == null ? void 0 : _a.nextCursor;
+  return {
+    items: (_b = data.items) != null ? _b : [],
+    nextCursor: typeof nextCursor === "string" && nextCursor.length > 0 ? nextCursor : void 0
+  };
+}
+function readSdkWorkItem(data) {
+  if (!data) {
+    throw new Error("Missing SDK response data");
+  }
+  if ("item" in data && data.item !== void 0) {
+    return data.item;
+  }
+  throw new Error("Missing SDK response data.item");
+}
+
 // src/bootstrap/tokenManager.ts
 var activeTokenManager;
 function setTokenManager(tokenManager) {
@@ -4042,17 +4064,6 @@ function bootstrap(query = {}) {
 }
 
 // packages/sdkwork-rtc-mp-rtc/src/services/rtcAppServices.ts
-function readListItems(data) {
-  if (!data) {
-    return [];
-  }
-  const items = data.items;
-  return Array.isArray(items) ? items : [];
-}
-function readNextCursor(data) {
-  const cursor = data == null ? void 0 : data.nextCursor;
-  return typeof cursor === "string" && cursor.length > 0 ? cursor : void 0;
-}
 function createRtcCommandIdempotencyKey(scope) {
   var _a, _b, _c;
   const randomPart = (_c = (_b = (_a = globalThis.crypto) == null ? void 0 : _a.randomUUID) == null ? void 0 : _b.call(_a)) != null ? _c : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -4070,27 +4081,18 @@ var MediaSessionService = class {
       q: params == null ? void 0 : params.search,
       sort: params == null ? void 0 : params.sort
     });
-    return {
-      items: readListItems(response.data),
-      nextCursor: readNextCursor(response.data)
-    };
+    return readSdkWorkListPage(response.data);
   }
   async get(mediaSessionId) {
     const response = await this.client.rtcMediaSessions.rtc.mediaSessions.retrieve(mediaSessionId);
-    if (!response.data) {
-      throw new Error(`RTC media session not found: ${mediaSessionId}`);
-    }
-    return response.data;
+    return readSdkWorkItem(response.data);
   }
   async create(body, options) {
     var _a;
     const response = await this.client.rtcMediaSessions.rtc.mediaSessions.create(body, {
       idempotencyKey: (_a = options == null ? void 0 : options.idempotencyKey) != null ? _a : createRtcCommandIdempotencyKey("media-session-create")
     });
-    if (!response.data) {
-      throw new Error("Failed to create RTC media session");
-    }
-    return response.data;
+    return readSdkWorkItem(response.data);
   }
 };
 var ProviderProfileService = class {
@@ -4099,12 +4101,17 @@ var ProviderProfileService = class {
   }
   async listActive() {
     const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.active.list();
-    return readListItems(response.data);
+    return readSdkWorkListPage(response.data).items;
   }
   resolveDefaultProviderAppId(profiles) {
     var _a, _b;
     const preferred = (_a = profiles.find((profile) => profile.isDefault && profile.providerAppId)) != null ? _a : profiles.find((profile) => profile.providerAppId);
     return (_b = preferred == null ? void 0 : preferred.providerAppId) != null ? _b : void 0;
+  }
+  resolveDefaultProviderKey(profiles) {
+    var _a, _b;
+    const preferred = (_a = profiles.find((profile) => profile.isDefault && profile.provider)) != null ? _a : profiles.find((profile) => profile.provider);
+    return (_b = preferred == null ? void 0 : preferred.provider) != null ? _b : void 0;
   }
 };
 var ParticipantCredentialService = class {
@@ -4112,7 +4119,7 @@ var ParticipantCredentialService = class {
     this.client = client;
   }
   async issue(mediaSessionId, participantId, reason = "join", options) {
-    var _a, _b;
+    var _a;
     const response = await this.client.rtcParticipantCredentials.rtc.mediaSessions.participantCredentials.issue(
       mediaSessionId,
       participantId,
@@ -4121,10 +4128,11 @@ var ParticipantCredentialService = class {
         idempotencyKey: (_a = options == null ? void 0 : options.idempotencyKey) != null ? _a : createRtcCommandIdempotencyKey("participant-credential-issue")
       }
     );
-    if (!((_b = response.data) == null ? void 0 : _b.credential)) {
+    const credential = readSdkWorkItem(response.data);
+    if (!credential.credential) {
       throw new Error("RTC participant credential was not issued");
     }
-    return response.data.credential;
+    return credential.credential;
   }
 };
 function createRtcAppServices(client) {

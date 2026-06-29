@@ -1,6 +1,9 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
+import type { SdkWorkPageData } from "@sdkwork/utils";
+
 import type { ProviderPluginDescriptor } from "../types/providerSchema";
+import { readSdkWorkItem } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -32,21 +35,15 @@ export class ProviderPluginService {
       q: params?.search,
       sort: params?.sort,
     });
-    const data = response.data as
-      | { items?: ProviderPluginDescriptor[]; nextCursor?: string | null }
-      | undefined;
+    const page = readSdkWorkItem<SdkWorkPageData<ProviderPluginDescriptor>>(response.data);
     return {
-      items: data?.items ?? [],
-      nextCursor: data?.nextCursor ?? null,
+      items: page.items ?? [],
+      nextCursor: page.pageInfo?.nextCursor ?? null,
     };
   }
 
   async get(provider: string): Promise<ProviderPluginDescriptor> {
     const response = await this.client.rtcProviderPlugins.rtc.providerPlugins.retrieve(provider);
-    const data = response.data as unknown as ProviderPluginDescriptor | undefined;
-    if (!data) {
-      throw new Error(`RTC provider plugin not found: ${provider}`);
-    }
-    return data;
+    return readSdkWorkItem<ProviderPluginDescriptor>(response.data);
   }
 }

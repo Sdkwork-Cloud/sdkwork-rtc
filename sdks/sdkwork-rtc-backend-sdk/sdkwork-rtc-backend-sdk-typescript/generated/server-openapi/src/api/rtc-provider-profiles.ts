@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcApiResult, RtcOperationCommand, RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfileListResponse, RtcProviderProfileResponse, RtcProviderProfileVerifyRequest, RtcProviderProfileVerifyResultResponse } from '../types';
+import type { RtcOperationCommand, RtcProviderProfileCommand, RtcProviderProfileDisableRequest, RtcProviderProfilesCreateResponse, RtcProviderProfilesDisableResponse, RtcProviderProfilesRetrieveResponse, RtcProviderProfilesUpdateResponse, RtcProviderProfilesVerifyResponse, RtcProviderProfileVerifyRequest, SdkWorkListResponse, SdkWorkResourceResponse } from '../types';
 
 
 export interface RtcProviderProfilesRtcProviderProfilesCapabilitiesConfigureParams {
@@ -17,14 +17,14 @@ export class RtcProviderProfilesRtcProviderProfilesCapabilitiesApi {
 
 
 /** Rtc provider Profiles capabilities configure. */
-  async configure(providerProfileId: string, body: RtcOperationCommand, params?: RtcProviderProfilesRtcProviderProfilesCapabilitiesConfigureParams): Promise<RtcApiResult> {
+  async configure(providerProfileId: string, body: RtcOperationCommand, params?: RtcProviderProfilesRtcProviderProfilesCapabilitiesConfigureParams): Promise<SdkWorkResourceResponse> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.put<RtcApiResult>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/capabilities`), body, undefined, requestHeaders, 'application/json');
+    return this.client.put<SdkWorkResourceResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/capabilities`), body, undefined, requestHeaders, 'application/json');
   }
 }
 
@@ -63,7 +63,7 @@ export class RtcProviderProfilesRtcProviderProfilesApi {
 
 
 /** Rtc provider Profiles list. */
-  async list(params?: RtcProviderProfilesRtcProviderProfilesListParams): Promise<RtcProviderProfileListResponse> {
+  async list(params?: RtcProviderProfilesRtcProviderProfilesListParams): Promise<SdkWorkListResponse> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -71,56 +71,56 @@ export class RtcProviderProfilesRtcProviderProfilesApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<RtcProviderProfileListResponse>(appendQueryString(backendApiPath(`/rtc/provider_profiles`), query));
+    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/provider_profiles`), query));
   }
 
 /** Rtc provider Profiles create. */
-  async create(body: RtcProviderProfileCommand, params?: RtcProviderProfilesRtcProviderProfilesCreateParams): Promise<RtcProviderProfileResponse> {
+  async create(body: RtcProviderProfileCommand, params?: RtcProviderProfilesRtcProviderProfilesCreateParams): Promise<RtcProviderProfilesCreateResponse> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderProfileResponse>(backendApiPath(`/rtc/provider_profiles`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderProfilesCreateResponse>(backendApiPath(`/rtc/provider_profiles`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Profiles retrieve. */
-  async retrieve(providerProfileId: string): Promise<RtcProviderProfileResponse> {
-    return this.client.get<RtcProviderProfileResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}`));
+  async retrieve(providerProfileId: string): Promise<RtcProviderProfilesRetrieveResponse> {
+    return this.client.get<RtcProviderProfilesRetrieveResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}`));
   }
 
 /** Rtc provider Profiles update. */
-  async update(providerProfileId: string, body?: RtcProviderProfileCommand, params?: RtcProviderProfilesRtcProviderProfilesUpdateParams): Promise<RtcProviderProfileResponse> {
+  async update(providerProfileId: string, body?: RtcProviderProfileCommand, params?: RtcProviderProfilesRtcProviderProfilesUpdateParams): Promise<RtcProviderProfilesUpdateResponse> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.patch<RtcProviderProfileResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
+    return this.client.patch<RtcProviderProfilesUpdateResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Profiles disable. */
-  async disable(providerProfileId: string, body: RtcProviderProfileDisableRequest, params?: RtcProviderProfilesRtcProviderProfilesDisableParams): Promise<RtcProviderProfileResponse> {
+  async disable(providerProfileId: string, body: RtcProviderProfileDisableRequest, params?: RtcProviderProfilesRtcProviderProfilesDisableParams): Promise<RtcProviderProfilesDisableResponse> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderProfileResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/disable`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderProfilesDisableResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/disable`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Profiles verify. */
-  async verify(providerProfileId: string, body: RtcProviderProfileVerifyRequest, params?: RtcProviderProfilesRtcProviderProfilesVerifyParams): Promise<RtcProviderProfileVerifyResultResponse> {
+  async verify(providerProfileId: string, body: RtcProviderProfileVerifyRequest, params?: RtcProviderProfilesRtcProviderProfilesVerifyParams): Promise<RtcProviderProfilesVerifyResponse> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderProfileVerifyResultResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/verify`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderProfilesVerifyResponse>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/verify`), body, undefined, requestHeaders, 'application/json');
   }
 }
 

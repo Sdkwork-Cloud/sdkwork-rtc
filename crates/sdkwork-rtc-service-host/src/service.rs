@@ -24,12 +24,15 @@ use sdkwork_communication_rtc_service::{
     RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult,
     RtcProviderQuerySnapshotRecord, RtcProviderWebhookEvent, RtcProviderWebhookEventRecord,
     RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcQualitySample,
-    RtcRecordingArtifactExportRequest, RtcRecordingArtifactKind, RtcRecordingArtifactStatus,
+    RtcRecordingArtifactExportRequest, RtcRecordingArtifactHardDeletePort,
+    RtcRecordingArtifactKind, RtcRecordingArtifactLifecycleReconcileResult,
+    RtcRecordingArtifactStatus, RtcRecordingLifecycleAction, RtcRecordingLifecycleReconcileQuery,
     RtcRoom, RtcRoomStatus, RtcRuntimeLoadRequest, RtcTenantOrganizationScope, apply_list_window,
+    evaluate_recording_lifecycle_action, load_recording_policy_settings_from_env,
     media_session_create_idempotency_payload_hash, media_session_idempotency_record_id,
     participant_credential_issue_idempotency_key,
-    participant_credential_issue_idempotency_payload_hash, rfc3339_age_ms, utc_now_rfc3339_millis,
-    validate_provider_webhook_freshness,
+    participant_credential_issue_idempotency_payload_hash, recording_lifecycle_cutoff_rfc3339,
+    rfc3339_age_ms, utc_now_rfc3339_millis, validate_provider_webhook_freshness,
 };
 use sdkwork_routes_rtc_app_api::service::{
     RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture, RtcAppApiService,
@@ -53,6 +56,7 @@ use crate::secret_resolver::{EnvRtcSecretResolver, SharedRtcSecretResolver};
 
 const RTC_PROVIDER_ROUTE_TYPE_REGION: &str = "region";
 const RTC_SESSION_RECONCILE_ACTOR: &str = "rtc-session-reconciliation";
+const RTC_RECORDING_LIFECYCLE_RECONCILE_ACTOR: &str = "rtc-recording-lifecycle-reconciliation";
 const DEFAULT_SESSION_MAX_AGE_SECONDS: u64 = 86_400;
 const DEFAULT_SESSION_RECONCILE_GRACE_SECONDS: u64 = 900;
 const DEFAULT_SESSION_PREPARING_MAX_AGE_SECONDS: u64 = 1_800;
@@ -239,6 +243,15 @@ impl RtcProductService {
         &self,
     ) -> Result<RtcSessionReconcileResult, String> {
         self.reconcile_stale_media_sessions_impl()
+            .await
+            .map_err(product_error_message)
+    }
+
+    pub async fn reconcile_recording_artifact_lifecycle(
+        &self,
+        hard_delete_port: Option<&dyn RtcRecordingArtifactHardDeletePort>,
+    ) -> Result<RtcRecordingArtifactLifecycleReconcileResult, String> {
+        self.reconcile_recording_artifact_lifecycle_impl(hard_delete_port)
             .await
             .map_err(product_error_message)
     }
@@ -2479,6 +2492,79 @@ impl RtcProductService {
                 Err(error) => result.failures.push(error),
             }
         }
+        Ok(result)
+    }
+
+    async fn reconcile_recording_artifact_lifecycle_impl(
+        &self,
+        hard_delete_port: Option<&dyn RtcRecordingArtifactHardDeletePort>,
+    ) -> Result<RtcRecordingArtifactLifecycleReconcileResult, RtcProductError> {
+        let policy =
+            load_recording_policy_settings_from_env().map_err(RtcProductError::Conflict)?;
+        let query = RtcRecordingLifecycleReconcileQuery {
+            batch_size: policy.reconcile_batch_size,
+            soft_delete_cutoff: recording_lifecycle_cutoff_rfc3339(policy.soft_delete_after_days),
+            hard_delete_cutoff: recording_lifecycle_cutoff_rfc3339(policy.hard_delete_after_days),
+        };
+        let mut candidates = self
+            .persistence
+            .list_recording_artifact_lifecycle_candidates(query)
+            .await?;
+        if candidates.is_empty() {
+            let state = self.state.lock().expect("rtc product state lock");
+            candidates = state.artifacts.values().cloned().collect();
+        }
+
+        let mut result = RtcRecordingArtifactLifecycleReconcileResult {
+            scanned: candidates.len(),
+            ..RtcRecordingArtifactLifecycleReconcileResult::default()
+        };
+        let mut persisted_artifacts = Vec::new();
+        for artifact in candidates {
+            if persisted_artifacts.len() >= policy.reconcile_batch_size as usize {
+                break;
+            }
+            let action = evaluate_recording_lifecycle_action(&policy, &artifact);
+            match action {
+                RtcRecordingLifecycleAction::Retain => {
+                    result.skipped += 1;
+                }
+                RtcRecordingLifecycleAction::SoftDelete => {
+                    let mut updated = artifact.clone();
+                    updated.artifact_status = RtcRecordingArtifactStatus::Deleted;
+                    updated.failure_reason = Some(format!(
+                        "soft-deleted-by:{RTC_RECORDING_LIFECYCLE_RECONCILE_ACTOR}"
+                    ));
+                    self.state
+                        .lock()
+                        .expect("rtc product state lock")
+                        .artifacts
+                        .insert(updated.id.clone(), updated.clone());
+                    persisted_artifacts.push(updated);
+                    result.soft_deleted += 1;
+                }
+                RtcRecordingLifecycleAction::HardDelete => {
+                    let Some(port) = hard_delete_port else {
+                        result.skipped += 1;
+                        continue;
+                    };
+                    match port.hard_delete_recording_artifact(&artifact) {
+                        Ok(()) => result.hard_deleted += 1,
+                        Err(error) => result.failures.push(contract_error_message(&error)),
+                    }
+                }
+            }
+        }
+
+        if !persisted_artifacts.is_empty() {
+            self.persistence
+                .persist_changes(RtcPersistenceChangeSet {
+                    media_artifacts: persisted_artifacts,
+                    ..RtcPersistenceChangeSet::default()
+                })
+                .await?;
+        }
+
         Ok(result)
     }
 

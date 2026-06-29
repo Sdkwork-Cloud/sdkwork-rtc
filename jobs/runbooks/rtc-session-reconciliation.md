@@ -15,6 +15,8 @@ Detect and heal operational drift between IM call state and RTC media sessions, 
 - Transition stale sessions to `Closing`, persist, then invoke backend close with reason `reconcile:{session_id}:{date}`.
 - Query provider `MediaSessionState` for active sessions when profile supports `active_query`; close drift with `ProviderStateSync`.
 - Compensate `Failed` sessions that still hold provider session ids by calling provider close.
+- Soft-delete aged `ready`/`failed` recording artifacts per `configs/recording-policy/platform-default.json`.
+- Invoke optional Drive hard-delete port for aged `deleted` artifacts when configured.
 - Emit observability events per `sdkwork-specs/OBSERVABILITY_SPEC.md`.
 - Never delete rows; append completion records and audit facts.
 
@@ -22,7 +24,9 @@ Detect and heal operational drift between IM call state and RTC media sessions, 
 
 Runnable binary: `sdkwork-rtc-reconcile` (`crates/sdkwork-rtc-standalone-gateway/src/bin/reconcile.rs`).
 
-Library crate: `crates/sdkwork-communication-rtc-worker/` exposes `RtcWorker::run_job(RtcWorkerJob::SessionReconciliation)`, which runs stale TTL close, provider drift sync, and failed-session compensation in one pass.
+Library crate: `crates/sdkwork-communication-rtc-worker/` exposes `RtcWorker::run_job(RtcWorkerJob::SessionReconciliation)` and `RtcWorker::run_recording_artifact_lifecycle_job()`.
+
+Recording artifact lifecycle policy authority: `configs/recording-policy/platform-default.json` (override with `SDKWORK_RTC_RECORDING_POLICY_PATH`).
 
 Hydration:
 

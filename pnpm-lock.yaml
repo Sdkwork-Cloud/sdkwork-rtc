@@ -18,12 +18,6 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: ^6.0.1
       version: 6.0.2
-    lucide-react:
-      specifier: ^1.7.0
-      version: 1.7.0
-    qrcode:
-      specifier: ^1.5.4
-      version: 1.5.4
     react:
       specifier: ^19.2.4
       version: 19.2.7
@@ -39,9 +33,6 @@ catalogs:
     vite:
       specifier: ^8.0.3
       version: 8.0.16
-    vite-plugin-dts:
-      specifier: ^4.5.4
-      version: 4.5.4
 
 importers:
 
@@ -93,6 +84,65 @@ importers:
       typescript:
         specifier: ^6.0.2
         version: 6.0.3
+
+  ../sdkwork-appbase/packages/pc-react/foundation/sdkwork-appbase-pc-react:
+    dependencies:
+      '@sdkwork/runtime-bootstrap':
+        specifier: workspace:*
+        version: link:../../../common/foundation/sdkwork-runtime-bootstrap
+    devDependencies:
+      '@sdkwork/ui-pc-react':
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-ui/sdkwork-ui-pc-react
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+
+  ../sdkwork-appbase/packages/pc-react/foundation/sdkwork-i18n-pc-react:
+    dependencies:
+      i18next:
+        specifier: ^26.1.0
+        version: 26.3.1(typescript@6.0.3)
+      react-i18next:
+        specifier: ^17.0.7
+        version: 17.0.8(i18next@26.3.1(typescript@6.0.3))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)
+
+  ../sdkwork-core/sdkwork-core-pc-react:
+    dependencies:
+      '@sdkwork/sdk-common':
+        specifier: ^1.0.3
+        version: 1.0.3
+    devDependencies:
+      '@testing-library/react':
+        specifier: ^16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.17)
+      jsdom:
+        specifier: ^29.0.1
+        version: 29.1.1
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.7(react@19.2.7)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vite:
+        specifier: 8.0.3
+        version: 8.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(jiti@2.7.0)
+      vite-plugin-dts:
+        specifier: 'catalog:'
+        version: 4.5.4(@types/node@25.9.2)(rollup@4.61.1)(typescript@6.0.3)(vite@8.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(jiti@2.7.0))
+      vitest:
+        specifier: ^4.1.2
+        version: 4.1.8(@types/node@25.9.2)(jsdom@29.1.1)(vite@8.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(jiti@2.7.0))
 
   ../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-contracts:
     devDependencies:
@@ -163,28 +213,6 @@ importers:
       typescript:
         specifier: ^6.0.2
         version: 6.0.3
-
-  ../sdkwork-appbase/packages/pc-react/foundation/sdkwork-appbase-pc-react:
-    dependencies:
-      '@sdkwork/runtime-bootstrap':
-        specifier: workspace:*
-        version: link:../../../common/foundation/sdkwork-runtime-bootstrap
-    devDependencies:
-      '@sdkwork/ui-pc-react':
-        specifier: workspace:*
-        version: link:../../../../../sdkwork-ui/sdkwork-ui-pc-react
-      typescript:
-        specifier: ^6.0.2
-        version: 6.0.2
-
-  ../sdkwork-appbase/packages/pc-react/foundation/sdkwork-i18n-pc-react:
-    dependencies:
-      i18next:
-        specifier: ^26.1.0
-        version: 26.3.1(typescript@6.0.3)
-      react-i18next:
-        specifier: ^17.0.7
-        version: 17.0.8(i18next@26.3.1(typescript@6.0.3))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)
 
   ../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-auth-pc-react:
     dependencies:
@@ -264,43 +292,6 @@ importers:
       typescript:
         specifier: ^5.3.0
         version: 5.9.3
-
-  ../sdkwork-core/sdkwork-core-pc-react:
-    dependencies:
-      '@sdkwork/sdk-common':
-        specifier: ^1.0.3
-        version: 1.0.3
-    devDependencies:
-      '@testing-library/react':
-        specifier: ^16.3.2
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 19.2.3(@types/react@19.2.17)
-      jsdom:
-        specifier: ^29.0.1
-        version: 29.1.1
-      react:
-        specifier: 'catalog:'
-        version: 19.2.7
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.2.7(react@19.2.7)
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-      vite:
-        specifier: 8.0.3
-        version: 8.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(jiti@2.7.0)
-      vite-plugin-dts:
-        specifier: 'catalog:'
-        version: 4.5.4(@types/node@25.9.2)(rollup@4.61.1)(typescript@6.0.3)(vite@8.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(jiti@2.7.0))
-      vitest:
-        specifier: ^4.1.2
-        version: 4.1.8(@types/node@25.9.2)(jsdom@29.1.1)(vite@8.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.9.2)(jiti@2.7.0))
 
   ../sdkwork-ui/sdkwork-ui-pc-react:
     dependencies:

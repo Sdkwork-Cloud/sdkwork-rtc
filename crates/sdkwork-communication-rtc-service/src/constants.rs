@@ -1,0 +1,10 @@
+pub const RTC_OWNER: &str = "sdkwork-rtc";
+pub const RTC_DOMAIN: &str = "rtc";
+pub const RTC_APP_API_AUTHORITY: &str = "sdkwork-rtc-app-api";
+pub const RTC_APP_SDK_FAMILY: &str = "sdkwork-rtc-app-sdk";
+pub const RTC_APP_API_PREFIX: &str = "/app/v3/api";
+pub const RTC_BACKEND_API_AUTHORITY: &str = "sdkwork-rtc-backend-api";
+pub const RTC_BACKEND_SDK_FAMILY: &str = "sdkwork-rtc-backend-sdk";
+pub const RTC_BACKEND_API_PREFIX: &str = "/backend/v3/api";
+pub const RTC_DRIVE_SPACE_TYPE: &str = "rtc";
+pub const PROVIDER_REGISTRY_INTERFACE_VERSION: &str = "provider-registry/v1";

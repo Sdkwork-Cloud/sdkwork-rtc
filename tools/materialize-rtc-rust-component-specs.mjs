@@ -71,7 +71,7 @@ const components = [
     capability: "rtc",
     surface: "app",
     publicExports: [
-      "build_sdkwork_ai_prod_app_api_router",
+      "build_sdkwork_rtc_app_api_router",
       "wrap_router_with_web_framework_from_env",
     ],
     verify: "cargo test -p sdkwork-routes-rtc-app-api",
@@ -87,7 +87,7 @@ const components = [
     capability: "rtc",
     surface: "backend-admin",
     publicExports: [
-      "build_sdkwork_ai_prod_backend_api_router",
+      "build_sdkwork_rtc_backend_api_router",
       "wrap_router_with_web_framework_from_env",
     ],
     verify: "cargo test -p sdkwork-routes-rtc-backend-api",

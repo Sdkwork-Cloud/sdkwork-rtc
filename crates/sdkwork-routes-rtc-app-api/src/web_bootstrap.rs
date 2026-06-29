@@ -31,10 +31,7 @@ fn rtc_app_security_policy() -> SecurityPolicy {
     }
 }
 
-fn wrap_router_with_resolver(
-    resolver: IamWebRequestContextResolver,
-    router: Router,
-) -> Router {
+fn wrap_router_with_resolver(resolver: IamWebRequestContextResolver, router: Router) -> Router {
     let layer = build_web_framework_layer(
         resolver,
         HttpRouteManifest::new(RTC_APP_HTTP_ROUTES),

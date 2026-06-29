@@ -2,6 +2,10 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  sdkWorkEnvelopeComponentSchemas,
+  typedSdkWorkResourceResponse,
+} from "../../sdkwork-specs/tools/lib/openapi-envelope-schemas.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rtcRoot = resolve(__dirname, "..");
@@ -356,7 +360,7 @@ function buildOperation(source, route) {
     operationId: route.operationId,
     parameters: extractPathParameters(route.path),
     responses: {
-      200: jsonResponse("Success", `#/components/schemas/${operationResponseSchemaName(route)}`),
+      200: jsonResponse("Success", operationSuccessResponseSchema(route)),
       400: problemResponse("Bad request"),
       401: problemResponse("Unauthorized"),
       403: problemResponse("Forbidden"),
@@ -525,24 +529,7 @@ function securitySchemes() {
 
 function buildSchemas() {
   return {
-    RtcApiResult: {
-      type: "object",
-      additionalProperties: false,
-      required: ["code", "message", "requestId", "data"],
-      properties: {
-        code: { type: "string" },
-        message: { type: "string" },
-        requestId: {
-          type: "string",
-          format: "uuid",
-          description: "Server-owned request correlation id.",
-        },
-        data: {
-          type: "object",
-          additionalProperties: true,
-        },
-      },
-    },
+    ...structuredClone(sdkWorkEnvelopeComponentSchemas),
     RtcOperationCommand: {
       type: "object",
       additionalProperties: true,
@@ -1876,57 +1863,82 @@ function buildSchemas() {
         nextCursor: { type: ["string", "null"] },
       },
     }),
-    ProblemDetail: {
-      type: "object",
-      additionalProperties: true,
-      required: ["type", "title", "status"],
-      properties: {
-        type: { type: "string", format: "uri-reference" },
-        title: { type: "string" },
-        status: { type: "integer", minimum: 100, maximum: 599 },
-        detail: { type: "string" },
-        instance: { type: "string" },
-        code: { type: "string" },
-        traceId: { type: "string" },
-        requestId: {
-          type: "string",
-          format: "uuid",
-          description: "Server-owned request correlation id.",
-        },
-        errors: {
-          type: "array",
-          items: { $ref: "#/components/schemas/FieldError" },
-        },
-      },
-    },
-    FieldError: {
-      type: "object",
-      additionalProperties: false,
-      required: ["field", "message"],
-      properties: {
-        field: { type: "string" },
-        message: { type: "string" },
-        code: { type: "string" },
-      },
-    },
   };
 }
 
 function envelope(dataSchema) {
+  if (typeof dataSchema?.$ref === "string") {
+    return typedSdkWorkResourceResponse(dataSchema.$ref);
+  }
+
+  if (dataSchema?.properties?.items) {
+    const pageInfo = dataSchema.properties?.nextCursor
+      ? {
+          type: "object",
+          additionalProperties: false,
+          required: ["mode", "hasMore"],
+          properties: {
+            mode: { type: "string", enum: ["cursor"] },
+            nextCursor: dataSchema.properties.nextCursor,
+            hasMore: { type: "boolean" },
+          },
+        }
+      : { $ref: "#/components/schemas/PageInfo" };
+
+    return {
+      allOf: [
+        { $ref: "#/components/schemas/SdkWorkApiResponse" },
+        {
+          type: "object",
+          required: ["data"],
+          properties: {
+            data: {
+              type: "object",
+              additionalProperties: false,
+              required: ["items", "pageInfo"],
+              properties: {
+                items: dataSchema.properties.items,
+                pageInfo,
+              },
+            },
+          },
+        },
+      ],
+    };
+  }
+
+  if (dataSchema?.properties?.item) {
+    return {
+      allOf: [
+        { $ref: "#/components/schemas/SdkWorkApiResponse" },
+        {
+          type: "object",
+          required: ["data"],
+          properties: {
+            data: dataSchema,
+          },
+        },
+      ],
+    };
+  }
+
   return {
-    type: "object",
-    additionalProperties: false,
-    required: ["code", "message", "requestId", "data"],
-    properties: {
-      code: { type: "string" },
-      message: { type: "string" },
-      requestId: {
-        type: "string",
-        format: "uuid",
-        description: "Server-owned request correlation id.",
+    allOf: [
+      { $ref: "#/components/schemas/SdkWorkApiResponse" },
+      {
+        type: "object",
+        required: ["data"],
+        properties: {
+          data: {
+            type: "object",
+            required: ["item"],
+            properties: {
+              item: dataSchema,
+            },
+          },
+        },
       },
-      data: dataSchema,
-    },
+    ],
   };
 }
 
@@ -2044,16 +2056,21 @@ function operationResponseSchemaName(route) {
     case "rtc.providerQueryJobs.snapshots.list":
       return "RtcProviderQuerySnapshotListResponse";
     default:
-      return "RtcApiResult";
+      return "SdkWorkResourceResponse";
   }
 }
 
-function jsonResponse(description, schemaRef) {
+function operationSuccessResponseSchema(route) {
+  const responseName = operationResponseSchemaName(route);
+  return { $ref: `#/components/schemas/${responseName}` };
+}
+
+function jsonResponse(description, schema) {
   return {
     description,
     content: {
       "application/json": {
-        schema: { $ref: schemaRef },
+        schema,
       },
     },
   };

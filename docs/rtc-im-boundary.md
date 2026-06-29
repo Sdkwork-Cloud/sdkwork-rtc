@@ -99,12 +99,12 @@ RTC stores recording **metadata** and canonical Drive references in RTC business
 - Provider adapters export artifacts; RTC normalizes them into Drive-backed `RtcMediaArtifact` records
 - RTC tables do not persist provider bucket keys, presigned URLs, or raw object storage secrets
 
-## Rust Integration (target)
+## Rust Integration
 
-`sdkwork-im` Rust runtime should consume **live** `sdkwork-rtc` paths:
+`sdkwork-im` Rust runtime consumes **live** `sdkwork-rtc` paths:
 
 ```toml
-# sdkwork-im/Cargo.toml [workspace.dependencies] — target layout
+# sdkwork-im/Cargo.toml [workspace.dependencies]
 sdkwork-communication-rtc-service = { path = "../sdkwork-rtc/crates/sdkwork-communication-rtc-service" }
 sdkwork-rtc-adapter-volcengine = { path = "../sdkwork-rtc/plugins/rtc-volcengine" }
 # ... other plugins under ../sdkwork-rtc/plugins/rtc-*
@@ -113,18 +113,18 @@ sdkwork-rtc-adapter-volcengine = { path = "../sdkwork-rtc/plugins/rtc-volcengine
 Forbidden in IM workspace:
 
 - `../sdkwork-rtc-im-compat/*` as runtime authority
-- `sdkwork-rtc-core` from legacy compat layout
+- Legacy crate name `sdkwork-rtc-core` (use `sdkwork-communication-rtc-service`)
 - `sdkwork-rtc-signaling-service` (signaling stays in IM)
 
-## Migration Checklist (sdkwork-im)
+## IM alignment checklist (sibling repository)
 
-When aligning a sibling `sdkwork-im` checkout:
+When verifying a `sdkwork-im` checkout against this boundary:
 
-1. Replace `../sdkwork-rtc-im-compat` Cargo paths with `../sdkwork-rtc/crates/` and `../sdkwork-rtc/plugins/`.
-2. Migrate `sdkwork-rtc-core` usage to `sdkwork-communication-rtc-service`.
-3. Remove `sdks/sdkwork-rtc-sdk` from IM; consume `../../../sdkwork-rtc/sdks/sdkwork-rtc-sdk` through the shared workspace package layout only.
-4. Keep `CallService` on `@sdkwork/im-sdk` and `RtcMediaService` on `@sdkwork/rtc-sdk`.
-5. Ensure gateway uses `services/sdkwork-im-cloud-gateway` and routes calls, not RTC app API.
+1. Cargo paths point to `../sdkwork-rtc/crates/` and `../sdkwork-rtc/plugins/` (not compat shims).
+2. Domain code uses `sdkwork-communication-rtc-service`, not `sdkwork-rtc-core`.
+3. IM does not host a duplicate `sdks/sdkwork-rtc-sdk` authority; consume the RTC workspace SDK family.
+4. `CallService` stays on `@sdkwork/im-sdk`; `RtcMediaService` stays on `@sdkwork/rtc-sdk`.
+5. IM gateway routes `/im/v3/api/calls/*` only, not `/app/v3/api/rtc/*`.
 
 ## Verification
 

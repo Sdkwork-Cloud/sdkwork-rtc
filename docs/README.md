@@ -2,15 +2,21 @@
 
 ## Purpose
 
-`docs/` stores maintained RTC documentation, plans, runbooks, architecture notes, and migration records.
+`docs/` stores maintained RTC documentation, operator runbooks, architecture notes, and migration records for the `sdkwork-rtc` authority workspace.
 
 ## Owner
 
-sdkwork-rtc.
+sdkwork-rtc maintainers.
 
-## Key Documents
+## Canon Documents
 
-- [rtc-im-boundary.md](rtc-im-boundary.md) — dependency direction and API ownership between `sdkwork-rtc` and `sdkwork-im`.
+| Document | Path |
+| --- | --- |
+| Product PRD | [product/prd/PRD.md](product/prd/PRD.md) |
+| Technical architecture | [architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md) |
+| RTC ↔ IM boundary | [rtc-im-boundary.md](rtc-im-boundary.md) |
+| Production deployment | [guides/operator/deployment.md](guides/operator/deployment.md) |
+| Forward roadmap (RTC scope) | [ARCHITECTURE_ROADMAP.md](ARCHITECTURE_ROADMAP.md) |
 
 ## Allowed Content
 
@@ -32,44 +38,7 @@ sdkwork-rtc.
 
 ## Verification
 
-Run `node --test tests/rtc-workspace-standard.test.mjs`.
-
-## Canon Documents
-
-| Document | Path |
-| --- | --- |
-| Product PRD | [product/prd/PRD.md](product/prd/PRD.md) |
-| Technical architecture | [architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md) |
-
-- [docs/product/prd/PRD.md](product/prd/PRD.md)
-- [docs/architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md)
-
-## Canon Documents
-
-| Document | Path |
-| --- | --- |
-| Product PRD | [product/prd/PRD.md](product/prd/PRD.md) |
-| Technical architecture | [architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md) |
-
-- [docs/product/prd/PRD.md](product/prd/PRD.md)
-- [docs/architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md)
-
-## Canon Documents
-
-| Document | Path |
-| --- | --- |
-| Product PRD | [product/prd/PRD.md](product/prd/PRD.md) |
-| Technical architecture | [architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md) |
-
-- [docs/product/prd/PRD.md](product/prd/PRD.md)
-- [docs/architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md)
-
-## Canon Documents
-
-| Document | Path |
-| --- | --- |
-| Product PRD | [product/prd/PRD.md](product/prd/PRD.md) |
-| Technical architecture | [architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md) |
-
-- [docs/product/prd/PRD.md](product/prd/PRD.md)
-- [docs/architecture/tech/TECH_ARCHITECTURE.md](architecture/tech/TECH_ARCHITECTURE.md)
+```powershell
+pnpm run verify
+node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .
+```

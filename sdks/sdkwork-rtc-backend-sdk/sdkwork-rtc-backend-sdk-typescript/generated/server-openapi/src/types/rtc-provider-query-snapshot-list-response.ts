@@ -1,9 +1,8 @@
 import type { RtcProviderQuerySnapshot } from './rtc-provider-query-snapshot';
 
 export interface RtcProviderQuerySnapshotListResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: Record<string, unknown>;
+  traceId: string;
 }

@@ -151,7 +151,8 @@
       "SDKWORK_RTC_SERVICE_LAYOUT",
       "SDKWORK_RTC_ENVIRONMENT",
       "SDKWORK_RTC_PROFILE_ID",
-      "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL"
+      "SDKWORK_RTC_PLATFORM_API_GATEWAY_HTTP_URL",
+      "SDKWORK_RTC_PROVIDER_REGISTRY_PATH"
     ],
     "databasePrefixRegistries": [
       "specs/database-prefix-registry.json"

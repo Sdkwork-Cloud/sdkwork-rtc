@@ -1,9 +1,8 @@
 import type { RtcMediaSession } from './rtc-media-session';
 
 export interface RtcMediaSessionResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: RtcMediaSession;
+  traceId: string;
 }

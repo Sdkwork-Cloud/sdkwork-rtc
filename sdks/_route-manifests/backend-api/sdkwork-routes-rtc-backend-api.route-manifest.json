@@ -770,7 +770,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "SdkWorkResourceResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -804,7 +804,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "SdkWorkResourceResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -978,7 +978,7 @@
       },
       "schemas": {
         "request": "RtcOperationCommand",
-        "response": "RtcApiResult",
+        "response": "SdkWorkResourceResponse",
         "problem": "ProblemDetail"
       },
       "rateLimitTier": "openApiDefault",
@@ -1366,7 +1366,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "SdkWorkResourceResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -1400,7 +1400,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "RtcApiResult",
+        "response": "SdkWorkResourceResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {

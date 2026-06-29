@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcRoomListResponse, RtcRoomResponse } from '../types';
+import type { RtcRoomsRetrieveResponse, SdkWorkListResponse } from '../types';
 
 
 export interface RtcRoomsRtcRoomsListParams {
@@ -21,7 +21,7 @@ export class RtcRoomsRtcRoomsApi {
 
 
 /** Rtc rooms list. */
-  async list(params?: RtcRoomsRtcRoomsListParams): Promise<RtcRoomListResponse> {
+  async list(params?: RtcRoomsRtcRoomsListParams): Promise<SdkWorkListResponse> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,12 +29,12 @@ export class RtcRoomsRtcRoomsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<RtcRoomListResponse>(appendQueryString(backendApiPath(`/rtc/rooms`), query));
+    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/rooms`), query));
   }
 
 /** Rtc rooms retrieve. */
-  async retrieve(roomId: string): Promise<RtcRoomResponse> {
-    return this.client.get<RtcRoomResponse>(backendApiPath(`/rtc/rooms/${serializePathParameter(roomId, { name: 'roomId', style: 'simple', explode: false })}`));
+  async retrieve(roomId: string): Promise<RtcRoomsRetrieveResponse> {
+    return this.client.get<RtcRoomsRetrieveResponse>(backendApiPath(`/rtc/rooms/${serializePathParameter(roomId, { name: 'roomId', style: 'simple', explode: false })}`));
   }
 }
 

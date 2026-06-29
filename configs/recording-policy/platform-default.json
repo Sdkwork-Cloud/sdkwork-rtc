@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "recording-policy/v1",
+  "interfaceVersion": "recording-policy/v1",
+  "defaultPolicy": {
+    "readyRetentionDays": 365,
+    "softDeleteAfterDays": 395,
+    "hardDeleteAfterDays": 425,
+    "reconcileBatchSize": 100
+  }
+}

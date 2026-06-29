@@ -1,6 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderProfile, ProviderProfileCommand } from "../types/providerProfile";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -33,9 +34,10 @@ export class ProviderProfileService {
       q: params?.search,
       sort: params?.sort,
     });
+    const page = readSdkWorkListPage<ProviderProfile>(response.data);
     return {
-      items: (response.data?.items ?? []) as ProviderProfile[],
-      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+      items: page.items,
+      nextCursor: page.nextCursor ?? null,
     };
   }
 
@@ -44,7 +46,7 @@ export class ProviderProfileService {
     if (!response.data) {
       throw new Error(`RTC provider profile not found: ${id}`);
     }
-    return response.data as ProviderProfile;
+    return readSdkWorkItem<ProviderProfile>(response.data);
   }
 
   async create(command: ProviderProfileCommand): Promise<ProviderProfile> {
@@ -56,7 +58,7 @@ export class ProviderProfileService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider profile data");
     }
-    return response.data as ProviderProfile;
+    return readSdkWorkItem<ProviderProfile>(response.data);
   }
 
   async update(id: string, command: ProviderProfileCommand): Promise<ProviderProfile> {
@@ -69,7 +71,7 @@ export class ProviderProfileService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider profile data");
     }
-    return response.data as ProviderProfile;
+    return readSdkWorkItem<ProviderProfile>(response.data);
   }
 
   async disable(id: string, reason?: string): Promise<ProviderProfile> {
@@ -79,7 +81,7 @@ export class ProviderProfileService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider profile data");
     }
-    return response.data as ProviderProfile;
+    return readSdkWorkItem<ProviderProfile>(response.data);
   }
 
   async verify(id: string, queryKind: string, timeoutMs?: number): Promise<unknown> {
@@ -104,10 +106,6 @@ export class ProviderProfileService {
         disabledCapabilities,
       },
     );
-    const data = response.data as unknown as ProviderProfile | undefined;
-    if (!data) {
-      throw new Error("Invalid response: missing provider profile data");
-    }
-    return data;
+    return readSdkWorkItem<ProviderProfile>(response.data);
   }
 }

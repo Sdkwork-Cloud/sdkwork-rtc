@@ -1,9 +1,8 @@
 import type { RtcMediaSessionCompletionRecord } from './rtc-media-session-completion-record';
 
 export interface RtcMediaSessionCompletionRecordResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: RtcMediaSessionCompletionRecord;
+  traceId: string;
 }

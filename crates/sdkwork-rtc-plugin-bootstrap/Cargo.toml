@@ -1,0 +1,15 @@
+[package]
+name = "sdkwork-rtc-plugin-bootstrap"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Config-driven RTC provider plugin factory bootstrap for HTTP runtimes."
+
+[dependencies]
+sdkwork-communication-rtc-service.workspace = true
+sdkwork-rtc-adapter-agora.workspace = true
+sdkwork-rtc-adapter-aliyun.workspace = true
+sdkwork-rtc-adapter-livekit.workspace = true
+sdkwork-rtc-adapter-tencent.workspace = true
+sdkwork-rtc-adapter-volcengine.workspace = true
+sdkwork-rtc-service-host.workspace = true

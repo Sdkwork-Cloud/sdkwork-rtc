@@ -5,6 +5,7 @@ import type {
   ProviderQueryJobCreateCommand,
   ProviderQuerySnapshot,
 } from "../types/providerQueryJob";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface SnapshotListResponse {
@@ -27,7 +28,7 @@ export class ProviderQueryJobService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider query job data");
     }
-    return response.data as ProviderQueryJob;
+    return readSdkWorkItem<ProviderQueryJob>(response.data);
   }
 
   async get(id: string): Promise<ProviderQueryJob> {
@@ -35,7 +36,7 @@ export class ProviderQueryJobService {
     if (!response.data) {
       throw new Error(`RTC provider query job not found: ${id}`);
     }
-    return response.data as ProviderQueryJob;
+    return readSdkWorkItem<ProviderQueryJob>(response.data);
   }
 
   async listSnapshots(
@@ -59,9 +60,10 @@ export class ProviderQueryJobService {
           sort: params?.sort,
         },
       );
+    const page = readSdkWorkListPage<ProviderQuerySnapshot>(response.data);
     return {
-      items: (response.data?.items ?? []) as ProviderQuerySnapshot[],
-      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+      items: page.items,
+      nextCursor: page.nextCursor ?? null,
     };
   }
 }

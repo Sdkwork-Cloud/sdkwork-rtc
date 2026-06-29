@@ -1,9 +1,8 @@
 import type { RtcProviderRoute } from './rtc-provider-route';
 
 export interface RtcProviderRouteResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: RtcProviderRoute;
+  traceId: string;
 }

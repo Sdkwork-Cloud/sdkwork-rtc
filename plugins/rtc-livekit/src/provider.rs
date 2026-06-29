@@ -2,14 +2,12 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use sdkwork_communication_rtc_service::{
-    ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor,
-    RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES, RTC_PROVIDER_REQUIRED_CAPABILITIES,
-    RtcActiveSessionTracker, RtcContractError, RtcCreateMediaSessionRequest,
-    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
-    RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
+    ProviderHealthSnapshot, ProviderPluginDescriptor, RtcActiveSessionTracker, RtcContractError,
+    RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcParticipantCredentialContext,
+    RtcProviderPort, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
     RtcRecordingArtifactExportRequest, RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture,
-    RtcSessionHandle, utc_now_rfc3339_millis,
+    RtcSessionHandle, plugin_descriptor_from_provider_schema, utc_now_rfc3339_millis,
 };
 
 use crate::config::LivekitRtcProviderConfig;
@@ -59,14 +57,13 @@ impl LivekitRtcProvider {
     }
 
     fn descriptor_with_defaults(&self) -> ProviderPluginDescriptor {
-        ProviderPluginDescriptor::new(
+        plugin_descriptor_from_provider_schema(
             LIVEKIT_RTC_PLUGIN_ID,
-            ProviderDomain::Rtc,
             "livekit",
             "LiveKit RTC",
+            false,
         )
-        .with_required_capabilities(RTC_PROVIDER_REQUIRED_CAPABILITIES)
-        .with_optional_capabilities(RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES)
+        .expect("livekit provider schema must exist")
     }
 
     fn effective_config(

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "2026-06-29.sdkwork.rtc.providerRegistry.v1",
+  "interfaceVersion": "provider-registry/v1",
+  "plugins": [
+    {
+      "pluginId": "rtc-volcengine",
+      "providerKind": "volcengine",
+      "displayName": "Volcengine RTC",
+      "defaultSelected": true
+    },
+    {
+      "pluginId": "rtc-aliyun",
+      "providerKind": "aliyun",
+      "displayName": "Aliyun RTC"
+    },
+    {
+      "pluginId": "rtc-tencent",
+      "providerKind": "tencent",
+      "displayName": "Tencent RTC"
+    },
+    {
+      "pluginId": "rtc-agora",
+      "providerKind": "agora",
+      "displayName": "Agora RTC"
+    },
+    {
+      "pluginId": "rtc-livekit",
+      "providerKind": "livekit",
+      "displayName": "LiveKit RTC"
+    }
+  ],
+  "precedence": ["tenant_override", "deployment_profile", "global_default"]
+}

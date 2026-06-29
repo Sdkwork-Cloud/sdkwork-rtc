@@ -4,8 +4,8 @@ use sdkwork_communication_rtc_service::{
     RtcMediaSessionCompletionRecordingSummary, RtcMediaSessionEndSource, RtcMediaSessionMode,
     RtcMediaSessionStatus, RtcMediaSource, RtcMediaTrack, RtcMediaTrackKind, RtcMediaTrackSource,
     RtcMediaTrackStatus, RtcParticipantRole, RtcParticipantState, RtcQualitySample,
-    RtcRecordingArtifactKind, RtcRecordingArtifactStatus, RtcRoom, RtcRoomStatus,
-    RtcTenantOrganizationScope, rtc_provider_payload_hash,
+    RtcRecordingArtifactKind, RtcRecordingArtifactStatus, RtcRecordingLifecycleReconcileQuery,
+    RtcRoom, RtcRoomStatus, RtcTenantOrganizationScope, rtc_provider_payload_hash,
 };
 use serde::de::DeserializeOwned;
 use sqlx::{
@@ -488,6 +488,37 @@ impl RtcSqliteMediaSessionRepository {
                 })
             })
             .collect()
+    }
+
+    pub async fn list_recording_artifact_lifecycle_candidates(
+        &self,
+        query: RtcRecordingLifecycleReconcileQuery,
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        const SQL: &str = r#"
+            SELECT
+                uuid, tenant_id, session_id, owner_user_id, artifact_kind,
+                artifact_status, media_role, provider_profile_id, provider_artifact_id,
+                drive_space_id, drive_space_type, drive_node_id, drive_uri, media_resource_snapshot,
+                resource_hash, started_at, ended_at, duration_ms, failure_reason,
+                source_provider_webhook_event_id, source_provider_query_job_id
+            FROM rtc_media_artifact
+            WHERE (
+                artifact_status IN (3, 4)
+                AND COALESCE(ended_at, started_at, created_at) <= ?
+            ) OR (
+                artifact_status = 5
+                AND COALESCE(ended_at, started_at, created_at) <= ?
+            )
+            ORDER BY created_at ASC
+            LIMIT ?
+        "#;
+        let rows = sqlx::query(SQL)
+            .bind(query.soft_delete_cutoff.as_str())
+            .bind(query.hard_delete_cutoff.as_str())
+            .bind(i64::from(query.batch_size))
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_media_artifact).collect()
     }
 
     pub async fn get_media_session_for_scope(
@@ -988,6 +1019,55 @@ impl RtcPostgresMediaSessionRepository {
                     organization_id: postgres_i64_column_to_string(&row, "organization_id")?,
                 })
             })
+            .collect()
+    }
+
+    pub async fn list_recording_artifact_lifecycle_candidates(
+        &self,
+        query: RtcRecordingLifecycleReconcileQuery,
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        const SQL: &str = r#"
+            SELECT
+                uuid,
+                tenant_id,
+                session_id,
+                owner_user_id,
+                artifact_kind,
+                artifact_status,
+                media_role,
+                provider_profile_id,
+                provider_artifact_id,
+                drive_space_id,
+                drive_space_type,
+                drive_node_id,
+                drive_uri,
+                media_resource_snapshot,
+                resource_hash,
+                to_char(started_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS started_at,
+                to_char(ended_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS ended_at,
+                duration_ms,
+                failure_reason,
+                source_provider_webhook_event_id,
+                source_provider_query_job_id
+            FROM rtc_media_artifact
+            WHERE (
+                artifact_status IN (3, 4)
+                AND COALESCE(ended_at, started_at, created_at) <= $1::timestamptz
+            ) OR (
+                artifact_status = 5
+                AND COALESCE(ended_at, started_at, created_at) <= $2::timestamptz
+            )
+            ORDER BY created_at ASC
+            LIMIT $3
+        "#;
+        let rows = sqlx::query(SQL)
+            .bind(query.soft_delete_cutoff.as_str())
+            .bind(query.hard_delete_cutoff.as_str())
+            .bind(i64::from(query.batch_size))
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_media_artifact)
             .collect()
     }
 

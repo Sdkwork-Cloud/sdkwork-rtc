@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcMediaArtifactListResponse, RtcMediaArtifactResponse } from '../types';
+import type { RtcMediaArtifactsRetrieveResponse, SdkWorkListResponse } from '../types';
 
 
 export interface RtcMediaArtifactsRtcMediaArtifactsListParams {
@@ -21,7 +21,7 @@ export class RtcMediaArtifactsRtcMediaArtifactsApi {
 
 
 /** Rtc media Artifacts list. */
-  async list(params?: RtcMediaArtifactsRtcMediaArtifactsListParams): Promise<RtcMediaArtifactListResponse> {
+  async list(params?: RtcMediaArtifactsRtcMediaArtifactsListParams): Promise<SdkWorkListResponse> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,12 +29,12 @@ export class RtcMediaArtifactsRtcMediaArtifactsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<RtcMediaArtifactListResponse>(appendQueryString(backendApiPath(`/rtc/media_artifacts`), query));
+    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/media_artifacts`), query));
   }
 
 /** Rtc media Artifacts retrieve. */
-  async retrieve(mediaArtifactId: string): Promise<RtcMediaArtifactResponse> {
-    return this.client.get<RtcMediaArtifactResponse>(backendApiPath(`/rtc/media_artifacts/${serializePathParameter(mediaArtifactId, { name: 'mediaArtifactId', style: 'simple', explode: false })}`));
+  async retrieve(mediaArtifactId: string): Promise<RtcMediaArtifactsRetrieveResponse> {
+    return this.client.get<RtcMediaArtifactsRetrieveResponse>(backendApiPath(`/rtc/media_artifacts/${serializePathParameter(mediaArtifactId, { name: 'mediaArtifactId', style: 'simple', explode: false })}`));
   }
 }
 

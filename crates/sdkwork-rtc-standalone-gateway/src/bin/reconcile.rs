@@ -34,12 +34,33 @@ async fn main() -> anyhow::Result<()> {
         provider_synced = result.provider_synced,
         compensated = result.compensated,
         failures = result.failures.len(),
-        "sdkwork-rtc-reconcile completed"
+        "sdkwork-rtc-reconcile session reconciliation completed"
     );
 
     if !result.failures.is_empty() {
         for failure in &result.failures {
-            tracing::error!(failure, "reconciliation failure");
+            tracing::error!(failure, "session reconciliation failure");
+        }
+        std::process::exit(1);
+    }
+
+    let recording_result = worker
+        .run_recording_artifact_lifecycle_job()
+        .await
+        .map_err(anyhow::Error::msg)?;
+
+    info!(
+        scanned = recording_result.scanned,
+        soft_deleted = recording_result.soft_deleted,
+        hard_deleted = recording_result.hard_deleted,
+        skipped = recording_result.skipped,
+        failures = recording_result.failures.len(),
+        "sdkwork-rtc-reconcile recording artifact lifecycle completed"
+    );
+
+    if !recording_result.failures.is_empty() {
+        for failure in &recording_result.failures {
+            tracing::error!(failure, "recording lifecycle reconciliation failure");
         }
         std::process::exit(1);
     }

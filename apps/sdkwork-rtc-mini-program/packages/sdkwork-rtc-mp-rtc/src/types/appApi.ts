@@ -1,16 +1,8 @@
-import type { RtcAppSdkClient } from "@sdkwork/rtc-mp-core/sdk";
-
-type MediaSessionRetrieveResponse = Awaited<
-  ReturnType<RtcAppSdkClient["rtcMediaSessions"]["rtc"]["mediaSessions"]["retrieve"]>
->;
-
-export type RtcMediaSession = NonNullable<MediaSessionRetrieveResponse["data"]>;
-
-export type RtcCreateMediaSessionRequest = Parameters<
-  RtcAppSdkClient["rtcMediaSessions"]["rtc"]["mediaSessions"]["create"]
->[0];
-
-export type RtcMediaParticipant = RtcMediaSession["participants"][number];
+export type {
+  RtcCreateMediaSessionRequest,
+  RtcMediaParticipant,
+  RtcMediaSession,
+} from "@sdkwork/rtc-mp-core";
 
 export interface RtcActiveProviderProfile {
   id: string;

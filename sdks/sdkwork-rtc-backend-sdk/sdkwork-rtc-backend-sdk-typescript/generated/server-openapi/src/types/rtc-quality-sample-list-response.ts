@@ -1,9 +1,8 @@
 import type { RtcQualitySample } from './rtc-quality-sample';
 
 export interface RtcQualitySampleListResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: Record<string, unknown>;
+  traceId: string;
 }

@@ -1,6 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderRoute, ProviderRouteCommand } from "../types/providerRoute";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -32,9 +33,10 @@ export class ProviderRouteService {
       q: params?.search,
       sort: params?.sort,
     });
+    const page = readSdkWorkListPage<ProviderRoute>(response.data);
     return {
-      items: (response.data?.items ?? []) as ProviderRoute[],
-      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+      items: page.items,
+      nextCursor: page.nextCursor ?? null,
     };
   }
 
@@ -47,7 +49,7 @@ export class ProviderRouteService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider route data");
     }
-    return response.data as ProviderRoute;
+    return readSdkWorkItem<ProviderRoute>(response.data);
   }
 
   async get(id: string): Promise<ProviderRoute> {
@@ -55,7 +57,7 @@ export class ProviderRouteService {
     if (!response.data) {
       throw new Error(`RTC provider route not found: ${id}`);
     }
-    return response.data as ProviderRoute;
+    return readSdkWorkItem<ProviderRoute>(response.data);
   }
 
   async update(id: string, command: ProviderRouteCommand): Promise<ProviderRoute> {
@@ -68,7 +70,7 @@ export class ProviderRouteService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider route data");
     }
-    return response.data as ProviderRoute;
+    return readSdkWorkItem<ProviderRoute>(response.data);
   }
 
   async disable(id: string, reason?: string): Promise<ProviderRoute> {
@@ -78,6 +80,6 @@ export class ProviderRouteService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider route data");
     }
-    return response.data as ProviderRoute;
+    return readSdkWorkItem<ProviderRoute>(response.data);
   }
 }

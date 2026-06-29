@@ -16,6 +16,7 @@ members = [
     "crates/sdkwork-routes-rtc-app-api",
     "crates/sdkwork-routes-rtc-backend-api",
     "crates/sdkwork-rtc-service-host",
+    "crates/sdkwork-rtc-plugin-bootstrap",
     "crates/sdkwork-communication-rtc-worker",
     "crates/sdkwork-rtc-standalone-gateway",
 ]
@@ -53,6 +54,7 @@ sdkwork-rtc-adapter-volcengine = { path = "plugins/rtc-volcengine" }
 sdkwork-routes-rtc-app-api = { path = "crates/sdkwork-routes-rtc-app-api" }
 sdkwork-routes-rtc-backend-api = { path = "crates/sdkwork-routes-rtc-backend-api" }
 sdkwork-rtc-service-host = { path = "crates/sdkwork-rtc-service-host" }
+sdkwork-rtc-plugin-bootstrap = { path = "crates/sdkwork-rtc-plugin-bootstrap" }
 sdkwork-communication-rtc-worker = { path = "crates/sdkwork-communication-rtc-worker" }
 sdkwork-rtc-standalone-gateway = { path = "crates/sdkwork-rtc-standalone-gateway" }
 sdkwork-drive-config = { path = "../sdkwork-drive/crates/sdkwork-drive-config" }

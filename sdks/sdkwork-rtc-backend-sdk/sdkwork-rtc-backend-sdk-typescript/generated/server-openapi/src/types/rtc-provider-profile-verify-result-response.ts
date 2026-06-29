@@ -1,9 +1,8 @@
 import type { RtcProviderProfileVerifyResult } from './rtc-provider-profile-verify-result';
 
 export interface RtcProviderProfileVerifyResultResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: RtcProviderProfileVerifyResult;
+  traceId: string;
 }

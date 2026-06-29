@@ -1229,6 +1229,109 @@
       }
     },
     "schemas": {
+      "SdkWorkApiResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "data",
+          "traceId"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+              0
+            ],
+            "default": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "data": {
+            "description": "Operation-specific payload typed per response schema."
+          },
+          "traceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          }
+        }
+      },
+      "SdkWorkPlatformErrorCode": {
+        "type": "integer",
+        "format": "int32",
+        "minimum": 40001,
+        "maximum": 79999,
+        "description": "Platform or domain error code per API_SPEC.md §15.3."
+      },
+      "ProblemDetail": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code",
+          "traceId"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri-reference"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 599
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "code": {
+            "$ref": "#/components/schemas/SdkWorkPlatformErrorCode"
+          },
+          "traceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
+          }
+        }
+      },
+      "FieldError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "message"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 40011,
+            "maximum": 40099
+          }
+        }
+      },
       "RtcOperationCommand": {
         "type": "object",
         "additionalProperties": true,
@@ -1493,74 +1596,86 @@
         }
       },
       "RtcRoomListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
+          {
             "type": "object",
-            "additionalProperties": false,
             "required": [
-              "items"
+              "data"
             ],
             "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RtcRoom"
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "items",
+                  "pageInfo"
+                ],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RtcRoom"
+                    }
+                  },
+                  "pageInfo": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "mode",
+                      "hasMore"
+                    ],
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "cursor"
+                        ]
+                      },
+                      "nextCursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "hasMore": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
                 }
-              },
-              "nextCursor": {
-                "type": [
-                  "string",
-                  "null"
-                ]
               }
             }
           }
-        }
+        ]
       },
       "RtcRoomResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
-            "$ref": "#/components/schemas/RtcRoom"
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [
+                  "item"
+                ],
+                "properties": {
+                  "item": {
+                    "$ref": "#/components/schemas/RtcRoom"
+                  }
+                }
+              }
+            }
           }
-        }
+        ]
       },
       "RtcCreateMediaSessionRequest": {
         "type": "object",
@@ -1775,74 +1890,86 @@
         }
       },
       "RtcMediaSessionListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
+          {
             "type": "object",
-            "additionalProperties": false,
             "required": [
-              "items"
+              "data"
             ],
             "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RtcMediaSession"
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "items",
+                  "pageInfo"
+                ],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RtcMediaSession"
+                    }
+                  },
+                  "pageInfo": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "mode",
+                      "hasMore"
+                    ],
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "cursor"
+                        ]
+                      },
+                      "nextCursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "hasMore": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
                 }
-              },
-              "nextCursor": {
-                "type": [
-                  "string",
-                  "null"
-                ]
               }
             }
           }
-        }
+        ]
       },
       "RtcMediaSessionResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
-            "$ref": "#/components/schemas/RtcMediaSession"
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [
+                  "item"
+                ],
+                "properties": {
+                  "item": {
+                    "$ref": "#/components/schemas/RtcMediaSession"
+                  }
+                }
+              }
+            }
           }
-        }
+        ]
       },
       "RtcMediaParticipant": {
         "type": "object",
@@ -1968,30 +2095,30 @@
         }
       },
       "RtcParticipantCredentialResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
-            "$ref": "#/components/schemas/RtcParticipantCredential"
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [
+                  "item"
+                ],
+                "properties": {
+                  "item": {
+                    "$ref": "#/components/schemas/RtcParticipantCredential"
+                  }
+                }
+              }
+            }
           }
-        }
+        ]
       },
       "RtcMediaArtifact": {
         "type": "object",
@@ -2116,48 +2243,60 @@
         }
       },
       "RtcMediaArtifactListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
+          {
             "type": "object",
-            "additionalProperties": false,
             "required": [
-              "items"
+              "data"
             ],
             "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RtcMediaArtifact"
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "items",
+                  "pageInfo"
+                ],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RtcMediaArtifact"
+                    }
+                  },
+                  "pageInfo": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "mode",
+                      "hasMore"
+                    ],
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "cursor"
+                        ]
+                      },
+                      "nextCursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "hasMore": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
                 }
-              },
-              "nextCursor": {
-                "type": [
-                  "string",
-                  "null"
-                ]
               }
             }
           }
-        }
+        ]
       },
       "RtcMediaSessionCompletionQualitySummary": {
         "type": "object",
@@ -2719,30 +2858,30 @@
         }
       },
       "RtcMediaSessionCompletionRecordResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
-            "$ref": "#/components/schemas/RtcMediaSessionCompletionRecord"
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [
+                  "item"
+                ],
+                "properties": {
+                  "item": {
+                    "$ref": "#/components/schemas/RtcMediaSessionCompletionRecord"
+                  }
+                }
+              }
+            }
           }
-        }
+        ]
       },
       "RtcActiveProviderProfile": {
         "type": "object",
@@ -2875,113 +3014,60 @@
         }
       },
       "RtcActiveProviderProfileListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "requestId",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
           },
-          "message": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "data": {
+          {
             "type": "object",
-            "additionalProperties": false,
             "required": [
-              "items"
+              "data"
             ],
             "properties": {
-              "items": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RtcActiveProviderProfile"
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "items",
+                  "pageInfo"
+                ],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RtcActiveProviderProfile"
+                    }
+                  },
+                  "pageInfo": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "mode",
+                      "hasMore"
+                    ],
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "cursor"
+                        ]
+                      },
+                      "nextCursor": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "hasMore": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
                 }
-              },
-              "nextCursor": {
-                "type": [
-                  "string",
-                  "null"
-                ]
               }
             }
           }
-        }
-      },
-      "ProblemDetail": {
-        "type": "object",
-        "additionalProperties": true,
-        "required": [
-          "type",
-          "title",
-          "status"
-        ],
-        "properties": {
-          "type": {
-            "type": "string",
-            "format": "uri-reference"
-          },
-          "title": {
-            "type": "string"
-          },
-          "status": {
-            "type": "integer",
-            "minimum": 100,
-            "maximum": 599
-          },
-          "detail": {
-            "type": "string"
-          },
-          "instance": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "traceId": {
-            "type": "string"
-          },
-          "requestId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Server-owned request correlation id."
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FieldError"
-            }
-          }
-        }
-      },
-      "FieldError": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "field",
-          "message"
-        ],
-        "properties": {
-          "field": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          }
-        }
+        ]
       }
     }
   },

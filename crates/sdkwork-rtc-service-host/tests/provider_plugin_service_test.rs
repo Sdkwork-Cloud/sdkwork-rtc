@@ -12,7 +12,7 @@ fn reconcile_env_lock() -> std::sync::MutexGuard<'static, ()> {
 
 use sdkwork_communication_rtc_service::{
     ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor, RtcContractError,
-    RtcCreateMediaSessionRequest, RtcMediaSession, RtcMediaSessionEndSource,
+    RtcCreateMediaSessionRequest, RtcMediaArtifact, RtcMediaSession, RtcMediaSessionEndSource,
     RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
     RtcMediaSessionStatus, RtcParticipantCredential, RtcPersistenceChangeSet, RtcPersistenceFuture,
     RtcPersistencePort, RtcProviderAccountCommand, RtcProviderAccountDisableRequest,
@@ -22,7 +22,7 @@ use sdkwork_communication_rtc_service::{
     RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest,
     RtcRecordingArtifact, RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture,
-    RtcRuntimeLoadRequest, RtcSessionHandle, RtcTenantOrganizationScope,
+    RtcRecordingLifecycleReconcileQuery, RtcRuntimeLoadRequest, RtcSessionHandle, RtcTenantOrganizationScope,
     verify_hmac_sha256_payload,
 };
 use sdkwork_routes_rtc_app_api::service::{
@@ -3438,6 +3438,13 @@ impl RtcPersistencePort for RecordingPersistence {
     fn list_active_reconcile_scopes<'a>(
         &'a self,
     ) -> RtcPersistenceFuture<'a, Vec<RtcTenantOrganizationScope>> {
+        Box::pin(async { Ok(Vec::new()) })
+    }
+
+    fn list_recording_artifact_lifecycle_candidates<'a>(
+        &'a self,
+        _query: RtcRecordingLifecycleReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>> {
         Box::pin(async { Ok(Vec::new()) })
     }
 }

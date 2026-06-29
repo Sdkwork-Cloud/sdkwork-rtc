@@ -1,18 +1,19 @@
 use sdkwork_communication_rtc_service::{
     RtcContractError, RtcProviderEventKind, RtcProviderWebhookEvent,
-    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, rtc_provider_payload_hash,
-    verify_provider_webhook_signature_hmac,
+    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, format_provider_session_id,
+    parse_provider_webhook_payload_json, rtc_provider_payload_hash,
+    verify_provider_webhook_signature_hmac, webhook_header_value, webhook_string_field,
 };
-use serde_json::{Value as JsonValue, json};
+use serde_json::json;
 
 pub(crate) fn parse_provider_webhook(
     request: RtcProviderWebhookParseRequest,
 ) -> Result<RtcProviderWebhookEvent, RtcContractError> {
-    let payload = parse_payload(request.raw_payload.as_str())?;
-    let event_type = string_field(&payload, &["eventType", "EventType", "event", "type"])
+    let payload = parse_provider_webhook_payload_json(request.raw_payload.as_str(), "agora")?;
+    let event_type = webhook_string_field(&payload, &["eventType", "EventType", "event", "type"])
         .unwrap_or_else(|| "unknown".into());
     let event_kind = agora_event_kind(event_type.as_str());
-    let external_event_id = string_field(
+    let external_event_id = webhook_string_field(
         &payload,
         &[
             "eventId",
@@ -23,7 +24,7 @@ pub(crate) fn parse_provider_webhook(
             "requestId",
         ],
     );
-    let room_id = string_field(
+    let room_id = webhook_string_field(
         &payload,
         &[
             "channelName",
@@ -36,7 +37,7 @@ pub(crate) fn parse_provider_webhook(
             "name",
         ],
     );
-    let rtc_session_id = string_field(
+    let rtc_session_id = webhook_string_field(
         &payload,
         &[
             "SessionId",
@@ -46,7 +47,7 @@ pub(crate) fn parse_provider_webhook(
             "rtcSessionId",
         ],
     );
-    let provider_session_id = string_field(
+    let provider_session_id = webhook_string_field(
         &payload,
         &[
             "ProviderSessionId",
@@ -59,8 +60,9 @@ pub(crate) fn parse_provider_webhook(
             .as_deref()
             .map(|session_id| format_provider_session_id("agora", session_id))
     });
-    let participant_id = string_field(&payload, &["uid", "Uid", "userId", "UserId", "user"]);
-    let recording_id = string_field(
+    let participant_id =
+        webhook_string_field(&payload, &["uid", "Uid", "userId", "UserId", "user"]);
+    let recording_id = webhook_string_field(
         &payload,
         &[
             "sid",
@@ -71,7 +73,7 @@ pub(crate) fn parse_provider_webhook(
             "recordingId",
         ],
     );
-    let occurred_at = string_field(
+    let occurred_at = webhook_string_field(
         &payload,
         &[
             "timestamp",
@@ -82,7 +84,7 @@ pub(crate) fn parse_provider_webhook(
             "ms",
         ],
     );
-    let signature_header = header_value(
+    let signature_header = webhook_header_value(
         request.headers.as_slice(),
         &[
             "Agora-Signature-V2",
@@ -128,70 +130,6 @@ pub(crate) fn verify_provider_webhook_signature(
     request: RtcProviderWebhookVerifyRequest,
 ) -> Result<(), RtcContractError> {
     verify_provider_webhook_signature_hmac(request)
-}
-
-fn parse_payload(raw_payload: &str) -> Result<JsonValue, RtcContractError> {
-    serde_json::from_str(raw_payload).map_err(|error| {
-        RtcContractError::Conflict(format!("invalid agora webhook payload: {error}"))
-    })
-}
-
-fn string_field(payload: &JsonValue, names: &[&str]) -> Option<String> {
-    string_field_in(payload, names).or_else(|| nested_string_field(payload, names))
-}
-
-fn string_field_in(payload: &JsonValue, names: &[&str]) -> Option<String> {
-    names.iter().find_map(|name| {
-        payload.get(*name).and_then(|value| match value {
-            JsonValue::String(value) => Some(value.clone()),
-            JsonValue::Number(value) => Some(value.to_string()),
-            JsonValue::Bool(value) => Some(value.to_string()),
-            _ => None,
-        })
-    })
-}
-
-fn nested_string_field(payload: &JsonValue, names: &[&str]) -> Option<String> {
-    [
-        "payload",
-        "Payload",
-        "data",
-        "Data",
-        "eventData",
-        "EventData",
-        "eventInfo",
-        "EventInfo",
-        "room",
-        "participant",
-        "recording",
-    ]
-    .iter()
-    .find_map(|name| {
-        let nested = payload.get(*name)?;
-        string_field_in(nested, names).or_else(|| match nested {
-            JsonValue::String(value) => serde_json::from_str::<JsonValue>(value)
-                .ok()
-                .and_then(|parsed| string_field_in(&parsed, names)),
-            _ => None,
-        })
-    })
-}
-
-fn header_value(headers: &[(String, String)], names: &[&str]) -> Option<String> {
-    headers.iter().find_map(|(key, value)| {
-        names
-            .iter()
-            .any(|candidate| key.eq_ignore_ascii_case(candidate))
-            .then(|| value.clone())
-    })
-}
-
-fn format_provider_session_id(provider: &str, session_id: &str) -> String {
-    if session_id.contains(':') {
-        session_id.to_string()
-    } else {
-        format!("{provider}:{session_id}")
-    }
 }
 
 fn agora_event_kind(event_type: &str) -> RtcProviderEventKind {

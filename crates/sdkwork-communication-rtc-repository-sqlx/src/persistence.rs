@@ -1,11 +1,12 @@
 use std::collections::BTreeMap;
 
 use sdkwork_communication_rtc_service::{
-    RtcMediaSession, RtcMediaSessionCompletionRecord, RtcMediaSessionIdempotencyClaim,
-    RtcMediaSessionIdempotencyRecord, RtcPersistenceChangeSet, RtcPersistenceError,
-    RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind, RtcProviderQueryJobRecord,
-    RtcProviderQueryKind, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
-    RtcRuntimeLoadRequest, RtcTenantOrganizationScope, utc_now_rfc3339_millis,
+    RtcMediaArtifact, RtcMediaSession, RtcMediaSessionCompletionRecord,
+    RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcPersistenceChangeSet,
+    RtcPersistenceError, RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind,
+    RtcProviderQueryJobRecord, RtcProviderQueryKind, RtcProviderQuerySnapshotRecord,
+    RtcProviderWebhookEventRecord, RtcRecordingLifecycleReconcileQuery, RtcRuntimeLoadRequest,
+    RtcTenantOrganizationScope, utc_now_rfc3339_millis,
 };
 use sqlx::{Executor, PgPool, Postgres, Sqlite, SqlitePool};
 
@@ -382,6 +383,18 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
                 .map_err(storage_to_persistence_error)
         })
     }
+
+    fn list_recording_artifact_lifecycle_candidates<'a>(
+        &'a self,
+        query: RtcRecordingLifecycleReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_recording_artifact_lifecycle_candidates(query)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -742,6 +755,18 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
         Box::pin(async move {
             self.media_sessions
                 .list_active_reconcile_scopes()
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn list_recording_artifact_lifecycle_candidates<'a>(
+        &'a self,
+        query: RtcRecordingLifecycleReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_recording_artifact_lifecycle_candidates(query)
                 .await
                 .map_err(storage_to_persistence_error)
         })

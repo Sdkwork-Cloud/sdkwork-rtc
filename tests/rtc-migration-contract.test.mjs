@@ -13,6 +13,35 @@ function workspacePath(root, relativePath) {
   return path.join(root, ...relativePath.split("/"));
 }
 
+function readRtcServiceSource(relativePath) {
+  return readFileSync(
+    workspacePath(rtcRoot, `crates/sdkwork-communication-rtc-service/src/${relativePath}`),
+    "utf8",
+  );
+}
+
+function readRtcServiceContractSources() {
+  const serviceSrcRoot = workspacePath(
+    rtcRoot,
+    "crates/sdkwork-communication-rtc-service/src",
+  );
+  const sources = [];
+  function walk(directory) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+        continue;
+      }
+      if (entry.name.endsWith(".rs")) {
+        sources.push(readFileSync(fullPath, "utf8"));
+      }
+    }
+  }
+  walk(serviceSrcRoot);
+  return sources.join("\n");
+}
+
 function resolveImRelativePath(candidates) {
   for (const relativePath of candidates) {
     if (existsSync(workspacePath(SdkworkImRoot, relativePath))) {
@@ -33,6 +62,10 @@ const sdkworkImPcChatPackage = resolveImRelativePath([
 const sdkworkImGatewayPath = resolveImRelativePath([
   "services/sdkwork-im-cloud-gateway/src/lib.rs",
   "services/web-gateway/src/lib.rs",
+]);
+const sdkworkImGatewayRegistryPath = resolveImRelativePath([
+  "services/sdkwork-im-cloud-gateway/src/registry.rs",
+  "services/web-gateway/src/registry.rs",
 ]);
 
 const sdkworkImCheckoutAvailable = existsSync(path.join(SdkworkImRoot, "Cargo.toml"));
@@ -214,6 +247,15 @@ function parseRustStringArrayConstant(source, constantName) {
   return Array.from(match.groups.body.matchAll(/"(?<value>[^"]+)"/gu), (item) => item.groups.value);
 }
 
+function readProviderSchemaCapabilities(providerKey) {
+  const schemaPath = workspacePath(rtcRoot, `configs/provider-schemas/${providerKey}.json`);
+  const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
+  return {
+    required: schema.requiredCapabilities,
+    optional: schema.optionalCapabilities,
+  };
+}
+
 function parseTypescriptProviderOptionalCapabilities(source, providerKey) {
   const providerPattern = new RegExp(
     `providerKey:\\s*'${providerKey}'[\\s\\S]+?optionalCapabilities:\\s*\\[(?<body>[^\\]]*)\\]\\s+as const`,
@@ -267,7 +309,34 @@ function openApiOperation(openapi, method, pathKey) {
 }
 
 function jsonResponseSchemaRef(operation, status = "200") {
-  return operation.responses?.[status]?.content?.["application/json"]?.schema?.$ref;
+  return extractJsonResponsePayloadSchemaRef(
+    operation.responses?.[status]?.content?.["application/json"]?.schema,
+  );
+}
+
+function extractJsonResponsePayloadSchemaRef(schema) {
+  if (!schema) {
+    return undefined;
+  }
+  if (schema.$ref) {
+    return schema.$ref;
+  }
+  if (Array.isArray(schema.allOf)) {
+    for (const part of schema.allOf) {
+      const nestedRef = extractJsonResponsePayloadSchemaRef(part);
+      if (nestedRef) {
+        return nestedRef;
+      }
+    }
+  }
+  const dataSchema = schema.properties?.data;
+  if (dataSchema?.properties?.item?.$ref) {
+    return dataSchema.properties.item.$ref;
+  }
+  if (dataSchema?.properties?.items?.$ref) {
+    return dataSchema.properties.items.$ref;
+  }
+  return undefined;
 }
 
 function jsonRequestSchemaRef(operation) {
@@ -346,10 +415,7 @@ test("sdkwork-rtc does not own app call signaling routes or signaling services",
 });
 
 test("sdkwork-rtc declares RTC-only app and backend API authorities", () => {
-  const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
-    "utf8",
-  );
+  const coreSource = readRtcServiceSource("constants.rs");
 
   assert.match(coreSource, /RTC_APP_API_AUTHORITY:\s*&str\s*=\s*"sdkwork-rtc-app-api"/);
   assert.match(coreSource, /RTC_APP_SDK_FAMILY:\s*&str\s*=\s*"sdkwork-rtc-app-sdk"/);
@@ -556,10 +622,7 @@ test("sdkwork-rtc core does not publish IM call signaling state contracts", () =
     "sdkwork-rtc workspace must not keep a call-signaling state-store crate",
   );
 
-  const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
-    "utf8",
-  );
+  const coreSource = readRtcServiceContractSources();
   for (const forbiddenSymbol of [
     "RtcCallbackRequest",
     "RtcCallbackEvent",
@@ -639,15 +702,20 @@ test("sdkwork-rtc HTTP surfaces expose RTC media capabilities without signaling"
   }
 
   const SdkworkImGateway = sdkworkImGatewayPath;
+  const SdkworkImGatewayRegistry = sdkworkImGatewayRegistryPath;
   if (sdkworkImGatewayAvailable) {
     const SdkworkImGatewayContent = readFileSync(workspacePath(SdkworkImRoot, SdkworkImGateway), "utf8");
+    const SdkworkImGatewayRegistryContent = readFileSync(
+      workspacePath(SdkworkImRoot, SdkworkImGatewayRegistry),
+      "utf8",
+    );
     assert.doesNotMatch(SdkworkImGatewayContent, /\/im\/v3\/api\/rtc/);
     assert.doesNotMatch(
       SdkworkImGatewayContent,
       /sdkwork-rtc-signaling-service[\s\S]{0,240}SdkTarget::SdkworkImSdk/,
     );
-    assert.match(SdkworkImGatewayContent, /\/im\/v3\/api\/calls\/\{\*path\}/);
-    assert.doesNotMatch(SdkworkImGatewayContent, /\/app\/v3\/api\/rtc\/\{\*path\}/);
+    assert.match(SdkworkImGatewayRegistryContent, /\/im\/v3\/api\/calls\/\{\*path\}/);
+    assert.doesNotMatch(SdkworkImGatewayRegistryContent, /\/app\/v3\/api\/rtc\/\{\*path\}/);
   }
 });
 
@@ -663,8 +731,12 @@ test("sdkwork-im gateway does not expose RTC through IM API prefixes", {
   assert.deepEqual(gatewayMatches, []);
 
   const gatewaySource = readFileSync(workspacePath(SdkworkImRoot, sdkworkImGatewayPath), "utf8");
-  assert.match(gatewaySource, /\/im\/v3\/api\/calls\/\{\*path\}/);
-  assert.doesNotMatch(gatewaySource, /\/app\/v3\/api\/rtc\/\{\*path\}/);
+  const gatewayRegistrySource = readFileSync(
+    workspacePath(SdkworkImRoot, sdkworkImGatewayRegistryPath),
+    "utf8",
+  );
+  assert.match(gatewayRegistrySource, /\/im\/v3\/api\/calls\/\{\*path\}/);
+  assert.doesNotMatch(gatewayRegistrySource, /\/app\/v3\/api\/rtc\/\{\*path\}/);
   assert.doesNotMatch(gatewaySource, /rtc_app_api_routes\(\)/);
 });
 
@@ -773,7 +845,7 @@ test("sdkwork-core does not aggregate RTC SDK sources", () => {
 
 test("sdkwork-rtc active contracts use media runtime names instead of call signaling lifecycle names", () => {
   const contractFiles = [
-    "crates/sdkwork-communication-rtc-service/src/lib.rs",
+    "crates/sdkwork-communication-rtc-service/src/constants.rs",
     "crates/sdkwork-rtc-service-host/src/lib.rs",
     "crates/sdkwork-routes-rtc-app-api/src/lib.rs",
     "crates/sdkwork-routes-rtc-backend-api/src/lib.rs",
@@ -1711,10 +1783,11 @@ test("sdkwork-rtc backend control plane uses media session resources only", () =
 });
 
 test("sdkwork-rtc recording artifacts use dedicated RTC Drive spaces", () => {
-  const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
-    "utf8",
-  );
+  const coreSource = [
+    readRtcServiceSource("constants.rs"),
+    readRtcServiceSource("domain/drive.rs"),
+    readRtcServiceSource("domain/recording.rs"),
+  ].join("\n");
   assert.match(coreSource, /RTC_DRIVE_SPACE_TYPE:\s*&str\s*=\s*"rtc"/);
   assert.match(coreSource, /pub enum RtcDriveSpaceType\b/);
   assert.match(coreSource, /pub struct RtcDriveReference[\s\S]*pub space_type:\s*RtcDriveSpaceType/);
@@ -1833,7 +1906,7 @@ test("sdkwork-rtc route crates expose executable app and backend API routers", (
       handlers: "crates/sdkwork-routes-rtc-app-api/src/handlers.rs",
       routes: "crates/sdkwork-routes-rtc-app-api/src/routes.rs",
       expectedTrait: "RtcAppApiService",
-      expectedBuilder: "build_sdkwork_ai_prod_app_api_router",
+      expectedBuilder: "build_sdkwork_rtc_app_api_router",
       expectedPrefix: "/app/v3/api",
       expectedHandlerNames: [
         "list_rooms",
@@ -1851,7 +1924,7 @@ test("sdkwork-rtc route crates expose executable app and backend API routers", (
       handlers: "crates/sdkwork-routes-rtc-backend-api/src/handlers.rs",
       routes: "crates/sdkwork-routes-rtc-backend-api/src/routes.rs",
       expectedTrait: "RtcBackendApiService",
-      expectedBuilder: "build_sdkwork_ai_prod_backend_api_router",
+      expectedBuilder: "build_sdkwork_rtc_backend_api_router",
       expectedPrefix: "/backend/v3/api",
       expectedHandlerNames: [
         "list_provider_profiles",
@@ -3069,7 +3142,11 @@ test("sdkwork-rtc PC React package exposes media runtime helpers instead of call
 
 test("sdkwork-rtc capability keys use media runtime terms instead of call workflow terms", () => {
   const capabilityFiles = [
-    "crates/sdkwork-communication-rtc-service/src/lib.rs",
+    "configs/provider-schemas/volcengine.json",
+    "configs/provider-schemas/aliyun.json",
+    "configs/provider-schemas/tencent.json",
+    "configs/provider-schemas/agora.json",
+    "configs/provider-schemas/livekit.json",
     "sdks/sdkwork-rtc-sdk/.sdkwork-assembly.json",
     "sdks/sdkwork-rtc-sdk/bin/rtc-standard-contract-constants.mjs",
     "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/capability-catalog.ts",
@@ -3390,7 +3467,7 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
         factoryExport: expectation.factoryExport,
         factoryFunction: expectation.factoryFunction,
         descriptorMethod: "RtcProviderPort::descriptor",
-        capabilitiesSource: "crates/sdkwork-communication-rtc-service/src/lib.rs",
+        capabilitiesSource: `configs/provider-schemas/${providerKey}.json`,
       },
       `${componentSpecPath} must declare the RTC provider plugin contract`,
     );
@@ -3489,26 +3566,13 @@ test("sdkwork-rtc builtin Rust provider adapter crate roots stay thin plugin ent
   }
 });
 
-test("sdkwork-rtc builtin provider capability declarations stay aligned across Rust core and SDK catalogs", () => {
-  const providerConstants = {
-    volcengine: "RTC_PROVIDER_VOLCENGINE_OPTIONAL_CAPABILITIES",
-    aliyun: "RTC_PROVIDER_ALIYUN_OPTIONAL_CAPABILITIES",
-    tencent: "RTC_PROVIDER_TENCENT_OPTIONAL_CAPABILITIES",
-    agora: "RTC_PROVIDER_AGORA_OPTIONAL_CAPABILITIES",
-    livekit: "RTC_PROVIDER_LIVEKIT_OPTIONAL_CAPABILITIES",
-  };
-  const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
-    "utf8",
-  );
-  const requiredCapabilities = parseRustStringArrayConstant(
-    coreSource,
-    "RTC_PROVIDER_REQUIRED_CAPABILITIES",
-  );
+test("sdkwork-rtc builtin provider capability declarations stay aligned across provider schemas and SDK catalogs", () => {
+  const builtinProviderKeys = ["volcengine", "aliyun", "tencent", "agora", "livekit"];
+  const requiredCapabilities = readProviderSchemaCapabilities("volcengine").required;
   const providerOptionalCapabilities = Object.fromEntries(
-    Object.entries(providerConstants).map(([providerKey, constantName]) => [
+    builtinProviderKeys.map((providerKey) => [
       providerKey,
-      parseRustStringArrayConstant(coreSource, constantName),
+      readProviderSchemaCapabilities(providerKey).optional,
     ]),
   );
   const assembly = JSON.parse(
@@ -3521,12 +3585,18 @@ test("sdkwork-rtc builtin provider capability declarations stay aligned across R
     ),
     "utf8",
   );
-  const builtinProviderKeys = Object.keys(providerConstants);
+  for (const providerKey of builtinProviderKeys) {
+    assertCapabilitySetEqual(
+      readProviderSchemaCapabilities(providerKey).required,
+      requiredCapabilities,
+      `schema ${providerKey} required capabilities`,
+    );
+  }
 
   for (const capabilityList of [
-    ["Rust required RTC capabilities", requiredCapabilities],
+    ["provider schema required RTC capabilities", requiredCapabilities],
     ...Object.entries(providerOptionalCapabilities).map(([providerKey, capabilities]) => [
-      `Rust ${providerKey} optional RTC capabilities`,
+      `provider schema ${providerKey} optional RTC capabilities`,
       capabilities,
     ]),
   ]) {
@@ -3657,10 +3727,7 @@ test("sdkwork-rtc builtin Rust provider adapter tests cover declared media sessi
 });
 
 test("sdkwork-rtc provider registry is RTC-only", () => {
-  const coreSource = readFileSync(
-    workspacePath(rtcRoot, "crates/sdkwork-communication-rtc-service/src/lib.rs"),
-    "utf8",
-  ).split("#[cfg(test)]")[0];
+  const coreSource = readRtcServiceContractSources();
 
   for (const forbidden of [
     "ObjectStorage",

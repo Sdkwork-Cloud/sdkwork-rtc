@@ -3,57 +3,13 @@ use std::sync::Arc;
 use sdkwork_communication_rtc_repository_sqlx::connect_rtc_persistence_bootstrap_from_env;
 use sdkwork_communication_rtc_service::rtc_persistence_required;
 use sdkwork_database_sqlx::DatabasePool;
-use sdkwork_rtc_service_host::{
-    RtcProductService, RtcProviderPluginRegistry, RtcProviderPluginRegistryError,
-};
+use sdkwork_rtc_service_host::{RtcProductService, RtcProviderPluginRegistry};
+
+pub use sdkwork_rtc_plugin_bootstrap::build_builtin_provider_registry;
 
 pub struct RtcApiBootstrap {
     pub service: Arc<RtcProductService>,
     pub database_pool: Option<DatabasePool>,
-}
-
-pub fn build_builtin_provider_registry()
--> Result<RtcProviderPluginRegistry, RtcProviderPluginRegistryError> {
-    use sdkwork_rtc_adapter_agora::{
-        AgoraRtcProviderConfig, create_agora_rtc_provider_plugin_factory,
-    };
-    use sdkwork_rtc_adapter_aliyun::{
-        AliyunRtcProviderConfig, create_aliyun_rtc_provider_plugin_factory,
-    };
-    use sdkwork_rtc_adapter_livekit::{
-        LivekitRtcProviderConfig, create_livekit_rtc_provider_plugin_factory,
-    };
-    use sdkwork_rtc_adapter_tencent::{
-        TencentRtcProviderConfig, create_tencent_rtc_provider_plugin_factory,
-    };
-    use sdkwork_rtc_adapter_volcengine::{
-        VolcengineRtcProviderConfig, create_volcengine_rtc_provider_plugin_factory,
-    };
-
-    RtcProviderPluginRegistry::new()
-        .with_provider_factory(Arc::new(create_volcengine_rtc_provider_plugin_factory(
-            VolcengineRtcProviderConfig::default(),
-        )))
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_tencent_rtc_provider_plugin_factory(
-                TencentRtcProviderConfig::default(),
-            )))
-        })
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_agora_rtc_provider_plugin_factory(
-                AgoraRtcProviderConfig::default(),
-            )))
-        })
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_aliyun_rtc_provider_plugin_factory(
-                AliyunRtcProviderConfig::default(),
-            )))
-        })
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_livekit_rtc_provider_plugin_factory(
-                LivekitRtcProviderConfig::default(),
-            )))
-        })
 }
 
 pub async fn build_rtc_api_bootstrap(

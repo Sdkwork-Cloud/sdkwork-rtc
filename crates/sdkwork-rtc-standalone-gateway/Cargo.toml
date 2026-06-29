@@ -12,6 +12,10 @@ path = "src/lib.rs"
 name = "sdkwork-rtc-standalone-gateway"
 path = "src/main.rs"
 
+[[bin]]
+name = "sdkwork-rtc-reconcile"
+path = "src/bin/reconcile.rs"
+
 [dependencies]
 sdkwork_rtc_gateway_assembly = { package = "sdkwork-rtc-gateway-assembly", path = "../sdkwork-rtc-gateway-assembly" }
 anyhow = "1.0.98"
@@ -20,12 +24,8 @@ sdkwork-communication-rtc-repository-sqlx.workspace = true
 sdkwork-communication-rtc-service.workspace = true
 sdkwork-communication-rtc-worker.workspace = true
 sdkwork-database-sqlx.workspace = true
-sdkwork-rtc-adapter-agora.workspace = true
-sdkwork-rtc-adapter-aliyun.workspace = true
-sdkwork-rtc-adapter-livekit.workspace = true
-sdkwork-rtc-adapter-tencent.workspace = true
-sdkwork-rtc-adapter-volcengine.workspace = true
 sdkwork-rtc-service-host.workspace = true
+sdkwork-rtc-plugin-bootstrap.workspace = true
 sdkwork-web-bootstrap.workspace = true
 sqlx.workspace = true
 tokio.workspace = true

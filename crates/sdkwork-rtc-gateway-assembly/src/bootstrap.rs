@@ -4,54 +4,12 @@
 use axum::Router;
 use sdkwork_communication_rtc_repository_sqlx::connect_rtc_persistence_bootstrap_from_env;
 use sdkwork_communication_rtc_service::rtc_persistence_required;
-use sdkwork_rtc_adapter_agora::{
-    create_agora_rtc_provider_plugin_factory, AgoraRtcProviderConfig,
-};
-use sdkwork_rtc_adapter_aliyun::{
-    create_aliyun_rtc_provider_plugin_factory, AliyunRtcProviderConfig,
-};
-use sdkwork_rtc_adapter_livekit::{
-    create_livekit_rtc_provider_plugin_factory, LivekitRtcProviderConfig,
-};
-use sdkwork_rtc_adapter_tencent::{
-    create_tencent_rtc_provider_plugin_factory, TencentRtcProviderConfig,
-};
-use sdkwork_rtc_adapter_volcengine::{
-    create_volcengine_rtc_provider_plugin_factory, VolcengineRtcProviderConfig,
-};
-use sdkwork_rtc_service_host::{RtcProductService, RtcProviderPluginRegistry};
+use sdkwork_rtc_plugin_bootstrap::build_builtin_provider_registry;
+use sdkwork_rtc_service_host::RtcProductService;
 use std::sync::Arc;
 
 pub struct ApplicationAssembly {
     pub router: Router,
-}
-
-fn build_builtin_provider_registry() -> anyhow::Result<RtcProviderPluginRegistry> {
-    RtcProviderPluginRegistry::new()
-        .with_provider_factory(Arc::new(create_volcengine_rtc_provider_plugin_factory(
-            VolcengineRtcProviderConfig::default(),
-        )))
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_tencent_rtc_provider_plugin_factory(
-                TencentRtcProviderConfig::default(),
-            )))
-        })
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_agora_rtc_provider_plugin_factory(
-                AgoraRtcProviderConfig::default(),
-            )))
-        })
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_aliyun_rtc_provider_plugin_factory(
-                AliyunRtcProviderConfig::default(),
-            )))
-        })
-        .and_then(|registry| {
-            registry.with_provider_factory(Arc::new(create_livekit_rtc_provider_plugin_factory(
-                LivekitRtcProviderConfig::default(),
-            )))
-        })
-        .map_err(anyhow::Error::from)
 }
 
 async fn bootstrap_product_service() -> anyhow::Result<Arc<RtcProductService>> {

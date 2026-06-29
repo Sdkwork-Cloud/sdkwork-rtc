@@ -1,6 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderAccount, ProviderAccountCommand } from "../types/providerAccount";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -34,9 +35,10 @@ export class ProviderAccountService {
       q: params?.search,
       sort: params?.sort,
     });
+    const page = readSdkWorkListPage<ProviderAccount>(response.data);
     return {
-      items: (response.data?.items ?? []) as ProviderAccount[],
-      nextCursor: (response.data?.nextCursor as string | null | undefined) ?? null,
+      items: page.items,
+      nextCursor: page.nextCursor ?? null,
     };
   }
 
@@ -45,7 +47,7 @@ export class ProviderAccountService {
     if (!response.data) {
       throw new Error(`RTC provider account not found: ${id}`);
     }
-    return response.data as ProviderAccount;
+    return readSdkWorkItem<ProviderAccount>(response.data);
   }
 
   async create(command: ProviderAccountCommand): Promise<ProviderAccount> {
@@ -57,7 +59,7 @@ export class ProviderAccountService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider account data");
     }
-    return response.data as ProviderAccount;
+    return readSdkWorkItem<ProviderAccount>(response.data);
   }
 
   async update(id: string, command: ProviderAccountCommand): Promise<ProviderAccount> {
@@ -70,7 +72,7 @@ export class ProviderAccountService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider account data");
     }
-    return response.data as ProviderAccount;
+    return readSdkWorkItem<ProviderAccount>(response.data);
   }
 
   async disable(id: string, reason?: string): Promise<ProviderAccount> {
@@ -80,6 +82,6 @@ export class ProviderAccountService {
     if (!response.data) {
       throw new Error("Invalid response: missing provider account data");
     }
-    return response.data as ProviderAccount;
+    return readSdkWorkItem<ProviderAccount>(response.data);
   }
 }

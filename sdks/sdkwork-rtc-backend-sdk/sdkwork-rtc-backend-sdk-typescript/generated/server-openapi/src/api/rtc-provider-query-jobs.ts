@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcProviderQueryJobCreateRequest, RtcProviderQueryJobResponse, RtcProviderQuerySnapshotListResponse } from '../types';
+import type { RtcProviderQueryJobCreateRequest, RtcProviderQueryJobsCreateResponse, RtcProviderQueryJobsRetrieveResponse, SdkWorkListResponse } from '../types';
 
 
 export interface RtcProviderQueryJobsRtcProviderQueryJobsSnapshotsListParams {
@@ -21,7 +21,7 @@ export class RtcProviderQueryJobsRtcProviderQueryJobsSnapshotsApi {
 
 
 /** Rtc provider Query Jobs snapshots list. */
-  async list(providerQueryJobId: string, params?: RtcProviderQueryJobsRtcProviderQueryJobsSnapshotsListParams): Promise<RtcProviderQuerySnapshotListResponse> {
+  async list(providerQueryJobId: string, params?: RtcProviderQueryJobsRtcProviderQueryJobsSnapshotsListParams): Promise<SdkWorkListResponse> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,7 +29,7 @@ export class RtcProviderQueryJobsRtcProviderQueryJobsSnapshotsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<RtcProviderQuerySnapshotListResponse>(appendQueryString(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}/snapshots`), query));
+    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}/snapshots`), query));
   }
 }
 
@@ -48,19 +48,19 @@ export class RtcProviderQueryJobsRtcProviderQueryJobsApi {
 
 
 /** Rtc provider Query Jobs create. */
-  async create(body: RtcProviderQueryJobCreateRequest, params?: RtcProviderQueryJobsRtcProviderQueryJobsCreateParams): Promise<RtcProviderQueryJobResponse> {
+  async create(body: RtcProviderQueryJobCreateRequest, params?: RtcProviderQueryJobsRtcProviderQueryJobsCreateParams): Promise<RtcProviderQueryJobsCreateResponse> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderQueryJobResponse>(backendApiPath(`/rtc/provider_query_jobs`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderQueryJobsCreateResponse>(backendApiPath(`/rtc/provider_query_jobs`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Query Jobs retrieve. */
-  async retrieve(providerQueryJobId: string): Promise<RtcProviderQueryJobResponse> {
-    return this.client.get<RtcProviderQueryJobResponse>(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}`));
+  async retrieve(providerQueryJobId: string): Promise<RtcProviderQueryJobsRetrieveResponse> {
+    return this.client.get<RtcProviderQueryJobsRetrieveResponse>(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}`));
   }
 }
 

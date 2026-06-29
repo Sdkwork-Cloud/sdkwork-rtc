@@ -1,9 +1,8 @@
 import type { RtcRoom } from './rtc-room';
 
 export interface RtcRoomResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: RtcRoom;
+  traceId: string;
 }

@@ -1,9 +1,8 @@
 import type { RtcMediaArtifact } from './rtc-media-artifact';
 
 export interface RtcMediaArtifactResponse {
-  code: string;
-  message: string;
+  code: 0;
+  data: unknown & Record<string, unknown>;
   /** Server-owned request correlation id. */
-  requestId: string;
-  data: RtcMediaArtifact;
+  traceId: string;
 }

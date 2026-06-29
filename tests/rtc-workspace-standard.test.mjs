@@ -52,7 +52,7 @@ test("sdkwork-rtc keeps app packages under app surface roots", () => {
     "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-shell/package.json",
     "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-rtc/package.json",
     "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-host/package.json",
-    "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_rtc/pubspec.yaml",
+    "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc/pubspec.yaml",
   ]) {
     assert.ok(exists(packagePath), `${packagePath} must exist`);
   }
@@ -236,11 +236,11 @@ test("sdkwork-rtc runnable app roots declare component specs", () => {
 
 test("sdkwork-rtc flutter mobile packages declare component specs", () => {
   for (const [packageDir, capability] of [
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_core", "core"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_shell", "shell"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_commons", "commons"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_admin_core", "admin-core"],
-    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_rtc", "rtc"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core", "core"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_shell", "shell"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_commons", "commons"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_admin_core", "admin-core"],
+    ["apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc", "rtc"],
   ]) {
     const specPath = `${packageDir}/specs/component.spec.json`;
     assert.ok(exists(specPath), `${specPath} must exist`);
@@ -344,7 +344,7 @@ test("sdkwork-rtc client surfaces use app-scoped IAM session storage keys", () =
   const pcIamSession = read("apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/src/session/iamSession.ts");
   const h5IamSession = read("apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/src/session/iamSession.ts");
   const mpSessionKey = read("apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/src/session/sessionStorageKey.ts");
-  const flutterSession = read("apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_ai_prod_flutter_mobile_core/lib/src/session/app_session.dart");
+  const flutterSession = read("apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core/lib/src/session/app_session.dart");
 
   assert.match(pcIamSession, /sdkwork-rtc-pc:session:v1/u);
   assert.match(h5IamSession, /sdkwork-rtc-h5:session:v1/u);
@@ -478,13 +478,24 @@ test("sdkwork-rtc integrates sdkwork-utils for shared Rust and TypeScript helper
   const cargoToml = read("Cargo.toml");
   const workflow = JSON.parse(read("sdkwork.workflow.json"));
   const dependencyIds = (workflow.dependencies ?? []).map((dependency) => dependency.id);
-  const serviceLib = read("crates/sdkwork-communication-rtc-service/src/lib.rs");
+  const serviceTimeModule = read("crates/sdkwork-communication-rtc-service/src/time.rs");
+  const serviceProviderEvents = read(
+    "crates/sdkwork-communication-rtc-service/src/domain/provider_events.rs",
+  );
   const aliyunCredential = read("plugins/rtc-aliyun/src/credential.rs");
 
   assert.match(cargoToml, /sdkwork-utils-rust/u, "Cargo.toml must declare sdkwork-utils-rust");
   assert.ok(dependencyIds.includes("sdkwork-utils"), "sdkwork.workflow.json must declare sdkwork-utils");
-  assert.match(serviceLib, /sdkwork_utils_rust::format_datetime/u, "service crate must use sdkwork-utils datetime helpers");
-  assert.match(serviceLib, /sdkwork_utils_rust::sha256_hash/u, "service crate must use sdkwork-utils crypto helpers");
+  assert.match(
+    serviceTimeModule,
+    /sdkwork_utils_rust::format_datetime/u,
+    "service crate time module must use sdkwork-utils datetime helpers",
+  );
+  assert.match(
+    serviceProviderEvents,
+    /sdkwork_utils_rust::sha256_hash/u,
+    "service crate must use sdkwork-utils crypto helpers",
+  );
   assert.match(aliyunCredential, /sdkwork_utils_rust::/u, "provider plugins must use sdkwork-utils instead of local crypto helpers");
   assert.doesNotMatch(aliyunCredential, /fn sha256_hex/u, "provider plugins must not keep local sha256 helpers");
   assert.match(read("pnpm-workspace.yaml"), /sdkwork-utils-typescript/u);
@@ -593,9 +604,73 @@ test("sdkwork-rtc manifests and tools use standard paths and route crate names",
   ]) {
     const source = read(filePath);
     assert.doesNotMatch(source, /generated[\\/]openapi/u, `${filePath} must not reference generated/openapi`);
-    assert.doesNotMatch(source, /sdkwork-rtc-core|sdkwork-rtc-storage-sqlx|sdkwork-rtc-product|sdkwork-routes-rtc-/u, `${filePath} must not reference legacy Rust crate names`);
+    assert.doesNotMatch(
+      source,
+      /sdkwork-rtc-core|sdkwork-rtc-storage-sqlx|sdkwork-rtc-product|sdkwork-routes-rtc-(?!app-api|backend-api)/u,
+      `${filePath} must not reference legacy Rust crate names`,
+    );
     assert.match(source, /sdkwork-routes-rtc-(app|backend)-api|sdkwork-communication-rtc-(service|repository-sqlx)|apis[\\/](app-api|backend-api)[\\/]communication/u, `${filePath} must reference standard names or API paths`);
   }
+});
+
+test("sdkwork-rtc centralizes shared provider webhook and recording helpers in communication-rtc-service", () => {
+  const serviceRoot = "crates/sdkwork-communication-rtc-service/src";
+  assert.ok(exists(`${serviceRoot}/provider_webhook_parse.rs`));
+  assert.ok(exists(`${serviceRoot}/provider_recording_export.rs`));
+  const webhookParse = read(`${serviceRoot}/provider_webhook_parse.rs`);
+  assert.match(webhookParse, /pub fn webhook_string_field/u);
+  assert.match(webhookParse, /pub fn format_provider_session_id/u);
+  const recordingExport = read(`${serviceRoot}/provider_recording_export.rs`);
+  assert.match(recordingExport, /pub fn export_recording_artifact_via_drive_importer/u);
+  const schema = read(`${serviceRoot}/provider/schema.rs`);
+  assert.match(schema, /pub fn plugin_descriptor_from_provider_schema/u);
+  for (const plugin of ["volcengine", "aliyun", "tencent", "agora", "livekit"]) {
+    const providerSource = read(`plugins/rtc-${plugin}/src/provider.rs`);
+    assert.match(
+      providerSource,
+      /plugin_descriptor_from_provider_schema/u,
+      `${plugin} provider must load capabilities from provider schema`,
+    );
+  }
+});
+
+test("sdkwork-rtc externalizes recording artifact lifecycle policy under configs/recording-policy", () => {
+  assert.ok(exists("configs/recording-policy/README.md"));
+  assert.ok(exists("configs/recording-policy/platform-default.json"));
+  const manifest = JSON.parse(read("configs/recording-policy/platform-default.json"));
+  assert.equal(manifest.interfaceVersion, "recording-policy/v1");
+  const policySource = read(
+    "crates/sdkwork-communication-rtc-service/src/domain/recording_policy.rs",
+  );
+  assert.match(
+    policySource,
+    /configs\/recording-policy\/platform-default\.json/u,
+    "recording policy loader must include platform-default manifest",
+  );
+  assert.match(
+    read("crates/sdkwork-rtc-standalone-gateway/src/bin/reconcile.rs"),
+    /run_recording_artifact_lifecycle_job/u,
+    "reconcile binary must run recording artifact lifecycle reconciliation",
+  );
+});
+
+test("sdkwork-rtc externalizes provider registry defaults under configs/provider-registry", () => {
+  assert.ok(exists("configs/provider-registry/README.md"));
+  assert.ok(exists("configs/provider-registry/platform-default.json"));
+  const manifest = JSON.parse(read("configs/provider-registry/platform-default.json"));
+  assert.equal(manifest.interfaceVersion, "provider-registry/v1");
+  assert.ok(Array.isArray(manifest.plugins) && manifest.plugins.length >= 5);
+  const registryConfig = read("crates/sdkwork-communication-rtc-service/src/provider/registry_config.rs");
+  assert.match(
+    registryConfig,
+    /configs\/provider-registry\/platform-default\.json/u,
+    "registry loader must include platform-default manifest",
+  );
+  assert.match(
+    read("crates/sdkwork-rtc-plugin-bootstrap/src/lib.rs"),
+    /platform_default_provider_kinds/u,
+    "runtime bootstrap must read provider kinds from registry manifest",
+  );
 });
 
 test("sdkwork-rtc ships production deployment manifests and reconcile binary", () => {
