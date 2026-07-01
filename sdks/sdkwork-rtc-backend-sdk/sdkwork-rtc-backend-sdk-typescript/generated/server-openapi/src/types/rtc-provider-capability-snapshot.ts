@@ -2,6 +2,9 @@ export interface RtcProviderCapabilitySnapshot {
   audio: boolean;
   video: boolean;
   live: boolean;
+  liveBroadcast?: boolean;
+  liveAudience?: boolean;
+  cdnRelay?: boolean;
   screenShare: boolean;
   recording: boolean;
   webhook: boolean;

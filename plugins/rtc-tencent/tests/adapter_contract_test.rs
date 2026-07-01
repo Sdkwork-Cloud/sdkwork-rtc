@@ -504,6 +504,47 @@ fn test_tencent_active_query_fails_closed_for_provider_error_payload() {
     }
 }
 
+#[test]
+fn test_tencent_cdn_relay_returns_development_placeholder_without_open_api() {
+    use sdkwork_communication_rtc_service::{
+        RtcCdnRelayMode, RtcCdnRelayStartRequest, RtcCdnRelayStopRequest,
+        RtcLiveAudiencePlaybackRequest,
+    };
+
+    let provider = TencentRtcProvider::default();
+    let handle = provider
+        .start_cdn_relay(RtcCdnRelayStartRequest {
+            tenant_id: "100001".into(),
+            rtc_session_id: "rtc_live_demo".into(),
+            provider_session_id: "tencent:rtc_live_demo".into(),
+            mode: RtcCdnRelayMode::Push,
+            stream_id: None,
+            region: None,
+        })
+        .expect("development cdn relay handle");
+    assert!(handle.relay_id.contains("rtc_live_demo"));
+    assert!(handle.pull_url.is_some());
+
+    assert!(
+        provider
+            .stop_cdn_relay(RtcCdnRelayStopRequest {
+                tenant_id: "100001".into(),
+                rtc_session_id: "rtc_live_demo".into(),
+                relay_id: handle.relay_id,
+            })
+            .expect("development cdn relay stop")
+    );
+
+    let playback = provider
+        .resolve_live_audience_playback(RtcLiveAudiencePlaybackRequest {
+            tenant_id: "100001".into(),
+            rtc_session_id: "rtc_live_demo".into(),
+            participant_id: None,
+        })
+        .expect("development audience playback");
+    assert!(playback.playback_url.contains("rtc_live_demo"));
+}
+
 fn assert_media_session_contract<P: RtcProviderPort + ?Sized>(
     provider: &P,
     media_mode: RtcMediaSessionMode,

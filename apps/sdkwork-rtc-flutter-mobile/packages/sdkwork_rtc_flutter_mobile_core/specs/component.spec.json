@@ -23,7 +23,6 @@
   "contracts": {
     "publicExports": [
       "."
-    ],
-    "dependencyComposition": "../../../specs/dependency.composition.json"
+    ]
   }
 }

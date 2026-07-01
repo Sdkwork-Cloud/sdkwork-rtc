@@ -72,7 +72,7 @@ See [TECH-rtc-im-boundary.md](TECH-rtc-im-boundary.md) for dependency direction.
 | Path | Responsibility |
 | --- | --- |
 | `apis/` | OpenAPI authority inputs |
-| `crates/sdkwork-communication-rtc-service` | Domain types, provider ports, shared webhook/recording helpers, registry (`constants.rs`, `domain/*`, `provider/*`, `provider_webhook_parse.rs`, `provider_recording_export.rs`, `time.rs`; thin `lib.rs` assembly root) |
+| `crates/sdkwork-communication-rtc-service` | Domain types, provider ports, live streaming contracts (`domain/live_stream.rs`), capability snapshots (`provider_capability.rs`), shared webhook/recording helpers, registry (`constants.rs`, `domain/*`, `provider/*`, `provider_webhook_parse.rs`, `provider_recording_export.rs`, `time.rs`; thin `lib.rs` assembly root) |
 | `crates/sdkwork-communication-rtc-repository-sqlx` | Persistence + database bootstrap |
 | `crates/sdkwork-routes-rtc-*-api` | HTTP handlers wired through web framework |
 | `crates/sdkwork-rtc-service-host` | Drive-backed recording import |

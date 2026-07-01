@@ -27,7 +27,6 @@
     ],
     "sdkClients": [
       "sdkwork-rtc-backend-sdk"
-    ],
-    "dependencyComposition": "../../../specs/dependency.composition.json"
+    ]
   }
 }

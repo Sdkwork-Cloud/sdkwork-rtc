@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcProviderApplicationsCredentialsCreateResponse, RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderCredentialsRetrieveResponse, RtcProviderCredentialsRevokeResponse, RtcProviderCredentialsUpdateResponse, SdkWorkListResponse } from '../types';
+import type { RtcProviderCredential, RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest } from '../types';
 
 
 export interface RtcProviderCredentialsRtcProviderCredentialsUpdateParams {
@@ -21,30 +21,30 @@ export class RtcProviderCredentialsRtcProviderCredentialsApi {
 
 
 /** Rtc provider Credentials retrieve. */
-  async retrieve(providerCredentialId: string): Promise<RtcProviderCredentialsRetrieveResponse> {
-    return this.client.get<RtcProviderCredentialsRetrieveResponse>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`));
+  async retrieve(providerCredentialId: string): Promise<RtcProviderCredential> {
+    return this.client.get<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`));
   }
 
 /** Rtc provider Credentials update. */
-  async update(providerCredentialId: string, body?: RtcProviderCredentialCommand, params?: RtcProviderCredentialsRtcProviderCredentialsUpdateParams): Promise<RtcProviderCredentialsUpdateResponse> {
+  async update(providerCredentialId: string, body?: RtcProviderCredentialCommand, params?: RtcProviderCredentialsRtcProviderCredentialsUpdateParams): Promise<RtcProviderCredential> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.patch<RtcProviderCredentialsUpdateResponse>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
+    return this.client.patch<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Credentials revoke. */
-  async revoke(providerCredentialId: string, body: RtcProviderCredentialRevokeRequest, params?: RtcProviderCredentialsRtcProviderCredentialsRevokeParams): Promise<RtcProviderCredentialsRevokeResponse> {
+  async revoke(providerCredentialId: string, body: RtcProviderCredentialRevokeRequest, params?: RtcProviderCredentialsRtcProviderCredentialsRevokeParams): Promise<RtcProviderCredential> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderCredentialsRevokeResponse>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}/revoke`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}/revoke`), body, undefined, requestHeaders, 'application/json');
   }
 }
 
@@ -69,7 +69,7 @@ export class RtcProviderCredentialsRtcProviderApplicationsCredentialsApi {
 
 
 /** Rtc provider Applications credentials list. */
-  async list(providerApplicationId: string, params?: RtcProviderCredentialsRtcProviderApplicationsCredentialsListParams): Promise<SdkWorkListResponse> {
+  async list(providerApplicationId: string, params?: RtcProviderCredentialsRtcProviderApplicationsCredentialsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -77,18 +77,18 @@ export class RtcProviderCredentialsRtcProviderApplicationsCredentialsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), query));
   }
 
 /** Rtc provider Applications credentials create. */
-  async create(providerApplicationId: string, body: RtcProviderCredentialCommand, params?: RtcProviderCredentialsRtcProviderApplicationsCredentialsCreateParams): Promise<RtcProviderApplicationsCredentialsCreateResponse> {
+  async create(providerApplicationId: string, body: RtcProviderCredentialCommand, params?: RtcProviderCredentialsRtcProviderApplicationsCredentialsCreateParams): Promise<RtcProviderCredential> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderApplicationsCredentialsCreateResponse>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderCredential>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), body, undefined, requestHeaders, 'application/json');
   }
 }
 

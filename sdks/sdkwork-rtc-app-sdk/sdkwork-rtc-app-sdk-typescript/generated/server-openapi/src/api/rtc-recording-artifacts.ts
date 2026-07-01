@@ -1,7 +1,7 @@
 import { appApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { SdkWorkListResponse } from '../types';
+import type { RtcMediaArtifact } from '../types';
 
 
 export interface RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsListParams {
@@ -21,7 +21,7 @@ export class RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsApi {
 
 
 /** Rtc media Sessions recording Artifacts list. */
-  async list(mediaSessionId: string, params?: RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsListParams): Promise<SdkWorkListResponse> {
+  async list(mediaSessionId: string, params?: RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,7 +29,7 @@ export class RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkListResponse>(appendQueryString(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/recording_artifacts`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/recording_artifacts`), query));
   }
 }
 

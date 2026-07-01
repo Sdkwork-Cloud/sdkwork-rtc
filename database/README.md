@@ -6,13 +6,23 @@ Canonical lifecycle assets for `sdkwork-rtc` per `DATABASE_FRAMEWORK_SPEC.md`.
 - serviceCode: `RTC`
 - tablePrefix: `rtc_`
 
+## Initialization state
+
+This module is in **initialization state** for greenfield deployments:
+
+1. **Baseline** — `database/ddl/baseline/{engine}/0001_rtc_baseline.sql` contains the full DDL snapshot.
+2. **Migrations** — `database/migrations/{engine}/` is reserved for post-GA incremental schema changes only. It is intentionally empty at initialization.
+3. **Drift** — run `pnpm db:drift:check` before release.
+
 ## Commands
 
 ```bash
-pnpm run db:materialize:contract
 pnpm run db:validate
+pnpm run db:materialize:contract
+pnpm run db:plan
+pnpm run db:init
+pnpm run db:migrate
+pnpm run db:seed
+pnpm run db:status
+pnpm run db:drift:check
 ```
-
-Legacy SQL: `crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql` → `database/ddl/baseline/postgres/0001_rtc_legacy_baseline.sql`
-
-Runtime bootstrap: `sdkwork-rtc-database-host` via `persistence_from_database_pool()` on Postgres; SQLite continues inline schema apply.

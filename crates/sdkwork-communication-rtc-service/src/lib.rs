@@ -7,6 +7,7 @@ pub mod list_window;
 pub mod persistence;
 pub mod provider;
 pub mod provider_account;
+pub mod provider_capability;
 pub mod provider_event;
 pub mod provider_profile;
 pub mod provider_recording_export;
@@ -29,6 +30,7 @@ pub use list_window::{
 pub use persistence::*;
 pub use provider::*;
 pub use provider_account::*;
+pub use provider_capability::provider_descriptor_has_capability;
 pub use provider_event::*;
 pub use provider_profile::*;
 pub use provider_recording_export::*;

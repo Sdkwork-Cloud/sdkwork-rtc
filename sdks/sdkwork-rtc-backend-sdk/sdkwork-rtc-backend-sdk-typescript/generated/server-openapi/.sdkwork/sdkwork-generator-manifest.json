@@ -64,55 +64,55 @@
     },
     {
       "path": "src/api/rtc-media-artifacts.ts",
-      "sha256": "209db678413c9bdd6d2753f64178141f56b983eebd6c606ddb70cd5c801d798c"
+      "sha256": "4c0a218e65e48b2dc287a4e06babd77ebbf4929536decc55be8b5cee52bd5e4f"
     },
     {
       "path": "src/api/rtc-media-sessions.ts",
-      "sha256": "6f1d1eb89e96660f72107a1357524600cd7288437c86b0baeb054280fff30c94"
+      "sha256": "36439c7153bc29979199df7640bed01a0234eea439c9c8b127e4dda4849004fd"
     },
     {
       "path": "src/api/rtc-provider-accounts.ts",
-      "sha256": "736d35c24e0363f0b03bddb9529d0271320a630e9ed5ecd6da0db227dfecbbe5"
+      "sha256": "5572a70509c4188353f319ba4e37eb3b2826760e7cf819a6c478d7af951e3bfd"
     },
     {
       "path": "src/api/rtc-provider-applications.ts",
-      "sha256": "80263b0579a54067e4ba3a2f2e8a17e25c64856158bb022199ed6c5522f6b3ad"
+      "sha256": "2f5eab58728b4baa9efb848152f9d443759b3b49a59f36e4675a48bf6fb8e0b9"
     },
     {
       "path": "src/api/rtc-provider-credentials.ts",
-      "sha256": "13e8fe41386dea90f6558c0d048554c052d34839dcc729b352fb6dacb29cfa28"
+      "sha256": "a37af65a2e5ad8966cabe17950f3d867df147f662ab7c162baa81291b0bf2e04"
     },
     {
       "path": "src/api/rtc-provider-plugins.ts",
-      "sha256": "ce842957824a0600bfa8e1a115db5488174ad211a4b91fb8a4ffd21ae8e088ab"
+      "sha256": "c2851e10952a01ddf1365161cff994a8b7713a60f34bfb670d6e14a43795d537"
     },
     {
       "path": "src/api/rtc-provider-profiles.ts",
-      "sha256": "d27b62ebb56640b0982bb0d6fab0a188901f241b1ccbb31242edaefc08540cb4"
+      "sha256": "9b9d0e2702abc2f0c6c5114a9c1d08a7eb030e1a2b59913ac4d2e213613b007c"
     },
     {
       "path": "src/api/rtc-provider-query-jobs.ts",
-      "sha256": "c0c7bf950079fc1b657601033d4229fe30ffae246569cb92cd2b80df1f289e54"
+      "sha256": "641183469b4b02adc8cbecd37f2598b854a09449a5f377e82a0cec878ede106c"
     },
     {
       "path": "src/api/rtc-provider-routes.ts",
-      "sha256": "462179a85d68bf293397c78be885e4039dc66505a1b5e8f5624a5f52c6a13010"
+      "sha256": "b80279fd6157e4a61dc5b1f2e2325ed718b4c6b2d7ad728f3a60e9007aeaccb7"
     },
     {
       "path": "src/api/rtc-provider-schemas.ts",
-      "sha256": "c6ea3e147af8cfc36531274383571e92e1b32808aeb2926efea9c5248e266550"
+      "sha256": "8968807db47d0ecf9794121f85e37f7127f4f3ce2c2039d98e5e7620011005fc"
     },
     {
       "path": "src/api/rtc-provider-webhooks.ts",
-      "sha256": "432c0ae51c8ddd94d1ec1b69ae6fe78f08869ca6fe83b5a36240046383274c11"
+      "sha256": "7ab2bc1e6fa83d6c2d60ee725a8784e7ca3c68b4ac6a48724b413adac1c74528"
     },
     {
       "path": "src/api/rtc-quality-samples.ts",
-      "sha256": "3ac70572183ef4d3a8ecfb926d1dc2a2b81b3e0af588122b3e3dedd36b6a8c83"
+      "sha256": "f6ff7df7296fa1d3585e59d6c36dd1f33ccf2e39c0091980af6b40baa3b8d488"
     },
     {
       "path": "src/api/rtc-rooms.ts",
-      "sha256": "961130ecf911ff44e477a5d61dcf178de1ee48211882bb01f3775888786ccb2d"
+      "sha256": "86e8157c1ba8d4f8b73339b7761bd18fcc96f57156e31112659c57ac4d01f448"
     },
     {
       "path": "src/auth/index.ts",
@@ -120,7 +120,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "1d339275acee6ec54660a32eb9effcc718ebf0992c5e9bfdb80a3452e0702137"
+      "sha256": "6e389d5c14fb5845365972b6776af185d8af8eb8da7bb398e59be6c29e394ddf"
     },
     {
       "path": "src/http/index.ts",
@@ -144,7 +144,7 @@
     },
     {
       "path": "src/types/index.ts",
-      "sha256": "6719a93337a2c45cd6584376f8e86438a7696c92cb0ac0103c2cbb7b1fb3b3da"
+      "sha256": "2bef408a62e0047d903db87b88400d9bb009654389ead6e8bfce90821d085bf5"
     },
     {
       "path": "src/types/media-access.ts",
@@ -165,10 +165,6 @@
     {
       "path": "src/types/media-source.ts",
       "sha256": "ebb9a604403756a4529cb47f1700dbd9c0beb6e4145b9a51985783429e29adf3"
-    },
-    {
-      "path": "src/types/page-info.ts",
-      "sha256": "0bf2b44313bc24851eb9ffb6063c1b9eb043e1e5721c8ace8882a3cfa21c932a"
     },
     {
       "path": "src/types/problem-detail.ts",
@@ -193,10 +189,6 @@
     {
       "path": "src/types/rtc-media-artifact.ts",
       "sha256": "dea50389f2fd5ffe1c380dd08dc132f91220f9ec9dcc32956ef6534fdf6a85b0"
-    },
-    {
-      "path": "src/types/rtc-media-artifacts-retrieve-response.ts",
-      "sha256": "1bef5944cf0b63d8f9b05d60d4accd361f35e62e35a7fcf5b831e29434737b3d"
     },
     {
       "path": "src/types/rtc-media-participant.ts",
@@ -243,18 +235,6 @@
       "sha256": "fb213873a563d0a09a152c889db7f15e52af7002ff3628da696579de72c4bfaa"
     },
     {
-      "path": "src/types/rtc-media-sessions-close-response.ts",
-      "sha256": "a1981549187faaa9f271427b9116694f3877de63f7ec02da91544972f35380c3"
-    },
-    {
-      "path": "src/types/rtc-media-sessions-completion-record-retrieve-response.ts",
-      "sha256": "b2c07ac931929077b18fd78444ff7ef3a3612da0e47ff8de3ffabf823d141338"
-    },
-    {
-      "path": "src/types/rtc-media-sessions-retrieve-response.ts",
-      "sha256": "5e9d0536cd0e90cc40ecf7d96f5e1ef2c85d0046fdb7bb3a4b65c45086f5ee49"
-    },
-    {
       "path": "src/types/rtc-operation-command.ts",
       "sha256": "f0aac2d59f560a7c90f7b4e105df540394e439861843e48a4d6da51454b6daea"
     },
@@ -279,26 +259,6 @@
       "sha256": "278e5dadaab50a331881bdef647de2687feeee9e7485ef9b30641e26a958ccac"
     },
     {
-      "path": "src/types/rtc-provider-accounts-applications-create-response.ts",
-      "sha256": "e52b113a42f780f1ff90d993eec160669dc849594a8e4effb3cfe5c155b42f28"
-    },
-    {
-      "path": "src/types/rtc-provider-accounts-create-response.ts",
-      "sha256": "113669e2c3ebda7c63119d76090a1c2fb4ef4784ea1d3fbb112ededc53c9d439"
-    },
-    {
-      "path": "src/types/rtc-provider-accounts-disable-response.ts",
-      "sha256": "1011a91e3e213e5244e5d8ba7d66af818a40f1ed0cc4e4c71811af4934d78aa1"
-    },
-    {
-      "path": "src/types/rtc-provider-accounts-retrieve-response.ts",
-      "sha256": "84f49b20d2ea0da467407542969892205753807bd6e7d5a022730fe9194eb3eb"
-    },
-    {
-      "path": "src/types/rtc-provider-accounts-update-response.ts",
-      "sha256": "154eb4fd695715513f4cf4b55c348178314727d3c43d2a66ccfcd5ba6c1f76d4"
-    },
-    {
       "path": "src/types/rtc-provider-application-command.ts",
       "sha256": "fbbb6d6ed640cce0049615aac5127cf6b8edc5007bf0bd653f3cfefda606845c"
     },
@@ -319,24 +279,8 @@
       "sha256": "1f2763e42685ae2722dc3e2065ed836fc0160448d7910dd3a2ac785aefaaf5e6"
     },
     {
-      "path": "src/types/rtc-provider-applications-credentials-create-response.ts",
-      "sha256": "12be36391f7c10518957779cd715801ede614a310d4d576d7ab78043f3179081"
-    },
-    {
-      "path": "src/types/rtc-provider-applications-disable-response.ts",
-      "sha256": "d3c9497a9f845ff07998bb25b1098f20694d467c465186293bb36243eccf366a"
-    },
-    {
-      "path": "src/types/rtc-provider-applications-retrieve-response.ts",
-      "sha256": "33d0aaa05f0f22807d591aa63d80e7d82aaffdd8cfe99af6b7bfe2697fa9fde1"
-    },
-    {
-      "path": "src/types/rtc-provider-applications-update-response.ts",
-      "sha256": "a1d20a4797a1681622684c47db9df25f5a51c2fcfa9295a71c32513be0910d2f"
-    },
-    {
       "path": "src/types/rtc-provider-capability-snapshot.ts",
-      "sha256": "35e13e8caf281f84c55da6cf8103117d3be5de5b2c5b69cf43cf6c5ff551a5df"
+      "sha256": "979e59943ef7705de9851fb2beaaadd044a64edc03343a9282d393c69bbac815"
     },
     {
       "path": "src/types/rtc-provider-credential-command.ts",
@@ -357,18 +301,6 @@
     {
       "path": "src/types/rtc-provider-credential.ts",
       "sha256": "f538f75eb136bbdadc78fa93780845ed5cf8e92408a1e269d4238ee211db1ea9"
-    },
-    {
-      "path": "src/types/rtc-provider-credentials-retrieve-response.ts",
-      "sha256": "f2ae47743f88b819abc223744c4b46496bacad3124655de95094e65b6b3f3951"
-    },
-    {
-      "path": "src/types/rtc-provider-credentials-revoke-response.ts",
-      "sha256": "08ba2dda3c887fe0e767a63d741e0d3b9093af41edb0af7827315399469db850"
-    },
-    {
-      "path": "src/types/rtc-provider-credentials-update-response.ts",
-      "sha256": "af3b3c5da0203b40e439b275e796a76e4fab41edbbd7ce73aa6486aed26a13c7"
     },
     {
       "path": "src/types/rtc-provider-profile-command.ts",
@@ -407,26 +339,6 @@
       "sha256": "c0fc4d4a44302d1fad613193e4ca25fa414689079bb398853c3bb04fc4a7500f"
     },
     {
-      "path": "src/types/rtc-provider-profiles-create-response.ts",
-      "sha256": "0bf4fc34e6bc62609e95dbbeb5cbf05800fac829b391540ba80265c7abca9f4f"
-    },
-    {
-      "path": "src/types/rtc-provider-profiles-disable-response.ts",
-      "sha256": "516284f61959a9439ab50aadd0c8d5ecb20bc963cc4a766dd7f44b06596a7d75"
-    },
-    {
-      "path": "src/types/rtc-provider-profiles-retrieve-response.ts",
-      "sha256": "ceddc8fe3819a80db0650284e22a1b43c8de1dcb63428d687c4685c7bfe0252e"
-    },
-    {
-      "path": "src/types/rtc-provider-profiles-update-response.ts",
-      "sha256": "3fdb1de37c092035912f964f601fa050d367314e9b496b28c534188ad439f5bb"
-    },
-    {
-      "path": "src/types/rtc-provider-profiles-verify-response.ts",
-      "sha256": "a910039957fe916800fff4c74b94644b2b9987e5518768fa876f675b445e658c"
-    },
-    {
       "path": "src/types/rtc-provider-query-job-create-request.ts",
       "sha256": "aa724dc53d86efc5c36a3b9ce613972d2007f4cb76ce71c0996c0a3d350f43a7"
     },
@@ -437,14 +349,6 @@
     {
       "path": "src/types/rtc-provider-query-job.ts",
       "sha256": "233590ffaa56acbfbc0bbe030489d2f06753a211fd3d635fc3b148c61a05f448"
-    },
-    {
-      "path": "src/types/rtc-provider-query-jobs-create-response.ts",
-      "sha256": "29296413f652f1d563ce27d2c4a04beaa4be881857223ab73828f6932c010b55"
-    },
-    {
-      "path": "src/types/rtc-provider-query-jobs-retrieve-response.ts",
-      "sha256": "2bed12bb18945e6718b691247875b30132e98a2116ac0af535160c9ed0c2a3b0"
     },
     {
       "path": "src/types/rtc-provider-query-snapshot-list-response.ts",
@@ -475,22 +379,6 @@
       "sha256": "72c65bcf4201bd85b1c36b186c229dd8b8a6084557a673db90aba888f33ade15"
     },
     {
-      "path": "src/types/rtc-provider-routes-create-response.ts",
-      "sha256": "382c296b925ef1e8caf7c31c9354bbd737d57b5c19f9453b6d303d16981f2594"
-    },
-    {
-      "path": "src/types/rtc-provider-routes-disable-response.ts",
-      "sha256": "97d18128c32fecd968776bdee052158381e6683cde002bed41a369c6631e4811"
-    },
-    {
-      "path": "src/types/rtc-provider-routes-retrieve-response.ts",
-      "sha256": "c0f248811195aeffc80f8f01e2eef2c93557cc941411507e5240db705df2d43e"
-    },
-    {
-      "path": "src/types/rtc-provider-routes-update-response.ts",
-      "sha256": "ddc5f11f75f33ebb946d6081e2446c083d66100622915704995acdd8905f239c"
-    },
-    {
       "path": "src/types/rtc-provider-webhook-event-list-response.ts",
       "sha256": "5f5b1684f599398e77c69e21a4f4dcbe093dde2d7eecabfe9fa984fed7381237"
     },
@@ -505,10 +393,6 @@
     {
       "path": "src/types/rtc-provider-webhook-receive-request.ts",
       "sha256": "0f5cd4c3e8686bc749ba5f7e4263fbd83e690bd129423d763dc038cbdc385e2e"
-    },
-    {
-      "path": "src/types/rtc-provider-webhooks-events-receive-response.ts",
-      "sha256": "bcfc0ec568b11811e987e491334cbd683b0e38e8cda94ec6f877309bfa04ecad"
     },
     {
       "path": "src/types/rtc-quality-sample-list-response.ts",
@@ -531,28 +415,8 @@
       "sha256": "b4c1f90b8066efb211f154de0d0f6fc2aa35b2b9b7a444de57b766a5aa64817d"
     },
     {
-      "path": "src/types/rtc-rooms-retrieve-response.ts",
-      "sha256": "b47108b29c26f7ff6e0646867ee3355006d5e96bcde33aef253c15b98ac00bde"
-    },
-    {
       "path": "src/types/sdk-work-api-response.ts",
       "sha256": "79cef2c8e584ba8b8e96c6c77ccf6bda087b0c68cbed63cb97d5fb1ff3e47e1a"
-    },
-    {
-      "path": "src/types/sdk-work-command-data.ts",
-      "sha256": "a875c230e70650e636ac09c1af57ae8ea0f512a89dd21482bb9e6292bb6bad5a"
-    },
-    {
-      "path": "src/types/sdk-work-command-response.ts",
-      "sha256": "36f82aede9b7b352a9b57545705da4003816785c7913fb2436df633f5c2e8447"
-    },
-    {
-      "path": "src/types/sdk-work-list-response.ts",
-      "sha256": "eeb07e413d7e912345eda1cb1093e8e6abfe9b42d8350482f7b580138c7936c5"
-    },
-    {
-      "path": "src/types/sdk-work-page-data.ts",
-      "sha256": "b9f6e60cc3bc39eed4cdf6029a401cc88b6001e4f4c72703487f478001024743"
     },
     {
       "path": "src/types/sdk-work-platform-error-code.ts",

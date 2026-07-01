@@ -1,4 +1,5 @@
 mod drive;
+mod live_stream;
 mod media;
 mod provider_events;
 mod recording;
@@ -9,6 +10,7 @@ mod session;
 mod workspace;
 
 pub use drive::*;
+pub use live_stream::*;
 pub use media::*;
 pub use provider_events::*;
 pub use recording::*;

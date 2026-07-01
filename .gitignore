@@ -24,3 +24,24 @@ config/*.local.toml
 
 # Generated SDK manual backup artifacts must not be committed
 **/.sdkwork/manual-backups/
+**/node_modules/
+/target/
+**/target/
+**/.runtime/
+.env.*
+!.env.example
+!.env.*.example
+!.env.postgres.example
+**/dist/
+coverage/
+**/.pnpm-store/
+.idea/
+.vscode/
+**/.sdkwork/local/
+**/.sdkwork/secrets/
+**/.sdkwork/cache/
+**/.sdkwork/tmp/
+**/.sdkwork/dart/pub-cache/
+**/.sdkwork/sdkwork-generator-changes.json
+**/.sdkwork/sdkwork-generator-manifest.json
+**/.sdkwork/sdkwork-generator-report.json

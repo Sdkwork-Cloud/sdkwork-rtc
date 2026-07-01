@@ -1,5 +1,6 @@
 mod config;
 mod credential;
+mod live_stream;
 mod open_api;
 mod plugin;
 mod provider;

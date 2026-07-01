@@ -5308,7 +5308,22 @@ impl RtcBackendApiService for RtcProductService {
                     match cap.as_str() {
                         "audio" => profile.capabilities.audio = true,
                         "video" => profile.capabilities.video = true,
-                        "live" => profile.capabilities.live = true,
+                        "live" => {
+                            profile.capabilities.live = true;
+                            profile.capabilities.live_broadcast = true;
+                            profile.capabilities.live_audience = true;
+                        }
+                        "live.broadcast" => {
+                            profile.capabilities.live_broadcast = true;
+                            profile.capabilities.live = profile.capabilities.live_broadcast
+                                || profile.capabilities.live_audience;
+                        }
+                        "live.audience" => {
+                            profile.capabilities.live_audience = true;
+                            profile.capabilities.live = profile.capabilities.live_broadcast
+                                || profile.capabilities.live_audience;
+                        }
+                        "cdn-relay" => profile.capabilities.cdn_relay = true,
                         "screen-share" => profile.capabilities.screen_share = true,
                         "recording" => profile.capabilities.recording = true,
                         "webhook" => profile.capabilities.webhook = true,
@@ -5320,7 +5335,22 @@ impl RtcBackendApiService for RtcProductService {
                     match cap.as_str() {
                         "audio" => profile.capabilities.audio = false,
                         "video" => profile.capabilities.video = false,
-                        "live" => profile.capabilities.live = false,
+                        "live" => {
+                            profile.capabilities.live = false;
+                            profile.capabilities.live_broadcast = false;
+                            profile.capabilities.live_audience = false;
+                        }
+                        "live.broadcast" => {
+                            profile.capabilities.live_broadcast = false;
+                            profile.capabilities.live = profile.capabilities.live_broadcast
+                                || profile.capabilities.live_audience;
+                        }
+                        "live.audience" => {
+                            profile.capabilities.live_audience = false;
+                            profile.capabilities.live = profile.capabilities.live_broadcast
+                                || profile.capabilities.live_audience;
+                        }
+                        "cdn-relay" => profile.capabilities.cdn_relay = false,
                         "screen-share" => profile.capabilities.screen_share = false,
                         "recording" => profile.capabilities.recording = false,
                         "webhook" => profile.capabilities.webhook = false,
@@ -6399,6 +6429,7 @@ fn profile_from_descriptor(
     descriptor: sdkwork_communication_rtc_service::ProviderPluginDescriptor,
 ) -> RtcProviderProfile {
     let now = utc_now_rfc3339_millis();
+    let capabilities = RtcProviderCapabilitySnapshot::from_plugin_descriptor(&descriptor);
     RtcProviderProfile {
         id: profile_id(
             tenant_id,
@@ -6426,44 +6457,7 @@ fn profile_from_descriptor(
             .any(|item| item == "provider.webhook")
             .then(|| format!("secret://rtc/{}/webhook", descriptor.provider_kind)),
         webhook_secret_fingerprint: None,
-        capabilities: RtcProviderCapabilitySnapshot {
-            audio: descriptor
-                .required_capabilities
-                .iter()
-                .any(|item| item == "media.audio"),
-            video: descriptor
-                .required_capabilities
-                .iter()
-                .any(|item| item == "media.video"),
-            live: descriptor
-                .required_capabilities
-                .iter()
-                .any(|item| item == "live.broadcast" || item == "live.audience"),
-            screen_share: descriptor
-                .optional_capabilities
-                .iter()
-                .any(|item| item == "screen-share"),
-            recording: descriptor
-                .optional_capabilities
-                .iter()
-                .any(|item| item == "recording"),
-            webhook: descriptor
-                .required_capabilities
-                .iter()
-                .any(|item| item == "provider.webhook"),
-            active_query: descriptor
-                .optional_capabilities
-                .iter()
-                .any(|item| item == "provider.active-query"),
-            max_participants: None,
-            supported_regions: Vec::new(),
-            provider_features: serde_json::json!({
-                "pluginId": descriptor.plugin_id,
-                "interfaceVersion": descriptor.interface_version,
-                "requiredCapabilities": descriptor.required_capabilities,
-                "optionalCapabilities": descriptor.optional_capabilities,
-            }),
-        },
+        capabilities,
         config_snapshot: serde_json::json!({
             "source": "registered_provider_plugin",
             "configSchemaRef": descriptor.config_schema_ref,

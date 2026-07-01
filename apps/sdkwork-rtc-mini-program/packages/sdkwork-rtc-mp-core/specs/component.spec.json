@@ -27,6 +27,22 @@
     "sdkClients": [
       "sdkwork-rtc-app-sdk-generated-typescript"
     ],
-    "dependencyComposition": "../../../specs/dependency.composition.json"
+    "sdkDependencies": [
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "sdkwork-rtc-app-sdk",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "sdkwork-utils",
+        "surface": "open-api",
+        "credentialMode": "protected-open-api-flexible"
+      }
+    ]
   }
 }

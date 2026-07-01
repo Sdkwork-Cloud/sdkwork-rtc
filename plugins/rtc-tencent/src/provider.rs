@@ -2,9 +2,11 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use sdkwork_communication_rtc_service::{
-    ProviderHealthSnapshot, ProviderPluginDescriptor, RtcActiveSessionTracker, RtcContractError,
-    RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcParticipantCredentialContext,
-    RtcProviderPort, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
+    ProviderHealthSnapshot, ProviderPluginDescriptor, RtcActiveSessionTracker, RtcCdnRelayHandle,
+    RtcCdnRelayStartRequest, RtcCdnRelayStopRequest, RtcContractError,
+    RtcCreateMediaSessionRequest, RtcLiveAudiencePlayback, RtcLiveAudiencePlaybackRequest,
+    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderPort,
+    RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
     RtcRecordingArtifactExportRequest, RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture,
     RtcSessionHandle, plugin_descriptor_from_provider_schema, utc_now_rfc3339_millis,
@@ -15,7 +17,7 @@ use crate::credential::{
     format_unix_seconds_rfc3339, generate_tencent_user_sig, issued_at_unix_seconds,
 };
 use crate::open_api::TencentRtcOpenApiExecutor;
-use crate::{query, recording, webhook};
+use crate::{live_stream, query, recording, webhook};
 
 pub const TENCENT_RTC_PLUGIN_ID: &str = "rtc-tencent";
 
@@ -204,6 +206,28 @@ impl RtcProviderPort for TencentRtcProvider {
             .into_iter()
             .collect())
         })
+    }
+
+    fn start_cdn_relay(
+        &self,
+        request: RtcCdnRelayStartRequest,
+    ) -> Result<RtcCdnRelayHandle, RtcContractError> {
+        live_stream::start_cdn_relay(
+            &self.config,
+            self.open_api_executor.as_deref(),
+            request,
+        )
+    }
+
+    fn stop_cdn_relay(&self, request: RtcCdnRelayStopRequest) -> Result<bool, RtcContractError> {
+        live_stream::stop_cdn_relay(&self.config, self.open_api_executor.as_deref(), request)
+    }
+
+    fn resolve_live_audience_playback(
+        &self,
+        request: RtcLiveAudiencePlaybackRequest,
+    ) -> Result<RtcLiveAudiencePlayback, RtcContractError> {
+        live_stream::resolve_live_audience_playback(&self.config, request)
     }
 
     fn provider_health_snapshot(&self) -> ProviderHealthSnapshot {

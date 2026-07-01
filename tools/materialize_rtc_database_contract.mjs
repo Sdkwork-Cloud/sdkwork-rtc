@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const baselinePath = path.join(root, 'database/ddl/baseline/postgres/0001_rtc_legacy_baseline.sql');
+const baselinePath = path.join(root, 'database/ddl/baseline/postgres/0001_rtc_baseline.sql');
 const sql = fs.readFileSync(baselinePath, 'utf8');
 const seen = new Set();
 const tableNames = [];

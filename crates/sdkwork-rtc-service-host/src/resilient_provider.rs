@@ -4,11 +4,13 @@ use std::thread;
 use std::time::Duration;
 
 use sdkwork_communication_rtc_service::{
-    ProviderHealthSnapshot, ProviderPluginDescriptor, RtcContractError,
-    RtcCreateMediaSessionRequest, RtcParticipantCredential, RtcParticipantCredentialContext,
-    RtcProviderPort, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
-    RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
-    RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture, RtcSessionHandle,
+    ProviderHealthSnapshot, ProviderPluginDescriptor, RtcCdnRelayHandle, RtcCdnRelayStartRequest,
+    RtcCdnRelayStopRequest, RtcContractError, RtcCreateMediaSessionRequest,
+    RtcLiveAudiencePlayback, RtcLiveAudiencePlaybackRequest, RtcParticipantCredential,
+    RtcParticipantCredentialContext, RtcProviderPort, RtcProviderQueryRequest,
+    RtcProviderQueryResult, RtcProviderWebhookEvent, RtcProviderWebhookParseRequest,
+    RtcProviderWebhookVerifyRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
+    RtcRecordingArtifactsFuture, RtcSessionHandle,
 };
 
 const DEFAULT_PROVIDER_TIMEOUT_MS: u64 = 30_000;
@@ -154,6 +156,26 @@ impl RtcProviderPort for TimeoutRtcProviderPort {
         request: RtcRecordingArtifactExportRequest,
     ) -> RtcRecordingArtifactsFuture<'a> {
         self.inner.export_recording_artifacts_for_query(request)
+    }
+
+    fn start_cdn_relay(
+        &self,
+        request: RtcCdnRelayStartRequest,
+    ) -> Result<RtcCdnRelayHandle, RtcContractError> {
+        self.run_with_timeout("start_cdn_relay", move |inner| inner.start_cdn_relay(request))
+    }
+
+    fn stop_cdn_relay(&self, request: RtcCdnRelayStopRequest) -> Result<bool, RtcContractError> {
+        self.run_with_timeout("stop_cdn_relay", move |inner| inner.stop_cdn_relay(request))
+    }
+
+    fn resolve_live_audience_playback(
+        &self,
+        request: RtcLiveAudiencePlaybackRequest,
+    ) -> Result<RtcLiveAudiencePlayback, RtcContractError> {
+        self.run_with_timeout("resolve_live_audience_playback", move |inner| {
+            inner.resolve_live_audience_playback(request)
+        })
     }
 
     fn query_provider_state(

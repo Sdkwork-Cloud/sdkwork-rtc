@@ -23,7 +23,6 @@ The following are implemented and verified by `pnpm run verify`:
 
 | Priority | Item | Rationale |
 | --- | --- | --- |
-| P3 | Live streaming capability dimensions (`cdn-relay`, audience) | First-class CDN/audience types on provider port |
 | P4 | `sdkwork-discovery` | **Only when RPC services are introduced** |
 
 ## Completed in this workspace (2026-06-29)
@@ -33,6 +32,7 @@ The following are implemented and verified by `pnpm run verify`:
 - `sdkwork-rtc-plugin-bootstrap` crate wires adapter factories from the manifest; `sdkwork-rtc-service-host` stays adapter-free.
 - Shared provider plugin helpers live in `sdkwork-communication-rtc-service`: `provider_webhook_parse.rs`, `provider_recording_export.rs`, and `plugin_descriptor_from_provider_schema()`; capability authority is `configs/provider-schemas/*.json` (not duplicated Rust constants).
 - `RtcRecordingPolicy` port, `configs/recording-policy/platform-default.json`, and reconcile integration soft-delete aged artifacts; hard-delete uses optional `RtcRecordingArtifactHardDeletePort` (Drive purge when wired).
+- Live streaming capability dimensions: `domain/live_stream.rs` defines broadcast/audience surfaces and CDN relay contracts; `RtcProviderCapabilitySnapshot` exposes `liveBroadcast`, `liveAudience`, and `cdnRelay`; `RtcProviderPort` adds CDN relay and audience playback hooks; Tencent plugin implements CDN relay via signed OpenAPI (`StartPublishCdnStream` / `StopPublishCdnStream`).
 
 ## Explicitly out of scope here
 

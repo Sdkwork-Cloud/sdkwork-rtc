@@ -1,4 +1,12 @@
 packages:
+  - "apps/sdkwork-rtc-pc"
+  - "apps/sdkwork-rtc-pc/packages/*"
+  - "apps/sdkwork-rtc-h5"
+  - "apps/sdkwork-rtc-h5/packages/*"
+  - "apps/sdkwork-rtc-flutter-mobile"
+  - "apps/sdkwork-rtc-flutter-mobile/packages/*"
+  - "apps/sdkwork-rtc-mini-program"
+  - "apps/sdkwork-rtc-mini-program/packages/*"
   - "apps/*"
   - "apps/*/packages/*"
   - "../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-contracts"

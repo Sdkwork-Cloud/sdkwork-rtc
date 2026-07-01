@@ -28,6 +28,12 @@
     "sdkClients": [
       "sdkwork-rtc-backend-sdk-generated-typescript"
     ],
-    "dependencyComposition": "../../../specs/dependency.composition.json"
+    "sdkDependencies": [
+      {
+        "workspace": "sdkwork-rtc-backend-sdk",
+        "surface": "backend-api",
+        "credentialMode": "authenticated-backend-admin"
+      }
+    ]
   }
 }

@@ -1,7 +1,7 @@
 import { appApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcMediaSessionsParticipantCredentialsIssueResponse, RtcOperationCommand } from '../types';
+import type { RtcOperationCommand, RtcParticipantCredential } from '../types';
 
 
 export interface RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsIssueParams {
@@ -17,14 +17,14 @@ export class RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsApi 
 
 
 /** Rtc media Sessions participant Credentials issue. */
-  async issue(mediaSessionId: string, participantId: string, body: RtcOperationCommand, params?: RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsIssueParams): Promise<RtcMediaSessionsParticipantCredentialsIssueResponse> {
+  async issue(mediaSessionId: string, participantId: string, body: RtcOperationCommand, params?: RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsIssueParams): Promise<RtcParticipantCredential> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcMediaSessionsParticipantCredentialsIssueResponse>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/participants/${serializePathParameter(participantId, { name: 'participantId', style: 'simple', explode: false })}/credential`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcParticipantCredential>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/participants/${serializePathParameter(participantId, { name: 'participantId', style: 'simple', explode: false })}/credential`), body, undefined, requestHeaders, 'application/json');
   }
 }
 

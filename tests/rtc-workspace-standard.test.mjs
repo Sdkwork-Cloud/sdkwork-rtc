@@ -654,6 +654,26 @@ test("sdkwork-rtc externalizes recording artifact lifecycle policy under configs
   );
 });
 
+test("sdkwork-rtc models live streaming capability dimensions on provider port", () => {
+  const serviceRoot = "crates/sdkwork-communication-rtc-service/src";
+  assert.ok(exists(`${serviceRoot}/domain/live_stream.rs`));
+  assert.ok(exists(`${serviceRoot}/provider_capability.rs`));
+  const liveStream = read(`${serviceRoot}/domain/live_stream.rs`);
+  assert.match(liveStream, /RtcCdnRelayStartRequest/u);
+  assert.match(liveStream, /resolve_live_participant_surface/u);
+  const capability = read(`${serviceRoot}/provider_capability.rs`);
+  assert.match(capability, /live_broadcast/u);
+  assert.match(capability, /cdn_relay/u);
+  const port = read(`${serviceRoot}/provider/port.rs`);
+  assert.match(port, /fn start_cdn_relay/u);
+  assert.match(port, /fn resolve_live_audience_playback/u);
+  const tencentProvider = read("plugins/rtc-tencent/src/provider.rs");
+  assert.match(tencentProvider, /live_stream::start_cdn_relay/u);
+  const appOpenApi = read("apis/app-api/communication/sdkwork-rtc-app-api.openapi.json");
+  assert.match(appOpenApi, /liveBroadcast/u);
+  assert.match(appOpenApi, /cdnRelay/u);
+});
+
 test("sdkwork-rtc externalizes provider registry defaults under configs/provider-registry", () => {
   assert.ok(exists("configs/provider-registry/README.md"));
   assert.ok(exists("configs/provider-registry/platform-default.json"));

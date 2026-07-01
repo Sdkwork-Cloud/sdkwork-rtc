@@ -50,12 +50,21 @@ pub fn build_signed_tencent_request(
     action: &str,
     signed_at: &str,
 ) -> Result<TencentRtcOpenApiRequest, RtcContractError> {
+    let body = request_body(config, request, action)?;
+    build_signed_tencent_action_request(config, action, body.as_str(), signed_at)
+}
+
+pub fn build_signed_tencent_action_request(
+    config: &TencentRtcProviderConfig,
+    action: &str,
+    body: &str,
+    signed_at: &str,
+) -> Result<TencentRtcOpenApiRequest, RtcContractError> {
     let secret_id = required_config(config.secret_id.as_deref(), "SDKWORK_RTC_TENCENT_SECRET_ID")?;
     let secret_key = required_config(
         config.secret_key.as_deref(),
         "SDKWORK_RTC_TENCENT_SECRET_KEY",
     )?;
-    let body = request_body(config, request, action)?;
     let (date, timestamp) = tencent_signing_time(signed_at);
     let canonical_headers = format!("content-type:application/json\nhost:{}\n", config.api_host);
     let signed_headers = "content-type;host";
@@ -97,7 +106,7 @@ pub fn build_signed_tencent_request(
             ("X-TC-Timestamp".into(), timestamp),
             ("Authorization".into(), authorization),
         ],
-        body,
+        body: body.into(),
     })
 }
 

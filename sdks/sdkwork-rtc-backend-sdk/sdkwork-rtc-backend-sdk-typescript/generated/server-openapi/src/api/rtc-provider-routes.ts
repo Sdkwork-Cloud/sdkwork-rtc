@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcProviderRouteCommand, RtcProviderRouteDisableRequest, RtcProviderRoutesCreateResponse, RtcProviderRoutesDisableResponse, RtcProviderRoutesRetrieveResponse, RtcProviderRoutesUpdateResponse, SdkWorkListResponse } from '../types';
+import type { RtcProviderRoute, RtcProviderRouteCommand, RtcProviderRouteDisableRequest } from '../types';
 
 
 export interface RtcProviderRoutesRtcProviderRoutesListParams {
@@ -33,7 +33,7 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
 
 
 /** Rtc provider Routes list. */
-  async list(params?: RtcProviderRoutesRtcProviderRoutesListParams): Promise<SdkWorkListResponse> {
+  async list(params?: RtcProviderRoutesRtcProviderRoutesListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -41,45 +41,45 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/provider_routes`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/provider_routes`), query));
   }
 
 /** Rtc provider Routes create. */
-  async create(body: RtcProviderRouteCommand, params?: RtcProviderRoutesRtcProviderRoutesCreateParams): Promise<RtcProviderRoutesCreateResponse> {
+  async create(body: RtcProviderRouteCommand, params?: RtcProviderRoutesRtcProviderRoutesCreateParams): Promise<RtcProviderRoute> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderRoutesCreateResponse>(backendApiPath(`/rtc/provider_routes`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Routes retrieve. */
-  async retrieve(providerRouteId: string): Promise<RtcProviderRoutesRetrieveResponse> {
-    return this.client.get<RtcProviderRoutesRetrieveResponse>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`));
+  async retrieve(providerRouteId: string): Promise<RtcProviderRoute> {
+    return this.client.get<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`));
   }
 
 /** Rtc provider Routes update. */
-  async update(providerRouteId: string, body?: RtcProviderRouteCommand, params?: RtcProviderRoutesRtcProviderRoutesUpdateParams): Promise<RtcProviderRoutesUpdateResponse> {
+  async update(providerRouteId: string, body?: RtcProviderRouteCommand, params?: RtcProviderRoutesRtcProviderRoutesUpdateParams): Promise<RtcProviderRoute> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.patch<RtcProviderRoutesUpdateResponse>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
+    return this.client.patch<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
   }
 
 /** Rtc provider Routes disable. */
-  async disable(providerRouteId: string, body: RtcProviderRouteDisableRequest, params?: RtcProviderRoutesRtcProviderRoutesDisableParams): Promise<RtcProviderRoutesDisableResponse> {
+  async disable(providerRouteId: string, body: RtcProviderRouteDisableRequest, params?: RtcProviderRoutesRtcProviderRoutesDisableParams): Promise<RtcProviderRoute> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderRoutesDisableResponse>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}/disable`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}/disable`), body, undefined, requestHeaders, 'application/json');
   }
 }
 

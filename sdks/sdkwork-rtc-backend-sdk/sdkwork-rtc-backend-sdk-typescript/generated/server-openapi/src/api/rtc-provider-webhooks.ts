@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcProviderWebhookReceiveRequest, RtcProviderWebhooksEventsReceiveResponse, SdkWorkListResponse } from '../types';
+import type { RtcProviderWebhookEvent, RtcProviderWebhookReceiveRequest } from '../types';
 
 
 export interface RtcProviderWebhooksRtcProviderWebhooksEventsReceiveParams {
@@ -25,18 +25,18 @@ export class RtcProviderWebhooksRtcProviderWebhooksEventsApi {
 
 
 /** Rtc provider Webhooks events receive. */
-  async receive(provider: string, body: RtcProviderWebhookReceiveRequest, params?: RtcProviderWebhooksRtcProviderWebhooksEventsReceiveParams): Promise<RtcProviderWebhooksEventsReceiveResponse> {
+  async receive(provider: string, body: RtcProviderWebhookReceiveRequest, params?: RtcProviderWebhooksRtcProviderWebhooksEventsReceiveParams): Promise<RtcProviderWebhookEvent> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.request<RtcProviderWebhooksEventsReceiveResponse>(backendApiPath(`/rtc/provider_webhooks/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}/events`), { method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', skipAuth: true });
+    return this.client.request<RtcProviderWebhookEvent>(backendApiPath(`/rtc/provider_webhooks/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}/events`), { method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', skipAuth: true });
   }
 
 /** Rtc provider Webhooks events list. */
-  async list(params?: RtcProviderWebhooksRtcProviderWebhooksEventsListParams): Promise<SdkWorkListResponse> {
+  async list(params?: RtcProviderWebhooksRtcProviderWebhooksEventsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -44,7 +44,7 @@ export class RtcProviderWebhooksRtcProviderWebhooksEventsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/provider_webhooks/events`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/provider_webhooks/events`), query));
   }
 }
 

@@ -8626,6 +8626,15 @@
           "live": {
             "type": "boolean"
           },
+          "liveBroadcast": {
+            "type": "boolean"
+          },
+          "liveAudience": {
+            "type": "boolean"
+          },
+          "cdnRelay": {
+            "type": "boolean"
+          },
           "screenShare": {
             "type": "boolean"
           },

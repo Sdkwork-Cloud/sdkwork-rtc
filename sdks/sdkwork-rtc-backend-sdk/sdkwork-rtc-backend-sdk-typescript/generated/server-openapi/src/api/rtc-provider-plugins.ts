@@ -1,7 +1,6 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { SdkWorkResourceResponse } from '../types';
 
 
 export interface RtcProviderPluginsRtcProviderPluginsListParams {
@@ -21,7 +20,7 @@ export class RtcProviderPluginsRtcProviderPluginsApi {
 
 
 /** Rtc provider Plugins list. */
-  async list(params?: RtcProviderPluginsRtcProviderPluginsListParams): Promise<SdkWorkResourceResponse> {
+  async list(params?: RtcProviderPluginsRtcProviderPluginsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,12 +28,12 @@ export class RtcProviderPluginsRtcProviderPluginsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkResourceResponse>(appendQueryString(backendApiPath(`/rtc/provider_plugins`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/provider_plugins`), query));
   }
 
 /** Rtc provider Plugins retrieve. */
-  async retrieve(provider: string): Promise<SdkWorkResourceResponse> {
-    return this.client.get<SdkWorkResourceResponse>(backendApiPath(`/rtc/provider_plugins/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`));
+  async retrieve(provider: string): Promise<Record<string, unknown>> {
+    return this.client.get<Record<string, unknown>>(backendApiPath(`/rtc/provider_plugins/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`));
   }
 }
 

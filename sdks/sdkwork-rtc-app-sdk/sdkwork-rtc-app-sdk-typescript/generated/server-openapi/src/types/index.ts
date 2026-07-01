@@ -32,15 +32,3 @@ export type { RtcMediaSessionCompletionRecordResponse } from './rtc-media-sessio
 export type { RtcActiveProviderProfile } from './rtc-active-provider-profile';
 export type { RtcProviderCapabilitySnapshot } from './rtc-provider-capability-snapshot';
 export type { RtcActiveProviderProfileListResponse } from './rtc-active-provider-profile-list-response';
-export type { SdkWorkResourceData } from './sdk-work-resource-data';
-export type { SdkWorkPageData } from './sdk-work-page-data';
-export type { SdkWorkCommandData } from './sdk-work-command-data';
-export type { PageInfo } from './page-info';
-export type { SdkWorkResourceResponse } from './sdk-work-resource-response';
-export type { SdkWorkListResponse } from './sdk-work-list-response';
-export type { SdkWorkCommandResponse } from './sdk-work-command-response';
-export type { RtcMediaSessionsCreateResponse } from './rtc-media-sessions-create-response';
-export type { RtcMediaSessionsRetrieveResponse } from './rtc-media-sessions-retrieve-response';
-export type { RtcMediaSessionsCompletionRecordRetrieveResponse } from './rtc-media-sessions-completion-record-retrieve-response';
-export type { RtcMediaSessionsParticipantCredentialsIssueResponse } from './rtc-media-sessions-participant-credentials-issue-response';
-export type { RtcRoomsRetrieveResponse } from './rtc-rooms-retrieve-response';

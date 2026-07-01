@@ -24,6 +24,12 @@ pub struct RtcProviderCapabilitySnapshot {
     pub audio: bool,
     pub video: bool,
     pub live: bool,
+    #[serde(default)]
+    pub live_broadcast: bool,
+    #[serde(default)]
+    pub live_audience: bool,
+    #[serde(default)]
+    pub cdn_relay: bool,
     pub screen_share: bool,
     pub recording: bool,
     pub webhook: bool,
@@ -39,6 +45,9 @@ impl RtcProviderCapabilitySnapshot {
             audio: true,
             video: true,
             live: true,
+            live_broadcast: true,
+            live_audience: true,
+            cdn_relay: true,
             screen_share: true,
             recording: true,
             webhook: true,

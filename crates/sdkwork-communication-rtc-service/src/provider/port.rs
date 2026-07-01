@@ -2,11 +2,12 @@ use std::sync::Arc;
 
 use super::descriptor::{ProviderHealthSnapshot, ProviderPluginDescriptor};
 use crate::{
-    RtcContractError, RtcCreateMediaSessionRequest, RtcParticipantCredential,
-    RtcParticipantCredentialContext, RtcProviderQueryRequest, RtcProviderQueryResult,
-    RtcProviderWebhookEvent, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest,
-    RtcRecordingArtifact, RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture,
-    RtcSessionHandle, verify_provider_webhook_signature_hmac,
+    RtcCdnRelayHandle, RtcCdnRelayStartRequest, RtcCdnRelayStopRequest, RtcContractError,
+    RtcCreateMediaSessionRequest, RtcLiveAudiencePlayback, RtcLiveAudiencePlaybackRequest,
+    RtcParticipantCredential, RtcParticipantCredentialContext, RtcProviderQueryRequest,
+    RtcProviderQueryResult, RtcProviderWebhookEvent, RtcProviderWebhookParseRequest,
+    RtcProviderWebhookVerifyRequest, RtcRecordingArtifact, RtcRecordingArtifactExportRequest,
+    RtcRecordingArtifactsFuture, RtcSessionHandle, verify_provider_webhook_signature_hmac,
 };
 
 pub trait RtcProviderPort: Send + Sync {
@@ -83,6 +84,33 @@ pub trait RtcProviderPort: Send + Sync {
                 request.rtc_session_id.as_str(),
             )
         })
+    }
+    fn start_cdn_relay(
+        &self,
+        request: RtcCdnRelayStartRequest,
+    ) -> Result<RtcCdnRelayHandle, RtcContractError> {
+        let _ = request;
+        Err(RtcContractError::UnsupportedCapability(format!(
+            "{} provider cdn relay is not implemented",
+            self.descriptor().provider_kind
+        )))
+    }
+    fn stop_cdn_relay(&self, request: RtcCdnRelayStopRequest) -> Result<bool, RtcContractError> {
+        let _ = request;
+        Err(RtcContractError::UnsupportedCapability(format!(
+            "{} provider cdn relay is not implemented",
+            self.descriptor().provider_kind
+        )))
+    }
+    fn resolve_live_audience_playback(
+        &self,
+        request: RtcLiveAudiencePlaybackRequest,
+    ) -> Result<RtcLiveAudiencePlayback, RtcContractError> {
+        let _ = request;
+        Err(RtcContractError::UnsupportedCapability(format!(
+            "{} provider live audience playback is not implemented",
+            self.descriptor().provider_kind
+        )))
     }
     fn provider_health_snapshot(&self) -> ProviderHealthSnapshot;
 }

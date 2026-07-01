@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { RtcCloseMediaSessionRequest, RtcMediaSessionsCloseResponse, RtcMediaSessionsCompletionRecordRetrieveResponse, RtcMediaSessionsRetrieveResponse, SdkWorkListResponse } from '../types';
+import type { RtcCloseMediaSessionRequest, RtcMediaSession, RtcMediaSessionCompletionRecord } from '../types';
 
 
 export class RtcMediaSessionsRtcMediaSessionsCompletionRecordApi {
@@ -13,8 +13,8 @@ export class RtcMediaSessionsRtcMediaSessionsCompletionRecordApi {
 
 
 /** Rtc media Sessions completion Record retrieve. */
-  async retrieve(mediaSessionId: string): Promise<RtcMediaSessionsCompletionRecordRetrieveResponse> {
-    return this.client.get<RtcMediaSessionsCompletionRecordRetrieveResponse>(backendApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/completion_record`));
+  async retrieve(mediaSessionId: string): Promise<RtcMediaSessionCompletionRecord> {
+    return this.client.get<RtcMediaSessionCompletionRecord>(backendApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/completion_record`));
   }
 }
 
@@ -41,7 +41,7 @@ export class RtcMediaSessionsRtcMediaSessionsApi {
 
 
 /** Rtc media Sessions list. */
-  async list(params?: RtcMediaSessionsRtcMediaSessionsListParams): Promise<SdkWorkListResponse> {
+  async list(params?: RtcMediaSessionsRtcMediaSessionsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -49,23 +49,23 @@ export class RtcMediaSessionsRtcMediaSessionsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkListResponse>(appendQueryString(backendApiPath(`/rtc/media_sessions`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/media_sessions`), query));
   }
 
 /** Rtc media Sessions retrieve. */
-  async retrieve(mediaSessionId: string): Promise<RtcMediaSessionsRetrieveResponse> {
-    return this.client.get<RtcMediaSessionsRetrieveResponse>(backendApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}`));
+  async retrieve(mediaSessionId: string): Promise<RtcMediaSession> {
+    return this.client.get<RtcMediaSession>(backendApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}`));
   }
 
 /** Rtc media Sessions close. */
-  async close(mediaSessionId: string, body: RtcCloseMediaSessionRequest, params?: RtcMediaSessionsRtcMediaSessionsCloseParams): Promise<RtcMediaSessionsCloseResponse> {
+  async close(mediaSessionId: string, body: RtcCloseMediaSessionRequest, params?: RtcMediaSessionsRtcMediaSessionsCloseParams): Promise<RtcMediaSession> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcMediaSessionsCloseResponse>(backendApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/close`), body, undefined, requestHeaders, 'application/json');
+    return this.client.post<RtcMediaSession>(backendApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/close`), body, undefined, requestHeaders, 'application/json');
   }
 }
 

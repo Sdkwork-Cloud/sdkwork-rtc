@@ -1,7 +1,7 @@
 import { appApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { SdkWorkListResponse } from '../types';
+import type { RtcActiveProviderProfile } from '../types';
 
 
 export interface RtcProviderProfilesRtcProviderProfilesActiveListParams {
@@ -21,7 +21,7 @@ export class RtcProviderProfilesRtcProviderProfilesActiveApi {
 
 
 /** Rtc provider Profiles active list. */
-  async list(params?: RtcProviderProfilesRtcProviderProfilesActiveListParams): Promise<SdkWorkListResponse> {
+  async list(params?: RtcProviderProfilesRtcProviderProfilesActiveListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,7 +29,7 @@ export class RtcProviderProfilesRtcProviderProfilesActiveApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkListResponse>(appendQueryString(appApiPath(`/rtc/provider_profiles/active`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/rtc/provider_profiles/active`), query));
   }
 }
 

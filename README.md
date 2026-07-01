@@ -1,4 +1,5 @@
 # SDKWork RTC
+repository-kind: application
 
 `sdkwork-rtc` is the SDKWork authority for RTC media capabilities. It owns realtime
 audio/video, voice session, live/broadcast, room, media participant, credential, provider webhook,
