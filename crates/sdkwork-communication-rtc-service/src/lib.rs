@@ -3,6 +3,7 @@ pub mod constants;
 pub mod domain;
 pub mod error;
 pub mod idempotency;
+pub mod list_page;
 pub mod list_window;
 pub mod persistence;
 pub mod provider;
@@ -23,6 +24,10 @@ pub use constants::*;
 pub use domain::*;
 pub use error::*;
 pub use idempotency::*;
+pub use list_page::{
+    map_rtc_api_error_code, resolved_list_page_size, rtc_list_page_to_sdkwork_page_data,
+    rtc_list_window_to_sdkwork_page_data, RtcListPage,
+};
 pub use list_window::{
     DEFAULT_LIST_PAGE_SIZE, MAX_LIST_PAGE_SIZE, RtcListWindow, RtcListWindowError,
     RtcListWindowParams, apply_list_window, list_window_sort, matches_query_tokens,

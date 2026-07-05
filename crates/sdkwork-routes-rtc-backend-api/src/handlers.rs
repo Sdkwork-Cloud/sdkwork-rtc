@@ -5,7 +5,7 @@ use axum::{
     body::Bytes,
     extract::{Path, Query, State},
     http::HeaderMap,
-    response::{IntoResponse, Response},
+    response::Response,
 };
 use sdkwork_communication_rtc_service::{
     ProviderConfigSchema, ProviderPluginDescriptor, RtcMediaArtifact, RtcMediaSession,
@@ -19,75 +19,29 @@ use sdkwork_communication_rtc_service::{
 };
 use sdkwork_rtc_app_context::AppContext;
 use sdkwork_web_core::WebRequestContext;
-use serde::Serialize;
-use serde_json::{Value as JsonValue, json};
 
-use crate::service::{
-    RtcBackendApiError, RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest,
-    RtcCloseMediaSessionRequest, RtcCreateRoomCommand, RtcListData, RtcMediaArtifactListData,
-    RtcMediaSessionListData, RtcProviderQueryJobCreateRequest, RtcProviderQuerySnapshotListData,
-    RtcProviderRoute, RtcProviderRouteCommand, RtcProviderRouteDisableRequest,
-    RtcProviderRouteListData, RtcProviderWebhookIngress,
+use crate::responses::{
+    api_catalog_list, api_created, api_item, api_list_payload, list_params_from_backend_query,
+    map_handler_error, resolved_trace_id, RtcBackendHandlerError,
 };
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcApiEnvelope<T>
-where
-    T: Serialize,
-{
-    pub code: String,
-    pub message: String,
-    pub request_id: String,
-    pub data: T,
-}
-
-impl<T> RtcApiEnvelope<T>
-where
-    T: Serialize,
-{
-    pub fn ok(data: T, request_id: impl Into<String>) -> Self {
-        Self {
-            code: "ok".to_owned(),
-            message: "OK".to_owned(),
-            request_id: request_id.into(),
-            data,
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcProblemEnvelope {
-    pub code: String,
-    pub message: String,
-    pub request_id: String,
-    pub data: JsonValue,
-}
-
-impl RtcProblemEnvelope {
-    fn from_error(error: &RtcBackendApiError, request_id: impl Into<String>) -> Self {
-        Self {
-            code: error.code().to_owned(),
-            message: error.message().to_owned(),
-            request_id: request_id.into(),
-            data: json!({}),
-        }
-    }
-}
+use crate::service::{
+    RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest, RtcCloseMediaSessionRequest,
+    RtcCreateRoomCommand, RtcProviderQueryJobCreateRequest, RtcProviderRoute,
+    RtcProviderRouteCommand, RtcProviderRouteDisableRequest, RtcProviderWebhookIngress,
+};
 
 pub async fn list_rooms(
     State(service): State<Arc<dyn RtcBackendApiService>>,
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcListData<RtcRoom>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service.list_rooms(list_request(&context, query)).await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_room(
@@ -95,15 +49,15 @@ pub async fn retrieve_room(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(room_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcRoom>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_room(context.tenant_id, context.organization_id, room_id)
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn create_room(
@@ -111,10 +65,10 @@ pub async fn create_room(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Json(body): Json<RtcCreateRoomCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcRoom>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_room(
                 context.tenant_id,
@@ -124,7 +78,7 @@ pub async fn create_room(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_accounts(
@@ -132,15 +86,15 @@ pub async fn list_provider_accounts(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcListData<RtcProviderAccount>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_provider_accounts(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn create_provider_account(
@@ -148,10 +102,10 @@ pub async fn create_provider_account(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Json(body): Json<RtcProviderAccountCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderAccount>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_provider_account(
                 context.tenant_id,
@@ -161,7 +115,7 @@ pub async fn create_provider_account(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_provider_account(
@@ -169,10 +123,10 @@ pub async fn retrieve_provider_account(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(provider_account_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderAccount>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_provider_account(
                 context.tenant_id,
@@ -181,7 +135,7 @@ pub async fn retrieve_provider_account(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn update_provider_account(
@@ -190,10 +144,10 @@ pub async fn update_provider_account(
     Extension(context): Extension<AppContext>,
     Path(provider_account_id): Path<String>,
     Json(body): Json<RtcProviderAccountCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderAccount>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .update_provider_account(
                 context.tenant_id,
@@ -204,7 +158,7 @@ pub async fn update_provider_account(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn disable_provider_account(
@@ -213,10 +167,10 @@ pub async fn disable_provider_account(
     Extension(context): Extension<AppContext>,
     Path(provider_account_id): Path<String>,
     Json(body): Json<RtcProviderAccountDisableRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderAccount>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .disable_provider_account(
                 context.tenant_id,
@@ -227,7 +181,7 @@ pub async fn disable_provider_account(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_applications(
@@ -236,10 +190,10 @@ pub async fn list_provider_applications(
     Extension(context): Extension<AppContext>,
     Path(provider_account_id): Path<String>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcListData<RtcProviderApplication>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_provider_applications(
                 context.tenant_id,
@@ -249,7 +203,7 @@ pub async fn list_provider_applications(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn create_provider_application(
@@ -258,10 +212,10 @@ pub async fn create_provider_application(
     Extension(context): Extension<AppContext>,
     Path(provider_account_id): Path<String>,
     Json(body): Json<RtcProviderApplicationCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderApplication>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_provider_application(
                 context.tenant_id,
@@ -272,7 +226,7 @@ pub async fn create_provider_application(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_provider_application(
@@ -280,10 +234,10 @@ pub async fn retrieve_provider_application(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(provider_application_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderApplication>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_provider_application(
                 context.tenant_id,
@@ -292,7 +246,7 @@ pub async fn retrieve_provider_application(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn update_provider_application(
@@ -301,10 +255,10 @@ pub async fn update_provider_application(
     Extension(context): Extension<AppContext>,
     Path(provider_application_id): Path<String>,
     Json(body): Json<RtcProviderApplicationCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderApplication>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .update_provider_application(
                 context.tenant_id,
@@ -315,7 +269,7 @@ pub async fn update_provider_application(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn disable_provider_application(
@@ -324,10 +278,10 @@ pub async fn disable_provider_application(
     Extension(context): Extension<AppContext>,
     Path(provider_application_id): Path<String>,
     Json(body): Json<RtcProviderApplicationDisableRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderApplication>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .disable_provider_application(
                 context.tenant_id,
@@ -338,7 +292,7 @@ pub async fn disable_provider_application(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_credentials(
@@ -347,10 +301,10 @@ pub async fn list_provider_credentials(
     Extension(context): Extension<AppContext>,
     Path(provider_application_id): Path<String>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcListData<RtcProviderCredential>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_provider_credentials(
                 context.tenant_id,
@@ -360,7 +314,7 @@ pub async fn list_provider_credentials(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn create_provider_credential(
@@ -369,10 +323,10 @@ pub async fn create_provider_credential(
     Extension(context): Extension<AppContext>,
     Path(provider_application_id): Path<String>,
     Json(body): Json<RtcProviderCredentialCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderCredential>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_provider_credential(
                 context.tenant_id,
@@ -383,7 +337,7 @@ pub async fn create_provider_credential(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_provider_credential(
@@ -391,10 +345,10 @@ pub async fn retrieve_provider_credential(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(provider_credential_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderCredential>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_provider_credential(
                 context.tenant_id,
@@ -403,7 +357,7 @@ pub async fn retrieve_provider_credential(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn update_provider_credential(
@@ -412,10 +366,10 @@ pub async fn update_provider_credential(
     Extension(context): Extension<AppContext>,
     Path(provider_credential_id): Path<String>,
     Json(body): Json<RtcProviderCredentialCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderCredential>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .update_provider_credential(
                 context.tenant_id,
@@ -426,7 +380,7 @@ pub async fn update_provider_credential(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn revoke_provider_credential(
@@ -435,10 +389,10 @@ pub async fn revoke_provider_credential(
     Extension(context): Extension<AppContext>,
     Path(provider_credential_id): Path<String>,
     Json(body): Json<RtcProviderCredentialRevokeRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderCredential>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .revoke_provider_credential(
                 context.tenant_id,
@@ -449,7 +403,7 @@ pub async fn revoke_provider_credential(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_profiles(
@@ -457,15 +411,15 @@ pub async fn list_provider_profiles(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcListData<RtcProviderProfile>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_provider_profiles(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn create_provider_profile(
@@ -473,10 +427,10 @@ pub async fn create_provider_profile(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Json(body): Json<RtcProviderProfileCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderProfile>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_provider_profile(
                 context.tenant_id,
@@ -486,7 +440,7 @@ pub async fn create_provider_profile(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_provider_profile(
@@ -494,10 +448,10 @@ pub async fn retrieve_provider_profile(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(provider_profile_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderProfile>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_provider_profile(
                 context.tenant_id,
@@ -506,7 +460,7 @@ pub async fn retrieve_provider_profile(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn update_provider_profile(
@@ -515,10 +469,10 @@ pub async fn update_provider_profile(
     Extension(context): Extension<AppContext>,
     Path(provider_profile_id): Path<String>,
     Json(body): Json<RtcProviderProfileCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderProfile>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .update_provider_profile(
                 context.tenant_id,
@@ -529,7 +483,7 @@ pub async fn update_provider_profile(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn disable_provider_profile(
@@ -538,10 +492,10 @@ pub async fn disable_provider_profile(
     Extension(context): Extension<AppContext>,
     Path(provider_profile_id): Path<String>,
     Json(body): Json<RtcProviderProfileDisableRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderProfile>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .disable_provider_profile(
                 context.tenant_id,
@@ -552,7 +506,7 @@ pub async fn disable_provider_profile(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn verify_provider_profile(
@@ -561,10 +515,10 @@ pub async fn verify_provider_profile(
     Extension(context): Extension<AppContext>,
     Path(provider_profile_id): Path<String>,
     Json(body): Json<RtcProviderProfileVerifyRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderProfileVerifyResult>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .verify_provider_profile(
                 context.tenant_id,
@@ -575,7 +529,7 @@ pub async fn verify_provider_profile(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_routes(
@@ -583,15 +537,15 @@ pub async fn list_provider_routes(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderRouteListData>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_provider_routes(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn create_provider_route(
@@ -599,10 +553,10 @@ pub async fn create_provider_route(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Json(body): Json<RtcProviderRouteCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderRoute>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_provider_route(
                 context.tenant_id,
@@ -612,7 +566,7 @@ pub async fn create_provider_route(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_provider_route(
@@ -620,10 +574,10 @@ pub async fn retrieve_provider_route(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(provider_route_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderRoute>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_provider_route(
                 context.tenant_id,
@@ -632,7 +586,7 @@ pub async fn retrieve_provider_route(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn update_provider_route(
@@ -641,10 +595,10 @@ pub async fn update_provider_route(
     Extension(context): Extension<AppContext>,
     Path(provider_route_id): Path<String>,
     Json(body): Json<RtcProviderRouteCommand>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderRoute>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .update_provider_route(
                 context.tenant_id,
@@ -655,7 +609,7 @@ pub async fn update_provider_route(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn disable_provider_route(
@@ -664,10 +618,10 @@ pub async fn disable_provider_route(
     Extension(context): Extension<AppContext>,
     Path(provider_route_id): Path<String>,
     Json(body): Json<RtcProviderRouteDisableRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderRoute>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .disable_provider_route(
                 context.tenant_id,
@@ -678,7 +632,7 @@ pub async fn disable_provider_route(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_media_sessions(
@@ -686,15 +640,15 @@ pub async fn list_media_sessions(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaSessionListData>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_media_sessions(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_media_session(
@@ -702,15 +656,15 @@ pub async fn retrieve_media_session(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(media_session_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaSession>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_media_session(context.tenant_id, context.organization_id, media_session_id)
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_media_session_completion_record(
@@ -718,10 +672,10 @@ pub async fn retrieve_media_session_completion_record(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(media_session_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaSessionCompletionRecord>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_media_session_completion_record(
                 context.tenant_id,
@@ -730,7 +684,7 @@ pub async fn retrieve_media_session_completion_record(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn close_media_session(
@@ -739,10 +693,10 @@ pub async fn close_media_session(
     Extension(context): Extension<AppContext>,
     Path(media_session_id): Path<String>,
     Json(body): Json<RtcCloseMediaSessionRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaSession>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .close_media_session(
                 context.tenant_id,
@@ -753,7 +707,7 @@ pub async fn close_media_session(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_media_artifacts(
@@ -761,15 +715,15 @@ pub async fn list_media_artifacts(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaArtifactListData>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_media_artifacts(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_media_artifact(
@@ -777,10 +731,10 @@ pub async fn retrieve_media_artifact(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(media_artifact_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaArtifact>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_media_artifact(
                 context.tenant_id,
@@ -789,7 +743,7 @@ pub async fn retrieve_media_artifact(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_quality_samples(
@@ -797,15 +751,15 @@ pub async fn list_quality_samples(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcListData<RtcQualitySample>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_quality_samples(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_webhook_events(
@@ -813,16 +767,15 @@ pub async fn list_provider_webhook_events(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcListData<RtcProviderWebhookEventRecord>>>, RtcBackendHandlerError>
-{
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_provider_webhook_events(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn receive_provider_webhook_event(
@@ -831,17 +784,17 @@ pub async fn receive_provider_webhook_event(
     Path(provider): Path<String>,
     headers: HeaderMap,
     body: Bytes,
-) -> Result<Json<RtcApiEnvelope<RtcProviderWebhookEventRecord>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let ingress = RtcProviderWebhookIngress::from_http_request(&headers, body.as_ref())
         .map_err(|error| RtcBackendHandlerError::from_api_error(error, request_id.clone()))?;
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .receive_provider_webhook_event(provider, ingress)
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn create_provider_query_job(
@@ -849,10 +802,10 @@ pub async fn create_provider_query_job(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Json(body): Json<RtcProviderQueryJobCreateRequest>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderQueryJobRecord>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_provider_query_job(
                 context.tenant_id,
@@ -862,7 +815,7 @@ pub async fn create_provider_query_job(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_provider_query_job(
@@ -870,10 +823,10 @@ pub async fn retrieve_provider_query_job(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(provider_query_job_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderQueryJobRecord>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_provider_query_job(
                 context.tenant_id,
@@ -882,7 +835,7 @@ pub async fn retrieve_provider_query_job(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_query_snapshots(
@@ -891,10 +844,10 @@ pub async fn list_provider_query_snapshots(
     Extension(context): Extension<AppContext>,
     Path(provider_query_job_id): Path<String>,
     Query(query): Query<RtcBackendListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderQuerySnapshotListData>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_provider_query_snapshots(
                 context.tenant_id,
@@ -904,48 +857,48 @@ pub async fn list_provider_query_snapshots(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_config_schemas(
     State(service): State<Arc<dyn RtcBackendApiService>>,
     Extension(web_context): Extension<WebRequestContext>,
-) -> Result<Json<RtcApiEnvelope<Vec<ProviderConfigSchema>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
-    let result = map_handler_error(&request_id, service.list_provider_config_schemas().await)?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
+    let result = map_handler_error(&trace_id, service.list_provider_config_schemas().await)?;
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn get_provider_config_schema(
     State(service): State<Arc<dyn RtcBackendApiService>>,
     Extension(web_context): Extension<WebRequestContext>,
     Path(provider): Path<String>,
-) -> Result<Json<RtcApiEnvelope<ProviderConfigSchema>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service.get_provider_config_schema(provider).await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_provider_plugins(
     State(service): State<Arc<dyn RtcBackendApiService>>,
     Extension(web_context): Extension<WebRequestContext>,
-) -> Result<Json<RtcApiEnvelope<Vec<ProviderPluginDescriptor>>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
-    let result = map_handler_error(&request_id, service.list_provider_plugins().await)?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
+    let result = map_handler_error(&trace_id, service.list_provider_plugins().await)?;
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn get_provider_plugin(
     State(service): State<Arc<dyn RtcBackendApiService>>,
     Extension(web_context): Extension<WebRequestContext>,
     Path(provider): Path<String>,
-) -> Result<Json<RtcApiEnvelope<ProviderPluginDescriptor>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
-    let result = map_handler_error(&request_id, service.get_provider_plugin(provider).await)?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
+    let result = map_handler_error(&trace_id, service.get_provider_plugin(provider).await)?;
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn configure_provider_capabilities(
@@ -954,10 +907,10 @@ pub async fn configure_provider_capabilities(
     Extension(context): Extension<AppContext>,
     Path(provider_profile_id): Path<String>,
     Json(body): Json<crate::service::RtcProviderCapabilityConfig>,
-) -> Result<Json<RtcApiEnvelope<RtcProviderProfile>>, RtcBackendHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcBackendHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .configure_provider_capabilities(
                 context.tenant_id,
@@ -968,7 +921,7 @@ pub async fn configure_provider_capabilities(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 #[derive(Debug)]

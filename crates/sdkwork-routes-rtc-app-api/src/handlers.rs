@@ -4,18 +4,21 @@ use axum::{
     Extension, Json,
     extract::{Path, Query, State},
     http::{HeaderMap, StatusCode},
-    response::{IntoResponse, Response},
+    response::Response,
 };
 use sdkwork_communication_rtc_service::RtcMediaSessionMode;
 use sdkwork_rtc_app_context::AppContext;
 use sdkwork_web_core::{IDEMPOTENCY_KEY_HEADER, WebRequestContext, X_IDEMPOTENCY_KEY_HEADER};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::{Value as JsonValue, json};
 
+use crate::responses::{
+    api_created, api_item, api_list_payload, list_params_from_app_query,
+    map_handler_error, resolved_trace_id, RtcAppHandlerError,
+};
 use crate::service::{
-    RtcAppApiError, RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
-    RtcCreateAppRoomRequest, RtcIssueParticipantCredentialRequest, RtcListRequest,
-    RtcMediaArtifactListData, RtcMediaSessionListData, RtcRoomListData,
+    RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest, RtcCreateAppRoomRequest,
+    RtcIssueParticipantCredentialRequest, RtcListRequest,
 };
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
@@ -39,64 +42,24 @@ pub struct RtcCreateMediaSessionBody {
     pub metadata: JsonValue,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcApiEnvelope<T>
-where
-    T: Serialize,
-{
-    pub code: String,
-    pub message: String,
-    pub request_id: String,
-    pub data: T,
-}
-
-impl<T> RtcApiEnvelope<T>
-where
-    T: Serialize,
-{
-    pub fn ok(data: T, request_id: impl Into<String>) -> Self {
-        Self {
-            code: "ok".to_owned(),
-            message: "OK".to_owned(),
-            request_id: request_id.into(),
-            data,
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RtcProblemEnvelope {
-    pub code: String,
-    pub message: String,
-    pub request_id: String,
-    pub data: JsonValue,
-}
-
-impl RtcProblemEnvelope {
-    fn from_error(error: &RtcAppApiError, request_id: impl Into<String>) -> Self {
-        Self {
-            code: error.code().to_owned(),
-            message: error.message().to_owned(),
-            request_id: request_id.into(),
-            data: json!({}),
-        }
-    }
-}
-
 pub async fn list_rooms(
     State(service): State<Arc<dyn RtcAppApiService>>,
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcAppListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcRoomListData>>, RtcAppHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_app_query(&query);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service.list_rooms(list_request(&context, query)).await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_list_payload(
+        result.items,
+        result.next_cursor,
+        &params,
+        &trace_id,
+    ))
 }
 
 pub async fn retrieve_room(
@@ -104,15 +67,15 @@ pub async fn retrieve_room(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(room_id): Path<String>,
-) -> Result<Json<RtcApiEnvelope<sdkwork_communication_rtc_service::RtcRoom>>, RtcAppHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_room(context.tenant_id, context.organization_id, room_id)
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_active_provider_profiles(
@@ -120,18 +83,21 @@ pub async fn list_active_provider_profiles(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcAppListQuery>,
-) -> Result<
-    Json<RtcApiEnvelope<crate::service::RtcActiveProviderProfileListData>>,
-    RtcAppHandlerError,
-> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_app_query(&query);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_active_provider_profiles(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_list_payload(
+        result.items,
+        result.next_cursor,
+        &params,
+        &trace_id,
+    ))
 }
 
 pub async fn create_room(
@@ -139,10 +105,10 @@ pub async fn create_room(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Json(body): Json<RtcCreateRoomBody>,
-) -> Result<Json<RtcApiEnvelope<sdkwork_communication_rtc_service::RtcRoom>>, RtcAppHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_room(
                 context.tenant_id,
@@ -155,7 +121,7 @@ pub async fn create_room(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_created(result, &trace_id))
 }
 
 pub async fn list_media_sessions(
@@ -163,15 +129,21 @@ pub async fn list_media_sessions(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Query(query): Query<RtcAppListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaSessionListData>>, RtcAppHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_app_query(&query);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_media_sessions(list_request(&context, query))
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_list_payload(
+        result.items,
+        result.next_cursor,
+        &params,
+        &trace_id,
+    ))
 }
 
 pub async fn create_media_session(
@@ -180,13 +152,10 @@ pub async fn create_media_session(
     Extension(context): Extension<AppContext>,
     headers: HeaderMap,
     Json(body): Json<RtcCreateMediaSessionBody>,
-) -> Result<
-    Json<RtcApiEnvelope<sdkwork_communication_rtc_service::RtcMediaSession>>,
-    RtcAppHandlerError,
-> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .create_media_session(
                 context.tenant_id,
@@ -205,7 +174,7 @@ pub async fn create_media_session(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_created(result, &trace_id))
 }
 
 fn resolve_idempotency_key(headers: &HeaderMap) -> Option<String> {
@@ -226,18 +195,15 @@ pub async fn retrieve_media_session(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(media_session_id): Path<String>,
-) -> Result<
-    Json<RtcApiEnvelope<sdkwork_communication_rtc_service::RtcMediaSession>>,
-    RtcAppHandlerError,
-> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_media_session(context.tenant_id, context.organization_id, media_session_id)
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn retrieve_media_session_completion_record(
@@ -245,13 +211,10 @@ pub async fn retrieve_media_session_completion_record(
     Extension(web_context): Extension<WebRequestContext>,
     Extension(context): Extension<AppContext>,
     Path(media_session_id): Path<String>,
-) -> Result<
-    Json<RtcApiEnvelope<sdkwork_communication_rtc_service::RtcMediaSessionCompletionRecord>>,
-    RtcAppHandlerError,
-> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .retrieve_media_session_completion_record(
                 context.tenant_id,
@@ -260,7 +223,7 @@ pub async fn retrieve_media_session_completion_record(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn issue_participant_credential(
@@ -269,13 +232,10 @@ pub async fn issue_participant_credential(
     Extension(context): Extension<AppContext>,
     headers: HeaderMap,
     Path((media_session_id, participant_id)): Path<(String, String)>,
-) -> Result<
-    Json<RtcApiEnvelope<sdkwork_communication_rtc_service::RtcParticipantCredential>>,
-    RtcAppHandlerError,
-> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .issue_participant_credential(
                 context.tenant_id,
@@ -289,7 +249,7 @@ pub async fn issue_participant_credential(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+    Ok(api_item(result, &trace_id))
 }
 
 pub async fn list_recording_artifacts(
@@ -298,10 +258,11 @@ pub async fn list_recording_artifacts(
     Extension(context): Extension<AppContext>,
     Path(media_session_id): Path<String>,
     Query(query): Query<RtcAppListQuery>,
-) -> Result<Json<RtcApiEnvelope<RtcMediaArtifactListData>>, RtcAppHandlerError> {
-    let request_id = envelope_request_id(&web_context);
+) -> Result<Response, RtcAppHandlerError> {
+    let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_app_query(&query);
     let result = map_handler_error(
-        &request_id,
+        &trace_id,
         service
             .list_recording_artifacts(
                 context.tenant_id,
@@ -311,41 +272,12 @@ pub async fn list_recording_artifacts(
             )
             .await,
     )?;
-    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
-}
-
-#[derive(Debug)]
-pub struct RtcAppHandlerError {
-    error: RtcAppApiError,
-    request_id: String,
-}
-
-impl RtcAppHandlerError {
-    fn from_api_error(error: RtcAppApiError, request_id: String) -> Self {
-        Self { error, request_id }
-    }
-}
-
-impl IntoResponse for RtcAppHandlerError {
-    fn into_response(self) -> Response {
-        let status = self.error.status_code();
-        (
-            status,
-            Json(RtcProblemEnvelope::from_error(&self.error, self.request_id)),
-        )
-            .into_response()
-    }
-}
-
-fn map_handler_error<T>(
-    request_id: &str,
-    result: Result<T, RtcAppApiError>,
-) -> Result<T, RtcAppHandlerError> {
-    result.map_err(|error| RtcAppHandlerError::from_api_error(error, request_id.to_owned()))
-}
-
-fn envelope_request_id(web_context: &WebRequestContext) -> String {
-    web_context.request_id.0.clone()
+    Ok(api_list_payload(
+        result.items,
+        result.next_cursor,
+        &params,
+        &trace_id,
+    ))
 }
 
 fn list_request(context: &AppContext, query: RtcAppListQuery) -> RtcListRequest {

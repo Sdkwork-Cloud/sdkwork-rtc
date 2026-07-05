@@ -6,6 +6,7 @@ use axum::Router;
 
 pub mod handlers;
 pub mod paths;
+pub mod responses;
 pub mod routes;
 pub mod service;
 pub mod web_bootstrap;

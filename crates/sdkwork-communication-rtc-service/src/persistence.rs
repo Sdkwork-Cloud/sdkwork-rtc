@@ -113,11 +113,7 @@ pub struct RtcRoomScopeQuery {
     pub organization_id: String,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct RtcRoomListPage {
-    pub items: Vec<RtcRoom>,
-    pub next_cursor: Option<String>,
-}
+pub type RtcRoomListPage = crate::list_page::RtcListPage<RtcRoom>;
 
 pub trait RtcPersistencePort: Send + Sync {
     fn persist_changes<'a>(
@@ -272,10 +268,7 @@ impl RtcPersistencePort for NoopRtcPersistencePort {
         _params: RtcListWindowParams,
     ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
         Box::pin(async {
-            Ok(RtcRoomListPage {
-                items: Vec::new(),
-                next_cursor: None,
-            })
+            Ok(RtcRoomListPage::empty())
         })
     }
 }
