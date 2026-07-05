@@ -3,6 +3,7 @@ pub const SQLITE_SCHEMA: &str = include_str!("schema/sqlite_rtc.sql");
 
 pub mod completion_record;
 pub mod database;
+pub mod list_page;
 pub mod media_session;
 pub mod media_session_idempotency;
 pub mod persistence;

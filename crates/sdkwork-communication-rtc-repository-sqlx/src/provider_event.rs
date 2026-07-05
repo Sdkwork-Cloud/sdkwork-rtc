@@ -119,6 +119,46 @@ impl RtcSqliteProviderEventRepository {
             .collect()
     }
 
+    pub async fn list_provider_query_jobs_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcProviderQueryJobRecord>> {
+        let sql = provider_query_job_select_columns_sql(
+            "WHERE tenant_id = ? AND organization_id = ?",
+            "ORDER BY requested_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_provider_query_job_record)
+            .collect()
+    }
+
+    pub async fn list_provider_query_snapshots_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcProviderQuerySnapshotRecord>> {
+        let sql = provider_query_snapshot_select_columns_sql(
+            "WHERE tenant_id = ? AND organization_id = ?",
+            "ORDER BY captured_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_provider_query_snapshot_record)
+            .collect()
+    }
+
     pub async fn record_provider_query_result(
         &self,
         query_job_numeric_id: i64,
@@ -218,6 +258,115 @@ impl RtcSqliteProviderEventRepository {
             .fetch_all(&self.pool)
             .await?;
 
+        rows.into_iter()
+            .map(sqlite_row_to_provider_query_snapshot_record)
+            .collect()
+    }
+
+    pub async fn list_webhook_events_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderWebhookEventRecord>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(provider) LIKE ? OR LOWER(event_type) LIKE ? OR LOWER(COALESCE(external_event_id, '')) LIKE ? OR LOWER(COALESCE(room_id, '')) LIKE ? OR LOWER(COALESCE(session_id, '')) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = webhook_event_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = webhook_event_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(sqlite_row_to_webhook_event_record)
+            .collect()
+    }
+
+    pub async fn list_provider_query_snapshots_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider_query_job_id: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderQuerySnapshotRecord>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+        ];
+        if provider_query_job_id.is_some() {
+            where_parts.push("provider_query_job_id = ?".to_string());
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(provider_query_job_id) LIKE ? OR LOWER(target_id) LIKE ? OR LOWER(COALESCE(provider_session_id, '')) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_query_snapshot_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = provider_query_snapshot_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(job_id) = provider_query_job_id {
+            query = query.bind(job_id);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
         rows.into_iter()
             .map(sqlite_row_to_provider_query_snapshot_record)
             .collect()
@@ -368,6 +517,46 @@ impl RtcPostgresProviderEventRepository {
             .collect()
     }
 
+    pub async fn list_provider_query_jobs_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcProviderQueryJobRecord>> {
+        let sql = postgres_provider_query_job_select_columns_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2",
+            "ORDER BY requested_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_provider_query_job_record)
+            .collect()
+    }
+
+    pub async fn list_provider_query_snapshots_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcProviderQuerySnapshotRecord>> {
+        let sql = postgres_provider_query_snapshot_select_columns_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2",
+            "ORDER BY captured_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_provider_query_snapshot_record)
+            .collect()
+    }
+
     pub async fn record_provider_query_result(
         &self,
         query_job_numeric_id: i64,
@@ -469,6 +658,129 @@ impl RtcPostgresProviderEventRepository {
             .fetch_all(&self.pool)
             .await?;
 
+        rows.into_iter()
+            .map(postgres_row_to_provider_query_snapshot_record)
+            .collect()
+    }
+
+    pub async fn list_webhook_events_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderWebhookEventRecord>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $3 OR LOWER(provider) LIKE $4 OR LOWER(event_type) LIKE $5 OR LOWER(COALESCE(external_event_id, '')) LIKE $6 OR LOWER(COALESCE(room_id, '')) LIKE $7 OR LOWER(COALESCE(session_id, '')) LIKE $8)"
+                    .to_string(),
+            );
+        }
+        let order_column = webhook_event_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$9" } else { "$3" };
+        let offset_param = if needle.is_some() { "$10" } else { "$4" };
+        let sql = postgres_webhook_event_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_webhook_event_record)
+            .collect()
+    }
+
+    pub async fn list_provider_query_snapshots_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider_query_job_id: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderQuerySnapshotRecord>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+        ];
+        let mut next_param = 3usize;
+        if provider_query_job_id.is_some() {
+            where_parts.push(format!("provider_query_job_id = ${next_param}"));
+            next_param += 1;
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            let start = next_param;
+            where_parts.push(format!(
+                "(LOWER(uuid) LIKE ${start} OR LOWER(provider_query_job_id) LIKE ${} OR LOWER(target_id) LIKE ${} OR LOWER(COALESCE(provider_session_id, '')) LIKE ${})",
+                start + 1,
+                start + 2,
+                start + 3
+            ));
+            next_param += 4;
+        }
+        let limit_param = format!("${next_param}");
+        let offset_param = format!("${}", next_param + 1);
+        let order_column = provider_query_snapshot_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = postgres_provider_query_snapshot_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(job_id) = provider_query_job_id {
+            query = query.bind(job_id);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
         rows.into_iter()
             .map(postgres_row_to_provider_query_snapshot_record)
             .collect()
@@ -1294,6 +1606,28 @@ fn webhook_status_to_str(value: i32) -> &'static str {
         3 => "failed",
         4 => "ignored",
         _ => "failed",
+    }
+}
+
+fn webhook_event_sort_column(field: &str) -> &'static str {
+    match field {
+        "provider" => "provider",
+        "eventType" | "event_type" => "event_type",
+        "externalEventId" | "external_event_id" => "external_event_id",
+        "receivedAt" | "received_at" => "received_at",
+        "status" => "status",
+        _ => "uuid",
+    }
+}
+
+fn provider_query_snapshot_sort_column(field: &str) -> &'static str {
+    match field {
+        "queryKind" | "query_kind" => "query_kind",
+        "jobId" | "job_id" | "providerQueryJobId" | "provider_query_job_id" => {
+            "provider_query_job_id"
+        }
+        "capturedAt" | "captured_at" => "captured_at",
+        _ => "uuid",
     }
 }
 

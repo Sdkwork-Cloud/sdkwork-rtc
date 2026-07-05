@@ -272,15 +272,42 @@ impl RtcSqlitePersistencePort {
             .flat_map(|session| session.participants.clone())
             .collect::<Vec<_>>();
         let mut media_tracks = Vec::new();
+        let mut media_artifacts = Vec::new();
+        let mut quality_samples = Vec::new();
+        let mut completion_records = Vec::new();
         for session in &media_sessions {
             media_tracks.extend(
                 self.media_sessions
                     .list_media_tracks(session.id.as_str())
                     .await?,
             );
+            media_artifacts.extend(
+                self.media_sessions
+                    .list_media_artifacts(session.id.as_str())
+                    .await?,
+            );
+            quality_samples.extend(
+                self.media_sessions
+                    .list_quality_samples(session.id.as_str())
+                    .await?,
+            );
+            if let Some(completion) = self
+                .completion_records
+                .get_completion_record_by_session_id(session.id.as_str())
+                .await?
+            {
+                completion_records.push(completion);
+            }
         }
-        let webhook_events = RtcSqliteProviderEventRepository::new(self.pool.clone())
+        let provider_events = RtcSqliteProviderEventRepository::new(self.pool.clone());
+        let webhook_events = provider_events
             .list_webhook_events_for_scope(tenant_id, organization_id)
+            .await?;
+        let provider_query_jobs = provider_events
+            .list_provider_query_jobs_for_scope(tenant_id, organization_id)
+            .await?;
+        let provider_query_snapshots = provider_events
+            .list_provider_query_snapshots_for_scope(tenant_id, organization_id)
             .await?;
         let media_session_idempotencies =
             RtcSqliteMediaSessionIdempotencyRepository::new(self.pool.clone())
@@ -296,9 +323,13 @@ impl RtcSqlitePersistencePort {
             media_sessions,
             media_participants,
             media_tracks,
+            media_artifacts,
+            quality_samples,
+            completion_records,
             webhook_events,
+            provider_query_jobs,
+            provider_query_snapshots,
             media_session_idempotencies,
-            ..RtcPersistenceChangeSet::default()
         })
     }
 }
@@ -761,15 +792,42 @@ impl RtcPostgresPersistencePort {
             .flat_map(|session| session.participants.clone())
             .collect::<Vec<_>>();
         let mut media_tracks = Vec::new();
+        let mut media_artifacts = Vec::new();
+        let mut quality_samples = Vec::new();
+        let mut completion_records = Vec::new();
         for session in &media_sessions {
             media_tracks.extend(
                 self.media_sessions
                     .list_media_tracks(session.id.as_str())
                     .await?,
             );
+            media_artifacts.extend(
+                self.media_sessions
+                    .list_media_artifacts(session.id.as_str())
+                    .await?,
+            );
+            quality_samples.extend(
+                self.media_sessions
+                    .list_quality_samples(session.id.as_str())
+                    .await?,
+            );
+            if let Some(completion) = self
+                .completion_records
+                .get_completion_record_by_session_id(session.id.as_str())
+                .await?
+            {
+                completion_records.push(completion);
+            }
         }
-        let webhook_events = RtcPostgresProviderEventRepository::new(self.pool.clone())
+        let provider_events = RtcPostgresProviderEventRepository::new(self.pool.clone());
+        let webhook_events = provider_events
             .list_webhook_events_for_scope(tenant_id, organization_id)
+            .await?;
+        let provider_query_jobs = provider_events
+            .list_provider_query_jobs_for_scope(tenant_id, organization_id)
+            .await?;
+        let provider_query_snapshots = provider_events
+            .list_provider_query_snapshots_for_scope(tenant_id, organization_id)
             .await?;
         let media_session_idempotencies =
             RtcPostgresMediaSessionIdempotencyRepository::new(self.pool.clone())
@@ -785,9 +843,13 @@ impl RtcPostgresPersistencePort {
             media_sessions,
             media_participants,
             media_tracks,
+            media_artifacts,
+            quality_samples,
+            completion_records,
             webhook_events,
+            provider_query_jobs,
+            provider_query_snapshots,
             media_session_idempotencies,
-            ..RtcPersistenceChangeSet::default()
         })
     }
 }

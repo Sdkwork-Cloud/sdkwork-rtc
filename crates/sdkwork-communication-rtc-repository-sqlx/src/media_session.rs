@@ -414,7 +414,7 @@ impl RtcSqliteMediaSessionRepository {
         rows.into_iter().map(sqlite_row_to_media_track).collect()
     }
 
-    async fn list_media_artifacts(
+    pub async fn list_media_artifacts(
         &self,
         media_session_id: &str,
     ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
@@ -430,7 +430,7 @@ impl RtcSqliteMediaSessionRepository {
         rows.into_iter().map(sqlite_row_to_media_artifact).collect()
     }
 
-    async fn list_quality_samples(
+    pub async fn list_quality_samples(
         &self,
         media_session_id: &str,
     ) -> RtcStorageResult<Vec<RtcQualitySample>> {
@@ -623,6 +623,153 @@ impl RtcSqliteMediaSessionRepository {
             .fetch_all(&self.pool)
             .await?;
         rows.into_iter().map(sqlite_row_to_room).collect()
+    }
+
+    pub async fn list_media_sessions_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcMediaSession>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(room_id) LIKE ? OR LOWER(COALESCE(provider_profile_id, '')) LIKE ? OR LOWER(COALESCE(provider_session_id, '')) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = media_session_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = sqlite_media_session_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut sessions = Vec::with_capacity(rows.len());
+        for row in rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = self.list_media_participants(session_id.as_str()).await?;
+            sessions.push(sqlite_row_to_media_session(row, participants)?);
+        }
+        Ok(sessions)
+    }
+
+    pub async fn list_media_artifacts_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "session_id = ?".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(COALESCE(provider_artifact_id, '')) LIKE ? OR LOWER(COALESCE(drive_uri, '')) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = media_artifact_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = sqlite_media_artifact_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(session_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_media_artifact).collect()
+    }
+
+    pub async fn list_quality_samples_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcQualitySample>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "session_id = ?".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(COALESCE(participant_id, '')) LIKE ?)".to_string(),
+            );
+        }
+        let order_column = quality_sample_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = sqlite_quality_sample_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(session_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_quality_sample).collect()
     }
 }
 
@@ -1023,7 +1170,7 @@ impl RtcPostgresMediaSessionRepository {
         rows.into_iter().map(postgres_row_to_media_track).collect()
     }
 
-    async fn list_media_artifacts(
+    pub async fn list_media_artifacts(
         &self,
         media_session_id: &str,
     ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
@@ -1041,7 +1188,7 @@ impl RtcPostgresMediaSessionRepository {
             .collect()
     }
 
-    async fn list_quality_samples(
+    pub async fn list_quality_samples(
         &self,
         media_session_id: &str,
     ) -> RtcStorageResult<Vec<RtcQualitySample>> {
@@ -1256,6 +1403,169 @@ impl RtcPostgresMediaSessionRepository {
             .fetch_all(&self.pool)
             .await?;
         rows.into_iter().map(postgres_row_to_room).collect()
+    }
+
+    pub async fn list_media_sessions_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcMediaSession>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $3 OR LOWER(room_id) LIKE $4 OR LOWER(COALESCE(provider_profile_id, '')) LIKE $5 OR LOWER(COALESCE(provider_session_id, '')) LIKE $6)"
+                    .to_string(),
+            );
+        }
+        let order_column = media_session_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$7" } else { "$3" };
+        let offset_param = if needle.is_some() { "$8" } else { "$4" };
+        let sql = postgres_media_session_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut sessions = Vec::with_capacity(rows.len());
+        for row in rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = self.list_media_participants(session_id.as_str()).await?;
+            sessions.push(postgres_row_to_media_session(row, participants)?);
+        }
+        Ok(sessions)
+    }
+
+    pub async fn list_media_artifacts_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "session_id = $3".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $4 OR LOWER(COALESCE(provider_artifact_id, '')) LIKE $5 OR LOWER(COALESCE(drive_uri, '')) LIKE $6)"
+                    .to_string(),
+            );
+        }
+        let order_column = media_artifact_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$7" } else { "$4" };
+        let offset_param = if needle.is_some() { "$8" } else { "$5" };
+        let sql = postgres_media_artifact_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(session_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_media_artifact)
+            .collect()
+    }
+
+    pub async fn list_quality_samples_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcQualitySample>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "session_id = $3".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $4 OR LOWER(COALESCE(participant_id, '')) LIKE $5)".to_string(),
+            );
+        }
+        let order_column = quality_sample_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$6" } else { "$4" };
+        let offset_param = if needle.is_some() { "$7" } else { "$5" };
+        let sql = postgres_quality_sample_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(session_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_quality_sample)
+            .collect()
     }
 }
 
@@ -2343,6 +2653,34 @@ fn room_sort_column(field: &str) -> &'static str {
         "title" => "title",
         "status" => "status",
         "ownerUserId" | "owner_user_id" => "owner_user_id",
+        _ => "uuid",
+    }
+}
+
+fn media_session_sort_column(field: &str) -> &'static str {
+    match field {
+        "roomId" | "room_id" => "room_id",
+        "provider" | "providerProfileId" | "provider_profile_id" => "provider_profile_id",
+        "status" => "status",
+        "startedAt" | "started_at" => "started_at",
+        _ => "uuid",
+    }
+}
+
+fn media_artifact_sort_column(field: &str) -> &'static str {
+    match field {
+        "kind" | "artifactKind" | "artifact_kind" => "artifact_kind",
+        "status" | "artifactStatus" | "artifact_status" => "artifact_status",
+        "sessionId" | "session_id" => "session_id",
+        _ => "uuid",
+    }
+}
+
+fn quality_sample_sort_column(field: &str) -> &'static str {
+    match field {
+        "sessionId" | "session_id" => "session_id",
+        "participantId" | "participant_id" => "participant_id",
+        "sampledAt" | "sampled_at" => "sampled_at",
         _ => "uuid",
     }
 }

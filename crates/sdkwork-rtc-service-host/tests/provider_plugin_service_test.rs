@@ -22,7 +22,8 @@ use sdkwork_communication_rtc_service::{
     RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest,
     RtcRecordingArtifact, RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture,
-    RtcRecordingLifecycleReconcileQuery, RtcRuntimeLoadRequest, RtcSessionHandle, RtcTenantOrganizationScope,
+    RtcRecordingLifecycleReconcileQuery, RtcRoom, RtcRoomListPage, RtcRoomScopeQuery,
+    RtcListWindowParams, RtcRuntimeLoadRequest, RtcSessionHandle, RtcTenantOrganizationScope,
     verify_hmac_sha256_payload,
 };
 use sdkwork_routes_rtc_app_api::service::{
@@ -3446,6 +3447,31 @@ impl RtcPersistencePort for RecordingPersistence {
         _query: RtcRecordingLifecycleReconcileQuery,
     ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>> {
         Box::pin(async { Ok(Vec::new()) })
+    }
+
+    fn get_room<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _room_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcRoom>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn list_rooms_for_scope<'a>(
+        &'a self,
+        _query: RtcRoomScopeQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcRoom>> {
+        Box::pin(async { Ok(Vec::new()) })
+    }
+
+    fn list_rooms_page<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _params: RtcListWindowParams,
+    ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
+        Box::pin(async { Ok(RtcRoomListPage::empty()) })
     }
 }
 

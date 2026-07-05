@@ -68,7 +68,7 @@ mod tests {
     use super::*;
     use crate::service::{
         RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture, RtcAppListQuery,
-        RtcCreateAppMediaSessionRequest, RtcIssueParticipantCredentialRequest, RtcListRequest,
+        RtcCreateAppMediaSessionRequest, RtcCreateAppRoomRequest, RtcIssueParticipantCredentialRequest, RtcListRequest,
         RtcMediaArtifactListData, RtcMediaSessionListData, RtcRoomListData,
     };
 
@@ -97,11 +97,12 @@ mod tests {
             .expect("body should collect")
             .to_bytes();
         let json: JsonValue = serde_json::from_slice(&body).expect("body should be json");
-        assert_eq!(json["code"], "ok");
+        assert_eq!(json["code"], 0);
         assert_eq!(
             json["data"]["items"][0]["provider"],
             JsonValue::String("volcengine".to_owned())
         );
+        assert!(json["data"]["pageInfo"].is_object());
         assert_eq!(
             service.calls.lock().expect("calls lock").as_slice(),
             &["list_active_provider_profiles"]
@@ -147,6 +148,17 @@ mod tests {
                     status: RtcRoomStatus::Active,
                 })
             })
+        }
+
+        fn create_room(
+            &self,
+            _tenant_id: String,
+            _organization_id: Option<String>,
+            _user_id: String,
+            _request: RtcCreateAppRoomRequest,
+        ) -> RtcAppApiFuture<RtcRoom> {
+            self.record("create_room");
+            Box::pin(async move { Err(RtcAppApiError::Unavailable("not configured".to_owned())) })
         }
 
         fn list_active_provider_profiles(

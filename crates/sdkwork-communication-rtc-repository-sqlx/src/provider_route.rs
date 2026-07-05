@@ -123,6 +123,54 @@ impl RtcSqliteProviderRouteRepository {
         rows.into_iter().map(sqlite_row_to_provider_route).collect()
     }
 
+    pub async fn list_provider_routes_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderRoute>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(provider_profile_id) LIKE ? OR LOWER(route_type) LIKE ? OR LOWER(COALESCE(region, '')) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_route_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = provider_route_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_provider_route).collect()
+    }
+
     pub async fn disable_provider_route(
         &self,
         provider_route_id: &str,
@@ -268,6 +316,60 @@ impl RtcPostgresProviderRouteRepository {
             .fetch_all(&self.pool)
             .await?;
 
+        rows.into_iter()
+            .map(postgres_row_to_provider_route)
+            .collect()
+    }
+
+    pub async fn list_provider_routes_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderRoute>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $3 OR LOWER(provider_profile_id) LIKE $4 OR LOWER(route_type) LIKE $5 OR LOWER(COALESCE(region, '')) LIKE $6)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_route_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$7" } else { "$3" };
+        let offset_param = if needle.is_some() { "$8" } else { "$4" };
+        let sql = postgres_provider_route_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
         rows.into_iter()
             .map(postgres_row_to_provider_route)
             .collect()
@@ -492,6 +594,17 @@ fn i32_to_provider_route_status(value: i32) -> RtcStorageResult<RtcProviderRoute
             field: "status",
             value: value.to_string(),
         }),
+    }
+}
+
+fn provider_route_sort_column(field: &str) -> &'static str {
+    match field {
+        "providerProfileId" | "provider_profile_id" => "provider_profile_id",
+        "routeType" | "route_type" => "route_type",
+        "region" => "region",
+        "priority" => "priority",
+        "status" => "status",
+        _ => "uuid",
     }
 }
 

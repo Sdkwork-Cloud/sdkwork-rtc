@@ -436,6 +436,159 @@ impl RtcSqliteProviderAccountRepository {
             .collect()
     }
 
+    pub async fn list_provider_accounts_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderAccount>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(provider) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_account_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = provider_account_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(sqlite_row_to_provider_account)
+            .collect()
+    }
+
+    pub async fn list_provider_applications_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider_account_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderApplication>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "provider_account_id = ?".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(provider_application_id) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_application_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = provider_application_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(provider_account_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(sqlite_row_to_provider_application)
+            .collect()
+    }
+
+    pub async fn list_provider_credentials_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider_application_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderCredential>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "provider_application_id = ?".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(credential_label) LIKE ?)".to_string(),
+            );
+        }
+        let order_column = provider_credential_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = provider_credential_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(provider_application_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(sqlite_row_to_provider_credential)
+            .collect()
+    }
+
     pub async fn revoke_provider_credential(
         &self,
         provider_credential_id: &str,
@@ -890,6 +1043,171 @@ impl RtcPostgresProviderAccountRepository {
             .fetch_all(&self.pool)
             .await?;
 
+        rows.into_iter()
+            .map(postgres_row_to_provider_credential)
+            .collect()
+    }
+
+    pub async fn list_provider_accounts_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderAccount>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $3 OR LOWER(code) LIKE $4 OR LOWER(name) LIKE $5 OR LOWER(provider) LIKE $6)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_account_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$7" } else { "$3" };
+        let offset_param = if needle.is_some() { "$8" } else { "$4" };
+        let sql = postgres_provider_account_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_provider_account)
+            .collect()
+    }
+
+    pub async fn list_provider_applications_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider_account_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderApplication>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "provider_account_id = $3".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $4 OR LOWER(code) LIKE $5 OR LOWER(name) LIKE $6 OR LOWER(provider_application_id) LIKE $7)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_application_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$8" } else { "$4" };
+        let offset_param = if needle.is_some() { "$9" } else { "$5" };
+        let sql = postgres_provider_application_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(provider_account_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_provider_application)
+            .collect()
+    }
+
+    pub async fn list_provider_credentials_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider_application_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderCredential>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "provider_application_id = $3".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE $4 OR LOWER(credential_label) LIKE $5)".to_string(),
+            );
+        }
+        let order_column = provider_credential_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$6" } else { "$4" };
+        let offset_param = if needle.is_some() { "$7" } else { "$5" };
+        let sql = postgres_provider_credential_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(provider_application_id);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
         rows.into_iter()
             .map(postgres_row_to_provider_credential)
             .collect()
@@ -1712,6 +2030,34 @@ fn i32_to_provider_credential_status(value: i32) -> RtcStorageResult<RtcProvider
             field: "provider_credential_status",
             value: value.to_string(),
         }),
+    }
+}
+
+fn provider_account_sort_column(field: &str) -> &'static str {
+    match field {
+        "name" => "name",
+        "code" => "code",
+        "provider" => "provider",
+        "status" => "status",
+        _ => "uuid",
+    }
+}
+
+fn provider_application_sort_column(field: &str) -> &'static str {
+    match field {
+        "name" => "name",
+        "code" => "code",
+        "providerApplicationId" | "provider_application_id" => "provider_application_id",
+        _ => "uuid",
+    }
+}
+
+fn provider_credential_sort_column(field: &str) -> &'static str {
+    match field {
+        "label" | "credentialLabel" | "credential_label" => "credential_label",
+        "role" | "credentialRole" | "credential_role" => "credential_role",
+        "status" => "status",
+        _ => "uuid",
     }
 }
 

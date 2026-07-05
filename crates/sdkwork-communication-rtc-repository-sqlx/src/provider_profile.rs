@@ -169,6 +169,124 @@ impl RtcSqliteProviderProfileRepository {
             .collect()
     }
 
+    pub async fn list_provider_profiles_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderProfile>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        if provider.is_some() {
+            where_parts.push("provider = ?".to_string());
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(provider) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_profile_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = provider_profile_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(provider) = provider {
+            query = query.bind(provider);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(sqlite_row_to_provider_profile)
+            .collect()
+    }
+
+    pub async fn list_active_provider_profiles_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcActiveProviderProfile>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "status = 1".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        if provider.is_some() {
+            where_parts.push("provider = ?".to_string());
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(provider) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = provider_profile_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = provider_profile_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(provider) = provider {
+            query = query.bind(provider);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(sqlite_row_to_provider_profile)
+            .map(|result| result.map(|profile| profile.active_projection()))
+            .collect()
+    }
+
     pub async fn disable_provider_profile(
         &self,
         provider_profile_id: &str,
@@ -391,6 +509,146 @@ impl RtcPostgresProviderProfileRepository {
             .fetch_all(&self.pool)
             .await?;
 
+        rows.into_iter()
+            .map(postgres_row_to_provider_profile)
+            .map(|result| result.map(|profile| profile.active_projection()))
+            .collect()
+    }
+
+    pub async fn list_provider_profiles_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcProviderProfile>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let mut next_param = 3usize;
+        if provider.is_some() {
+            let param = format!("${next_param}");
+            next_param += 1;
+            where_parts.push(format!("provider = {param}"));
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            let start = next_param;
+            where_parts.push(format!(
+                "(LOWER(uuid) LIKE ${start} OR LOWER(code) LIKE ${} OR LOWER(name) LIKE ${} OR LOWER(provider) LIKE ${})",
+                start + 1,
+                start + 2,
+                start + 3
+            ));
+            next_param += 4;
+        }
+        let limit_param = format!("${next_param}");
+        let offset_param = format!("${}", next_param + 1);
+        let order_column = provider_profile_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = postgres_provider_profile_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(provider) = provider {
+            query = query.bind(provider);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_provider_profile)
+            .collect()
+    }
+
+    pub async fn list_active_provider_profiles_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        provider: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcActiveProviderProfile>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "status = 1".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let mut next_param = 3usize;
+        if provider.is_some() {
+            let param = format!("${next_param}");
+            next_param += 1;
+            where_parts.push(format!("provider = {param}"));
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            let start = next_param;
+            where_parts.push(format!(
+                "(LOWER(uuid) LIKE ${start} OR LOWER(code) LIKE ${} OR LOWER(name) LIKE ${} OR LOWER(provider) LIKE ${})",
+                start + 1,
+                start + 2,
+                start + 3
+            ));
+            next_param += 4;
+        }
+        let limit_param = format!("${next_param}");
+        let offset_param = format!("${}", next_param + 1);
+        let order_column = provider_profile_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = postgres_provider_profile_select_columns_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(provider) = provider {
+            query = query.bind(provider);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern)
+                .bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
         rows.into_iter()
             .map(postgres_row_to_provider_profile)
             .map(|result| result.map(|profile| profile.active_projection()))
@@ -930,6 +1188,17 @@ fn i32_to_provider_health_status(value: i32) -> RtcStorageResult<RtcProviderHeal
             field: "health_status",
             value: value.to_string(),
         }),
+    }
+}
+
+fn provider_profile_sort_column(field: &str) -> &'static str {
+    match field {
+        "name" => "name",
+        "code" => "code",
+        "provider" => "provider",
+        "priority" => "priority",
+        "isDefault" | "is_default" => "is_default",
+        _ => "uuid",
     }
 }
 

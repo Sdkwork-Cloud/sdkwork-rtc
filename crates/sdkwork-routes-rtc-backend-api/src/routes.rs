@@ -181,7 +181,7 @@ mod tests {
     use super::*;
     use crate::service::{
         RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListQuery,
-        RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcListData,
+        RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcCreateRoomCommand, RtcListData,
         RtcProviderQueryJobCreateRequest, RtcProviderRoute, RtcProviderRouteCommand,
         RtcProviderRouteDisableRequest, RtcProviderWebhookIngress,
     };
@@ -221,8 +221,8 @@ mod tests {
             .to_bytes();
         let json: JsonValue = serde_json::from_slice(&body).expect("body should be json");
 
-        assert_eq!(json["code"], "ok");
-        assert_eq!(json["data"]["provider"], "volcengine");
+        assert_eq!(json["code"], 0);
+        assert_eq!(json["data"]["item"]["provider"], "volcengine");
         assert_eq!(
             service.calls.lock().expect("calls lock").as_slice(),
             &["receive_provider_webhook_event"]
@@ -260,6 +260,17 @@ mod tests {
             _room_id: String,
         ) -> RtcBackendApiFuture<RtcRoom> {
             self.record("retrieve_room");
+            Self::unavailable()
+        }
+
+        fn create_room(
+            &self,
+            _tenant_id: String,
+            _organization_id: Option<String>,
+            _actor_id: String,
+            _request: RtcCreateRoomCommand,
+        ) -> RtcBackendApiFuture<RtcRoom> {
+            self.record("create_room");
             Self::unavailable()
         }
 

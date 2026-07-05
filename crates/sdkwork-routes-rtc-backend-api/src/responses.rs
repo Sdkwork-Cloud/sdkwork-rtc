@@ -4,8 +4,7 @@ use axum::{
     Json,
 };
 use sdkwork_communication_rtc_service::{
-    map_rtc_api_error_code, resolved_list_page_size, rtc_list_page_to_sdkwork_page_data,
-    rtc_list_window_to_sdkwork_page_data, RtcListPage, RtcListWindowParams,
+    map_rtc_api_error_code, rtc_list_page_to_sdkwork_page_data, RtcListPage, RtcListWindowParams,
 };
 use sdkwork_utils_rust::{
     SdkWorkApiResponse, SdkWorkPageData, SdkWorkProblemDetail, SdkWorkResourceData,
