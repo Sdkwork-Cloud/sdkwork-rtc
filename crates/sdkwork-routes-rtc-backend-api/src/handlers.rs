@@ -7,16 +7,7 @@ use axum::{
     http::HeaderMap,
     response::Response,
 };
-use sdkwork_communication_rtc_service::{
-    ProviderConfigSchema, ProviderPluginDescriptor, RtcMediaArtifact, RtcMediaSession,
-    RtcMediaSessionCompletionRecord, RtcProviderAccount, RtcProviderAccountCommand,
-    RtcProviderAccountDisableRequest, RtcProviderApplication, RtcProviderApplicationCommand,
-    RtcProviderApplicationDisableRequest, RtcProviderCredential, RtcProviderCredentialCommand,
-    RtcProviderCredentialRevokeRequest, RtcProviderProfile, RtcProviderProfileCommand,
-    RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest,
-    RtcProviderProfileVerifyResult, RtcProviderQueryJobRecord, RtcProviderWebhookEventRecord,
-    RtcQualitySample, RtcRoom,
-};
+use sdkwork_communication_rtc_service::RtcListWindowParams;
 use sdkwork_rtc_app_context::AppContext;
 use sdkwork_web_core::WebRequestContext;
 
@@ -26,9 +17,20 @@ use crate::responses::{
 };
 use crate::service::{
     RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest, RtcCloseMediaSessionRequest,
-    RtcCreateRoomCommand, RtcProviderQueryJobCreateRequest, RtcProviderRoute,
+    RtcCreateRoomCommand, RtcListData, RtcProviderAccountCommand, RtcProviderAccountDisableRequest,
+    RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest,
+    RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderProfileCommand,
+    RtcProviderProfileDisableRequest, RtcProviderProfileVerifyRequest, RtcProviderQueryJobCreateRequest,
     RtcProviderRouteCommand, RtcProviderRouteDisableRequest, RtcProviderWebhookIngress,
 };
+
+fn api_list_data<T: serde::Serialize>(
+    data: RtcListData<T>,
+    params: &RtcListWindowParams,
+    trace_id: &str,
+) -> Response {
+    api_list_payload(data.items, data.next_cursor, params, trace_id)
+}
 
 pub async fn list_rooms(
     State(service): State<Arc<dyn RtcBackendApiService>>,
@@ -37,11 +39,12 @@ pub async fn list_rooms(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service.list_rooms(list_request(&context, query)).await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn retrieve_room(
@@ -78,7 +81,7 @@ pub async fn create_room(
             )
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_created(result, &trace_id))
 }
 
 pub async fn list_provider_accounts(
@@ -88,13 +91,14 @@ pub async fn list_provider_accounts(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
             .list_provider_accounts(list_request(&context, query))
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn create_provider_account(
@@ -192,6 +196,7 @@ pub async fn list_provider_applications(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
@@ -203,7 +208,7 @@ pub async fn list_provider_applications(
             )
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn create_provider_application(
@@ -303,6 +308,7 @@ pub async fn list_provider_credentials(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
@@ -314,7 +320,7 @@ pub async fn list_provider_credentials(
             )
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn create_provider_credential(
@@ -413,13 +419,14 @@ pub async fn list_provider_profiles(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
             .list_provider_profiles(list_request(&context, query))
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn create_provider_profile(
@@ -539,13 +546,14 @@ pub async fn list_provider_routes(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
             .list_provider_routes(list_request(&context, query))
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn create_provider_route(
@@ -642,13 +650,14 @@ pub async fn list_media_sessions(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
             .list_media_sessions(list_request(&context, query))
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn retrieve_media_session(
@@ -717,13 +726,14 @@ pub async fn list_media_artifacts(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
             .list_media_artifacts(list_request(&context, query))
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn retrieve_media_artifact(
@@ -753,13 +763,14 @@ pub async fn list_quality_samples(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
             .list_quality_samples(list_request(&context, query))
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn list_provider_webhook_events(
@@ -769,13 +780,14 @@ pub async fn list_provider_webhook_events(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
             .list_provider_webhook_events(list_request(&context, query))
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn receive_provider_webhook_event(
@@ -787,7 +799,7 @@ pub async fn receive_provider_webhook_event(
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
     let ingress = RtcProviderWebhookIngress::from_http_request(&headers, body.as_ref())
-        .map_err(|error| RtcBackendHandlerError::from_api_error(error, request_id.clone()))?;
+        .map_err(|error| RtcBackendHandlerError::from_api_error(error, trace_id.clone()))?;
     let result = map_handler_error(
         &trace_id,
         service
@@ -846,6 +858,7 @@ pub async fn list_provider_query_snapshots(
     Query(query): Query<RtcBackendListQuery>,
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
+    let params = list_params_from_backend_query(&query);
     let result = map_handler_error(
         &trace_id,
         service
@@ -857,7 +870,7 @@ pub async fn list_provider_query_snapshots(
             )
             .await,
     )?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_list_data(result, &params, &trace_id))
 }
 
 pub async fn list_provider_config_schemas(
@@ -866,7 +879,7 @@ pub async fn list_provider_config_schemas(
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(&trace_id, service.list_provider_config_schemas().await)?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_catalog_list(result, &trace_id))
 }
 
 pub async fn get_provider_config_schema(
@@ -888,7 +901,7 @@ pub async fn list_provider_plugins(
 ) -> Result<Response, RtcBackendHandlerError> {
     let trace_id = resolved_trace_id(&web_context);
     let result = map_handler_error(&trace_id, service.list_provider_plugins().await)?;
-    Ok(api_item(result, &trace_id))
+    Ok(api_catalog_list(result, &trace_id))
 }
 
 pub async fn get_provider_plugin(
@@ -922,40 +935,6 @@ pub async fn configure_provider_capabilities(
             .await,
     )?;
     Ok(api_item(result, &trace_id))
-}
-
-#[derive(Debug)]
-pub struct RtcBackendHandlerError {
-    error: RtcBackendApiError,
-    request_id: String,
-}
-
-impl RtcBackendHandlerError {
-    fn from_api_error(error: RtcBackendApiError, request_id: String) -> Self {
-        Self { error, request_id }
-    }
-}
-
-impl IntoResponse for RtcBackendHandlerError {
-    fn into_response(self) -> Response {
-        let status = self.error.status_code();
-        (
-            status,
-            Json(RtcProblemEnvelope::from_error(&self.error, self.request_id)),
-        )
-            .into_response()
-    }
-}
-
-fn map_handler_error<T>(
-    request_id: &str,
-    result: Result<T, RtcBackendApiError>,
-) -> Result<T, RtcBackendHandlerError> {
-    result.map_err(|error| RtcBackendHandlerError::from_api_error(error, request_id.to_owned()))
-}
-
-fn envelope_request_id(web_context: &WebRequestContext) -> String {
-    web_context.request_id.0.clone()
 }
 
 fn list_request(context: &AppContext, query: RtcBackendListQuery) -> RtcBackendListRequest {
