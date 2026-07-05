@@ -15,11 +15,11 @@
     "target": "ES2023",
     "types": ["node", "miniprogram-api-typings"],
     "paths": {
-      "sdkwork-rtc-app-sdk-generated-typescript": [
-        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/index.d.ts"
+      "@sdkwork/rtc-app-sdk": [
+        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts"
       ],
-      "sdkwork-rtc-app-sdk-generated-typescript/types": [
-        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/types/index.d.ts"
+      "@sdkwork/rtc-app-sdk/types": [
+        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts"
       ]
     }
   },

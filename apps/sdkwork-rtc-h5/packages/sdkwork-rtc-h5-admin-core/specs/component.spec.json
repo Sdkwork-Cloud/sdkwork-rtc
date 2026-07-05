@@ -26,7 +26,7 @@
       "."
     ],
     "sdkClients": [
-      "sdkwork-rtc-backend-sdk-generated-typescript"
+      "@sdkwork/rtc-backend-sdk"
     ],
     "sdkDependencies": [
       {

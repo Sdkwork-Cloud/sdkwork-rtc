@@ -2,7 +2,7 @@
   "name": "@sdkwork/rtc-pc-rtc",
   "private": true,
   "version": "0.1.0",
-  "main": "src/index.ts",
+  "main": "./src/index.ts",
   "types": "src/index.ts",
   "dependencies": {
     "@sdkwork/rtc-pc-core": "workspace:*",
@@ -13,6 +13,13 @@
     "@sdkwork/rtc-sdk-provider-tencent": "workspace:*",
     "@sdkwork/rtc-sdk-provider-volcengine": "workspace:*",
     "react": "catalog:",
-    "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
+    "@sdkwork/rtc-app-sdk": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   }
 }

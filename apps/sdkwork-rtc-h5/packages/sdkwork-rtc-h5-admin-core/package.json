@@ -7,7 +7,7 @@
   "dependencies": {
     "@sdkwork/sdk-common": "^1.0.2",
     "@sdkwork/utils": "workspace:*",
-    "sdkwork-rtc-backend-sdk-generated-typescript": "workspace:*"
+    "@sdkwork/rtc-backend-sdk": "workspace:*"
   },
   "exports": {
     ".": {

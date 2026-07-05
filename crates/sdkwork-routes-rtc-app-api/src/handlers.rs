@@ -14,9 +14,16 @@ use serde_json::{Value as JsonValue, json};
 
 use crate::service::{
     RtcAppApiError, RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest,
-    RtcIssueParticipantCredentialRequest, RtcListRequest, RtcMediaArtifactListData,
-    RtcMediaSessionListData, RtcRoomListData,
+    RtcCreateAppRoomRequest, RtcIssueParticipantCredentialRequest, RtcListRequest,
+    RtcMediaArtifactListData, RtcMediaSessionListData, RtcRoomListData,
 };
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RtcCreateRoomBody {
+    pub title: String,
+    pub room_id: Option<String>,
+}
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -122,6 +129,30 @@ pub async fn list_active_provider_profiles(
         &request_id,
         service
             .list_active_provider_profiles(list_request(&context, query))
+            .await,
+    )?;
+    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+}
+
+pub async fn create_room(
+    State(service): State<Arc<dyn RtcAppApiService>>,
+    Extension(web_context): Extension<WebRequestContext>,
+    Extension(context): Extension<AppContext>,
+    Json(body): Json<RtcCreateRoomBody>,
+) -> Result<Json<RtcApiEnvelope<sdkwork_communication_rtc_service::RtcRoom>>, RtcAppHandlerError> {
+    let request_id = envelope_request_id(&web_context);
+    let result = map_handler_error(
+        &request_id,
+        service
+            .create_room(
+                context.tenant_id,
+                context.organization_id,
+                context.user_id,
+                RtcCreateAppRoomRequest {
+                    title: body.title,
+                    room_id: body.room_id,
+                },
+            )
             .await,
     )?;
     Ok(Json(RtcApiEnvelope::ok(result, request_id)))

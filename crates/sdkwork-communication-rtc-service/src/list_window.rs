@@ -106,7 +106,7 @@ pub fn apply_list_window<T>(
     })
 }
 
-fn resolve_list_limit(params: &RtcListWindowParams) -> Result<usize, RtcListWindowError> {
+pub fn resolve_list_limit(params: &RtcListWindowParams) -> Result<usize, RtcListWindowError> {
     let requested = params
         .limit
         .or(params.page_size)
@@ -119,7 +119,7 @@ fn resolve_list_limit(params: &RtcListWindowParams) -> Result<usize, RtcListWind
     Ok(requested.min(MAX_LIST_PAGE_SIZE) as usize)
 }
 
-fn resolve_list_offset(
+pub fn resolve_list_offset(
     params: &RtcListWindowParams,
     limit: usize,
 ) -> Result<usize, RtcListWindowError> {
@@ -145,6 +145,10 @@ fn parse_list_cursor(cursor: &str) -> Result<usize, RtcListWindowError> {
     cursor
         .parse::<usize>()
         .map_err(|_| RtcListWindowError::bad_request(format!("invalid list cursor: {cursor}")))
+}
+
+pub fn list_window_sort(params: &RtcListWindowParams) -> (String, bool) {
+    parse_sort(params.sort.as_deref())
 }
 
 fn parse_sort(sort: Option<&str>) -> (String, bool) {

@@ -1,4 +1,4 @@
-import type { SdkworkAppClient } from "sdkwork-rtc-app-sdk-generated-typescript";
+import type { SdkworkAppClient } from "@sdkwork/rtc-app-sdk";
 
 import { getAppSdkClient, initAppSdkClient } from "./appClient";
 import { resolveEnvironment } from "./environment";

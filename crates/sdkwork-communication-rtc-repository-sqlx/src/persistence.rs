@@ -1,12 +1,14 @@
 use std::collections::BTreeMap;
 
 use sdkwork_communication_rtc_service::{
-    RtcMediaArtifact, RtcMediaSession, RtcMediaSessionCompletionRecord,
-    RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcPersistenceChangeSet,
-    RtcPersistenceError, RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind,
-    RtcProviderQueryJobRecord, RtcProviderQueryKind, RtcProviderQuerySnapshotRecord,
-    RtcProviderWebhookEventRecord, RtcRecordingLifecycleReconcileQuery, RtcRuntimeLoadRequest,
-    RtcTenantOrganizationScope, utc_now_rfc3339_millis,
+    RtcListWindowError, RtcListWindowParams, RtcMediaArtifact, RtcMediaSession,
+    RtcMediaSessionCompletionRecord, RtcMediaSessionIdempotencyClaim,
+    RtcMediaSessionIdempotencyRecord, RtcPersistenceChangeSet, RtcPersistenceError,
+    RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind, RtcProviderQueryJobRecord,
+    RtcProviderQueryKind, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
+    RtcRecordingLifecycleReconcileQuery, RtcRoom, RtcRoomListPage, RtcRoomScopeQuery,
+    RtcRuntimeLoadRequest, RtcTenantOrganizationScope, list_window_sort, resolve_list_limit,
+    resolve_list_offset, utc_now_rfc3339_millis,
 };
 use sqlx::{Executor, PgPool, Postgres, Sqlite, SqlitePool};
 
@@ -257,6 +259,10 @@ impl RtcSqlitePersistencePort {
             .provider_routes
             .list_provider_routes(tenant_id, organization_id, None)
             .await?;
+        let rooms = self
+            .media_sessions
+            .list_rooms_for_scope(tenant_id, organization_id)
+            .await?;
         let media_sessions = self
             .media_sessions
             .list_media_sessions_for_scope(tenant_id, organization_id)
@@ -286,6 +292,7 @@ impl RtcSqlitePersistencePort {
             provider_credentials,
             provider_profiles,
             provider_routes,
+            rooms,
             media_sessions,
             media_participants,
             media_tracks,
@@ -395,6 +402,114 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
                 .map_err(storage_to_persistence_error)
         })
     }
+
+    fn get_room<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        room_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcRoom>> {
+        Box::pin(async move {
+            self.media_sessions
+                .get_room_for_scope(tenant_id, organization_id, room_id)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn list_rooms_for_scope<'a>(
+        &'a self,
+        query: RtcRoomScopeQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcRoom>> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_rooms_for_scope(query.tenant_id.as_str(), query.organization_id.as_str())
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn list_rooms_page<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        params: RtcListWindowParams,
+    ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
+        Box::pin(async move {
+            list_rooms_page_from_sqlite(
+                &self.media_sessions,
+                tenant_id,
+                organization_id,
+                params,
+            )
+            .await
+            .map_err(|error| RtcPersistenceError::Unavailable(error.to_string()))
+        })
+    }
+}
+
+async fn list_rooms_page_from_sqlite(
+    repository: &RtcSqliteMediaSessionRepository,
+    tenant_id: &str,
+    organization_id: &str,
+    params: RtcListWindowParams,
+) -> Result<RtcRoomListPage, RtcListWindowError> {
+    let limit = resolve_list_limit(&params)?;
+    let offset = resolve_list_offset(&params, limit)?;
+    let (sort_field, sort_descending) = list_window_sort(&params);
+    let mut items = repository
+        .list_rooms_page(
+            tenant_id,
+            organization_id,
+            offset,
+            limit,
+            params.q.as_deref(),
+            sort_field.as_str(),
+            sort_descending,
+        )
+        .await
+        .map_err(|error| RtcListWindowError::bad_request(error.to_string()))?;
+    let has_more = items.len() > limit;
+    if has_more {
+        items.truncate(limit);
+    }
+    let next_cursor = has_more.then(|| (offset + items.len()).to_string());
+    Ok(RtcRoomListPage {
+        items,
+        next_cursor,
+    })
+}
+
+async fn list_rooms_page_from_postgres(
+    repository: &RtcPostgresMediaSessionRepository,
+    tenant_id: &str,
+    organization_id: &str,
+    params: RtcListWindowParams,
+) -> Result<RtcRoomListPage, RtcListWindowError> {
+    let limit = resolve_list_limit(&params)?;
+    let offset = resolve_list_offset(&params, limit)?;
+    let (sort_field, sort_descending) = list_window_sort(&params);
+    let mut items = repository
+        .list_rooms_page(
+            tenant_id,
+            organization_id,
+            offset,
+            limit,
+            params.q.as_deref(),
+            sort_field.as_str(),
+            sort_descending,
+        )
+        .await
+        .map_err(|error| RtcListWindowError::bad_request(error.to_string()))?;
+    let has_more = items.len() > limit;
+    if has_more {
+        items.truncate(limit);
+    }
+    let next_cursor = has_more.then(|| (offset + items.len()).to_string());
+    Ok(RtcRoomListPage {
+        items,
+        next_cursor,
+    })
 }
 
 #[derive(Clone, Debug)]
@@ -633,6 +748,10 @@ impl RtcPostgresPersistencePort {
             .provider_routes
             .list_provider_routes(tenant_id, organization_id, None)
             .await?;
+        let rooms = self
+            .media_sessions
+            .list_rooms_for_scope(tenant_id, organization_id)
+            .await?;
         let media_sessions = self
             .media_sessions
             .list_media_sessions_for_scope(tenant_id, organization_id)
@@ -662,6 +781,7 @@ impl RtcPostgresPersistencePort {
             provider_credentials,
             provider_profiles,
             provider_routes,
+            rooms,
             media_sessions,
             media_participants,
             media_tracks,
@@ -769,6 +889,50 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
                 .list_recording_artifact_lifecycle_candidates(query)
                 .await
                 .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn get_room<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        room_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcRoom>> {
+        Box::pin(async move {
+            self.media_sessions
+                .get_room_for_scope(tenant_id, organization_id, room_id)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn list_rooms_for_scope<'a>(
+        &'a self,
+        query: RtcRoomScopeQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcRoom>> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_rooms_for_scope(query.tenant_id.as_str(), query.organization_id.as_str())
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn list_rooms_page<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        params: RtcListWindowParams,
+    ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
+        Box::pin(async move {
+            list_rooms_page_from_postgres(
+                &self.media_sessions,
+                tenant_id,
+                organization_id,
+                params,
+            )
+            .await
+            .map_err(|error| RtcPersistenceError::Unavailable(error.to_string()))
         })
     }
 }

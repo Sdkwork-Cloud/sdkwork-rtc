@@ -4,11 +4,11 @@ use std::future::Future;
 use std::pin::Pin;
 
 use crate::{
-    RtcMediaArtifact, RtcMediaParticipant, RtcMediaSession, RtcMediaSessionCompletionRecord,
-    RtcMediaSessionIdempotencyRecord, RtcMediaTrack, RtcProviderAccount, RtcProviderApplication,
-    RtcProviderCredential, RtcProviderProfile, RtcProviderQueryJobRecord,
-    RtcProviderQuerySnapshotRecord, RtcProviderRoute, RtcProviderWebhookEventRecord,
-    RtcQualitySample, RtcRoom,
+    RtcListWindowParams, RtcMediaArtifact, RtcMediaParticipant, RtcMediaSession,
+    RtcMediaSessionCompletionRecord, RtcMediaSessionIdempotencyRecord, RtcMediaTrack,
+    RtcProviderAccount, RtcProviderApplication, RtcProviderCredential, RtcProviderProfile,
+    RtcProviderQueryJobRecord, RtcProviderQuerySnapshotRecord, RtcProviderRoute,
+    RtcProviderWebhookEventRecord, RtcQualitySample, RtcRoom,
 };
 
 pub type RtcPersistenceResult<T> = Result<T, RtcPersistenceError>;
@@ -107,6 +107,18 @@ pub struct RtcRecordingLifecycleReconcileQuery {
     pub hard_delete_cutoff: String,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RtcRoomScopeQuery {
+    pub tenant_id: String,
+    pub organization_id: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RtcRoomListPage {
+    pub items: Vec<RtcRoom>,
+    pub next_cursor: Option<String>,
+}
+
 pub trait RtcPersistencePort: Send + Sync {
     fn persist_changes<'a>(
         &'a self,
@@ -153,6 +165,25 @@ pub trait RtcPersistencePort: Send + Sync {
         &'a self,
         query: RtcRecordingLifecycleReconcileQuery,
     ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>>;
+
+    fn get_room<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        room_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcRoom>>;
+
+    fn list_rooms_for_scope<'a>(
+        &'a self,
+        query: RtcRoomScopeQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcRoom>>;
+
+    fn list_rooms_page<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        params: RtcListWindowParams,
+    ) -> RtcPersistenceFuture<'a, RtcRoomListPage>;
 }
 
 #[derive(Clone, Debug, Default)]
@@ -216,5 +247,35 @@ impl RtcPersistencePort for NoopRtcPersistencePort {
         _query: RtcRecordingLifecycleReconcileQuery,
     ) -> RtcPersistenceFuture<'a, Vec<RtcMediaArtifact>> {
         Box::pin(async { Ok(Vec::new()) })
+    }
+
+    fn get_room<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _room_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcRoom>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn list_rooms_for_scope<'a>(
+        &'a self,
+        _query: RtcRoomScopeQuery,
+    ) -> RtcPersistenceFuture<'a, Vec<RtcRoom>> {
+        Box::pin(async { Ok(Vec::new()) })
+    }
+
+    fn list_rooms_page<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _params: RtcListWindowParams,
+    ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
+        Box::pin(async {
+            Ok(RtcRoomListPage {
+                items: Vec::new(),
+                next_cursor: None,
+            })
+        })
     }
 }

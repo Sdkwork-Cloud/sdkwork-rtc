@@ -1,5 +1,5 @@
 import { getRtcAppSdkClient } from "@sdkwork/rtc-pc-core";
-import type { SdkworkAppClient } from "sdkwork-rtc-app-sdk-generated-typescript";
+import type { SdkworkAppClient } from "@sdkwork/rtc-app-sdk";
 
 import { resolveEnvironment } from "./environment";
 

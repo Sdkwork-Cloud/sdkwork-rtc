@@ -25,7 +25,8 @@ pub use error::*;
 pub use idempotency::*;
 pub use list_window::{
     DEFAULT_LIST_PAGE_SIZE, MAX_LIST_PAGE_SIZE, RtcListWindow, RtcListWindowError,
-    RtcListWindowParams, apply_list_window, matches_query_tokens,
+    RtcListWindowParams, apply_list_window, list_window_sort, matches_query_tokens,
+    resolve_list_limit, resolve_list_offset,
 };
 pub use persistence::*;
 pub use provider::*;

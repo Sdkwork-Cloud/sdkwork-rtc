@@ -20,7 +20,7 @@
     "@sdkwork/rtc-h5-rtc": "workspace:*",
     "@sdkwork/rtc-h5-shell": "workspace:*",
     "@sdkwork/sdk-common": "^1.0.2",
-    "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
+    "@sdkwork/rtc-app-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "catalog:",
@@ -28,5 +28,12 @@
     "@vitejs/plugin-react": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   }
 }

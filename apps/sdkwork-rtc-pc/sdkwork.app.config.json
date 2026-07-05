@@ -149,7 +149,7 @@
         "content": "Migrated sdkwork-rtc-pc to SDKWork App Manifest Standard v3.",
         "highlights": [
           "SDKWork App Standard v3 configuration",
-          "PlusApp projection metadata",
+          "studio_app projection metadata",
           "Cloud web distribution package"
         ],
         "packageIds": ["web-universal-cloud-browser-zip"],

@@ -1,5 +1,5 @@
 import { createRtcAppSdkClient } from "@sdkwork/rtc-mp-core";
-import type { SdkworkAppClient } from "sdkwork-rtc-app-sdk-generated-typescript";
+import type { SdkworkAppClient } from "@sdkwork/rtc-app-sdk";
 
 import { loadAppSession } from "./appAuth";
 import { resolveEnvironment } from "./environment";

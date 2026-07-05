@@ -63,6 +63,13 @@ impl From<&RtcAppListQuery> for RtcListWindowParams {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcCreateAppRoomRequest {
+    pub title: String,
+    pub room_id: Option<String>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RtcCreateAppMediaSessionRequest {
     pub room_id: String,
     pub media_mode: RtcMediaSessionMode,
@@ -163,6 +170,14 @@ pub trait RtcAppApiService: Send + Sync + 'static {
         tenant_id: String,
         organization_id: Option<String>,
         room_id: String,
+    ) -> RtcAppApiFuture<RtcRoom>;
+
+    fn create_room(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        user_id: String,
+        request: RtcCreateAppRoomRequest,
     ) -> RtcAppApiFuture<RtcRoom>;
 
     fn list_active_provider_profiles(

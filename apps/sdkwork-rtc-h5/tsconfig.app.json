@@ -21,10 +21,10 @@
         "../../../sdkwork-ui/sdkwork-ui-pc-react/src/index.ts"
       ],
       "@sdkwork/iam-app-sdk": [
-        "../../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/generated/server-openapi/src/index.ts"
+        "../../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts"
       ],
       "@sdkwork/iam-backend-sdk": [
-        "../../../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/generated/server-openapi/src/index.ts"
+        "../../../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/src/index.ts"
       ],
       "@sdkwork/iam-contracts": [
         "../../../sdkwork-iam/apps/sdkwork-iam-common/packages/sdkwork-iam-contracts/src/index.ts"
@@ -42,14 +42,14 @@
         "../../../sdkwork-appbase/packages/common/foundation/sdkwork-runtime-bootstrap/src/index.ts"
       ],
       "@sdkwork/sdk-common": ["./node_modules/@sdkwork/sdk-common/dist/index.d.ts"],
-      "sdkwork-rtc-app-sdk-generated-typescript": [
-        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/index.d.ts"
+      "@sdkwork/rtc-app-sdk": [
+        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts"
       ],
-      "sdkwork-rtc-app-sdk-generated-typescript/types": [
-        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/types/index.d.ts"
+      "@sdkwork/rtc-app-sdk/types": [
+        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts"
       ],
-      "sdkwork-rtc-backend-sdk-generated-typescript": [
-        "../../sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/dist/index.d.ts"
+      "@sdkwork/rtc-backend-sdk": [
+        "../../sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/src/index.ts"
       ],
       "@sdkwork/rtc-sdk": [
         "../../sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/index.ts"

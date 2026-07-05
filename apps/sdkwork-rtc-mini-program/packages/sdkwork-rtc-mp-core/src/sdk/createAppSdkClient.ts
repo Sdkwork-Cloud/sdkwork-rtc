@@ -1,4 +1,4 @@
-import { createClient, type SdkworkAppClient } from "sdkwork-rtc-app-sdk-generated-typescript";
+import { createClient, type SdkworkAppClient } from "@sdkwork/rtc-app-sdk";
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import { resolveAppSdkBaseUrl } from "../config/resolveAppSdkBaseUrl";

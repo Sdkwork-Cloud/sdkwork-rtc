@@ -9,7 +9,7 @@ use crate::{handlers, service::RtcAppApiService};
 
 pub fn build_sdkwork_rtc_app_api_router(service: Arc<dyn RtcAppApiService>) -> Router {
     Router::new()
-        .route("/app/v3/api/rtc/rooms", get(handlers::list_rooms))
+        .route("/app/v3/api/rtc/rooms", get(handlers::list_rooms).post(handlers::create_room))
         .route(
             "/app/v3/api/rtc/rooms/{room_id}",
             get(handlers::retrieve_room),

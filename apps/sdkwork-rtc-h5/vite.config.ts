@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
         "@sdkwork/ui-pc-react": path.resolve(uiRoot, "src/index.ts"),
         "@sdkwork/auth-runtime-pc-react": path.resolve(iamRoot, "apps/sdkwork-iam-pc/packages/sdkwork-auth-runtime-pc-react/src/index.ts",
         ),
-        "@sdkwork/iam-app-sdk": path.resolve(iamRoot, "sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/generated/server-openapi/src/index.ts",
+        "@sdkwork/iam-app-sdk": path.resolve(iamRoot, "sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts",
         ),
         "@sdkwork/iam-contracts": path.resolve(iamRoot, "apps/sdkwork-iam-common/packages/sdkwork-iam-contracts/src/index.ts",
         ),

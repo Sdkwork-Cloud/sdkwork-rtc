@@ -7,14 +7,11 @@
       ],
       "@sdkwork/utils": ["../sdkwork-utils/packages/sdkwork-utils-typescript/dist/index.d.ts"],
       "@sdkwork/rtc-sdk": ["sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/index.ts"],
-      "sdkwork-rtc-app-sdk-generated-typescript": [
-        "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/index.d.ts"
+      "@sdkwork/rtc-app-sdk": [
+        "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts"
       ],
-      "sdkwork-rtc-app-sdk-generated-typescript/types": [
-        "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/types/index.d.ts"
-      ],
-      "sdkwork-rtc-backend-sdk-generated-typescript": [
-        "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/dist/index.d.ts"
+      "@sdkwork/rtc-backend-sdk": [
+        "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/src/index.ts"
       ],
       "@sdkwork/rtc-sdk-provider-volcengine": [
         "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/providers/rtc-sdk-provider-volcengine/index.d.ts"

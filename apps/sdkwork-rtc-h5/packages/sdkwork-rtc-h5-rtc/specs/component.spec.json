@@ -18,6 +18,6 @@
   },
   "contracts": {
     "publicExports": ["."],
-    "sdkClients": ["sdkwork-rtc-app-sdk-generated-typescript"]
+    "sdkClients": ["@sdkwork/rtc-app-sdk"]
   }
 }

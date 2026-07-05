@@ -8,7 +8,7 @@
     "@sdkwork/iam-contracts": "workspace:*",
     "@sdkwork/sdk-common": "^1.0.2",
     "@sdkwork/utils": "workspace:*",
-    "sdkwork-rtc-app-sdk-generated-typescript": "workspace:*"
+    "@sdkwork/rtc-app-sdk": "workspace:*"
   },
   "exports": {
     ".": {

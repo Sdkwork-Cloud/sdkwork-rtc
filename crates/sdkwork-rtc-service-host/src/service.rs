@@ -36,13 +36,14 @@ use sdkwork_communication_rtc_service::{
 };
 use sdkwork_routes_rtc_app_api::service::{
     RtcActiveProviderProfileListData, RtcAppApiError, RtcAppApiFuture, RtcAppApiService,
-    RtcAppListQuery, RtcCreateAppMediaSessionRequest, RtcIssueParticipantCredentialRequest,
-    RtcListRequest, RtcMediaArtifactListData as RtcAppMediaArtifactListData,
-    RtcMediaSessionListData, RtcRoomListData,
+    RtcAppListQuery, RtcCreateAppMediaSessionRequest, RtcCreateAppRoomRequest,
+    RtcIssueParticipantCredentialRequest, RtcListRequest,
+    RtcMediaArtifactListData as RtcAppMediaArtifactListData, RtcMediaSessionListData,
+    RtcRoomListData,
 };
 use sdkwork_routes_rtc_backend_api::service::{
     RtcBackendApiError, RtcBackendApiFuture, RtcBackendApiService, RtcBackendListQuery,
-    RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcListData, RtcMediaArtifactListData,
+    RtcBackendListRequest, RtcCloseMediaSessionRequest, RtcCreateRoomCommand, RtcListData, RtcMediaArtifactListData,
     RtcMediaSessionListData as RtcBackendMediaSessionListData, RtcProviderAccountListData,
     RtcProviderApplicationListData, RtcProviderCredentialListData, RtcProviderProfileListData,
     RtcProviderQueryJobCreateRequest, RtcProviderQuerySnapshotListData, RtcProviderRoute,
@@ -76,6 +77,7 @@ pub struct RtcSessionReconcileResult {
 pub struct RtcProductService {
     registry: RtcProviderPluginRegistry,
     persistence: Arc<dyn RtcPersistencePort>,
+    persistence_enabled: bool,
     secret_resolver: SharedRtcSecretResolver,
     active_session_tracker: RtcActiveSessionTracker,
     // std::sync::Mutex is used intentionally: all lock guards are dropped before
@@ -88,6 +90,7 @@ impl RtcProductService {
         Self {
             registry,
             persistence: Arc::new(NoopRtcPersistencePort),
+            persistence_enabled: false,
             secret_resolver: Arc::new(EnvRtcSecretResolver),
             active_session_tracker: RtcActiveSessionTracker::default(),
             state: Arc::new(Mutex::new(RtcProductState::default())),
@@ -96,6 +99,7 @@ impl RtcProductService {
 
     pub fn with_persistence(mut self, persistence: Arc<dyn RtcPersistencePort>) -> Self {
         self.persistence = persistence;
+        self.persistence_enabled = true;
         self
     }
 
@@ -281,56 +285,198 @@ impl RtcProductService {
         self
     }
 
-    fn list_rooms_impl(&self, request: RtcListRequest) -> Result<RtcRoomListData, RtcAppApiError> {
-        let state = self.state.lock().expect("rtc product state lock");
-        let items = state
-            .rooms
-            .values()
-            .filter(|room| {
-                room.tenant_id == request.tenant_id
-                    && organization_matches(
-                        &room.organization_id,
-                        request.organization_id.as_deref(),
+    fn list_rooms_impl(
+        &self,
+        request: RtcListRequest,
+    ) -> impl std::future::Future<Output = Result<RtcRoomListData, RtcAppApiError>> + Send {
+        let service = self.clone();
+        async move {
+            let organization_id = request
+                .organization_id
+                .clone()
+                .unwrap_or_else(|| "0".to_string());
+            if service.persistence_enabled {
+                let page = service
+                    .persistence
+                    .list_rooms_page(
+                        request.tenant_id.as_str(),
+                        organization_id.as_str(),
+                        RtcListWindowParams::from(&request),
                     )
+                    .await
+                    .map_err(|error| RtcAppApiError::Unavailable(error.to_string()))?;
+                return Ok(RtcRoomListData {
+                    items: page.items,
+                    next_cursor: page.next_cursor,
+                });
+            }
+
+            let state = service.state.lock().expect("rtc product state lock");
+            let items = state
+                .rooms
+                .values()
+                .filter(|room| {
+                    room.tenant_id == request.tenant_id
+                        && organization_matches(
+                            &room.organization_id,
+                            request.organization_id.as_deref(),
+                        )
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            let window = paginate_app_list(
+                items,
+                &RtcListWindowParams::from(&request),
+                |room| {
+                    vec![
+                        room.id.clone(),
+                        room.title.clone(),
+                        format!("{:?}", room.status),
+                    ]
+                },
+                |room, field| match field {
+                    "title" => room.title.clone(),
+                    "status" => format!("{:?}", room.status),
+                    _ => room.id.clone(),
+                },
+            )?;
+            Ok(RtcRoomListData {
+                items: window.items,
+                next_cursor: window.next_cursor,
             })
-            .cloned()
-            .collect::<Vec<_>>();
-        let window = paginate_app_list(
-            items,
-            &RtcListWindowParams::from(&request),
-            |room| {
-                vec![
-                    room.id.clone(),
-                    room.title.clone(),
-                    format!("{:?}", room.status),
-                ]
-            },
-            |room, field| match field {
-                "title" => room.title.clone(),
-                "status" => format!("{:?}", room.status),
-                _ => room.id.clone(),
-            },
-        )?;
-        Ok(RtcRoomListData {
-            items: window.items,
-            next_cursor: window.next_cursor,
-        })
+        }
     }
 
-    fn retrieve_room_impl(
+    async fn create_room_impl(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        owner_user_id: String,
+        request: RtcCreateAppRoomRequest,
+    ) -> Result<RtcRoom, RtcAppApiError> {
+        self.create_room_core(
+            tenant_id,
+            organization_id,
+            owner_user_id,
+            request.title,
+            request.room_id,
+        )
+        .await
+    }
+
+    async fn create_room_core(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        owner_user_id: String,
+        title: String,
+        room_id: Option<String>,
+    ) -> Result<RtcRoom, RtcAppApiError> {
+        let organization_id = organization_id.unwrap_or_else(|| "0".to_string());
+        let title = title.trim().to_string();
+        if title.is_empty() {
+            return Err(RtcAppApiError::BadRequest("title is required".into()));
+        }
+        let room_id = room_id
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+            .unwrap_or_else(|| format!("room-{}", uuid::Uuid::new_v4()));
+
+        {
+            let state = self.state.lock().expect("rtc product state lock");
+            if state.rooms.contains_key(room_id.as_str()) {
+                return Err(RtcAppApiError::Conflict(format!(
+                    "RTC room already exists: {room_id}"
+                )));
+            }
+        }
+
+        if self.persistence_enabled {
+            let existing = self
+                .persistence
+                .get_room(
+                    tenant_id.as_str(),
+                    organization_id.as_str(),
+                    room_id.as_str(),
+                )
+                .await
+                .map_err(|error| RtcAppApiError::Unavailable(error.to_string()))?;
+            if existing.is_some() {
+                return Err(RtcAppApiError::Conflict(format!(
+                    "RTC room already exists: {room_id}"
+                )));
+            }
+        }
+
+        let room = RtcRoom {
+            id: room_id,
+            tenant_id,
+            organization_id,
+            owner_user_id,
+            title,
+            status: RtcRoomStatus::Active,
+        };
+        {
+            let mut state = self.state.lock().expect("rtc product state lock");
+            state.rooms.insert(room.id.clone(), room.clone());
+        }
+        self.persist_changes(RtcPersistenceChangeSet {
+            rooms: vec![room.clone()],
+            ..RtcPersistenceChangeSet::default()
+        })
+        .await
+        .map_err(RtcProductError::from)
+        .map_err(app_error_from_product)?;
+        Ok(room)
+    }
+
+    async fn ensure_room_available(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        room_id: &str,
+    ) -> Result<(), RtcAppApiError> {
+        let cached = {
+            let state = self.state.lock().expect("rtc product state lock");
+            state.rooms.get(room_id).cloned().filter(|room| {
+                room.tenant_id == tenant_id && room.organization_id == organization_id
+            })
+        };
+        if cached.is_some() {
+            return Ok(());
+        }
+
+        if self.persistence_enabled {
+            if let Some(room) = self
+                .persistence
+                .get_room(tenant_id, organization_id, room_id)
+                .await
+                .map_err(|error| RtcAppApiError::Unavailable(error.to_string()))?
+            {
+                let mut state = self.state.lock().expect("rtc product state lock");
+                state.rooms.insert(room.id.clone(), room);
+                return Ok(());
+            }
+        }
+
+        Err(RtcAppApiError::NotFound(format!(
+            "RTC room not found: {room_id}"
+        )))
+    }
+
+    async fn retrieve_room_impl(
         &self,
         tenant_id: String,
         organization_id: Option<String>,
         room_id: String,
     ) -> Result<RtcRoom, RtcAppApiError> {
+        let organization_id = organization_id.unwrap_or_else(|| "0".to_string());
+        self.ensure_room_available(tenant_id.as_str(), organization_id.as_str(), room_id.as_str())
+            .await?;
         let state = self.state.lock().expect("rtc product state lock");
         state
             .rooms
             .get(room_id.as_str())
-            .filter(|room| {
-                room.tenant_id == tenant_id
-                    && organization_matches(&room.organization_id, organization_id.as_deref())
-            })
             .cloned()
             .ok_or_else(|| RtcAppApiError::NotFound(format!("RTC room not found: {room_id}")))
     }
@@ -465,15 +611,12 @@ impl RtcProductService {
             .registry
             .provider(provider_key.as_str())
             .map_err(app_error_from_registry)?;
-        {
-            let state = self.state.lock().expect("rtc product state lock");
-            if !state.rooms.contains_key(request.room_id.as_str()) {
-                return Err(RtcAppApiError::NotFound(format!(
-                    "RTC room not found: {}",
-                    request.room_id
-                )));
-            }
-        }
+        self.ensure_room_available(
+            tenant_id.as_str(),
+            organization_id.as_str(),
+            request.room_id.as_str(),
+        )
+        .await?;
         let session_id = new_media_session_id();
         if let Some(idempotency_key) = request
             .idempotency_key
@@ -4191,7 +4334,7 @@ impl RtcProductService {
 impl RtcAppApiService for RtcProductService {
     fn list_rooms(&self, request: RtcListRequest) -> RtcAppApiFuture<RtcRoomListData> {
         let service = self.clone();
-        Box::pin(async move { service.list_rooms_impl(request) })
+        Box::pin(async move { service.list_rooms_impl(request).await })
     }
 
     fn retrieve_room(
@@ -4201,7 +4344,26 @@ impl RtcAppApiService for RtcProductService {
         room_id: String,
     ) -> RtcAppApiFuture<RtcRoom> {
         let service = self.clone();
-        Box::pin(async move { service.retrieve_room_impl(tenant_id, organization_id, room_id) })
+        Box::pin(async move {
+            service
+                .retrieve_room_impl(tenant_id, organization_id, room_id)
+                .await
+        })
+    }
+
+    fn create_room(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        user_id: String,
+        request: RtcCreateAppRoomRequest,
+    ) -> RtcAppApiFuture<RtcRoom> {
+        let service = self.clone();
+        Box::pin(async move {
+            service
+                .create_room_impl(tenant_id, organization_id, user_id, request)
+                .await
+        })
     }
 
     fn list_active_provider_profiles(
@@ -4332,6 +4494,29 @@ impl RtcBackendApiService for RtcProductService {
         Box::pin(async move {
             service
                 .retrieve_room_impl(tenant_id, organization_id, room_id)
+                .await
+                .map_err(backend_error_from_app)
+        })
+    }
+
+    fn create_room(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        request: RtcCreateRoomCommand,
+    ) -> RtcBackendApiFuture<RtcRoom> {
+        let service = self.clone();
+        Box::pin(async move {
+            service
+                .create_room_core(
+                    tenant_id,
+                    organization_id,
+                    actor_id,
+                    request.title,
+                    request.room_id,
+                )
+                .await
                 .map_err(backend_error_from_app)
         })
     }

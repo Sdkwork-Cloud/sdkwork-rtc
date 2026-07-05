@@ -24,10 +24,10 @@ use serde_json::{Value as JsonValue, json};
 
 use crate::service::{
     RtcBackendApiError, RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest,
-    RtcCloseMediaSessionRequest, RtcListData, RtcMediaArtifactListData, RtcMediaSessionListData,
-    RtcProviderQueryJobCreateRequest, RtcProviderQuerySnapshotListData, RtcProviderRoute,
-    RtcProviderRouteCommand, RtcProviderRouteDisableRequest, RtcProviderRouteListData,
-    RtcProviderWebhookIngress,
+    RtcCloseMediaSessionRequest, RtcCreateRoomCommand, RtcListData, RtcMediaArtifactListData,
+    RtcMediaSessionListData, RtcProviderQueryJobCreateRequest, RtcProviderQuerySnapshotListData,
+    RtcProviderRoute, RtcProviderRouteCommand, RtcProviderRouteDisableRequest,
+    RtcProviderRouteListData, RtcProviderWebhookIngress,
 };
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
@@ -101,6 +101,27 @@ pub async fn retrieve_room(
         &request_id,
         service
             .retrieve_room(context.tenant_id, context.organization_id, room_id)
+            .await,
+    )?;
+    Ok(Json(RtcApiEnvelope::ok(result, request_id)))
+}
+
+pub async fn create_room(
+    State(service): State<Arc<dyn RtcBackendApiService>>,
+    Extension(web_context): Extension<WebRequestContext>,
+    Extension(context): Extension<AppContext>,
+    Json(body): Json<RtcCreateRoomCommand>,
+) -> Result<Json<RtcApiEnvelope<RtcRoom>>, RtcBackendHandlerError> {
+    let request_id = envelope_request_id(&web_context);
+    let result = map_handler_error(
+        &request_id,
+        service
+            .create_room(
+                context.tenant_id,
+                context.organization_id,
+                context.actor_id,
+                body,
+            )
             .await,
     )?;
     Ok(Json(RtcApiEnvelope::ok(result, request_id)))

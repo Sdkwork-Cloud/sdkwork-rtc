@@ -1,4 +1,4 @@
-import { SdkworkBackendClient } from "sdkwork-rtc-backend-sdk-generated-typescript";
+import { SdkworkBackendClient } from "@sdkwork/rtc-backend-sdk";
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 export interface RtcBackendClientOptions {

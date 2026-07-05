@@ -543,6 +543,87 @@ impl RtcSqliteMediaSessionRepository {
         let participants = self.list_media_participants(media_session_id).await?;
         Ok(Some(sqlite_row_to_media_session(row, participants)?))
     }
+
+    pub async fn get_room_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        room_id: &str,
+    ) -> RtcStorageResult<Option<RtcRoom>> {
+        const SQL: &str = r#"
+            SELECT uuid, tenant_id, organization_id, owner_user_id, title, status
+            FROM rtc_room
+            WHERE uuid = ? AND tenant_id = ? AND organization_id = ? AND deleted_at IS NULL
+        "#;
+        let row = sqlx::query(SQL)
+            .bind(room_id)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_optional(&self.pool)
+            .await?;
+        row.map(sqlite_row_to_room).transpose()
+    }
+
+    pub async fn list_rooms_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let sql = sqlite_room_select_sql(
+            "WHERE tenant_id = ? AND organization_id = ? AND deleted_at IS NULL",
+            "ORDER BY updated_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_room).collect()
+    }
+
+    pub async fn list_rooms_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(title) LIKE ?)".to_string(),
+            );
+        }
+        let order_column = room_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = sqlite_room_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_room).collect()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -1092,6 +1173,89 @@ impl RtcPostgresMediaSessionRepository {
         };
         let participants = self.list_media_participants(media_session_id).await?;
         Ok(Some(postgres_row_to_media_session(row, participants)?))
+    }
+
+    pub async fn get_room_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        room_id: &str,
+    ) -> RtcStorageResult<Option<RtcRoom>> {
+        const SQL: &str = r#"
+            SELECT uuid, tenant_id, organization_id, owner_user_id, title, status
+            FROM rtc_room
+            WHERE uuid = $1 AND tenant_id = $2 AND organization_id = $3 AND deleted_at IS NULL
+        "#;
+        let row = sqlx::query(SQL)
+            .bind(room_id)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_optional(&self.pool)
+            .await?;
+        row.map(postgres_row_to_room).transpose()
+    }
+
+    pub async fn list_rooms_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let sql = postgres_room_select_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2 AND deleted_at IS NULL",
+            "ORDER BY updated_at ASC, id ASC",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(postgres_row_to_room).collect()
+    }
+
+    pub async fn list_rooms_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+            "deleted_at IS NULL".to_string(),
+        ];
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push("(LOWER(uuid) LIKE $3 OR LOWER(title) LIKE $4)".to_string());
+        }
+        let order_column = room_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = if needle.is_some() { "$5" } else { "$3" };
+        let offset_param = if needle.is_some() { "$6" } else { "$4" };
+        let sql = postgres_room_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(postgres_row_to_room).collect()
     }
 }
 
@@ -2160,6 +2324,62 @@ fn room_status_to_i32(value: &RtcRoomStatus) -> i32 {
         RtcRoomStatus::Archived => 2,
         RtcRoomStatus::Disabled => 3,
     }
+}
+
+fn i32_to_room_status(value: i32) -> RtcStorageResult<RtcRoomStatus> {
+    match value {
+        1 => Ok(RtcRoomStatus::Active),
+        2 => Ok(RtcRoomStatus::Archived),
+        3 => Ok(RtcRoomStatus::Disabled),
+        _ => Err(RtcStorageError::InvalidEnumValue {
+            field: "status",
+            value: value.to_string(),
+        }),
+    }
+}
+
+fn room_sort_column(field: &str) -> &'static str {
+    match field {
+        "title" => "title",
+        "status" => "status",
+        "ownerUserId" | "owner_user_id" => "owner_user_id",
+        _ => "uuid",
+    }
+}
+
+fn sqlite_room_select_sql(where_clause: &str, suffix: &str) -> String {
+    format!(
+        r#"SELECT uuid, tenant_id, organization_id, owner_user_id, title, status
+           FROM rtc_room
+           {where_clause}
+           {suffix}"#
+    )
+}
+
+fn postgres_room_select_sql(where_clause: &str, suffix: &str) -> String {
+    sqlite_room_select_sql(where_clause, suffix)
+}
+
+fn sqlite_row_to_room(row: SqliteRow) -> RtcStorageResult<RtcRoom> {
+    Ok(RtcRoom {
+        id: row.try_get("uuid")?,
+        tenant_id: sqlite_i64_column_to_string(&row, "tenant_id")?,
+        organization_id: sqlite_i64_column_to_string(&row, "organization_id")?,
+        owner_user_id: sqlite_i64_column_to_string(&row, "owner_user_id")?,
+        title: row.try_get("title")?,
+        status: i32_to_room_status(row.try_get::<i32, _>("status")?)?,
+    })
+}
+
+fn postgres_row_to_room(row: PgRow) -> RtcStorageResult<RtcRoom> {
+    Ok(RtcRoom {
+        id: row.try_get("uuid")?,
+        tenant_id: postgres_i64_column_to_string(&row, "tenant_id")?,
+        organization_id: postgres_i64_column_to_string(&row, "organization_id")?,
+        owner_user_id: postgres_i64_column_to_string(&row, "owner_user_id")?,
+        title: row.try_get("title")?,
+        status: i32_to_room_status(row.try_get::<i32, _>("status")?)?,
+    })
 }
 
 fn media_mode_to_i32(value: &RtcMediaSessionMode) -> i32 {

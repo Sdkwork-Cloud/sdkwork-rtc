@@ -80,12 +80,12 @@ describe("rtc pc architecture contract", () => {
     const coreSource = readAll(coreRoot);
     const adminCoreSource = readAll(adminCoreRoot);
 
-    expect(coreSource).toContain("sdkwork-rtc-app-sdk-generated-typescript");
+    expect(coreSource).toContain("@sdkwork/rtc-app-sdk");
     expect(coreSource).toContain("readRtcIamSessionTokens");
     expect(coreSource).toContain("getRtcAppSdkClient");
     expect(coreSource).not.toContain("@sdkwork/auth-pc-react");
     expect(coreSource).not.toContain("@sdkwork/auth-runtime-pc-react");
-    expect(adminCoreSource).toContain("sdkwork-rtc-backend-sdk-generated-typescript");
+    expect(adminCoreSource).toContain("@sdkwork/rtc-backend-sdk");
     expect(coreSource).not.toMatch(forbiddenRawHttpPattern());
     expect(adminCoreSource).not.toMatch(forbiddenRawHttpPattern());
   });

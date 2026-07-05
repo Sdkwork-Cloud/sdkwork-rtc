@@ -18,3 +18,11 @@ pub struct RtcRoom {
     pub title: String,
     pub status: RtcRoomStatus,
 }
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcCreateRoomRequest {
+    pub title: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub room_id: Option<String>,
+}

@@ -78,6 +78,13 @@ impl From<&RtcBackendListRequest> for sdkwork_communication_rtc_service::RtcList
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RtcCreateRoomCommand {
+    pub title: String,
+    pub room_id: Option<String>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RtcCloseMediaSessionRequest {
     pub reason: Option<String>,
 }
@@ -289,6 +296,14 @@ pub trait RtcBackendApiService: Send + Sync + 'static {
         tenant_id: String,
         organization_id: Option<String>,
         room_id: String,
+    ) -> RtcBackendApiFuture<RtcRoom>;
+
+    fn create_room(
+        &self,
+        tenant_id: String,
+        organization_id: Option<String>,
+        actor_id: String,
+        request: RtcCreateRoomCommand,
     ) -> RtcBackendApiFuture<RtcRoom>;
 
     fn list_provider_accounts(

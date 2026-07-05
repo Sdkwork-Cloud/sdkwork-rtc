@@ -31,9 +31,9 @@ export default defineConfig(({ mode }) => {
         ),
         "@sdkwork/auth-runtime-pc-react": path.resolve(iamRoot, "apps/sdkwork-iam-pc/packages/sdkwork-auth-runtime-pc-react/src/index.ts",
         ),
-        "@sdkwork/iam-app-sdk": path.resolve(iamRoot, "sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/generated/server-openapi/src/index.ts",
+        "@sdkwork/iam-app-sdk": path.resolve(iamRoot, "sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts",
         ),
-        "@sdkwork/iam-backend-sdk": path.resolve(iamRoot, "sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/generated/server-openapi/src/index.ts",
+        "@sdkwork/iam-backend-sdk": path.resolve(iamRoot, "sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/src/index.ts",
         ),
         "@sdkwork/i18n-pc-react": path.resolve(
           appbaseRoot,

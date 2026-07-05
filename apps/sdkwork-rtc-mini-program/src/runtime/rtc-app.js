@@ -2661,7 +2661,7 @@ var BaseHttpClient = class {
   }
 };
 
-// ../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/index.js
+// ../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts
 var HttpClient = class _HttpClient extends BaseHttpClient {
   constructor(config) {
     super(config);
