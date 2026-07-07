@@ -40,15 +40,15 @@
     },
     {
       "path": "package.json",
-      "sha256": "904bed0b716c59cd01641d8101c6ba68d69f48ff05383371df680253ac5521f2"
+      "sha256": "62147d5100f8d8571bdd9fb3fa6c8f0a3116438c0b01c19f8ae3150d813475ee"
     },
     {
       "path": "README.md",
-      "sha256": "81f4caa82996071bbd4b0f371e7bf0090ca884088e4b3b5b5b42a39df352ef32"
+      "sha256": "6cbf7b06dfe0bc93648ffbaed9ac536560b307e2380ad90f8cccbf994bce12bd"
     },
     {
       "path": "sdkwork-sdk.json",
-      "sha256": "887ce164a49db0c794485f86aa683f8f1bad84d6056c0852e332e5370e388deb"
+      "sha256": "ce238700efbf2a0582914941547ec0fe03d856bf747da5a6afeeb54fa841b3aa"
     },
     {
       "path": "src/api/base.ts",
@@ -80,7 +80,7 @@
     },
     {
       "path": "src/api/rtc-rooms.ts",
-      "sha256": "21c4f870836917eebff3120159f7158c822112e0495d34bff0e3e9b39935e711"
+      "sha256": "0ac488a1aafc2457e721dc9914178eaedb6c9f8ee1747b97525577f1a98c6441"
     },
     {
       "path": "src/auth/index.ts",

@@ -1,4 +1,4 @@
-import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart'
+import 'package:sdkwork_rtc_backend_sdk/sdkwork_rtc_backend_sdk.dart'
     as generated;
 
 import '../admin_sdk_mapper.dart';

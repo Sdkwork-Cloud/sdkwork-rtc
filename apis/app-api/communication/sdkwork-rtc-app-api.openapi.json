@@ -1013,6 +1013,36 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived",
+                "disabled"
+              ]
+            }
+          },
+          {
+            "name": "ownerUserId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
           }
         ],
         "responses": {
@@ -1103,102 +1133,6 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.rooms.read",
         "x-sdkwork-auth-mode": "dual-token"
-      },
-      "post": {
-        "tags": [
-          "rtcRooms"
-        ],
-        "summary": "Rtc rooms create.",
-        "operationId": "rtc.rooms.create",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RtcRoomResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-rtc",
-        "x-sdkwork-api-authority": "sdkwork-rtc-app-api",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-app-api",
-        "x-sdkwork-domain": "rtc",
-        "x-sdkwork-resource": "rtc.rooms",
-        "x-sdkwork-request-context": "WebRequestContext",
-        "x-sdkwork-api-surface": "app-api",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.rooms.write",
-        "x-sdkwork-auth-mode": "dual-token",
-        "x-sdkwork-rate-limit-tier": "openApiDefault",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RtcCreateRoomRequest"
-              }
-            }
-          }
-        }
       }
     },
     "/app/v3/api/rtc/rooms/{roomId}": {
@@ -1772,28 +1706,6 @@
             }
           }
         ]
-      },
-      "RtcCreateRoomRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "title"
-        ],
-        "properties": {
-          "title": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "roomId": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "minLength": 1,
-            "maxLength": 64
-          }
-        }
       },
       "RtcCreateMediaSessionRequest": {
         "type": "object",

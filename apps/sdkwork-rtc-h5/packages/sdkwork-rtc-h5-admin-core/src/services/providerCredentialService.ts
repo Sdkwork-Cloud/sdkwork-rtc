@@ -40,7 +40,7 @@ export class ProviderCredentialService {
           sort: params?.sort,
         },
       );
-    const page = readSdkWorkListPage<ProviderCredential>(response.data);
+    const page = readSdkWorkListPage<ProviderCredential>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor ?? null,
@@ -50,10 +50,10 @@ export class ProviderCredentialService {
   async get(id: string): Promise<ProviderCredential> {
     const response =
       await this.client.rtcProviderCredentials.rtc.providerCredentials.retrieve(id);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC provider credential not found: ${id}`);
     }
-    return readSdkWorkItem<ProviderCredential>(response.data);
+    return readSdkWorkItem<ProviderCredential>(response);
   }
 
   async create(
@@ -67,10 +67,10 @@ export class ProviderCredentialService {
           typeof this.client.rtcProviderCredentials.rtc.providerApplications.credentials.create
         >[1],
       );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider credential data");
     }
-    return readSdkWorkItem<ProviderCredential>(response.data);
+    return readSdkWorkItem<ProviderCredential>(response);
   }
 
   async update(id: string, command: ProviderCredentialCommand): Promise<ProviderCredential> {
@@ -81,19 +81,19 @@ export class ProviderCredentialService {
           typeof this.client.rtcProviderCredentials.rtc.providerCredentials.update
         >[1],
       );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider credential data");
     }
-    return readSdkWorkItem<ProviderCredential>(response.data);
+    return readSdkWorkItem<ProviderCredential>(response);
   }
 
   async revoke(id: string, reason?: string): Promise<ProviderCredential> {
     const response = await this.client.rtcProviderCredentials.rtc.providerCredentials.revoke(id, {
       reason,
     });
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider credential data");
     }
-    return readSdkWorkItem<ProviderCredential>(response.data);
+    return readSdkWorkItem<ProviderCredential>(response);
   }
 }

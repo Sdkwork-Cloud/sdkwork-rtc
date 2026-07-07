@@ -25,18 +25,18 @@ export class ProviderQueryJobService {
 
   async create(command: ProviderQueryJobCreateCommand): Promise<ProviderQueryJob> {
     const response = await this.client.rtcProviderQueryJobs.rtc.providerQueryJobs.create(command);
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider query job data");
     }
-    return readSdkWorkItem<ProviderQueryJob>(response.data);
+    return readSdkWorkItem<ProviderQueryJob>(response);
   }
 
   async get(id: string): Promise<ProviderQueryJob> {
     const response = await this.client.rtcProviderQueryJobs.rtc.providerQueryJobs.retrieve(id);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC provider query job not found: ${id}`);
     }
-    return readSdkWorkItem<ProviderQueryJob>(response.data);
+    return readSdkWorkItem<ProviderQueryJob>(response);
   }
 
   async listSnapshots(
@@ -60,7 +60,7 @@ export class ProviderQueryJobService {
           sort: params?.sort,
         },
       );
-    const page = readSdkWorkListPage<ProviderQuerySnapshot>(response.data);
+    const page = readSdkWorkListPage<ProviderQuerySnapshot>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor ?? null,

@@ -945,6 +945,8 @@ fn list_request(context: &AppContext, query: RtcBackendListQuery) -> RtcBackendL
         organization_id: context.organization_id.clone(),
         provider: query.provider,
         status: query.status,
+        owner_user_id: query.owner_user_id,
+        created_after: query.created_after,
         page: query.page,
         page_size: query.page_size,
         cursor: query.cursor,

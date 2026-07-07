@@ -1,5 +1,5 @@
 export type { RtcAppSdkClient } from './appSdkPort.js';
-export { readSdkWorkItem, readSdkWorkListPage } from './sdkWorkEnvelope.js';
+export { collectSdkWorkListPages, readSdkWorkItem, readSdkWorkListPage } from './sdkWorkEnvelope.js';
 export type {
   RtcCreateMediaSessionRequest,
   RtcMediaParticipant,

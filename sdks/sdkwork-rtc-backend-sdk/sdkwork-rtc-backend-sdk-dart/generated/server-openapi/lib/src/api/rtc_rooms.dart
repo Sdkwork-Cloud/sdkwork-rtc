@@ -12,13 +12,16 @@ class RtcRoomsApi {
   RtcRoomsApi(this._client);
 
   /// Rtc rooms list.
-  Future<RtcRoomListResponse?> list([int? page, int? pageSize, String? cursor, String? sort, String? q]) async {
+  Future<RtcRoomListResponse?> list([int? page, int? pageSize, String? cursor, String? sort, String? q, String? status, String? ownerUserId, String? createdAfter]) async {
     final query = buildQueryString([
       QueryParameterSpec('page', page, 'form', true, false, null),
       QueryParameterSpec('page_size', pageSize, 'form', true, false, null),
       QueryParameterSpec('cursor', cursor, 'form', true, false, null),
       QueryParameterSpec('sort', sort, 'form', true, false, null),
-      QueryParameterSpec('q', q, 'form', true, false, null)
+      QueryParameterSpec('q', q, 'form', true, false, null),
+      QueryParameterSpec('status', status, 'form', true, false, null),
+      QueryParameterSpec('ownerUserId', ownerUserId, 'form', true, false, null),
+      QueryParameterSpec('createdAfter', createdAfter, 'form', true, false, null)
     ]);
     final response = await _client.get(ApiPaths.appendQueryString(ApiPaths.backendPath('/rtc/rooms'), query));
     return (() {

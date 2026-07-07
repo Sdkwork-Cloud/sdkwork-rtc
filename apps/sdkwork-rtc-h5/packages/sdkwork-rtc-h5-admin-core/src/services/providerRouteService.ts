@@ -33,7 +33,7 @@ export class ProviderRouteService {
       q: params?.search,
       sort: params?.sort,
     });
-    const page = readSdkWorkListPage<ProviderRoute>(response.data);
+    const page = readSdkWorkListPage<ProviderRoute>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor ?? null,
@@ -46,18 +46,18 @@ export class ProviderRouteService {
         typeof this.client.rtcProviderRoutes.rtc.providerRoutes.create
       >[0],
     );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider route data");
     }
-    return readSdkWorkItem<ProviderRoute>(response.data);
+    return readSdkWorkItem<ProviderRoute>(response);
   }
 
   async get(id: string): Promise<ProviderRoute> {
     const response = await this.client.rtcProviderRoutes.rtc.providerRoutes.retrieve(id);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC provider route not found: ${id}`);
     }
-    return readSdkWorkItem<ProviderRoute>(response.data);
+    return readSdkWorkItem<ProviderRoute>(response);
   }
 
   async update(id: string, command: ProviderRouteCommand): Promise<ProviderRoute> {
@@ -67,19 +67,19 @@ export class ProviderRouteService {
         typeof this.client.rtcProviderRoutes.rtc.providerRoutes.update
       >[1],
     );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider route data");
     }
-    return readSdkWorkItem<ProviderRoute>(response.data);
+    return readSdkWorkItem<ProviderRoute>(response);
   }
 
   async disable(id: string, reason?: string): Promise<ProviderRoute> {
     const response = await this.client.rtcProviderRoutes.rtc.providerRoutes.disable(id, {
       reason,
     });
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider route data");
     }
-    return readSdkWorkItem<ProviderRoute>(response.data);
+    return readSdkWorkItem<ProviderRoute>(response);
   }
 }

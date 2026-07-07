@@ -323,6 +323,62 @@ impl RtcSqliteCompletionRecordRepository {
         row.map(sqlite_row_to_completion_record).transpose()
     }
 
+    pub async fn list_completion_records_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcMediaSessionCompletionRecord>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .map(|_| "?")
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
+            r#"
+            SELECT
+                uuid,
+                tenant_id,
+                organization_id,
+                session_id,
+                room_id,
+                owner_user_id,
+                provider_profile_id,
+                provider_session_id,
+                media_mode,
+                session_status,
+                started_at,
+                connected_at,
+                ended_at,
+                duration_ms,
+                end_reason,
+                end_source,
+                participant_count,
+                max_concurrent_participants,
+                quality_summary_snapshot,
+                recording_summary_snapshot,
+                participant_summary_snapshot,
+                track_summary_snapshot,
+                artifact_summary_snapshot,
+                provider_webhook_event_id,
+                provider_query_job_id,
+                completion_snapshot,
+                completion_snapshot_hash,
+                recorded_at
+            FROM rtc_media_session_completion_record
+            WHERE session_id IN ({placeholders})
+            ORDER BY session_id ASC, recorded_at ASC
+            "#
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter().map(sqlite_row_to_completion_record).collect()
+    }
+
     async fn update_media_session_summary(
         &self,
         transaction: &mut sqlx::Transaction<'_, Sqlite>,
@@ -602,6 +658,65 @@ impl RtcPostgresCompletionRecordRepository {
         .await?;
 
         row.map(postgres_row_to_completion_record).transpose()
+    }
+
+    pub async fn list_completion_records_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcMediaSessionCompletionRecord>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .enumerate()
+            .map(|(index, _)| format!("${}", index + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
+            r#"
+            SELECT
+                uuid,
+                tenant_id,
+                organization_id,
+                session_id,
+                room_id,
+                owner_user_id,
+                provider_profile_id,
+                provider_session_id,
+                media_mode,
+                session_status,
+                to_char(started_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS started_at,
+                to_char(connected_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS connected_at,
+                to_char(ended_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS ended_at,
+                duration_ms,
+                end_reason,
+                end_source,
+                participant_count,
+                max_concurrent_participants,
+                quality_summary_snapshot,
+                recording_summary_snapshot,
+                participant_summary_snapshot,
+                track_summary_snapshot,
+                artifact_summary_snapshot,
+                provider_webhook_event_id,
+                provider_query_job_id,
+                completion_snapshot,
+                completion_snapshot_hash,
+                to_char(recorded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS recorded_at
+            FROM rtc_media_session_completion_record
+            WHERE session_id IN ({placeholders})
+            ORDER BY session_id ASC, recorded_at ASC
+            "#
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter()
+            .map(postgres_row_to_completion_record)
+            .collect()
     }
 
     async fn update_media_session_summary(

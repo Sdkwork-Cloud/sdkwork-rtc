@@ -1,5 +1,6 @@
 import '../admin_sdk_mapper.dart';
 import '../backend_rtc_client.dart';
+import '../models/paginated_list_result.dart';
 import '../models/provider_webhook_event.dart';
 
 class ProviderWebhookService {
@@ -7,7 +8,7 @@ class ProviderWebhookService {
 
   ProviderWebhookService(this._client);
 
-  Future<List<ProviderWebhookEvent>> listEvents({
+  Future<PaginatedListResult<ProviderWebhookEvent>> listEvents({
     int? page,
     int? limit,
     String? cursor,
@@ -21,8 +22,11 @@ class ProviderWebhookService {
       sort,
       search,
     );
-    return backendResponseItems(response)
-        .map(ProviderWebhookEvent.fromJson)
-        .toList();
+    return PaginatedListResult(
+      items: backendResponseItems(response)
+          .map(ProviderWebhookEvent.fromJson)
+          .toList(),
+      nextCursor: backendResponseNextCursor(response),
+    );
   }
 }

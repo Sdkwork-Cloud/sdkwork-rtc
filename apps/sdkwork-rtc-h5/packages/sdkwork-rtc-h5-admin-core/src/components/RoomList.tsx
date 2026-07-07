@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
-import type { Room, RoomFilterState, RoomBatchAction } from "../types/room";
-import { RoomFilter, DEFAULT_ROOM_FILTER, filterRooms } from "./RoomFilter";
+import type { Room, RoomBatchAction } from "../types/room";
+import { buildRoomSortParam, parseRoomSortParam, type RoomSortField } from "../types/room";
 import { RoomBatchActions } from "./RoomBatchActions";
 
 interface Props {
@@ -9,34 +9,24 @@ interface Props {
   onBatchAction: (action: RoomBatchAction) => void;
   onRefresh: () => void;
   loading?: boolean;
+  sort?: string;
+  onSortChange?: (sort: string) => void;
+  fetchAllRooms?: () => Promise<Room[]>;
 }
 
-export function RoomList({ rooms, onSelect, onBatchAction, onRefresh, loading }: Props) {
-  const [filter, setFilter] = useState<RoomFilterState>(DEFAULT_ROOM_FILTER);
+export function RoomList({
+  rooms,
+  onSelect,
+  onBatchAction,
+  onRefresh,
+  loading,
+  sort,
+  onSortChange,
+  fetchAllRooms,
+}: Props) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [sortField, setSortField] = useState<"title" | "status" | "createdAt">("createdAt");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-
-  const filteredRooms = useMemo(() => filterRooms(rooms, filter), [rooms, filter]);
-
-  const sortedRooms = useMemo(() => {
-    const sorted = [...filteredRooms].sort((a, b) => {
-      let comparison = 0;
-      switch (sortField) {
-        case "title":
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case "status":
-          comparison = a.status.localeCompare(b.status);
-          break;
-        case "createdAt":
-          comparison = (a.createdAt ?? "").localeCompare(b.createdAt ?? "");
-          break;
-      }
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
-    return sorted;
-  }, [filteredRooms, sortField, sortDirection]);
+  const [exporting, setExporting] = useState(false);
+  const { field: sortField, direction: sortDirection } = parseRoomSortParam(sort);
 
   const selectedRooms = useMemo(
     () => rooms.filter((r) => selectedIds.has(r.id)),
@@ -56,32 +46,28 @@ export function RoomList({ rooms, onSelect, onBatchAction, onRefresh, loading }:
   }, []);
 
   const handleSelectAll = useCallback(() => {
-    if (selectedIds.size === sortedRooms.length) {
+    if (selectedIds.size === rooms.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(sortedRooms.map((r) => r.id)));
+      setSelectedIds(new Set(rooms.map((r) => r.id)));
     }
-  }, [sortedRooms, selectedIds.size]);
+  }, [rooms, selectedIds.size]);
 
   const handleClearSelection = useCallback(() => {
     setSelectedIds(new Set());
   }, []);
 
   const handleSort = useCallback(
-    (field: "title" | "status" | "createdAt") => {
-      if (sortField === field) {
-        setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
-      } else {
-        setSortField(field);
-        setSortDirection("asc");
+    (field: RoomSortField) => {
+      if (!onSortChange) {
+        return;
       }
+      const nextDirection =
+        sortField === field ? (sortDirection === "asc" ? "desc" : "asc") : "asc";
+      onSortChange(buildRoomSortParam(field, nextDirection));
     },
-    [sortField],
+    [onSortChange, sortDirection, sortField],
   );
-
-  const handleResetFilter = useCallback(() => {
-    setFilter(DEFAULT_ROOM_FILTER);
-  }, []);
 
   const exportToCsv = useCallback((roomsToExport: Room[]) => {
     const escapeCsvField = (field: string): string => {
@@ -110,6 +96,16 @@ export function RoomList({ rooms, onSelect, onBatchAction, onRefresh, loading }:
     URL.revokeObjectURL(url);
   }, []);
 
+  const handleExportAll = useCallback(async () => {
+    setExporting(true);
+    try {
+      const roomsToExport = fetchAllRooms ? await fetchAllRooms() : rooms;
+      exportToCsv(roomsToExport);
+    } finally {
+      setExporting(false);
+    }
+  }, [exportToCsv, fetchAllRooms, rooms]);
+
   const handleBatchAction = useCallback(
     (action: RoomBatchAction) => {
       if (action.type === "export") {
@@ -127,20 +123,14 @@ export function RoomList({ rooms, onSelect, onBatchAction, onRefresh, loading }:
       <div className="room-list-header">
         <h2>Room Management</h2>
         <div className="room-list-actions">
-          <button onClick={onRefresh} disabled={loading}>
+          <button onClick={onRefresh} disabled={loading || exporting}>
             {loading ? "Loading..." : "Refresh"}
           </button>
-          <button onClick={() => exportToCsv(sortedRooms)}>Export All</button>
+          <button onClick={() => void handleExportAll()} disabled={exporting || loading}>
+            {exporting ? "Exporting..." : "Export All"}
+          </button>
         </div>
       </div>
-
-      <RoomFilter
-        filter={filter}
-        onChange={setFilter}
-        onReset={handleResetFilter}
-        totalCount={rooms.length}
-        filteredCount={filteredRooms.length}
-      />
 
       <RoomBatchActions
         selectedRooms={selectedRooms}
@@ -155,7 +145,7 @@ export function RoomList({ rooms, onSelect, onBatchAction, onRefresh, loading }:
               <th className="col-checkbox">
                 <input
                   type="checkbox"
-                  checked={selectedIds.size === sortedRooms.length && sortedRooms.length > 0}
+                  checked={selectedIds.size === rooms.length && rooms.length > 0}
                   onChange={handleSelectAll}
                 />
               </th>
@@ -173,16 +163,14 @@ export function RoomList({ rooms, onSelect, onBatchAction, onRefresh, loading }:
             </tr>
           </thead>
           <tbody>
-            {sortedRooms.length === 0 ? (
+            {rooms.length === 0 ? (
               <tr>
                 <td colSpan={6} className="empty-state">
-                  {rooms.length === 0
-                    ? "No rooms found. Create your first room to get started."
-                    : "No rooms match the current filters."}
+                  No rooms found. Create your first room to get started.
                 </td>
               </tr>
             ) : (
-              sortedRooms.map((room) => (
+              rooms.map((room) => (
                 <tr
                   key={room.id}
                   className={`room-row ${selectedIds.has(room.id) ? "selected" : ""}`}
@@ -221,7 +209,7 @@ export function RoomList({ rooms, onSelect, onBatchAction, onRefresh, loading }:
 
       <div className="room-list-footer">
         <span>
-          {sortedRooms.length} room(s) displayed | {selectedIds.size} selected
+          {rooms.length} room(s) displayed | {selectedIds.size} selected
         </span>
       </div>
     </div>

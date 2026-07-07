@@ -1,25 +1,55 @@
 use std::collections::BTreeMap;
 
 use sdkwork_communication_rtc_service::{
-    RtcListWindowError, RtcListWindowParams, RtcMediaArtifact, RtcMediaSession,
-    RtcMediaSessionCompletionRecord, RtcMediaSessionIdempotencyClaim,
-    RtcMediaSessionIdempotencyRecord, RtcPersistenceChangeSet, RtcPersistenceError,
-    RtcPersistenceFuture, RtcPersistencePort, RtcProviderEventKind, RtcProviderQueryJobRecord,
-    RtcProviderQueryKind, RtcProviderQuerySnapshotRecord, RtcProviderWebhookEventRecord,
-    RtcRecordingLifecycleReconcileQuery, RtcRoom, RtcRoomListPage, RtcRoomScopeQuery,
-    RtcRuntimeLoadRequest, RtcTenantOrganizationScope, list_window_sort, resolve_list_limit,
-    resolve_list_offset, utc_now_rfc3339_millis,
+    RtcActiveProviderProfileListPage, RtcMediaArtifact, RtcMediaArtifactListPage, RtcMediaSession, RtcMediaSessionCompletionRecord,
+    RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcMediaSessionListPage,
+    RtcPersistenceChangeSet, RtcPersistenceError, RtcPersistenceFuture, RtcPersistencePort,
+    RtcProviderAccountListPage, RtcProviderApplicationListPage, RtcProviderCredentialListPage,
+    RtcProviderAccount, RtcProviderApplication, RtcProviderCredential, RtcProviderProfile,
+    RtcProviderRoute,
+    RtcProviderEventKind, RtcProviderProfileListPage, RtcProviderQueryJobRecord,
+    RtcProviderQueryKind, RtcProviderQuerySnapshotListPage, RtcProviderQuerySnapshotRecord,
+    RtcProviderRouteListPage, RtcProviderWebhookEventListPage, RtcProviderWebhookEventRecord,
+    RtcQualitySampleListPage, RtcRecordingLifecycleReconcileQuery, RtcRoom, RtcRoomListPage,
+    RtcRoomScopeQuery, RtcRuntimeLoadRequest, RtcScopedListQuery, RtcTenantOrganizationScope,
+    RtcStaleMediaSessionReconcileCandidates, RtcStaleMediaSessionReconcileQuery,
+    rtc_hydration_max_idempotency_records,
+    rtc_hydration_max_media_sessions, rtc_hydration_max_provider_accounts,
+    rtc_hydration_max_provider_applications, rtc_hydration_max_provider_credentials,
+    rtc_hydration_max_provider_profiles, rtc_hydration_max_provider_query_jobs,
+    rtc_hydration_max_provider_query_snapshots, rtc_hydration_max_provider_routes,
+    rtc_hydration_max_rooms, rtc_hydration_max_session_token_grants,
+    rtc_hydration_max_webhook_events,
+    utc_now_rfc3339_millis,
 };
 use sqlx::{Executor, PgPool, Postgres, Sqlite, SqlitePool};
 
 use crate::{
+    persistence_list_pages::{
+        postgres_list_active_provider_profiles_page, postgres_list_media_artifacts_page,
+        postgres_list_media_artifacts_scope_page, postgres_list_media_sessions_page,
+        postgres_list_provider_accounts_page, postgres_list_provider_applications_page,
+        postgres_list_provider_credentials_page, postgres_list_provider_profiles_page,
+        postgres_list_provider_query_snapshots_page, postgres_list_provider_routes_page,
+        postgres_list_quality_samples_scope_page, postgres_list_rooms_page,
+        postgres_list_webhook_events_page,
+        sqlite_list_active_provider_profiles_page, sqlite_list_media_artifacts_page,
+        sqlite_list_media_artifacts_scope_page, sqlite_list_media_sessions_page,
+        sqlite_list_provider_accounts_page, sqlite_list_provider_applications_page,
+        sqlite_list_provider_credentials_page, sqlite_list_provider_profiles_page,
+        sqlite_list_provider_query_snapshots_page, sqlite_list_provider_routes_page,
+        sqlite_list_quality_samples_scope_page, sqlite_list_rooms_page,
+        sqlite_list_webhook_events_page,
+    },
     RtcPostgresCompletionRecordRepository, RtcPostgresMediaSessionIdempotencyRepository,
     RtcPostgresMediaSessionRepository, RtcPostgresProviderAccountRepository,
     RtcPostgresProviderEventRepository, RtcPostgresProviderProfileRepository,
-    RtcPostgresProviderRouteRepository, RtcSqliteCompletionRecordRepository,
+    RtcPostgresProviderRouteRepository, RtcPostgresSessionTokenGrantRepository,
+    RtcSqliteCompletionRecordRepository,
     RtcSqliteMediaSessionIdempotencyRepository, RtcSqliteMediaSessionRepository,
     RtcSqliteProviderAccountRepository, RtcSqliteProviderEventRepository,
-    RtcSqliteProviderProfileRepository, RtcSqliteProviderRouteRepository, RtcStorageError,
+    RtcSqliteProviderProfileRepository, RtcSqliteProviderRouteRepository,
+    RtcSqliteSessionTokenGrantRepository, RtcStorageError,
     RtcStorageResult,
 };
 
@@ -31,6 +61,7 @@ pub struct RtcSqlitePersistencePort {
     provider_accounts: RtcSqliteProviderAccountRepository,
     provider_profiles: RtcSqliteProviderProfileRepository,
     provider_routes: RtcSqliteProviderRouteRepository,
+    session_token_grants: RtcSqliteSessionTokenGrantRepository,
 }
 
 impl RtcSqlitePersistencePort {
@@ -41,7 +72,8 @@ impl RtcSqlitePersistencePort {
             completion_records: RtcSqliteCompletionRecordRepository::new(pool.clone()),
             provider_accounts: RtcSqliteProviderAccountRepository::new(pool.clone()),
             provider_profiles: RtcSqliteProviderProfileRepository::new(pool.clone()),
-            provider_routes: RtcSqliteProviderRouteRepository::new(pool),
+            provider_routes: RtcSqliteProviderRouteRepository::new(pool.clone()),
+            session_token_grants: RtcSqliteSessionTokenGrantRepository::new(pool),
         }
     }
 
@@ -124,12 +156,18 @@ impl RtcSqlitePersistencePort {
                 .await?;
         }
         for session in &changes.media_sessions {
+            let expected_version = changes
+                .media_session_persist_versions
+                .get(&session.id)
+                .copied()
+                .unwrap_or(0);
             self.media_sessions
                 .upsert_media_session_with(
                     &mut **tx,
                     stable_numeric_id("media_session", &session.id),
                     session,
                     &updated_at,
+                    expected_version,
                 )
                 .await?;
         }
@@ -211,6 +249,27 @@ impl RtcSqlitePersistencePort {
                 )
                 .await?;
         }
+        for grant in &changes.session_token_grants {
+            self.session_token_grants
+                .upsert_session_token_grant_with(
+                    &mut **tx,
+                    stable_numeric_id("session_token_grant", &grant.id),
+                    grant,
+                )
+                .await?;
+        }
+        for revocation in &changes.session_token_grant_revocations {
+            self.session_token_grants
+                .revoke_active_grants_with(
+                    &mut **tx,
+                    revocation.tenant_id.as_str(),
+                    revocation.organization_id.as_str(),
+                    revocation.session_id.as_str(),
+                    revocation.participant_id.as_deref(),
+                    revocation.revoked_at.as_str(),
+                )
+                .await?;
+        }
 
         Ok(())
     }
@@ -223,96 +282,126 @@ impl RtcSqlitePersistencePort {
         let organization_id = request.organization_id.as_str();
         let provider_accounts = self
             .provider_accounts
-            .list_provider_accounts(tenant_id, organization_id, None, None)
+            .list_hydration_provider_accounts_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_accounts()).unwrap_or(200),
+            )
             .await?;
-        let mut provider_applications = Vec::new();
-        let mut provider_credentials = Vec::new();
-        for account in &provider_accounts {
-            let applications = self
-                .provider_accounts
-                .list_provider_applications(
-                    tenant_id,
-                    organization_id,
-                    Some(account.id.as_str()),
-                    None,
-                )
-                .await?;
-            for application in &applications {
-                let credentials = self
-                    .provider_accounts
-                    .list_provider_credentials(
-                        tenant_id,
-                        organization_id,
-                        Some(application.id.as_str()),
-                        None,
-                    )
-                    .await?;
-                provider_credentials.extend(credentials);
-            }
-            provider_applications.extend(applications);
-        }
+        let provider_applications = self
+            .provider_accounts
+            .list_hydration_provider_applications_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_applications()).unwrap_or(500),
+            )
+            .await?;
+        let provider_credentials = self
+            .provider_accounts
+            .list_hydration_provider_credentials_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_credentials()).unwrap_or(500),
+            )
+            .await?;
         let provider_profiles = self
             .provider_profiles
-            .list_provider_profiles(tenant_id, organization_id, None)
+            .list_hydration_provider_profiles_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_profiles()).unwrap_or(200),
+            )
             .await?;
         let provider_routes = self
             .provider_routes
-            .list_provider_routes(tenant_id, organization_id, None)
+            .list_hydration_provider_routes_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_routes()).unwrap_or(500),
+            )
             .await?;
         let rooms = self
             .media_sessions
-            .list_rooms_for_scope(tenant_id, organization_id)
+            .list_hydration_rooms_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_rooms()).unwrap_or(500),
+            )
             .await?;
         let media_sessions = self
             .media_sessions
-            .list_media_sessions_for_scope(tenant_id, organization_id)
+            .list_hydration_media_sessions_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_media_sessions()).unwrap_or(200),
+            )
             .await?;
         let media_participants = media_sessions
             .iter()
             .flat_map(|session| session.participants.clone())
             .collect::<Vec<_>>();
-        let mut media_tracks = Vec::new();
-        let mut media_artifacts = Vec::new();
-        let mut quality_samples = Vec::new();
-        let mut completion_records = Vec::new();
-        for session in &media_sessions {
-            media_tracks.extend(
-                self.media_sessions
-                    .list_media_tracks(session.id.as_str())
-                    .await?,
-            );
-            media_artifacts.extend(
-                self.media_sessions
-                    .list_media_artifacts(session.id.as_str())
-                    .await?,
-            );
-            quality_samples.extend(
-                self.media_sessions
-                    .list_quality_samples(session.id.as_str())
-                    .await?,
-            );
-            if let Some(completion) = self
-                .completion_records
-                .get_completion_record_by_session_id(session.id.as_str())
-                .await?
-            {
-                completion_records.push(completion);
-            }
-        }
+        let session_ids = media_sessions
+            .iter()
+            .map(|session| session.id.clone())
+            .collect::<Vec<_>>();
+        let media_tracks = self
+            .media_sessions
+            .list_media_tracks_for_sessions(session_ids.as_slice())
+            .await?;
+        let media_artifacts = self
+            .media_sessions
+            .list_media_artifacts_for_sessions(session_ids.as_slice())
+            .await?;
+        let quality_samples = self
+            .media_sessions
+            .list_quality_samples_for_sessions(session_ids.as_slice())
+            .await?;
+        let completion_records = self
+            .completion_records
+            .list_completion_records_for_sessions(session_ids.as_slice())
+            .await?;
         let provider_events = RtcSqliteProviderEventRepository::new(self.pool.clone());
         let webhook_events = provider_events
-            .list_webhook_events_for_scope(tenant_id, organization_id)
+            .list_hydration_webhook_events_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_webhook_events()).unwrap_or(500),
+            )
             .await?;
         let provider_query_jobs = provider_events
-            .list_provider_query_jobs_for_scope(tenant_id, organization_id)
+            .list_hydration_provider_query_jobs_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_query_jobs()).unwrap_or(200),
+            )
             .await?;
         let provider_query_snapshots = provider_events
-            .list_provider_query_snapshots_for_scope(tenant_id, organization_id)
+            .list_hydration_provider_query_snapshots_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_query_snapshots()).unwrap_or(200),
+            )
             .await?;
         let media_session_idempotencies =
             RtcSqliteMediaSessionIdempotencyRepository::new(self.pool.clone())
-                .list_idempotency_records_for_scope(tenant_id, organization_id)
+                .list_hydration_idempotency_records_for_scope(
+                    tenant_id,
+                    organization_id,
+                    i64::try_from(rtc_hydration_max_idempotency_records()).unwrap_or(500),
+                )
                 .await?;
+        let session_token_grants = self
+            .session_token_grants
+            .list_hydration_session_token_grants_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_session_token_grants()).unwrap_or(500),
+            )
+            .await?;
+        let media_session_persist_versions = self
+            .media_sessions
+            .list_media_session_versions_for_scope(tenant_id, organization_id)
+            .await?;
         Ok(RtcPersistenceChangeSet {
             provider_accounts,
             provider_applications,
@@ -330,7 +419,61 @@ impl RtcSqlitePersistencePort {
             provider_query_jobs,
             provider_query_snapshots,
             media_session_idempotencies,
+            session_token_grants,
+            session_token_grant_revocations: Vec::new(),
+            media_session_persist_versions,
         })
+    }
+
+    async fn prepare_media_session_create_with_idempotency_inner(
+        &self,
+        idempotency_record: RtcMediaSessionIdempotencyRecord,
+        session: RtcMediaSession,
+        updated_at: String,
+    ) -> RtcStorageResult<RtcMediaSessionIdempotencyClaim> {
+        let mut tx = self.pool.begin().await?;
+        let claim = self
+            .prepare_media_session_create_on_sqlite_transaction(
+                &mut tx,
+                idempotency_record,
+                session,
+                updated_at,
+            )
+            .await?;
+        tx.commit().await?;
+        Ok(claim)
+    }
+
+    async fn prepare_media_session_create_on_sqlite_transaction(
+        &self,
+        tx: &mut sqlx::Transaction<'_, Sqlite>,
+        idempotency_record: RtcMediaSessionIdempotencyRecord,
+        session: RtcMediaSession,
+        updated_at: String,
+    ) -> RtcStorageResult<RtcMediaSessionIdempotencyClaim> {
+        let idempotency_repo = RtcSqliteMediaSessionIdempotencyRepository::new(self.pool.clone());
+        match idempotency_repo
+            .claim_idempotency_record_on_transaction(
+                tx,
+                stable_numeric_id("media_session_idempotency", &idempotency_record.id),
+                &idempotency_record,
+            )
+            .await?
+        {
+            RtcMediaSessionIdempotencyClaim::Claimed => {
+                self.media_sessions
+                    .upsert_media_session_with(
+                        &mut **tx,
+                        stable_numeric_id("media_session", &session.id),
+                        &session,
+                        &updated_at,
+                        0,
+                    )
+                    .await?;
+                Ok(RtcMediaSessionIdempotencyClaim::Claimed)
+            }
+            existing @ RtcMediaSessionIdempotencyClaim::Existing(_) => Ok(existing),
+        }
     }
 }
 
@@ -386,6 +529,23 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
         })
     }
 
+    fn prepare_media_session_create_with_idempotency<'a>(
+        &'a self,
+        idempotency_record: RtcMediaSessionIdempotencyRecord,
+        session: RtcMediaSession,
+        updated_at: String,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim> {
+        Box::pin(async move {
+            self.prepare_media_session_create_with_idempotency_inner(
+                idempotency_record,
+                session,
+                updated_at,
+            )
+            .await
+            .map_err(storage_to_persistence_error)
+        })
+    }
+
     fn load_media_session<'a>(
         &'a self,
         tenant_id: &'a str,
@@ -395,6 +555,20 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
         Box::pin(async move {
             self.media_sessions
                 .get_media_session_for_scope(tenant_id, organization_id, media_session_id)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn get_media_session_persist_version<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<i64>> {
+        Box::pin(async move {
+            self.media_sessions
+                .get_media_session_version_for_scope(tenant_id, organization_id, media_session_id)
                 .await
                 .map_err(storage_to_persistence_error)
         })
@@ -434,6 +608,18 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
         })
     }
 
+    fn list_stale_media_sessions_for_reconcile<'a>(
+        &'a self,
+        query: RtcStaleMediaSessionReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, RtcStaleMediaSessionReconcileCandidates> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_stale_media_sessions_for_reconcile(query)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
     fn get_room<'a>(
         &'a self,
         tenant_id: &'a str,
@@ -448,13 +634,120 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
         })
     }
 
+    fn get_provider_account<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_account_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderAccount>> {
+        Box::pin(async move {
+            let account = self
+                .provider_accounts
+                .get_provider_account_by_id(provider_account_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_account(account, tenant_id, organization_id))
+        })
+    }
+
+    fn get_provider_application<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_application_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderApplication>> {
+        Box::pin(async move {
+            let application = self
+                .provider_accounts
+                .get_provider_application_by_id(provider_application_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_application(
+                application,
+                tenant_id,
+                organization_id,
+            ))
+        })
+    }
+
+    fn get_provider_credential<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_credential_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderCredential>> {
+        Box::pin(async move {
+            let credential = self
+                .provider_accounts
+                .get_provider_credential_by_id(provider_credential_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_credential(
+                credential,
+                tenant_id,
+                organization_id,
+            ))
+        })
+    }
+
+    fn get_provider_profile<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_profile_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderProfile>> {
+        Box::pin(async move {
+            let profile = self
+                .provider_profiles
+                .get_provider_profile_by_id(provider_profile_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_profile(profile, tenant_id, organization_id))
+        })
+    }
+
+    fn get_provider_route<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_route_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderRoute>> {
+        Box::pin(async move {
+            let route = self
+                .provider_routes
+                .get_provider_route_by_id(provider_route_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_route(route, tenant_id, organization_id))
+        })
+    }
+
+    fn get_provider_query_job<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_query_job_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderQueryJobRecord>> {
+        Box::pin(async move {
+            let job = RtcSqliteProviderEventRepository::new(self.pool.clone())
+                .get_provider_query_job_by_id(provider_query_job_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_query_job(job, tenant_id, organization_id))
+        })
+    }
+
     fn list_rooms_for_scope<'a>(
         &'a self,
         query: RtcRoomScopeQuery,
     ) -> RtcPersistenceFuture<'a, Vec<RtcRoom>> {
         Box::pin(async move {
             self.media_sessions
-                .list_rooms_for_scope(query.tenant_id.as_str(), query.organization_id.as_str())
+                .list_hydration_rooms_for_scope(
+                    query.tenant_id.as_str(),
+                    query.organization_id.as_str(),
+                    i64::try_from(rtc_hydration_max_rooms()).unwrap_or(500),
+                )
                 .await
                 .map_err(storage_to_persistence_error)
         })
@@ -462,85 +755,141 @@ impl RtcPersistencePort for RtcSqlitePersistencePort {
 
     fn list_rooms_page<'a>(
         &'a self,
-        tenant_id: &'a str,
-        organization_id: &'a str,
-        params: RtcListWindowParams,
+        query: RtcScopedListQuery,
     ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
+        Box::pin(async move { sqlite_list_rooms_page(&self.media_sessions, query).await })
+    }
+
+    fn list_media_sessions_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionListPage> {
         Box::pin(async move {
-            list_rooms_page_from_sqlite(
-                &self.media_sessions,
-                tenant_id,
-                organization_id,
-                params,
-            )
-            .await
-            .map_err(|error| RtcPersistenceError::Unavailable(error.to_string()))
+            sqlite_list_media_sessions_page(&self.media_sessions, query).await
         })
     }
-}
 
-async fn list_rooms_page_from_sqlite(
-    repository: &RtcSqliteMediaSessionRepository,
-    tenant_id: &str,
-    organization_id: &str,
-    params: RtcListWindowParams,
-) -> Result<RtcRoomListPage, RtcListWindowError> {
-    let limit = resolve_list_limit(&params)?;
-    let offset = resolve_list_offset(&params, limit)?;
-    let (sort_field, sort_descending) = list_window_sort(&params);
-    let mut items = repository
-        .list_rooms_page(
-            tenant_id,
-            organization_id,
-            offset,
-            limit,
-            params.q.as_deref(),
-            sort_field.as_str(),
-            sort_descending,
-        )
-        .await
-        .map_err(|error| RtcListWindowError::bad_request(error.to_string()))?;
-    let has_more = items.len() > limit;
-    if has_more {
-        items.truncate(limit);
+    fn list_active_provider_profiles_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcActiveProviderProfileListPage> {
+        Box::pin(async move {
+            sqlite_list_active_provider_profiles_page(&self.provider_profiles, query).await
+        })
     }
-    let next_cursor = has_more.then(|| (offset + items.len()).to_string());
-    Ok(RtcRoomListPage {
-        items,
-        next_cursor,
-    })
-}
 
-async fn list_rooms_page_from_postgres(
-    repository: &RtcPostgresMediaSessionRepository,
-    tenant_id: &str,
-    organization_id: &str,
-    params: RtcListWindowParams,
-) -> Result<RtcRoomListPage, RtcListWindowError> {
-    let limit = resolve_list_limit(&params)?;
-    let offset = resolve_list_offset(&params, limit)?;
-    let (sort_field, sort_descending) = list_window_sort(&params);
-    let mut items = repository
-        .list_rooms_page(
-            tenant_id,
-            organization_id,
-            offset,
-            limit,
-            params.q.as_deref(),
-            sort_field.as_str(),
-            sort_descending,
-        )
-        .await
-        .map_err(|error| RtcListWindowError::bad_request(error.to_string()))?;
-    let has_more = items.len() > limit;
-    if has_more {
-        items.truncate(limit);
+    fn list_media_artifacts_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcMediaArtifactListPage> {
+        Box::pin(async move {
+            if query.media_session_id.is_some() {
+                sqlite_list_media_artifacts_page(&self.media_sessions, query).await
+            } else {
+                sqlite_list_media_artifacts_scope_page(&self.media_sessions, query).await
+            }
+        })
     }
-    let next_cursor = has_more.then(|| (offset + items.len()).to_string());
-    Ok(RtcRoomListPage {
-        items,
-        next_cursor,
-    })
+
+    fn list_provider_profiles_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderProfileListPage> {
+        Box::pin(async move {
+            sqlite_list_provider_profiles_page(&self.provider_profiles, query).await
+        })
+    }
+
+    fn list_provider_accounts_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderAccountListPage> {
+        Box::pin(async move {
+            sqlite_list_provider_accounts_page(&self.provider_accounts, query).await
+        })
+    }
+
+    fn list_provider_applications_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderApplicationListPage> {
+        Box::pin(async move {
+            sqlite_list_provider_applications_page(&self.provider_accounts, query).await
+        })
+    }
+
+    fn list_provider_credentials_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderCredentialListPage> {
+        Box::pin(async move {
+            sqlite_list_provider_credentials_page(&self.provider_accounts, query).await
+        })
+    }
+
+    fn list_provider_routes_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderRouteListPage> {
+        Box::pin(async move {
+            sqlite_list_provider_routes_page(&self.provider_routes, query).await
+        })
+    }
+
+    fn list_webhook_events_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderWebhookEventListPage> {
+        let pool = self.pool.clone();
+        Box::pin(async move {
+            sqlite_list_webhook_events_page(&RtcSqliteProviderEventRepository::new(pool), query)
+                .await
+        })
+    }
+
+    fn list_provider_query_snapshots_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderQuerySnapshotListPage> {
+        let pool = self.pool.clone();
+        Box::pin(async move {
+            sqlite_list_provider_query_snapshots_page(
+                &RtcSqliteProviderEventRepository::new(pool),
+                query,
+            )
+            .await
+        })
+    }
+
+    fn list_quality_samples_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcQualitySampleListPage> {
+        Box::pin(async move {
+            sqlite_list_quality_samples_scope_page(&self.media_sessions, query).await
+        })
+    }
+
+    fn revoke_session_token_grants_for_session<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        session_id: &'a str,
+        revoked_at: &'a str,
+    ) -> RtcPersistenceFuture<'a, ()> {
+        let repository = self.session_token_grants.clone();
+        Box::pin(async move {
+            repository
+                .revoke_active_grants_for_session(
+                    tenant_id,
+                    organization_id,
+                    session_id,
+                    revoked_at,
+                )
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -551,6 +900,7 @@ pub struct RtcPostgresPersistencePort {
     provider_accounts: RtcPostgresProviderAccountRepository,
     provider_profiles: RtcPostgresProviderProfileRepository,
     provider_routes: RtcPostgresProviderRouteRepository,
+    session_token_grants: RtcPostgresSessionTokenGrantRepository,
 }
 
 impl RtcPostgresPersistencePort {
@@ -561,7 +911,8 @@ impl RtcPostgresPersistencePort {
             completion_records: RtcPostgresCompletionRecordRepository::new(pool.clone()),
             provider_accounts: RtcPostgresProviderAccountRepository::new(pool.clone()),
             provider_profiles: RtcPostgresProviderProfileRepository::new(pool.clone()),
-            provider_routes: RtcPostgresProviderRouteRepository::new(pool),
+            provider_routes: RtcPostgresProviderRouteRepository::new(pool.clone()),
+            session_token_grants: RtcPostgresSessionTokenGrantRepository::new(pool),
         }
     }
 
@@ -644,12 +995,18 @@ impl RtcPostgresPersistencePort {
                 .await?;
         }
         for session in &changes.media_sessions {
+            let expected_version = changes
+                .media_session_persist_versions
+                .get(&session.id)
+                .copied()
+                .unwrap_or(0);
             self.media_sessions
                 .upsert_media_session_with(
                     &mut **tx,
                     stable_numeric_id("media_session", &session.id),
                     session,
                     &updated_at,
+                    expected_version,
                 )
                 .await?;
         }
@@ -731,6 +1088,27 @@ impl RtcPostgresPersistencePort {
                 )
                 .await?;
         }
+        for grant in &changes.session_token_grants {
+            self.session_token_grants
+                .upsert_session_token_grant_with(
+                    &mut **tx,
+                    stable_numeric_id("session_token_grant", &grant.id),
+                    grant,
+                )
+                .await?;
+        }
+        for revocation in &changes.session_token_grant_revocations {
+            self.session_token_grants
+                .revoke_active_grants_with(
+                    &mut **tx,
+                    revocation.tenant_id.as_str(),
+                    revocation.organization_id.as_str(),
+                    revocation.session_id.as_str(),
+                    revocation.participant_id.as_deref(),
+                    revocation.revoked_at.as_str(),
+                )
+                .await?;
+        }
 
         Ok(())
     }
@@ -743,96 +1121,126 @@ impl RtcPostgresPersistencePort {
         let organization_id = request.organization_id.as_str();
         let provider_accounts = self
             .provider_accounts
-            .list_provider_accounts(tenant_id, organization_id, None, None)
+            .list_hydration_provider_accounts_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_accounts()).unwrap_or(200),
+            )
             .await?;
-        let mut provider_applications = Vec::new();
-        let mut provider_credentials = Vec::new();
-        for account in &provider_accounts {
-            let applications = self
-                .provider_accounts
-                .list_provider_applications(
-                    tenant_id,
-                    organization_id,
-                    Some(account.id.as_str()),
-                    None,
-                )
-                .await?;
-            for application in &applications {
-                let credentials = self
-                    .provider_accounts
-                    .list_provider_credentials(
-                        tenant_id,
-                        organization_id,
-                        Some(application.id.as_str()),
-                        None,
-                    )
-                    .await?;
-                provider_credentials.extend(credentials);
-            }
-            provider_applications.extend(applications);
-        }
+        let provider_applications = self
+            .provider_accounts
+            .list_hydration_provider_applications_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_applications()).unwrap_or(500),
+            )
+            .await?;
+        let provider_credentials = self
+            .provider_accounts
+            .list_hydration_provider_credentials_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_credentials()).unwrap_or(500),
+            )
+            .await?;
         let provider_profiles = self
             .provider_profiles
-            .list_provider_profiles(tenant_id, organization_id, None)
+            .list_hydration_provider_profiles_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_profiles()).unwrap_or(200),
+            )
             .await?;
         let provider_routes = self
             .provider_routes
-            .list_provider_routes(tenant_id, organization_id, None)
+            .list_hydration_provider_routes_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_routes()).unwrap_or(500),
+            )
             .await?;
         let rooms = self
             .media_sessions
-            .list_rooms_for_scope(tenant_id, organization_id)
+            .list_hydration_rooms_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_rooms()).unwrap_or(500),
+            )
             .await?;
         let media_sessions = self
             .media_sessions
-            .list_media_sessions_for_scope(tenant_id, organization_id)
+            .list_hydration_media_sessions_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_media_sessions()).unwrap_or(200),
+            )
             .await?;
         let media_participants = media_sessions
             .iter()
             .flat_map(|session| session.participants.clone())
             .collect::<Vec<_>>();
-        let mut media_tracks = Vec::new();
-        let mut media_artifacts = Vec::new();
-        let mut quality_samples = Vec::new();
-        let mut completion_records = Vec::new();
-        for session in &media_sessions {
-            media_tracks.extend(
-                self.media_sessions
-                    .list_media_tracks(session.id.as_str())
-                    .await?,
-            );
-            media_artifacts.extend(
-                self.media_sessions
-                    .list_media_artifacts(session.id.as_str())
-                    .await?,
-            );
-            quality_samples.extend(
-                self.media_sessions
-                    .list_quality_samples(session.id.as_str())
-                    .await?,
-            );
-            if let Some(completion) = self
-                .completion_records
-                .get_completion_record_by_session_id(session.id.as_str())
-                .await?
-            {
-                completion_records.push(completion);
-            }
-        }
+        let session_ids = media_sessions
+            .iter()
+            .map(|session| session.id.clone())
+            .collect::<Vec<_>>();
+        let media_tracks = self
+            .media_sessions
+            .list_media_tracks_for_sessions(session_ids.as_slice())
+            .await?;
+        let media_artifacts = self
+            .media_sessions
+            .list_media_artifacts_for_sessions(session_ids.as_slice())
+            .await?;
+        let quality_samples = self
+            .media_sessions
+            .list_quality_samples_for_sessions(session_ids.as_slice())
+            .await?;
+        let completion_records = self
+            .completion_records
+            .list_completion_records_for_sessions(session_ids.as_slice())
+            .await?;
         let provider_events = RtcPostgresProviderEventRepository::new(self.pool.clone());
         let webhook_events = provider_events
-            .list_webhook_events_for_scope(tenant_id, organization_id)
+            .list_hydration_webhook_events_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_webhook_events()).unwrap_or(500),
+            )
             .await?;
         let provider_query_jobs = provider_events
-            .list_provider_query_jobs_for_scope(tenant_id, organization_id)
+            .list_hydration_provider_query_jobs_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_query_jobs()).unwrap_or(200),
+            )
             .await?;
         let provider_query_snapshots = provider_events
-            .list_provider_query_snapshots_for_scope(tenant_id, organization_id)
+            .list_hydration_provider_query_snapshots_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_provider_query_snapshots()).unwrap_or(200),
+            )
             .await?;
         let media_session_idempotencies =
             RtcPostgresMediaSessionIdempotencyRepository::new(self.pool.clone())
-                .list_idempotency_records_for_scope(tenant_id, organization_id)
+                .list_hydration_idempotency_records_for_scope(
+                    tenant_id,
+                    organization_id,
+                    i64::try_from(rtc_hydration_max_idempotency_records()).unwrap_or(500),
+                )
                 .await?;
+        let session_token_grants = self
+            .session_token_grants
+            .list_hydration_session_token_grants_for_scope(
+                tenant_id,
+                organization_id,
+                i64::try_from(rtc_hydration_max_session_token_grants()).unwrap_or(500),
+            )
+            .await?;
+        let media_session_persist_versions = self
+            .media_sessions
+            .list_media_session_versions_for_scope(tenant_id, organization_id)
+            .await?;
         Ok(RtcPersistenceChangeSet {
             provider_accounts,
             provider_applications,
@@ -850,7 +1258,62 @@ impl RtcPostgresPersistencePort {
             provider_query_jobs,
             provider_query_snapshots,
             media_session_idempotencies,
+            session_token_grants,
+            session_token_grant_revocations: Vec::new(),
+            media_session_persist_versions,
         })
+    }
+
+    async fn prepare_media_session_create_with_idempotency_inner(
+        &self,
+        idempotency_record: RtcMediaSessionIdempotencyRecord,
+        session: RtcMediaSession,
+        updated_at: String,
+    ) -> RtcStorageResult<RtcMediaSessionIdempotencyClaim> {
+        let mut tx = self.pool.begin().await?;
+        let claim = self
+            .prepare_media_session_create_on_postgres_transaction(
+                &mut tx,
+                idempotency_record,
+                session,
+                updated_at,
+            )
+            .await?;
+        tx.commit().await?;
+        Ok(claim)
+    }
+
+    async fn prepare_media_session_create_on_postgres_transaction(
+        &self,
+        tx: &mut sqlx::Transaction<'_, Postgres>,
+        idempotency_record: RtcMediaSessionIdempotencyRecord,
+        session: RtcMediaSession,
+        updated_at: String,
+    ) -> RtcStorageResult<RtcMediaSessionIdempotencyClaim> {
+        let idempotency_repo =
+            RtcPostgresMediaSessionIdempotencyRepository::new(self.pool.clone());
+        match idempotency_repo
+            .claim_idempotency_record_on_transaction(
+                tx,
+                stable_numeric_id("media_session_idempotency", &idempotency_record.id),
+                &idempotency_record,
+            )
+            .await?
+        {
+            RtcMediaSessionIdempotencyClaim::Claimed => {
+                self.media_sessions
+                    .upsert_media_session_with(
+                        &mut **tx,
+                        stable_numeric_id("media_session", &session.id),
+                        &session,
+                        &updated_at,
+                        0,
+                    )
+                    .await?;
+                Ok(RtcMediaSessionIdempotencyClaim::Claimed)
+            }
+            existing @ RtcMediaSessionIdempotencyClaim::Existing(_) => Ok(existing),
+        }
     }
 }
 
@@ -906,6 +1369,23 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
         })
     }
 
+    fn prepare_media_session_create_with_idempotency<'a>(
+        &'a self,
+        idempotency_record: RtcMediaSessionIdempotencyRecord,
+        session: RtcMediaSession,
+        updated_at: String,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim> {
+        Box::pin(async move {
+            self.prepare_media_session_create_with_idempotency_inner(
+                idempotency_record,
+                session,
+                updated_at,
+            )
+            .await
+            .map_err(storage_to_persistence_error)
+        })
+    }
+
     fn load_media_session<'a>(
         &'a self,
         tenant_id: &'a str,
@@ -915,6 +1395,20 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
         Box::pin(async move {
             self.media_sessions
                 .get_media_session_for_scope(tenant_id, organization_id, media_session_id)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
+    fn get_media_session_persist_version<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<i64>> {
+        Box::pin(async move {
+            self.media_sessions
+                .get_media_session_version_for_scope(tenant_id, organization_id, media_session_id)
                 .await
                 .map_err(storage_to_persistence_error)
         })
@@ -954,6 +1448,18 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
         })
     }
 
+    fn list_stale_media_sessions_for_reconcile<'a>(
+        &'a self,
+        query: RtcStaleMediaSessionReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, RtcStaleMediaSessionReconcileCandidates> {
+        Box::pin(async move {
+            self.media_sessions
+                .list_stale_media_sessions_for_reconcile(query)
+                .await
+                .map_err(storage_to_persistence_error)
+        })
+    }
+
     fn get_room<'a>(
         &'a self,
         tenant_id: &'a str,
@@ -968,13 +1474,120 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
         })
     }
 
+    fn get_provider_account<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_account_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderAccount>> {
+        Box::pin(async move {
+            let account = self
+                .provider_accounts
+                .get_provider_account_by_id(provider_account_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_account(account, tenant_id, organization_id))
+        })
+    }
+
+    fn get_provider_application<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_application_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderApplication>> {
+        Box::pin(async move {
+            let application = self
+                .provider_accounts
+                .get_provider_application_by_id(provider_application_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_application(
+                application,
+                tenant_id,
+                organization_id,
+            ))
+        })
+    }
+
+    fn get_provider_credential<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_credential_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderCredential>> {
+        Box::pin(async move {
+            let credential = self
+                .provider_accounts
+                .get_provider_credential_by_id(provider_credential_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_credential(
+                credential,
+                tenant_id,
+                organization_id,
+            ))
+        })
+    }
+
+    fn get_provider_profile<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_profile_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderProfile>> {
+        Box::pin(async move {
+            let profile = self
+                .provider_profiles
+                .get_provider_profile_by_id(provider_profile_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_profile(profile, tenant_id, organization_id))
+        })
+    }
+
+    fn get_provider_route<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_route_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderRoute>> {
+        Box::pin(async move {
+            let route = self
+                .provider_routes
+                .get_provider_route_by_id(provider_route_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_route(route, tenant_id, organization_id))
+        })
+    }
+
+    fn get_provider_query_job<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        provider_query_job_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<RtcProviderQueryJobRecord>> {
+        Box::pin(async move {
+            let job = RtcPostgresProviderEventRepository::new(self.pool.clone())
+                .get_provider_query_job_by_id(provider_query_job_id)
+                .await
+                .map_err(storage_to_persistence_error)?;
+            Ok(scoped_provider_query_job(job, tenant_id, organization_id))
+        })
+    }
+
     fn list_rooms_for_scope<'a>(
         &'a self,
         query: RtcRoomScopeQuery,
     ) -> RtcPersistenceFuture<'a, Vec<RtcRoom>> {
         Box::pin(async move {
             self.media_sessions
-                .list_rooms_for_scope(query.tenant_id.as_str(), query.organization_id.as_str())
+                .list_hydration_rooms_for_scope(
+                    query.tenant_id.as_str(),
+                    query.organization_id.as_str(),
+                    i64::try_from(rtc_hydration_max_rooms()).unwrap_or(500),
+                )
                 .await
                 .map_err(storage_to_persistence_error)
         })
@@ -982,19 +1595,139 @@ impl RtcPersistencePort for RtcPostgresPersistencePort {
 
     fn list_rooms_page<'a>(
         &'a self,
-        tenant_id: &'a str,
-        organization_id: &'a str,
-        params: RtcListWindowParams,
+        query: RtcScopedListQuery,
     ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
+        Box::pin(async move { postgres_list_rooms_page(&self.media_sessions, query).await })
+    }
+
+    fn list_media_sessions_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionListPage> {
         Box::pin(async move {
-            list_rooms_page_from_postgres(
-                &self.media_sessions,
-                tenant_id,
-                organization_id,
-                params,
+            postgres_list_media_sessions_page(&self.media_sessions, query).await
+        })
+    }
+
+    fn list_active_provider_profiles_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcActiveProviderProfileListPage> {
+        Box::pin(async move {
+            postgres_list_active_provider_profiles_page(&self.provider_profiles, query).await
+        })
+    }
+
+    fn list_media_artifacts_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcMediaArtifactListPage> {
+        Box::pin(async move {
+            if query.media_session_id.is_some() {
+                postgres_list_media_artifacts_page(&self.media_sessions, query).await
+            } else {
+                postgres_list_media_artifacts_scope_page(&self.media_sessions, query).await
+            }
+        })
+    }
+
+    fn list_provider_profiles_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderProfileListPage> {
+        Box::pin(async move {
+            postgres_list_provider_profiles_page(&self.provider_profiles, query).await
+        })
+    }
+
+    fn list_provider_accounts_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderAccountListPage> {
+        Box::pin(async move {
+            postgres_list_provider_accounts_page(&self.provider_accounts, query).await
+        })
+    }
+
+    fn list_provider_applications_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderApplicationListPage> {
+        Box::pin(async move {
+            postgres_list_provider_applications_page(&self.provider_accounts, query).await
+        })
+    }
+
+    fn list_provider_credentials_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderCredentialListPage> {
+        Box::pin(async move {
+            postgres_list_provider_credentials_page(&self.provider_accounts, query).await
+        })
+    }
+
+    fn list_provider_routes_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderRouteListPage> {
+        Box::pin(async move {
+            postgres_list_provider_routes_page(&self.provider_routes, query).await
+        })
+    }
+
+    fn list_webhook_events_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderWebhookEventListPage> {
+        let pool = self.pool.clone();
+        Box::pin(async move {
+            postgres_list_webhook_events_page(&RtcPostgresProviderEventRepository::new(pool), query)
+                .await
+        })
+    }
+
+    fn list_provider_query_snapshots_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderQuerySnapshotListPage> {
+        let pool = self.pool.clone();
+        Box::pin(async move {
+            postgres_list_provider_query_snapshots_page(
+                &RtcPostgresProviderEventRepository::new(pool),
+                query,
             )
             .await
-            .map_err(|error| RtcPersistenceError::Unavailable(error.to_string()))
+        })
+    }
+
+    fn list_quality_samples_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcQualitySampleListPage> {
+        Box::pin(async move {
+            postgres_list_quality_samples_scope_page(&self.media_sessions, query).await
+        })
+    }
+
+    fn revoke_session_token_grants_for_session<'a>(
+        &'a self,
+        tenant_id: &'a str,
+        organization_id: &'a str,
+        session_id: &'a str,
+        revoked_at: &'a str,
+    ) -> RtcPersistenceFuture<'a, ()> {
+        let repository = self.session_token_grants.clone();
+        Box::pin(async move {
+            repository
+                .revoke_active_grants_for_session(
+                    tenant_id,
+                    organization_id,
+                    session_id,
+                    revoked_at,
+                )
+                .await
+                .map_err(storage_to_persistence_error)
         })
     }
 }
@@ -1868,9 +2601,76 @@ fn optional_dedupe_key(value: Option<&str>, fallback: &str) -> String {
         .to_string()
 }
 
+fn scoped_provider_account(
+    account: Option<RtcProviderAccount>,
+    tenant_id: &str,
+    organization_id: &str,
+) -> Option<RtcProviderAccount> {
+    account.filter(|account| {
+        account.tenant_id == tenant_id
+            && account.organization_id == organization_id
+            && account.deleted_at.is_none()
+    })
+}
+
+fn scoped_provider_application(
+    application: Option<RtcProviderApplication>,
+    tenant_id: &str,
+    organization_id: &str,
+) -> Option<RtcProviderApplication> {
+    application.filter(|application| {
+        application.tenant_id == tenant_id
+            && application.organization_id == organization_id
+            && application.deleted_at.is_none()
+    })
+}
+
+fn scoped_provider_credential(
+    credential: Option<RtcProviderCredential>,
+    tenant_id: &str,
+    organization_id: &str,
+) -> Option<RtcProviderCredential> {
+    credential.filter(|credential| {
+        credential.tenant_id == tenant_id && credential.organization_id == organization_id
+    })
+}
+
+fn scoped_provider_profile(
+    profile: Option<RtcProviderProfile>,
+    tenant_id: &str,
+    organization_id: &str,
+) -> Option<RtcProviderProfile> {
+    profile.filter(|profile| {
+        profile.tenant_id == tenant_id
+            && profile.organization_id == organization_id
+            && profile.deleted_at.is_none()
+    })
+}
+
+fn scoped_provider_route(
+    route: Option<RtcProviderRoute>,
+    tenant_id: &str,
+    organization_id: &str,
+) -> Option<RtcProviderRoute> {
+    route.filter(|route| {
+        route.tenant_id == tenant_id && route.organization_id == organization_id
+    })
+}
+
+fn scoped_provider_query_job(
+    job: Option<RtcProviderQueryJobRecord>,
+    tenant_id: &str,
+    organization_id: &str,
+) -> Option<RtcProviderQueryJobRecord> {
+    job.filter(|job| job.tenant_id == tenant_id && job.organization_id == organization_id)
+}
+
 fn storage_to_persistence_error(error: RtcStorageError) -> RtcPersistenceError {
     match error {
         RtcStorageError::Conflict(message) => RtcPersistenceError::Conflict(message),
+        RtcStorageError::InvalidEnumValue { field, value } => {
+            RtcPersistenceError::BadRequest(format!("{field}: {value}"))
+        }
         RtcStorageError::Sqlx(sqlx::Error::Database(database_error))
             if database_error.is_unique_violation() =>
         {

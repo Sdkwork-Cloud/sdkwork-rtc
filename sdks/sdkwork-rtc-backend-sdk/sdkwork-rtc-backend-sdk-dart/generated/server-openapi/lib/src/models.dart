@@ -12,34 +12,210 @@ List<dynamic>? _sdkworkAsList(dynamic value) {
   return value is List ? value : null;
 }
 
-class RtcApiResult {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+class SdkWorkApiResponse {
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
-  RtcApiResult({
+  SdkWorkApiResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
-  factory RtcApiResult.fromJson(Map<String, dynamic> json) {
-    return RtcApiResult(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+  factory SdkWorkApiResponse.fromJson(Map<String, dynamic> json) {
+    return SdkWorkApiResponse(
+      code: json['code'] is int ? json['code'] : null,
+      data: json['data'],
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
+    };
+  }
+}
+
+class SdkWorkResourceData {
+  final Map<String, dynamic>? item;
+
+  SdkWorkResourceData({
+    this.item
+  });
+
+  factory SdkWorkResourceData.fromJson(Map<String, dynamic> json) {
+    return SdkWorkResourceData(
+      item: _sdkworkAsMap(json['item'])
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'item': item,
+    };
+  }
+}
+
+class PageInfo {
+  final String? mode;
+  final int? page;
+  final int? pageSize;
+  final String? totalItems;
+  final int? totalPages;
+  final String? nextCursor;
+  final bool? hasMore;
+
+  PageInfo({
+    this.mode,
+    this.page,
+    this.pageSize,
+    this.totalItems,
+    this.totalPages,
+    this.nextCursor,
+    this.hasMore
+  });
+
+  factory PageInfo.fromJson(Map<String, dynamic> json) {
+    return PageInfo(
+      mode: json['mode']?.toString(),
+      page: json['page'] is int ? json['page'] : null,
+      pageSize: json['pageSize'] is int ? json['pageSize'] : null,
+      totalItems: json['totalItems']?.toString(),
+      totalPages: json['totalPages'] is int ? json['totalPages'] : null,
+      nextCursor: json['nextCursor']?.toString(),
+      hasMore: json['hasMore'] is bool ? json['hasMore'] : null
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'mode': mode,
+      'page': page,
+      'pageSize': pageSize,
+      'totalItems': totalItems,
+      'totalPages': totalPages,
+      'nextCursor': nextCursor,
+      'hasMore': hasMore,
+    };
+  }
+}
+
+class ProblemDetail {
+  final String? type;
+  final String? title;
+  final int? status;
+  final String? detail;
+  final String? instance;
+  final int? code;
+  final String? traceId;
+  final List<FieldError>? errors;
+
+  ProblemDetail({
+    this.type,
+    this.title,
+    this.status,
+    this.detail,
+    this.instance,
+    this.code,
+    this.traceId,
+    this.errors
+  });
+
+  factory ProblemDetail.fromJson(Map<String, dynamic> json) {
+    return ProblemDetail(
+      type: json['type']?.toString(),
+      title: json['title']?.toString(),
+      status: json['status'] is int ? json['status'] : null,
+      detail: json['detail']?.toString(),
+      instance: json['instance']?.toString(),
+      code: json['code'] is int ? json['code'] : null,
+      traceId: json['traceId']?.toString(),
+      errors: (() {
+        final list = _sdkworkAsList(json['errors']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => (() {
+        final map = _sdkworkAsMap(item);
+        return map == null ? null : FieldError.fromJson(map);
+      })())
+            .whereType<FieldError>()
+            .toList();
+      })()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'type': type,
+      'title': title,
+      'status': status,
+      'detail': detail,
+      'instance': instance,
+      'code': code,
+      'traceId': traceId,
+      'errors': errors?.map((item) => item.toJson()).toList(),
+    };
+  }
+}
+
+class FieldError {
+  final String? field;
+  final String? message;
+  final int? code;
+
+  FieldError({
+    this.field,
+    this.message,
+    this.code
+  });
+
+  factory FieldError.fromJson(Map<String, dynamic> json) {
+    return FieldError(
+      field: json['field']?.toString(),
+      message: json['message']?.toString(),
+      code: json['code'] is int ? json['code'] : null
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'field': field,
+      'message': message,
+      'code': code,
+    };
+  }
+}
+
+class SdkWorkResourceResponse {
+  final int? code;
+  final dynamic data;
+  final String? traceId;
+
+  SdkWorkResourceResponse({
+    this.code,
+    this.data,
+    this.traceId
+  });
+
+  factory SdkWorkResourceResponse.fromJson(Map<String, dynamic> json) {
+    return SdkWorkResourceResponse(
+      code: json['code'] is int ? json['code'] : null,
+      data: json['data'],
+      traceId: json['traceId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'code': code,
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -263,68 +439,57 @@ class RtcRoom {
 }
 
 class RtcRoomListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcRoomListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcRoomListResponse.fromJson(Map<String, dynamic> json) {
     return RtcRoomListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcRoomResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcRoom? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcRoomResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcRoomResponse.fromJson(Map<String, dynamic> json) {
     return RtcRoomResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcRoom.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -476,68 +641,57 @@ class RtcMediaSession {
 }
 
 class RtcMediaSessionListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaSessionListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaSessionListResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaSessionListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcMediaSessionResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcMediaSession? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaSessionResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaSessionResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaSessionResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcMediaSession.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -717,68 +871,57 @@ class RtcMediaArtifact {
 }
 
 class RtcMediaArtifactListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaArtifactListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaArtifactListResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaArtifactListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcMediaArtifactResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcMediaArtifact? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaArtifactResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaArtifactResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaArtifactResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcMediaArtifact.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -1242,36 +1385,29 @@ class RtcMediaSessionCompletionRecord {
 }
 
 class RtcMediaSessionCompletionRecordResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcMediaSessionCompletionRecord? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaSessionCompletionRecordResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaSessionCompletionRecordResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaSessionCompletionRecordResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcMediaSessionCompletionRecord.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -1449,68 +1585,57 @@ class RtcProviderAccountDisableRequest {
 }
 
 class RtcProviderAccountListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderAccountListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderAccountListResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderAccountListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcProviderAccountResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderAccount? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderAccountResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderAccountResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderAccountResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderAccount.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -1728,68 +1853,57 @@ class RtcProviderApplicationDisableRequest {
 }
 
 class RtcProviderApplicationListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderApplicationListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderApplicationListResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderApplicationListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcProviderApplicationResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderApplication? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderApplicationResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderApplicationResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderApplicationResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderApplication.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -1979,68 +2093,57 @@ class RtcProviderCredentialRevokeRequest {
 }
 
 class RtcProviderCredentialListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderCredentialListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderCredentialListResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderCredentialListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcProviderCredentialResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderCredential? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderCredentialResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderCredentialResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderCredentialResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderCredential.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -2172,6 +2275,9 @@ class RtcProviderCapabilitySnapshot {
   final bool? audio;
   final bool? video;
   final bool? live;
+  final bool? liveBroadcast;
+  final bool? liveAudience;
+  final bool? cdnRelay;
   final bool? screenShare;
   final bool? recording;
   final bool? webhook;
@@ -2184,6 +2290,9 @@ class RtcProviderCapabilitySnapshot {
     this.audio,
     this.video,
     this.live,
+    this.liveBroadcast,
+    this.liveAudience,
+    this.cdnRelay,
     this.screenShare,
     this.recording,
     this.webhook,
@@ -2198,6 +2307,9 @@ class RtcProviderCapabilitySnapshot {
       audio: json['audio'] is bool ? json['audio'] : null,
       video: json['video'] is bool ? json['video'] : null,
       live: json['live'] is bool ? json['live'] : null,
+      liveBroadcast: json['liveBroadcast'] is bool ? json['liveBroadcast'] : null,
+      liveAudience: json['liveAudience'] is bool ? json['liveAudience'] : null,
+      cdnRelay: json['cdnRelay'] is bool ? json['cdnRelay'] : null,
       screenShare: json['screenShare'] is bool ? json['screenShare'] : null,
       recording: json['recording'] is bool ? json['recording'] : null,
       webhook: json['webhook'] is bool ? json['webhook'] : null,
@@ -2222,6 +2334,9 @@ class RtcProviderCapabilitySnapshot {
       'audio': audio,
       'video': video,
       'live': live,
+      'liveBroadcast': liveBroadcast,
+      'liveAudience': liveAudience,
+      'cdnRelay': cdnRelay,
       'screenShare': screenShare,
       'recording': recording,
       'webhook': webhook,
@@ -2433,103 +2548,85 @@ class RtcProviderProfileVerifyCheck {
 }
 
 class RtcProviderProfileListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderProfileListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderProfileListResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderProfileListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcProviderProfileResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderProfile? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderProfileResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderProfileResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderProfileResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderProfile.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcProviderProfileVerifyResultResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderProfileVerifyResult? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderProfileVerifyResultResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderProfileVerifyResultResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderProfileVerifyResultResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderProfileVerifyResult.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -2639,68 +2736,496 @@ class RtcProviderRouteDisableRequest {
 }
 
 class RtcProviderRouteListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderRouteListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderRouteListResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderRouteListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcProviderRouteResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderRoute? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderRouteResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderRouteResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderRouteResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderRoute.fromJson(map);
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'code': code,
+      'data': data,
+      'traceId': traceId,
+    };
+  }
+}
+
+class RtcProviderPluginDescriptor {
+  final String? pluginId;
+  final String? domain;
+  final String? providerKind;
+  final String? displayName;
+  final String? interfaceVersion;
+  final String? configSchemaRef;
+  final bool? defaultSelected;
+  final bool? tenantOverrideAllowed;
+  final List<String>? requiredCapabilities;
+  final List<String>? optionalCapabilities;
+  final List<String>? unsupportedFeatures;
+  final List<String>? degradedBehaviors;
+
+  RtcProviderPluginDescriptor({
+    this.pluginId,
+    this.domain,
+    this.providerKind,
+    this.displayName,
+    this.interfaceVersion,
+    this.configSchemaRef,
+    this.defaultSelected,
+    this.tenantOverrideAllowed,
+    this.requiredCapabilities,
+    this.optionalCapabilities,
+    this.unsupportedFeatures,
+    this.degradedBehaviors
+  });
+
+  factory RtcProviderPluginDescriptor.fromJson(Map<String, dynamic> json) {
+    return RtcProviderPluginDescriptor(
+      pluginId: json['pluginId']?.toString(),
+      domain: json['domain']?.toString(),
+      providerKind: json['providerKind']?.toString(),
+      displayName: json['displayName']?.toString(),
+      interfaceVersion: json['interfaceVersion']?.toString(),
+      configSchemaRef: json['configSchemaRef']?.toString(),
+      defaultSelected: json['defaultSelected'] is bool ? json['defaultSelected'] : null,
+      tenantOverrideAllowed: json['tenantOverrideAllowed'] is bool ? json['tenantOverrideAllowed'] : null,
+      requiredCapabilities: (() {
+        final list = _sdkworkAsList(json['requiredCapabilities']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => item?.toString())
+            .whereType<String>()
+            .toList();
+      })(),
+      optionalCapabilities: (() {
+        final list = _sdkworkAsList(json['optionalCapabilities']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => item?.toString())
+            .whereType<String>()
+            .toList();
+      })(),
+      unsupportedFeatures: (() {
+        final list = _sdkworkAsList(json['unsupportedFeatures']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => item?.toString())
+            .whereType<String>()
+            .toList();
+      })(),
+      degradedBehaviors: (() {
+        final list = _sdkworkAsList(json['degradedBehaviors']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => item?.toString())
+            .whereType<String>()
+            .toList();
       })()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
+      'pluginId': pluginId,
+      'domain': domain,
+      'providerKind': providerKind,
+      'displayName': displayName,
+      'interfaceVersion': interfaceVersion,
+      'configSchemaRef': configSchemaRef,
+      'defaultSelected': defaultSelected,
+      'tenantOverrideAllowed': tenantOverrideAllowed,
+      'requiredCapabilities': requiredCapabilities?.map((item) => item).toList(),
+      'optionalCapabilities': optionalCapabilities?.map((item) => item).toList(),
+      'unsupportedFeatures': unsupportedFeatures?.map((item) => item).toList(),
+      'degradedBehaviors': degradedBehaviors?.map((item) => item).toList(),
+    };
+  }
+}
+
+class RtcProviderPluginListResponse {
+  final int? code;
+  final dynamic data;
+  final String? traceId;
+
+  RtcProviderPluginListResponse({
+    this.code,
+    this.data,
+    this.traceId
+  });
+
+  factory RtcProviderPluginListResponse.fromJson(Map<String, dynamic> json) {
+    return RtcProviderPluginListResponse(
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
+    };
+  }
+}
+
+class RtcProviderPluginResponse {
+  final int? code;
+  final dynamic data;
+  final String? traceId;
+
+  RtcProviderPluginResponse({
+    this.code,
+    this.data,
+    this.traceId
+  });
+
+  factory RtcProviderPluginResponse.fromJson(Map<String, dynamic> json) {
+    return RtcProviderPluginResponse(
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'code': code,
+      'data': data,
+      'traceId': traceId,
+    };
+  }
+}
+
+class RtcProviderConfigFieldSchema {
+  final String? key;
+  final String? label;
+  final String? type;
+  final bool? required_;
+  final dynamic default_;
+  final String? placeholder;
+  final List<String>? values;
+  final int? min;
+  final int? max;
+  final bool? hidden;
+
+  RtcProviderConfigFieldSchema({
+    this.key,
+    this.label,
+    this.type,
+    this.required_,
+    this.default_,
+    this.placeholder,
+    this.values,
+    this.min,
+    this.max,
+    this.hidden
+  });
+
+  factory RtcProviderConfigFieldSchema.fromJson(Map<String, dynamic> json) {
+    return RtcProviderConfigFieldSchema(
+      key: json['key']?.toString(),
+      label: json['label']?.toString(),
+      type: json['type']?.toString(),
+      required_: json['required'] is bool ? json['required'] : null,
+      default_: json['default'],
+      placeholder: json['placeholder']?.toString(),
+      values: (() {
+        final list = _sdkworkAsList(json['values']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => item?.toString())
+            .whereType<String>()
+            .toList();
+      })(),
+      min: json['min'] is int ? json['min'] : null,
+      max: json['max'] is int ? json['max'] : null,
+      hidden: json['hidden'] is bool ? json['hidden'] : null
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'key': key,
+      'label': label,
+      'type': type,
+      'required': required_,
+      'default': default_,
+      'placeholder': placeholder,
+      'values': values?.map((item) => item).toList(),
+      'min': min,
+      'max': max,
+      'hidden': hidden,
+    };
+  }
+}
+
+class RtcProviderCredentialRoleSchema {
+  final String? role;
+  final String? label;
+  final String? description;
+  final List<RtcProviderConfigFieldSchema>? fields;
+
+  RtcProviderCredentialRoleSchema({
+    this.role,
+    this.label,
+    this.description,
+    this.fields
+  });
+
+  factory RtcProviderCredentialRoleSchema.fromJson(Map<String, dynamic> json) {
+    return RtcProviderCredentialRoleSchema(
+      role: json['role']?.toString(),
+      label: json['label']?.toString(),
+      description: json['description']?.toString(),
+      fields: (() {
+        final list = _sdkworkAsList(json['fields']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => (() {
+        final map = _sdkworkAsMap(item);
+        return map == null ? null : RtcProviderConfigFieldSchema.fromJson(map);
+      })())
+            .whereType<RtcProviderConfigFieldSchema>()
+            .toList();
+      })()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'role': role,
+      'label': label,
+      'description': description,
+      'fields': fields?.map((item) => item.toJson()).toList(),
+    };
+  }
+}
+
+class RtcProviderConfigSchema {
+  final String? provider;
+  final String? displayName;
+  final String? description;
+  final List<RtcProviderConfigFieldSchema>? accountFields;
+  final List<RtcProviderConfigFieldSchema>? applicationFields;
+  final List<RtcProviderCredentialRoleSchema>? credentialRoles;
+  final List<RtcProviderConfigFieldSchema>? profileFields;
+  final List<String>? optionalCapabilities;
+  final List<String>? requiredCapabilities;
+
+  RtcProviderConfigSchema({
+    this.provider,
+    this.displayName,
+    this.description,
+    this.accountFields,
+    this.applicationFields,
+    this.credentialRoles,
+    this.profileFields,
+    this.optionalCapabilities,
+    this.requiredCapabilities
+  });
+
+  factory RtcProviderConfigSchema.fromJson(Map<String, dynamic> json) {
+    return RtcProviderConfigSchema(
+      provider: json['provider']?.toString(),
+      displayName: json['displayName']?.toString(),
+      description: json['description']?.toString(),
+      accountFields: (() {
+        final list = _sdkworkAsList(json['accountFields']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => (() {
+        final map = _sdkworkAsMap(item);
+        return map == null ? null : RtcProviderConfigFieldSchema.fromJson(map);
+      })())
+            .whereType<RtcProviderConfigFieldSchema>()
+            .toList();
+      })(),
+      applicationFields: (() {
+        final list = _sdkworkAsList(json['applicationFields']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => (() {
+        final map = _sdkworkAsMap(item);
+        return map == null ? null : RtcProviderConfigFieldSchema.fromJson(map);
+      })())
+            .whereType<RtcProviderConfigFieldSchema>()
+            .toList();
+      })(),
+      credentialRoles: (() {
+        final list = _sdkworkAsList(json['credentialRoles']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => (() {
+        final map = _sdkworkAsMap(item);
+        return map == null ? null : RtcProviderCredentialRoleSchema.fromJson(map);
+      })())
+            .whereType<RtcProviderCredentialRoleSchema>()
+            .toList();
+      })(),
+      profileFields: (() {
+        final list = _sdkworkAsList(json['profileFields']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => (() {
+        final map = _sdkworkAsMap(item);
+        return map == null ? null : RtcProviderConfigFieldSchema.fromJson(map);
+      })())
+            .whereType<RtcProviderConfigFieldSchema>()
+            .toList();
+      })(),
+      optionalCapabilities: (() {
+        final list = _sdkworkAsList(json['optionalCapabilities']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => item?.toString())
+            .whereType<String>()
+            .toList();
+      })(),
+      requiredCapabilities: (() {
+        final list = _sdkworkAsList(json['requiredCapabilities']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => item?.toString())
+            .whereType<String>()
+            .toList();
+      })()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'provider': provider,
+      'displayName': displayName,
+      'description': description,
+      'accountFields': accountFields?.map((item) => item.toJson()).toList(),
+      'applicationFields': applicationFields?.map((item) => item.toJson()).toList(),
+      'credentialRoles': credentialRoles?.map((item) => item.toJson()).toList(),
+      'profileFields': profileFields?.map((item) => item.toJson()).toList(),
+      'optionalCapabilities': optionalCapabilities?.map((item) => item).toList(),
+      'requiredCapabilities': requiredCapabilities?.map((item) => item).toList(),
+    };
+  }
+}
+
+class RtcProviderConfigSchemaListResponse {
+  final int? code;
+  final dynamic data;
+  final String? traceId;
+
+  RtcProviderConfigSchemaListResponse({
+    this.code,
+    this.data,
+    this.traceId
+  });
+
+  factory RtcProviderConfigSchemaListResponse.fromJson(Map<String, dynamic> json) {
+    return RtcProviderConfigSchemaListResponse(
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'code': code,
+      'data': data,
+      'traceId': traceId,
+    };
+  }
+}
+
+class RtcProviderConfigSchemaResponse {
+  final int? code;
+  final dynamic data;
+  final String? traceId;
+
+  RtcProviderConfigSchemaResponse({
+    this.code,
+    this.data,
+    this.traceId
+  });
+
+  factory RtcProviderConfigSchemaResponse.fromJson(Map<String, dynamic> json) {
+    return RtcProviderConfigSchemaResponse(
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'code': code,
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -2754,33 +3279,29 @@ class RtcQualitySample {
 }
 
 class RtcQualitySampleListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcQualitySampleListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcQualitySampleListResponse.fromJson(Map<String, dynamic> json) {
     return RtcQualitySampleListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -2931,68 +3452,57 @@ class RtcProviderWebhookReceiveRequest {
 }
 
 class RtcProviderWebhookEventListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderWebhookEventListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderWebhookEventListResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderWebhookEventListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcProviderWebhookEventResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderWebhookEvent? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderWebhookEventResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderWebhookEventResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderWebhookEventResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderWebhookEvent.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -3122,36 +3632,29 @@ class RtcProviderQueryJobCreateRequest {
 }
 
 class RtcProviderQueryJobResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcProviderQueryJob? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderQueryJobResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderQueryJobResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderQueryJobResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcProviderQueryJob.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -3213,125 +3716,29 @@ class RtcProviderQuerySnapshot {
 }
 
 class RtcProviderQuerySnapshotListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcProviderQuerySnapshotListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcProviderQuerySnapshotListResponse.fromJson(Map<String, dynamic> json) {
     return RtcProviderQuerySnapshotListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
-    };
-  }
-}
-
-class ProblemDetail {
-  final String? type;
-  final String? title;
-  final int? status;
-  final String? detail;
-  final String? instance;
-  final String? code;
-  final String? traceId;
-  final String? requestId;
-  final List<FieldError>? errors;
-
-  ProblemDetail({
-    this.type,
-    this.title,
-    this.status,
-    this.detail,
-    this.instance,
-    this.code,
-    this.traceId,
-    this.requestId,
-    this.errors
-  });
-
-  factory ProblemDetail.fromJson(Map<String, dynamic> json) {
-    return ProblemDetail(
-      type: json['type']?.toString(),
-      title: json['title']?.toString(),
-      status: json['status'] is int ? json['status'] : null,
-      detail: json['detail']?.toString(),
-      instance: json['instance']?.toString(),
-      code: json['code']?.toString(),
-      traceId: json['traceId']?.toString(),
-      requestId: json['requestId']?.toString(),
-      errors: (() {
-        final list = _sdkworkAsList(json['errors']);
-        if (list == null) {
-          return null;
-        }
-        return list
-            .map((item) => (() {
-        final map = _sdkworkAsMap(item);
-        return map == null ? null : FieldError.fromJson(map);
-      })())
-            .whereType<FieldError>()
-            .toList();
-      })()
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'type': type,
-      'title': title,
-      'status': status,
-      'detail': detail,
-      'instance': instance,
-      'code': code,
       'traceId': traceId,
-      'requestId': requestId,
-      'errors': errors?.map((item) => item.toJson()).toList(),
-    };
-  }
-}
-
-class FieldError {
-  final String? field;
-  final String? message;
-  final String? code;
-
-  FieldError({
-    this.field,
-    this.message,
-    this.code
-  });
-
-  factory FieldError.fromJson(Map<String, dynamic> json) {
-    return FieldError(
-      field: json['field']?.toString(),
-      message: json['message']?.toString(),
-      code: json['code']?.toString()
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'field': field,
-      'message': message,
-      'code': code,
     };
   }
 }

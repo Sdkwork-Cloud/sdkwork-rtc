@@ -7,7 +7,8 @@ use sdkwork_communication_rtc_service::{
     RtcProviderPort, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
     RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest, RtcRecordingArtifact,
     RtcRecordingArtifactExportRequest, RtcRecordingArtifactImportPort, RtcRecordingArtifactsFuture,
-    RtcSessionHandle, plugin_descriptor_from_provider_schema, utc_now_rfc3339_millis,
+    RtcSessionHandle, plugin_descriptor_from_provider_schema, require_signed_provider_configuration,
+    utc_now_rfc3339_millis,
 };
 
 use crate::config::VolcengineRtcProviderConfig;
@@ -141,6 +142,8 @@ impl RtcProviderPort for VolcengineRtcProvider {
                 expires_at: format_unix_seconds_rfc3339(expire_at),
             });
         }
+
+        require_signed_provider_configuration(false, "participant credential issuance")?;
 
         Ok(RtcParticipantCredential {
             tenant_id: tenant_id.into(),

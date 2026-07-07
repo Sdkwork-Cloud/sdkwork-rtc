@@ -44,8 +44,8 @@ const defaultAppPermissionScope =
     'rtc.media_session.read rtc.media_session.write';
 
 const defaultAppSession = RtcAppSession(
-  accessToken: 'dev-access-token',
-  authToken: 'dev-auth-token',
+  accessToken: '',
+  authToken: '',
   tenantId: 'default',
   organizationId: 'default',
   userId: 'user',

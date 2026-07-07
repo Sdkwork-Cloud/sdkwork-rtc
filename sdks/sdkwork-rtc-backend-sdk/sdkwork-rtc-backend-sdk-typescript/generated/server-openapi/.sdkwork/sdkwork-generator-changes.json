@@ -9,26 +9,27 @@
     "protocol": "http",
     "packageName": "sdkwork-rtc-backend-sdk-generated-typescript"
   },
-  "changeFingerprint": "08a530f06b524e67c8d58ef26024eb410982393edf80b733413a62446b82234c",
+  "changeFingerprint": "d26873bca9a6fbbfce94e6d4e21a1309dc661a999770e0446b9c0f830299517a",
   "changes": {
-    "createdGeneratedFiles": [],
+    "createdGeneratedFiles": [
+      "src/types/page-info.ts",
+      "src/types/rtc-provider-config-field-schema.ts",
+      "src/types/rtc-provider-config-schema-list-response.ts",
+      "src/types/rtc-provider-config-schema-response.ts",
+      "src/types/rtc-provider-config-schema.ts",
+      "src/types/rtc-provider-credential-role-schema.ts",
+      "src/types/rtc-provider-plugin-descriptor.ts",
+      "src/types/rtc-provider-plugin-list-response.ts",
+      "src/types/rtc-provider-plugin-response.ts"
+    ],
     "updatedGeneratedFiles": [
-      "src/api/rtc-media-artifacts.ts",
-      "src/api/rtc-media-sessions.ts",
-      "src/api/rtc-provider-accounts.ts",
-      "src/api/rtc-provider-applications.ts",
-      "src/api/rtc-provider-credentials.ts",
+      "package.json",
+      "README.md",
+      "sdkwork-sdk.json",
       "src/api/rtc-provider-plugins.ts",
-      "src/api/rtc-provider-profiles.ts",
-      "src/api/rtc-provider-query-jobs.ts",
-      "src/api/rtc-provider-routes.ts",
       "src/api/rtc-provider-schemas.ts",
-      "src/api/rtc-provider-webhooks.ts",
-      "src/api/rtc-quality-samples.ts",
       "src/api/rtc-rooms.ts",
-      "src/http/client.ts",
-      "src/types/index.ts",
-      "src/types/rtc-provider-capability-snapshot.ts"
+      "src/types/index.ts"
     ],
     "unchangedGeneratedFiles": [
       "bin/publish-core.mjs",
@@ -38,13 +39,21 @@
       "bin/sdk-gen.sh",
       "CHANGELOG.md",
       "LICENSE",
-      "package.json",
-      "README.md",
-      "sdkwork-sdk.json",
       "src/api/base.ts",
       "src/api/index.ts",
       "src/api/paths.ts",
+      "src/api/rtc-media-artifacts.ts",
+      "src/api/rtc-media-sessions.ts",
+      "src/api/rtc-provider-accounts.ts",
+      "src/api/rtc-provider-applications.ts",
+      "src/api/rtc-provider-credentials.ts",
+      "src/api/rtc-provider-profiles.ts",
+      "src/api/rtc-provider-query-jobs.ts",
+      "src/api/rtc-provider-routes.ts",
+      "src/api/rtc-provider-webhooks.ts",
+      "src/api/rtc-quality-samples.ts",
       "src/auth/index.ts",
+      "src/http/client.ts",
       "src/http/index.ts",
       "src/index.ts",
       "src/sdk.ts",
@@ -83,6 +92,7 @@
       "src/types/rtc-provider-application-list-response.ts",
       "src/types/rtc-provider-application-response.ts",
       "src/types/rtc-provider-application.ts",
+      "src/types/rtc-provider-capability-snapshot.ts",
       "src/types/rtc-provider-credential-command.ts",
       "src/types/rtc-provider-credential-list-response.ts",
       "src/types/rtc-provider-credential-response.ts",
@@ -122,74 +132,32 @@
       "src/types/sdk-work-resource-response.ts",
       "tsconfig.json"
     ],
-    "deletedGeneratedFiles": [
-      "src/types/page-info.ts",
-      "src/types/rtc-media-artifacts-retrieve-response.ts",
-      "src/types/rtc-media-sessions-close-response.ts",
-      "src/types/rtc-media-sessions-completion-record-retrieve-response.ts",
-      "src/types/rtc-media-sessions-retrieve-response.ts",
-      "src/types/rtc-provider-accounts-applications-create-response.ts",
-      "src/types/rtc-provider-accounts-create-response.ts",
-      "src/types/rtc-provider-accounts-disable-response.ts",
-      "src/types/rtc-provider-accounts-retrieve-response.ts",
-      "src/types/rtc-provider-accounts-update-response.ts",
-      "src/types/rtc-provider-applications-credentials-create-response.ts",
-      "src/types/rtc-provider-applications-disable-response.ts",
-      "src/types/rtc-provider-applications-retrieve-response.ts",
-      "src/types/rtc-provider-applications-update-response.ts",
-      "src/types/rtc-provider-credentials-retrieve-response.ts",
-      "src/types/rtc-provider-credentials-revoke-response.ts",
-      "src/types/rtc-provider-credentials-update-response.ts",
-      "src/types/rtc-provider-profiles-create-response.ts",
-      "src/types/rtc-provider-profiles-disable-response.ts",
-      "src/types/rtc-provider-profiles-retrieve-response.ts",
-      "src/types/rtc-provider-profiles-update-response.ts",
-      "src/types/rtc-provider-profiles-verify-response.ts",
-      "src/types/rtc-provider-query-jobs-create-response.ts",
-      "src/types/rtc-provider-query-jobs-retrieve-response.ts",
-      "src/types/rtc-provider-routes-create-response.ts",
-      "src/types/rtc-provider-routes-disable-response.ts",
-      "src/types/rtc-provider-routes-retrieve-response.ts",
-      "src/types/rtc-provider-routes-update-response.ts",
-      "src/types/rtc-provider-webhooks-events-receive-response.ts",
-      "src/types/rtc-rooms-retrieve-response.ts",
-      "src/types/sdk-work-command-data.ts",
-      "src/types/sdk-work-command-response.ts",
-      "src/types/sdk-work-list-response.ts",
-      "src/types/sdk-work-page-data.ts"
-    ],
+    "deletedGeneratedFiles": [],
     "scaffoldedFiles": [],
     "preservedScaffoldFiles": [
       "custom/build-runtime.mjs",
       "custom/README.md"
     ],
-    "backedUpFiles": []
+    "backedUpFiles": [
+      "package.json",
+      "sdkwork-sdk.json"
+    ]
   },
   "impact": {
     "schemaVersion": 1,
     "areas": [
       "api-surface",
       "models",
-      "runtime"
+      "build-metadata",
+      "documentation"
     ],
     "details": [
       {
         "area": "api-surface",
         "paths": [
-          "src/api/rtc-media-artifacts.ts",
-          "src/api/rtc-media-sessions.ts",
-          "src/api/rtc-provider-accounts.ts",
-          "src/api/rtc-provider-applications.ts",
-          "src/api/rtc-provider-credentials.ts",
           "src/api/rtc-provider-plugins.ts",
-          "src/api/rtc-provider-profiles.ts",
-          "src/api/rtc-provider-query-jobs.ts",
-          "src/api/rtc-provider-routes.ts",
           "src/api/rtc-provider-schemas.ts",
-          "src/api/rtc-provider-webhooks.ts",
-          "src/api/rtc-quality-samples.ts",
-          "src/api/rtc-rooms.ts",
-          "src/http/client.ts"
+          "src/api/rtc-rooms.ts"
         ]
       },
       {
@@ -197,62 +165,43 @@
         "paths": [
           "src/types/index.ts",
           "src/types/page-info.ts",
-          "src/types/rtc-media-artifacts-retrieve-response.ts",
-          "src/types/rtc-media-sessions-close-response.ts",
-          "src/types/rtc-media-sessions-completion-record-retrieve-response.ts",
-          "src/types/rtc-media-sessions-retrieve-response.ts",
-          "src/types/rtc-provider-accounts-applications-create-response.ts",
-          "src/types/rtc-provider-accounts-create-response.ts",
-          "src/types/rtc-provider-accounts-disable-response.ts",
-          "src/types/rtc-provider-accounts-retrieve-response.ts",
-          "src/types/rtc-provider-accounts-update-response.ts",
-          "src/types/rtc-provider-applications-credentials-create-response.ts",
-          "src/types/rtc-provider-applications-disable-response.ts",
-          "src/types/rtc-provider-applications-retrieve-response.ts",
-          "src/types/rtc-provider-applications-update-response.ts",
-          "src/types/rtc-provider-capability-snapshot.ts",
-          "src/types/rtc-provider-credentials-retrieve-response.ts",
-          "src/types/rtc-provider-credentials-revoke-response.ts",
-          "src/types/rtc-provider-credentials-update-response.ts",
-          "src/types/rtc-provider-profiles-create-response.ts",
-          "src/types/rtc-provider-profiles-disable-response.ts",
-          "src/types/rtc-provider-profiles-retrieve-response.ts",
-          "src/types/rtc-provider-profiles-update-response.ts",
-          "src/types/rtc-provider-profiles-verify-response.ts",
-          "src/types/rtc-provider-query-jobs-create-response.ts",
-          "src/types/rtc-provider-query-jobs-retrieve-response.ts",
-          "src/types/rtc-provider-routes-create-response.ts",
-          "src/types/rtc-provider-routes-disable-response.ts",
-          "src/types/rtc-provider-routes-retrieve-response.ts",
-          "src/types/rtc-provider-routes-update-response.ts",
-          "src/types/rtc-provider-webhooks-events-receive-response.ts",
-          "src/types/rtc-rooms-retrieve-response.ts",
-          "src/types/sdk-work-command-data.ts",
-          "src/types/sdk-work-command-response.ts",
-          "src/types/sdk-work-list-response.ts",
-          "src/types/sdk-work-page-data.ts"
+          "src/types/rtc-provider-config-field-schema.ts",
+          "src/types/rtc-provider-config-schema-list-response.ts",
+          "src/types/rtc-provider-config-schema-response.ts",
+          "src/types/rtc-provider-config-schema.ts",
+          "src/types/rtc-provider-credential-role-schema.ts",
+          "src/types/rtc-provider-plugin-descriptor.ts",
+          "src/types/rtc-provider-plugin-list-response.ts",
+          "src/types/rtc-provider-plugin-response.ts"
         ]
       },
       {
-        "area": "runtime",
+        "area": "build-metadata",
         "paths": [
-          "src/http/client.ts"
+          "package.json",
+          "sdkwork-sdk.json"
+        ]
+      },
+      {
+        "area": "documentation",
+        "paths": [
+          "README.md"
         ]
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models, runtime. Verification is required."
+    "summary": "Detected impact areas: api-surface, models, build-metadata, documentation. Verification is required."
   },
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models, runtime. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, models, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -270,7 +219,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -294,7 +243,7 @@
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "deleted-generated-files",
+      "backed-up-generated-files",
       "manual-review-required",
       "verification-required"
     ]

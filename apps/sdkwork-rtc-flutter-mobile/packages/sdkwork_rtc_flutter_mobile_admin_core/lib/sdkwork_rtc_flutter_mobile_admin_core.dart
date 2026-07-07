@@ -1,3 +1,4 @@
+export 'src/models/paginated_list_result.dart';
 export 'src/models/provider_schema.dart';
 export 'src/models/provider_account.dart';
 export 'src/models/provider_application.dart';

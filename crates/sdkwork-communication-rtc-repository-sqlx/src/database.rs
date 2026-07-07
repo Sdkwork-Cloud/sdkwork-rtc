@@ -4,7 +4,7 @@ use sdkwork_communication_rtc_service::RtcPersistencePort;
 use sdkwork_database_repository::health::{HealthCheckResult, HealthChecker, HealthStatus};
 use sdkwork_database_sqlx::{DatabasePool, PoolError, create_pool_from_env};
 
-use crate::{RtcPostgresPersistencePort, RtcSqlitePersistencePort, SQLITE_SCHEMA};
+use crate::{RtcPostgresPersistencePort, RtcSqlitePersistencePort};
 
 /// RTC persistence bootstrap output, including the framework pool when available.
 #[derive(Clone)]
@@ -85,9 +85,11 @@ pub async fn persistence_from_database_pool(
                 .map_err(|error| sqlx::Error::Configuration(error.into()))?;
             Ok(Arc::new(RtcPostgresPersistencePort::new(pg_pool.clone())))
         }
-        DatabasePool::Sqlite(sqlite_pool, _) => {
-            apply_sqlite_schema(&sqlite_pool).await?;
-            Ok(Arc::new(RtcSqlitePersistencePort::new(sqlite_pool)))
+        DatabasePool::Sqlite(ref sqlite_pool, _) => {
+            sdkwork_rtc_database_host::bootstrap_rtc_database(pool.clone())
+                .await
+                .map_err(|error| sqlx::Error::Configuration(error.into()))?;
+            Ok(Arc::new(RtcSqlitePersistencePort::new(sqlite_pool.clone())))
         }
     }
 }
@@ -104,17 +106,6 @@ pub fn is_rtc_database_healthy(result: &HealthCheckResult) -> bool {
         result.status,
         HealthStatus::Healthy | HealthStatus::Degraded(_)
     )
-}
-
-async fn apply_sqlite_schema(pool: &sqlx::SqlitePool) -> Result<(), sqlx::Error> {
-    for statement in SQLITE_SCHEMA
-        .split(';')
-        .map(str::trim)
-        .filter(|statement| !statement.is_empty())
-    {
-        sqlx::query(statement).execute(pool).await?;
-    }
-    Ok(())
 }
 
 #[cfg(test)]

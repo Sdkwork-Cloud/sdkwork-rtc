@@ -5,12 +5,14 @@ use sdkwork_communication_rtc_service::{
     RtcMediaSessionStatus, RtcMediaSource, RtcMediaTrack, RtcMediaTrackKind, RtcMediaTrackSource,
     RtcMediaTrackStatus, RtcParticipantRole, RtcParticipantState, RtcQualitySample,
     RtcRecordingArtifactKind, RtcRecordingArtifactStatus, RtcRecordingLifecycleReconcileQuery,
-    RtcRoom, RtcRoomStatus, RtcTenantOrganizationScope, rtc_provider_payload_hash,
+    RtcRoom, RtcRoomStatus, RtcStaleMediaSessionReconcileCandidates,
+    RtcStaleMediaSessionReconcileQuery, RtcTenantOrganizationScope, rtc_provider_payload_hash,
 };
 use serde::de::DeserializeOwned;
 use sqlx::{
     Executor, PgPool, Postgres, Row, Sqlite, SqlitePool, postgres::PgRow, sqlite::SqliteRow,
 };
+use std::collections::HashMap;
 
 use crate::{RtcStorageError, RtcStorageResult};
 
@@ -65,9 +67,16 @@ impl RtcSqliteMediaSessionRepository {
         numeric_id: i64,
         session: &RtcMediaSession,
         updated_at: &str,
+        expected_version: i64,
     ) -> RtcStorageResult<()> {
-        self.upsert_media_session_with(&self.pool, numeric_id, session, updated_at)
-            .await
+        self.upsert_media_session_with(
+            &self.pool,
+            numeric_id,
+            session,
+            updated_at,
+            expected_version,
+        )
+        .await
     }
 
     pub async fn upsert_media_session_with<'e, E>(
@@ -76,6 +85,7 @@ impl RtcSqliteMediaSessionRepository {
         numeric_id: i64,
         session: &RtcMediaSession,
         updated_at: &str,
+        expected_version: i64,
     ) -> RtcStorageResult<()>
     where
         E: Executor<'e, Database = Sqlite>,
@@ -83,7 +93,7 @@ impl RtcSqliteMediaSessionRepository {
         let quality_summary = serialize_optional_json(&session.quality_summary)?;
         let recording_summary = serialize_optional_json(&session.recording_summary)?;
 
-        sqlx::query(sqlite_upsert_media_session_sql())
+        let result = sqlx::query(sqlite_upsert_media_session_sql())
             .bind(numeric_id)
             .bind(&session.id)
             .bind(parse_i64_field("tenant_id", &session.tenant_id)?)
@@ -112,10 +122,58 @@ impl RtcSqliteMediaSessionRepository {
             .bind(&session.last_provider_query_job_id)
             .bind(updated_at)
             .bind(updated_at)
+            .bind(expected_version)
             .execute(executor)
             .await?;
 
+        ensure_media_session_updated(result.rows_affected(), &session.id)?;
+
         Ok(())
+    }
+
+    pub async fn get_media_session_version_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        media_session_id: &str,
+    ) -> RtcStorageResult<Option<i64>> {
+        const SQL: &str = r#"
+            SELECT version
+            FROM rtc_media_session
+            WHERE uuid = ? AND tenant_id = ? AND organization_id = ?
+        "#;
+        let row = sqlx::query(SQL)
+            .bind(media_session_id)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_optional(&self.pool)
+            .await?;
+        match row {
+            Some(row) => Ok(Some(row.try_get("version")?)),
+            None => Ok(None),
+        }
+    }
+
+    pub async fn list_media_session_versions_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<std::collections::BTreeMap<String, i64>> {
+        const SQL: &str = r#"
+            SELECT uuid, version
+            FROM rtc_media_session
+            WHERE tenant_id = ? AND organization_id = ?
+        "#;
+        let rows = sqlx::query(SQL)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut versions = std::collections::BTreeMap::new();
+        for row in rows {
+            versions.insert(row.try_get("uuid")?, row.try_get("version")?);
+        }
+        Ok(versions)
     }
 
     pub async fn upsert_media_participant(
@@ -398,6 +456,38 @@ impl RtcSqliteMediaSessionRepository {
             .collect()
     }
 
+    async fn list_media_participants_grouped_by_session(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<HashMap<String, Vec<RtcMediaParticipant>>> {
+        if session_ids.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .map(|_| "?")
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = sqlite_media_participant_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, joined_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        let mut grouped = HashMap::new();
+        for row in rows {
+            let participant = sqlite_row_to_media_participant(row)?;
+            grouped
+                .entry(participant.session_id.clone())
+                .or_insert_with(Vec::new)
+                .push(participant);
+        }
+        Ok(grouped)
+    }
+
     pub async fn list_media_tracks(
         &self,
         media_session_id: &str,
@@ -446,6 +536,78 @@ impl RtcSqliteMediaSessionRepository {
         rows.into_iter().map(sqlite_row_to_quality_sample).collect()
     }
 
+    pub async fn list_media_tracks_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcMediaTrack>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .map(|_| "?")
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = sqlite_media_track_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, started_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter().map(sqlite_row_to_media_track).collect()
+    }
+
+    pub async fn list_media_artifacts_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .map(|_| "?")
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = sqlite_media_artifact_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, started_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter().map(sqlite_row_to_media_artifact).collect()
+    }
+
+    pub async fn list_quality_samples_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcQualitySample>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .map(|_| "?")
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = sqlite_quality_sample_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, sampled_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter().map(sqlite_row_to_quality_sample).collect()
+    }
+
     pub async fn list_media_sessions_for_scope(
         &self,
         tenant_id: &str,
@@ -458,6 +620,31 @@ impl RtcSqliteMediaSessionRepository {
         let rows = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut sessions = Vec::with_capacity(rows.len());
+        for row in rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = self.list_media_participants(session_id.as_str()).await?;
+            sessions.push(sqlite_row_to_media_session(row, participants)?);
+        }
+        Ok(sessions)
+    }
+
+    pub async fn list_hydration_media_sessions_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcMediaSession>> {
+        let sql = sqlite_media_session_select_sql(
+            "WHERE tenant_id = ? AND organization_id = ? AND status IN (1, 2, 3) AND deleted_at IS NULL",
+            "ORDER BY updated_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
             .fetch_all(&self.pool)
             .await?;
         let mut sessions = Vec::with_capacity(rows.len());
@@ -488,6 +675,107 @@ impl RtcSqliteMediaSessionRepository {
                 })
             })
             .collect()
+    }
+
+    pub async fn list_stale_media_sessions_for_reconcile(
+        &self,
+        query: RtcStaleMediaSessionReconcileQuery,
+    ) -> RtcStorageResult<RtcStaleMediaSessionReconcileCandidates> {
+        let limit = i64::from(query.batch_size);
+        let stale_sql = sqlite_media_session_select_sql(
+            r#"
+            WHERE deleted_at IS NULL
+              AND started_at IS NOT NULL
+              AND (
+                (status = 1 AND started_at <= ?)
+                OR (status = 2 AND started_at <= ?)
+              )
+            "#,
+            "ORDER BY started_at ASC, id ASC LIMIT ?",
+        );
+        let stale_rows = sqlx::query(&stale_sql)
+            .bind(query.preparing_cutoff.as_str())
+            .bind(query.active_default_cutoff.as_str())
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let drift_sql = sqlite_media_session_select_sql(
+            r#"
+            WHERE deleted_at IS NULL
+              AND status IN (1, 2)
+              AND provider_session_id IS NOT NULL
+              AND TRIM(provider_session_id) != ''
+            "#,
+            "ORDER BY updated_at ASC, id ASC LIMIT ?",
+        );
+        let drift_rows = sqlx::query(&drift_sql)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let failed_sql = sqlite_media_session_select_sql(
+            r#"
+            WHERE deleted_at IS NULL
+              AND status = 5
+              AND provider_session_id IS NOT NULL
+              AND TRIM(provider_session_id) != ''
+            "#,
+            "ORDER BY updated_at ASC, id ASC LIMIT ?",
+        );
+        let failed_rows = sqlx::query(&failed_sql)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut session_ids = Vec::new();
+        for row in stale_rows
+            .iter()
+            .chain(drift_rows.iter())
+            .chain(failed_rows.iter())
+        {
+            let session_id: String = row.try_get("uuid")?;
+            if !session_ids.iter().any(|existing| existing == &session_id) {
+                session_ids.push(session_id);
+            }
+        }
+        let participants_by_session = self
+            .list_media_participants_grouped_by_session(session_ids.as_slice())
+            .await?;
+
+        let mut stale_candidates = Vec::new();
+        for row in stale_rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = participants_by_session
+                .get(&session_id)
+                .cloned()
+                .unwrap_or_default();
+            stale_candidates.push(sqlite_row_to_media_session(row, participants)?);
+        }
+        let mut provider_drift_candidates = Vec::new();
+        for row in drift_rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = participants_by_session
+                .get(&session_id)
+                .cloned()
+                .unwrap_or_default();
+            provider_drift_candidates.push(sqlite_row_to_media_session(row, participants)?);
+        }
+        let mut failed_compensation_candidates = Vec::new();
+        for row in failed_rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = participants_by_session
+                .get(&session_id)
+                .cloned()
+                .unwrap_or_default();
+            failed_compensation_candidates.push(sqlite_row_to_media_session(row, participants)?);
+        }
+
+        Ok(RtcStaleMediaSessionReconcileCandidates {
+            stale_candidates,
+            provider_drift_candidates,
+            failed_compensation_candidates,
+        })
     }
 
     pub async fn list_recording_artifact_lifecycle_candidates(
@@ -581,6 +869,25 @@ impl RtcSqliteMediaSessionRepository {
         rows.into_iter().map(sqlite_row_to_room).collect()
     }
 
+    pub async fn list_hydration_rooms_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let sql = sqlite_room_select_sql(
+            "WHERE tenant_id = ? AND organization_id = ? AND deleted_at IS NULL",
+            "ORDER BY updated_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_room).collect()
+    }
+
     pub async fn list_rooms_page(
         &self,
         tenant_id: &str,
@@ -588,21 +895,40 @@ impl RtcSqliteMediaSessionRepository {
         offset: usize,
         limit: usize,
         q: Option<&str>,
+        status: Option<&str>,
+        owner_user_id: Option<&str>,
+        created_after: Option<&str>,
         sort_field: &str,
         sort_descending: bool,
     ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let status_filter = room_status_filter_i32(status)?;
+        let owner_filter = match owner_user_id.map(str::trim).filter(|value| !value.is_empty()) {
+            None => None,
+            Some(value) => Some(parse_i64_field("owner_user_id", value)?),
+        };
+        let created_after_filter = parse_created_after_filter(created_after)?;
+
         let mut where_parts = vec![
             "tenant_id = ?".to_string(),
             "organization_id = ?".to_string(),
             "deleted_at IS NULL".to_string(),
         ];
+        if status_filter.is_some() {
+            where_parts.push("status = ?".to_string());
+        }
+        if owner_filter.is_some() {
+            where_parts.push("owner_user_id = ?".to_string());
+        }
+        if created_after_filter.is_some() {
+            where_parts.push("created_at >= ?".to_string());
+        }
         let needle = q
             .map(str::trim)
             .filter(|value| !value.is_empty())
             .map(|value| format!("%{}%", value.to_ascii_lowercase()));
         if needle.is_some() {
             where_parts.push(
-                "(LOWER(uuid) LIKE ? OR LOWER(title) LIKE ?)".to_string(),
+                "(LOWER(uuid) LIKE ? OR LOWER(title) LIKE ? OR LOWER(CAST(owner_user_id AS TEXT)) LIKE ?)".to_string(),
             );
         }
         let order_column = room_sort_column(sort_field);
@@ -614,8 +940,17 @@ impl RtcSqliteMediaSessionRepository {
         let mut query = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(value) = status_filter {
+            query = query.bind(value);
+        }
+        if let Some(value) = owner_filter {
+            query = query.bind(value);
+        }
+        if let Some(value) = created_after_filter.as_deref() {
+            query = query.bind(value);
+        }
         if let Some(pattern) = needle.as_deref() {
-            query = query.bind(pattern).bind(pattern);
+            query = query.bind(pattern).bind(pattern).bind(pattern);
         }
         let rows = query
             .bind((limit + 1) as i64)
@@ -671,9 +1006,19 @@ impl RtcSqliteMediaSessionRepository {
             .fetch_all(&self.pool)
             .await?;
         let mut sessions = Vec::with_capacity(rows.len());
+        let session_ids = rows
+            .iter()
+            .map(|row| row.try_get::<String, _>("uuid"))
+            .collect::<Result<Vec<_>, _>>()?;
+        let participants_by_session = self
+            .list_media_participants_grouped_by_session(session_ids.as_slice())
+            .await?;
         for row in rows {
             let session_id: String = row.try_get("uuid")?;
-            let participants = self.list_media_participants(session_id.as_str()).await?;
+            let participants = participants_by_session
+                .get(session_id.as_str())
+                .cloned()
+                .unwrap_or_default();
             sessions.push(sqlite_row_to_media_session(row, participants)?);
         }
         Ok(sessions)
@@ -726,11 +1071,62 @@ impl RtcSqliteMediaSessionRepository {
         rows.into_iter().map(sqlite_row_to_media_artifact).collect()
     }
 
-    pub async fn list_quality_samples_page(
+    pub async fn list_media_artifacts_scope_page(
         &self,
         tenant_id: &str,
         organization_id: &str,
-        session_id: &str,
+        session_id: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        let mut where_parts = vec![
+            "tenant_id = ?".to_string(),
+            "organization_id = ?".to_string(),
+        ];
+        if session_id.is_some() {
+            where_parts.push("session_id = ?".to_string());
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(
+                "(LOWER(uuid) LIKE ? OR LOWER(COALESCE(provider_artifact_id, '')) LIKE ? OR LOWER(COALESCE(drive_uri, '')) LIKE ?)"
+                    .to_string(),
+            );
+        }
+        let order_column = media_artifact_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let sql = sqlite_media_artifact_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(session_id) = session_id {
+            query = query.bind(session_id);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_media_artifact).collect()
+    }
+
+    pub async fn list_quality_samples_scope_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: Option<&str>,
         offset: usize,
         limit: usize,
         q: Option<&str>,
@@ -740,8 +1136,10 @@ impl RtcSqliteMediaSessionRepository {
         let mut where_parts = vec![
             "tenant_id = ?".to_string(),
             "organization_id = ?".to_string(),
-            "session_id = ?".to_string(),
         ];
+        if session_id.is_some() {
+            where_parts.push("session_id = ?".to_string());
+        }
         let needle = q
             .map(str::trim)
             .filter(|value| !value.is_empty())
@@ -759,8 +1157,10 @@ impl RtcSqliteMediaSessionRepository {
         );
         let mut query = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
-            .bind(parse_i64_field("organization_id", organization_id)?)
-            .bind(session_id);
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(session_id) = session_id {
+            query = query.bind(session_id);
+        }
         if let Some(pattern) = needle.as_deref() {
             query = query.bind(pattern).bind(pattern);
         }
@@ -770,6 +1170,30 @@ impl RtcSqliteMediaSessionRepository {
             .fetch_all(&self.pool)
             .await?;
         rows.into_iter().map(sqlite_row_to_quality_sample).collect()
+    }
+
+    pub async fn list_quality_samples_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcQualitySample>> {
+        self.list_quality_samples_scope_page(
+            tenant_id,
+            organization_id,
+            Some(session_id),
+            offset,
+            limit,
+            q,
+            sort_field,
+            sort_descending,
+        )
+        .await
     }
 }
 
@@ -824,9 +1248,16 @@ impl RtcPostgresMediaSessionRepository {
         numeric_id: i64,
         session: &RtcMediaSession,
         updated_at: &str,
+        expected_version: i64,
     ) -> RtcStorageResult<()> {
-        self.upsert_media_session_with(&self.pool, numeric_id, session, updated_at)
-            .await
+        self.upsert_media_session_with(
+            &self.pool,
+            numeric_id,
+            session,
+            updated_at,
+            expected_version,
+        )
+        .await
     }
 
     pub async fn upsert_media_session_with<'e, E>(
@@ -835,6 +1266,7 @@ impl RtcPostgresMediaSessionRepository {
         numeric_id: i64,
         session: &RtcMediaSession,
         updated_at: &str,
+        expected_version: i64,
     ) -> RtcStorageResult<()>
     where
         E: Executor<'e, Database = Postgres>,
@@ -842,7 +1274,7 @@ impl RtcPostgresMediaSessionRepository {
         let quality_summary = serialize_optional_json(&session.quality_summary)?;
         let recording_summary = serialize_optional_json(&session.recording_summary)?;
 
-        sqlx::query(postgres_upsert_media_session_sql())
+        let result = sqlx::query(postgres_upsert_media_session_sql())
             .bind(numeric_id)
             .bind(&session.id)
             .bind(parse_i64_field("tenant_id", &session.tenant_id)?)
@@ -871,10 +1303,58 @@ impl RtcPostgresMediaSessionRepository {
             .bind(&session.last_provider_query_job_id)
             .bind(updated_at)
             .bind(updated_at)
+            .bind(expected_version)
             .execute(executor)
             .await?;
 
+        ensure_media_session_updated(result.rows_affected(), &session.id)?;
+
         Ok(())
+    }
+
+    pub async fn get_media_session_version_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        media_session_id: &str,
+    ) -> RtcStorageResult<Option<i64>> {
+        const SQL: &str = r#"
+            SELECT version
+            FROM rtc_media_session
+            WHERE uuid = $1 AND tenant_id = $2 AND organization_id = $3
+        "#;
+        let row = sqlx::query(SQL)
+            .bind(media_session_id)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_optional(&self.pool)
+            .await?;
+        match row {
+            Some(row) => Ok(Some(row.try_get("version")?)),
+            None => Ok(None),
+        }
+    }
+
+    pub async fn list_media_session_versions_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+    ) -> RtcStorageResult<std::collections::BTreeMap<String, i64>> {
+        const SQL: &str = r#"
+            SELECT uuid, version
+            FROM rtc_media_session
+            WHERE tenant_id = $1 AND organization_id = $2
+        "#;
+        let rows = sqlx::query(SQL)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut versions = std::collections::BTreeMap::new();
+        for row in rows {
+            versions.insert(row.try_get("uuid")?, row.try_get("version")?);
+        }
+        Ok(versions)
     }
 
     pub async fn upsert_media_participant(
@@ -1154,6 +1634,39 @@ impl RtcPostgresMediaSessionRepository {
             .collect()
     }
 
+    async fn list_media_participants_grouped_by_session(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<HashMap<String, Vec<RtcMediaParticipant>>> {
+        if session_ids.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .enumerate()
+            .map(|(index, _)| format!("${}", index + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = postgres_media_participant_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, joined_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        let mut grouped = HashMap::new();
+        for row in rows {
+            let participant = postgres_row_to_media_participant(row)?;
+            grouped
+                .entry(participant.session_id.clone())
+                .or_insert_with(Vec::new)
+                .push(participant);
+        }
+        Ok(grouped)
+    }
+
     pub async fn list_media_tracks(
         &self,
         media_session_id: &str,
@@ -1206,6 +1719,85 @@ impl RtcPostgresMediaSessionRepository {
             .collect()
     }
 
+    pub async fn list_media_tracks_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcMediaTrack>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .enumerate()
+            .map(|(index, _)| format!("${}", index + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = postgres_media_track_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, started_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter().map(postgres_row_to_media_track).collect()
+    }
+
+    pub async fn list_media_artifacts_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .enumerate()
+            .map(|(index, _)| format!("${}", index + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = postgres_media_artifact_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, started_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter()
+            .map(postgres_row_to_media_artifact)
+            .collect()
+    }
+
+    pub async fn list_quality_samples_for_sessions(
+        &self,
+        session_ids: &[String],
+    ) -> RtcStorageResult<Vec<RtcQualitySample>> {
+        if session_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = session_ids
+            .iter()
+            .enumerate()
+            .map(|(index, _)| format!("${}", index + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = postgres_quality_sample_select_sql(
+            &format!("WHERE session_id IN ({placeholders})"),
+            "ORDER BY session_id ASC, sampled_at ASC, id ASC",
+        );
+        let mut query = sqlx::query(&sql);
+        for session_id in session_ids {
+            query = query.bind(session_id);
+        }
+        let rows = query.fetch_all(&self.pool).await?;
+        rows.into_iter()
+            .map(postgres_row_to_quality_sample)
+            .collect()
+    }
+
     pub async fn list_media_sessions_for_scope(
         &self,
         tenant_id: &str,
@@ -1218,6 +1810,31 @@ impl RtcPostgresMediaSessionRepository {
         let rows = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+        let mut sessions = Vec::with_capacity(rows.len());
+        for row in rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = self.list_media_participants(session_id.as_str()).await?;
+            sessions.push(postgres_row_to_media_session(row, participants)?);
+        }
+        Ok(sessions)
+    }
+
+    pub async fn list_hydration_media_sessions_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcMediaSession>> {
+        let sql = postgres_media_session_select_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2 AND status IN (1, 2, 3) AND deleted_at IS NULL",
+            "ORDER BY updated_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
             .fetch_all(&self.pool)
             .await?;
         let mut sessions = Vec::with_capacity(rows.len());
@@ -1248,6 +1865,107 @@ impl RtcPostgresMediaSessionRepository {
                 })
             })
             .collect()
+    }
+
+    pub async fn list_stale_media_sessions_for_reconcile(
+        &self,
+        query: RtcStaleMediaSessionReconcileQuery,
+    ) -> RtcStorageResult<RtcStaleMediaSessionReconcileCandidates> {
+        let limit = i64::from(query.batch_size);
+        let stale_sql = postgres_media_session_select_sql(
+            r#"
+            WHERE deleted_at IS NULL
+              AND started_at IS NOT NULL
+              AND (
+                (status = 1 AND started_at <= $1::timestamptz)
+                OR (status = 2 AND started_at <= $2::timestamptz)
+              )
+            "#,
+            "ORDER BY started_at ASC, id ASC LIMIT $3",
+        );
+        let stale_rows = sqlx::query(&stale_sql)
+            .bind(query.preparing_cutoff.as_str())
+            .bind(query.active_default_cutoff.as_str())
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let drift_sql = postgres_media_session_select_sql(
+            r#"
+            WHERE deleted_at IS NULL
+              AND status IN (1, 2)
+              AND provider_session_id IS NOT NULL
+              AND BTRIM(provider_session_id) != ''
+            "#,
+            "ORDER BY updated_at ASC, id ASC LIMIT $1",
+        );
+        let drift_rows = sqlx::query(&drift_sql)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let failed_sql = postgres_media_session_select_sql(
+            r#"
+            WHERE deleted_at IS NULL
+              AND status = 5
+              AND provider_session_id IS NOT NULL
+              AND BTRIM(provider_session_id) != ''
+            "#,
+            "ORDER BY updated_at ASC, id ASC LIMIT $1",
+        );
+        let failed_rows = sqlx::query(&failed_sql)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut session_ids = Vec::new();
+        for row in stale_rows
+            .iter()
+            .chain(drift_rows.iter())
+            .chain(failed_rows.iter())
+        {
+            let session_id: String = row.try_get("uuid")?;
+            if !session_ids.iter().any(|existing| existing == &session_id) {
+                session_ids.push(session_id);
+            }
+        }
+        let participants_by_session = self
+            .list_media_participants_grouped_by_session(session_ids.as_slice())
+            .await?;
+
+        let mut stale_candidates = Vec::new();
+        for row in stale_rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = participants_by_session
+                .get(&session_id)
+                .cloned()
+                .unwrap_or_default();
+            stale_candidates.push(postgres_row_to_media_session(row, participants)?);
+        }
+        let mut provider_drift_candidates = Vec::new();
+        for row in drift_rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = participants_by_session
+                .get(&session_id)
+                .cloned()
+                .unwrap_or_default();
+            provider_drift_candidates.push(postgres_row_to_media_session(row, participants)?);
+        }
+        let mut failed_compensation_candidates = Vec::new();
+        for row in failed_rows {
+            let session_id: String = row.try_get("uuid")?;
+            let participants = participants_by_session
+                .get(&session_id)
+                .cloned()
+                .unwrap_or_default();
+            failed_compensation_candidates.push(postgres_row_to_media_session(row, participants)?);
+        }
+
+        Ok(RtcStaleMediaSessionReconcileCandidates {
+            stale_candidates,
+            provider_drift_candidates,
+            failed_compensation_candidates,
+        })
     }
 
     pub async fn list_recording_artifact_lifecycle_candidates(
@@ -1359,6 +2077,25 @@ impl RtcPostgresMediaSessionRepository {
         rows.into_iter().map(postgres_row_to_room).collect()
     }
 
+    pub async fn list_hydration_rooms_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let sql = postgres_room_select_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2 AND deleted_at IS NULL",
+            "ORDER BY updated_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(postgres_row_to_room).collect()
+    }
+
     pub async fn list_rooms_page(
         &self,
         tenant_id: &str,
@@ -1366,36 +2103,73 @@ impl RtcPostgresMediaSessionRepository {
         offset: usize,
         limit: usize,
         q: Option<&str>,
+        status: Option<&str>,
+        owner_user_id: Option<&str>,
+        created_after: Option<&str>,
         sort_field: &str,
         sort_descending: bool,
     ) -> RtcStorageResult<Vec<RtcRoom>> {
+        let status_filter = room_status_filter_i32(status)?;
+        let owner_filter = match owner_user_id.map(str::trim).filter(|value| !value.is_empty()) {
+            None => None,
+            Some(value) => Some(parse_i64_field("owner_user_id", value)?),
+        };
+        let created_after_filter = parse_created_after_filter(created_after)?;
+
         let mut where_parts = vec![
             "tenant_id = $1".to_string(),
             "organization_id = $2".to_string(),
             "deleted_at IS NULL".to_string(),
         ];
+        let mut bind_index = 3usize;
+        if status_filter.is_some() {
+            where_parts.push(format!("status = ${bind_index}"));
+            bind_index += 1;
+        }
+        if owner_filter.is_some() {
+            where_parts.push(format!("owner_user_id = ${bind_index}"));
+            bind_index += 1;
+        }
+        if created_after_filter.is_some() {
+            where_parts.push(format!("created_at >= ${bind_index}::timestamptz"));
+            bind_index += 1;
+        }
         let needle = q
             .map(str::trim)
             .filter(|value| !value.is_empty())
             .map(|value| format!("%{}%", value.to_ascii_lowercase()));
         if needle.is_some() {
-            where_parts.push("(LOWER(uuid) LIKE $3 OR LOWER(title) LIKE $4)".to_string());
+            where_parts.push(format!(
+                "(LOWER(uuid) LIKE ${bind_index} OR LOWER(title) LIKE ${} OR LOWER(owner_user_id::text) LIKE ${})",
+                bind_index + 1,
+                bind_index + 2
+            ));
+            bind_index += 3;
         }
         let order_column = room_sort_column(sort_field);
         let direction = if sort_descending { "DESC" } else { "ASC" };
-        let limit_param = if needle.is_some() { "$5" } else { "$3" };
-        let offset_param = if needle.is_some() { "$6" } else { "$4" };
+        let limit_param = bind_index;
+        let offset_param = bind_index + 1;
         let sql = postgres_room_select_sql(
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!(
-                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+                "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
             ),
         );
         let mut query = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(value) = status_filter {
+            query = query.bind(value);
+        }
+        if let Some(value) = owner_filter {
+            query = query.bind(value);
+        }
+        if let Some(value) = created_after_filter.as_deref() {
+            query = query.bind(value);
+        }
         if let Some(pattern) = needle.as_deref() {
-            query = query.bind(pattern).bind(pattern);
+            query = query.bind(pattern).bind(pattern).bind(pattern);
         }
         let rows = query
             .bind((limit + 1) as i64)
@@ -1455,9 +2229,19 @@ impl RtcPostgresMediaSessionRepository {
             .fetch_all(&self.pool)
             .await?;
         let mut sessions = Vec::with_capacity(rows.len());
+        let session_ids = rows
+            .iter()
+            .map(|row| row.try_get::<String, _>("uuid"))
+            .collect::<Result<Vec<_>, _>>()?;
+        let participants_by_session = self
+            .list_media_participants_grouped_by_session(session_ids.as_slice())
+            .await?;
         for row in rows {
             let session_id: String = row.try_get("uuid")?;
-            let participants = self.list_media_participants(session_id.as_str()).await?;
+            let participants = participants_by_session
+                .get(session_id.as_str())
+                .cloned()
+                .unwrap_or_default();
             sessions.push(postgres_row_to_media_session(row, participants)?);
         }
         Ok(sessions)
@@ -1516,11 +2300,72 @@ impl RtcPostgresMediaSessionRepository {
             .collect()
     }
 
-    pub async fn list_quality_samples_page(
+    pub async fn list_media_artifacts_scope_page(
         &self,
         tenant_id: &str,
         organization_id: &str,
-        session_id: &str,
+        session_id: Option<&str>,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcMediaArtifact>> {
+        let mut where_parts = vec![
+            "tenant_id = $1".to_string(),
+            "organization_id = $2".to_string(),
+        ];
+        let mut next_param = 3usize;
+        if session_id.is_some() {
+            where_parts.push(format!("session_id = ${next_param}"));
+            next_param += 1;
+        }
+        let needle = q
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| format!("%{}%", value.to_ascii_lowercase()));
+        if needle.is_some() {
+            where_parts.push(format!(
+                "(LOWER(uuid) LIKE ${next_param} OR LOWER(COALESCE(provider_artifact_id, '')) LIKE ${} OR LOWER(COALESCE(drive_uri, '')) LIKE ${})",
+                next_param + 1,
+                next_param + 2
+            ));
+            next_param += 3;
+        }
+        let order_column = media_artifact_sort_column(sort_field);
+        let direction = if sort_descending { "DESC" } else { "ASC" };
+        let limit_param = next_param;
+        let offset_param = next_param + 1;
+        let sql = postgres_media_artifact_select_sql(
+            &format!("WHERE {}", where_parts.join(" AND ")),
+            &format!(
+                "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
+            ),
+        );
+        let mut query = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(session_id) = session_id {
+            query = query.bind(session_id);
+        }
+        if let Some(pattern) = needle.as_deref() {
+            query = query.bind(pattern).bind(pattern).bind(pattern);
+        }
+        let rows = query
+            .bind((limit + 1) as i64)
+            .bind(offset as i64)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(postgres_row_to_media_artifact)
+            .collect()
+    }
+
+    pub async fn list_quality_samples_scope_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: Option<&str>,
         offset: usize,
         limit: usize,
         q: Option<&str>,
@@ -1530,31 +2375,39 @@ impl RtcPostgresMediaSessionRepository {
         let mut where_parts = vec![
             "tenant_id = $1".to_string(),
             "organization_id = $2".to_string(),
-            "session_id = $3".to_string(),
         ];
+        let mut next_param = 3usize;
+        if session_id.is_some() {
+            where_parts.push(format!("session_id = ${next_param}"));
+            next_param += 1;
+        }
         let needle = q
             .map(str::trim)
             .filter(|value| !value.is_empty())
             .map(|value| format!("%{}%", value.to_ascii_lowercase()));
         if needle.is_some() {
-            where_parts.push(
-                "(LOWER(uuid) LIKE $4 OR LOWER(COALESCE(participant_id, '')) LIKE $5)".to_string(),
-            );
+            where_parts.push(format!(
+                "(LOWER(uuid) LIKE ${next_param} OR LOWER(COALESCE(participant_id, '')) LIKE ${})",
+                next_param + 1
+            ));
+            next_param += 2;
         }
         let order_column = quality_sample_sort_column(sort_field);
         let direction = if sort_descending { "DESC" } else { "ASC" };
-        let limit_param = if needle.is_some() { "$6" } else { "$4" };
-        let offset_param = if needle.is_some() { "$7" } else { "$5" };
+        let limit_param = next_param;
+        let offset_param = next_param + 1;
         let sql = postgres_quality_sample_select_sql(
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!(
-                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+                "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
             ),
         );
         let mut query = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
-            .bind(parse_i64_field("organization_id", organization_id)?)
-            .bind(session_id);
+            .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(session_id) = session_id {
+            query = query.bind(session_id);
+        }
         if let Some(pattern) = needle.as_deref() {
             query = query.bind(pattern).bind(pattern);
         }
@@ -1566,6 +2419,30 @@ impl RtcPostgresMediaSessionRepository {
         rows.into_iter()
             .map(postgres_row_to_quality_sample)
             .collect()
+    }
+
+    pub async fn list_quality_samples_page(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        session_id: &str,
+        offset: usize,
+        limit: usize,
+        q: Option<&str>,
+        sort_field: &str,
+        sort_descending: bool,
+    ) -> RtcStorageResult<Vec<RtcQualitySample>> {
+        self.list_quality_samples_scope_page(
+            tenant_id,
+            organization_id,
+            Some(session_id),
+            offset,
+            limit,
+            q,
+            sort_field,
+            sort_descending,
+        )
+        .await
     }
 }
 
@@ -1640,6 +2517,7 @@ fn sqlite_upsert_media_session_sql() -> &'static str {
         last_provider_query_job_id = excluded.last_provider_query_job_id,
         updated_at = excluded.updated_at,
         version = rtc_media_session.version + 1
+    WHERE rtc_media_session.version = ?
     "#
 }
 
@@ -1691,6 +2569,7 @@ fn postgres_upsert_media_session_sql() -> &'static str {
         last_provider_query_job_id = excluded.last_provider_query_job_id,
         updated_at = excluded.updated_at,
         version = rtc_media_session.version + 1
+    WHERE rtc_media_session.version = $26
     "#
 }
 
@@ -2155,6 +3034,15 @@ fn postgres_quality_sample_select_sql(where_clause: &str, order_clause: &str) ->
         {order_clause}
         "#
     )
+}
+
+fn ensure_media_session_updated(rows_affected: u64, media_session_id: &str) -> RtcStorageResult<()> {
+    if rows_affected == 0 {
+        return Err(RtcStorageError::Conflict(format!(
+            "RTC media session version conflict: {media_session_id}"
+        )));
+    }
+    Ok(())
 }
 
 fn sqlite_row_to_media_session(
@@ -2636,6 +3524,34 @@ fn room_status_to_i32(value: &RtcRoomStatus) -> i32 {
     }
 }
 
+fn room_status_filter_i32(status: Option<&str>) -> RtcStorageResult<Option<i32>> {
+    match status.map(str::trim).filter(|value| !value.is_empty()) {
+        None => Ok(None),
+        Some("active") => Ok(Some(1)),
+        Some("archived") => Ok(Some(2)),
+        Some("disabled") => Ok(Some(3)),
+        Some(other) => Err(RtcStorageError::InvalidEnumValue {
+            field: "status",
+            value: other.to_string(),
+        }),
+    }
+}
+
+fn parse_created_after_filter(value: Option<&str>) -> RtcStorageResult<Option<String>> {
+    match value.map(str::trim).filter(|value| !value.is_empty()) {
+        None => Ok(None),
+        Some(raw) => {
+            sdkwork_communication_rtc_service::validate_rfc3339_datetime(raw).map_err(|error| {
+                RtcStorageError::InvalidEnumValue {
+                    field: "created_after",
+                    value: error,
+                }
+            })?;
+            Ok(Some(raw.to_string()))
+        }
+    }
+}
+
 fn i32_to_room_status(value: i32) -> RtcStorageResult<RtcRoomStatus> {
     match value {
         1 => Ok(RtcRoomStatus::Active),
@@ -2987,7 +3903,7 @@ mod tests {
             .await
             .expect("room should persist");
         repository
-            .upsert_media_session(2, &session(), now)
+            .upsert_media_session(2, &session(), now, 0)
             .await
             .expect("media session should persist");
         repository

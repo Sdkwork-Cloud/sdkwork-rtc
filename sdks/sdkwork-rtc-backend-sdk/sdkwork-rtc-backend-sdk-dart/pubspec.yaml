@@ -1,0 +1,11 @@
+name: sdkwork_rtc_backend_sdk
+description: SDKWork composed consumer facade for rtc-backend-sdk.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  sdkwork_rtc_backend_sdk_generated_dart:
+    path: generated/server-openapi

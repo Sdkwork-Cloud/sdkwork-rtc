@@ -33,7 +33,7 @@ export class ProviderWebhookService {
       q: params?.search,
       sort: params?.sort,
     });
-    const page = readSdkWorkListPage<ProviderWebhookEvent>(response.data);
+    const page = readSdkWorkListPage<ProviderWebhookEvent>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor ?? null,

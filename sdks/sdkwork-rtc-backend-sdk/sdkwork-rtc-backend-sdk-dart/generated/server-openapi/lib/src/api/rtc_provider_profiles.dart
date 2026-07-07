@@ -69,7 +69,7 @@ class RtcProviderProfilesApi {
   }
 
   /// Rtc provider Profiles capabilities configure.
-  Future<RtcApiResult?> capabilitiesConfigure(String providerProfileId, Map<String, dynamic> body, [String? idempotencyKey]) async {
+  Future<SdkWorkResourceResponse?> capabilitiesConfigure(String providerProfileId, Map<String, dynamic> body, [String? idempotencyKey]) async {
     final requestHeaders = buildRequestHeaders(
       <String, HeaderParameterSpec>{
         'Idempotency-Key': HeaderParameterSpec(idempotencyKey, 'simple', false, null),
@@ -80,7 +80,7 @@ class RtcProviderProfilesApi {
     final response = await _client.put(ApiPaths.backendPath('/rtc/provider_profiles/${serializePathParameter(providerProfileId, const PathParameterSpec('providerProfileId', 'simple', false))}/capabilities'), body: payload, headers: requestHeaders, contentType: 'application/json');
     return (() {
       final map = sdkworkResponseAsMap(response);
-      return map == null ? null : RtcApiResult.fromJson(map);
+      return map == null ? null : SdkWorkResourceResponse.fromJson(map);
     })();
   }
 

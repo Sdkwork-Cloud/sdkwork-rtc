@@ -1,0 +1,110 @@
+{
+  "workspace": "sdkwork-rtc-app-sdk",
+  "title": "SDKWork RTC App API SDK",
+  "apiVersion": "0.1.0",
+  "openapiVersion": "3.1.2",
+  "authoritySpec": "../../apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
+  "generationInputSpec": "openapi/sdkwork-rtc-app-api.sdkgen.json",
+  "derivedSpecs": {
+    "default": "openapi/sdkwork-rtc-app-api.sdkgen.json"
+  },
+  "discoverySurface": {
+    "sdkTarget": "app",
+    "apiPrefix": "/app/v3/api",
+    "schemaUrl": "/app/v3/openapi.json",
+    "generatedProtocols": [
+      "http-openapi"
+    ],
+    "manualTransports": []
+  },
+  "sdkDependencies": [
+    {
+      "workspace": "sdkwork-rtc-sdk",
+      "role": "provider-runtime-sdk",
+      "required": true,
+      "dependencyMode": "consumer-sdk",
+      "apiPrefix": null,
+      "generatedTransportImportPolicy": "forbidden",
+      "packageByLanguage": {
+        "typescript": "@sdkwork/rtc-sdk",
+        "rust": "sdkwork-rtc-sdk",
+        "java": "com.sdkwork:sdkwork-rtc-sdk",
+        "python": "sdkwork-rtc-sdk",
+        "go": "github.com/sdkwork/sdkwork-rtc-sdk"
+      }
+    },
+    {
+      "workspace": "sdkwork-drive-app-sdk",
+      "role": "drive-media-resource-app-capability",
+      "required": true,
+      "dependencyMode": "consumer-sdk",
+      "apiPrefix": "/app/v3/api",
+      "apiAuthority": "sdkwork-drive.app",
+      "generatedTransportImportPolicy": "forbidden",
+      "packageByLanguage": {
+        "typescript": "@sdkwork/drive-app-sdk",
+        "rust": "sdkwork-drive-app-sdk",
+        "java": "com.sdkwork:sdkwork-drive-app-sdk",
+        "python": "sdkwork-drive-app-sdk",
+        "go": "github.com/sdkwork/sdkwork-drive-app-sdk"
+      }
+    }
+  ],
+  "languages": [
+    {
+      "language": "typescript",
+      "workspace": "sdkwork-rtc-app-sdk-typescript",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-rtc-app-sdk-typescript/generated/server-openapi",
+      "version": "0.1.0",
+      "consumerPackageName": "@sdkwork/rtc-app-sdk",
+      "transportPackageName": "sdkwork-rtc-app-sdk-generated-typescript"
+    },
+    {
+      "language": "dart",
+      "workspace": "sdkwork-rtc-app-sdk-dart",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-rtc-app-sdk-dart/generated/server-openapi",
+      "name": "sdkwork_rtc_app_sdk",
+      "version": "0.1.0"
+    },
+    {
+      "language": "rust",
+      "workspace": "sdkwork-rtc-app-sdk-rust",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-rtc-app-sdk-rust/generated/server-openapi",
+      "name": "sdkwork-rtc-app-sdk",
+      "version": "0.1.0"
+    },
+    {
+      "language": "java",
+      "workspace": "sdkwork-rtc-app-sdk-java",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-rtc-app-sdk-java/generated/server-openapi",
+      "name": "com.sdkwork:sdkwork-rtc-app-sdk",
+      "version": "0.1.0"
+    },
+    {
+      "language": "python",
+      "workspace": "sdkwork-rtc-app-sdk-python",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-rtc-app-sdk-python/generated/server-openapi",
+      "name": "sdkwork-rtc-app-sdk",
+      "version": "0.1.0"
+    },
+    {
+      "language": "go",
+      "workspace": "sdkwork-rtc-app-sdk-go",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-rtc-app-sdk-go/generated/server-openapi",
+      "name": "github.com/sdkwork/sdkwork-rtc-app-sdk",
+      "version": "0.1.0"
+    }
+  ]
+}

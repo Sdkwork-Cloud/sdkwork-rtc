@@ -11,19 +11,26 @@ fn reconcile_env_lock() -> std::sync::MutexGuard<'static, ()> {
 }
 
 use sdkwork_communication_rtc_service::{
-    ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor, RtcContractError,
-    RtcCreateMediaSessionRequest, RtcMediaArtifact, RtcMediaSession, RtcMediaSessionEndSource,
-    RtcMediaSessionIdempotencyClaim, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
+    ProviderDomain, ProviderHealthSnapshot, ProviderPluginDescriptor, RtcActiveProviderProfileListPage,
+    RtcContractError, RtcCreateMediaSessionRequest, RtcMediaArtifact, RtcMediaArtifactListPage,
+    RtcMediaSession, RtcMediaSessionEndSource, RtcMediaSessionIdempotencyClaim,
+    RtcMediaSessionIdempotencyRecord, RtcMediaSessionListPage, RtcMediaSessionMode,
     RtcMediaSessionStatus, RtcParticipantCredential, RtcPersistenceChangeSet, RtcPersistenceFuture,
     RtcPersistencePort, RtcProviderAccountCommand, RtcProviderAccountDisableRequest,
-    RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest,
-    RtcProviderCredentialCommand, RtcProviderCredentialRevokeRequest, RtcProviderCredentialRole,
-    RtcProviderCredentialStatus, RtcProviderEventKind, RtcProviderPluginFactory, RtcProviderPort,
-    RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult, RtcProviderWebhookEvent,
-    RtcProviderWebhookEventRecord, RtcProviderWebhookParseRequest, RtcProviderWebhookVerifyRequest,
-    RtcRecordingArtifact, RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture,
-    RtcRecordingLifecycleReconcileQuery, RtcRoom, RtcRoomListPage, RtcRoomScopeQuery,
-    RtcListWindowParams, RtcRuntimeLoadRequest, RtcSessionHandle, RtcTenantOrganizationScope,
+    RtcProviderAccountListPage,     RtcProviderApplicationCommand, RtcProviderApplicationDisableRequest,
+    RtcProviderApplicationListPage, RtcProviderApplication,     RtcProviderCredentialCommand, RtcProviderCredentialListPage, RtcProviderCredentialRevokeRequest,
+    RtcProviderCredentialRole, RtcProviderCredentialStatus, RtcProviderCredential,
+    RtcProviderEventKind, RtcProviderPluginFactory, RtcProviderPort, RtcProviderProfileListPage,
+    RtcProviderQueryKind, RtcProviderQueryRequest, RtcProviderQueryResult,
+    RtcProviderQuerySnapshotListPage, RtcProviderRouteListPage, RtcProviderWebhookEvent,
+    RtcProviderWebhookEventRecord, RtcProviderWebhookEventListPage, RtcProviderWebhookParseRequest,
+    RtcProviderWebhookVerifyRequest, RtcQualitySampleListPage, RtcRecordingArtifact,
+    RtcRecordingArtifactExportRequest, RtcRecordingArtifactsFuture, RtcRecordingLifecycleReconcileQuery,
+    RtcRoom, RtcRoomListPage, RtcRoomScopeQuery, RtcScopedListQuery, RtcListWindowParams,
+    RtcListPage, RtcListWindowError, apply_list_window,
+    RtcRuntimeLoadRequest, RtcSessionHandle, RtcSessionTokenGrantStatus,
+    RtcStaleMediaSessionReconcileCandidates, RtcStaleMediaSessionReconcileQuery,
+    RtcTenantOrganizationScope, hash_participant_credential_token,
     verify_hmac_sha256_payload,
 };
 use sdkwork_routes_rtc_app_api::service::{
@@ -188,6 +195,9 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
         .list_active_provider_profiles(RtcListRequest {
             tenant_id: "900".into(),
             organization_id: Some("901".into()),
+            status: None,
+            owner_user_id: None,
+            created_after: None,
             page: None,
             page_size: None,
             cursor: None,
@@ -364,6 +374,65 @@ async fn product_service_runs_rtc_flows_through_registered_provider_plugins() {
     assert_eq!(
         completion.source_provider_query_job_id.as_deref(),
         Some(query_job.id.as_str())
+    );
+}
+
+#[tokio::test]
+async fn product_service_media_call_flow_persists_session_token_grants_on_credential_issue() {
+    let persistence = Arc::new(RecordingPersistence::default());
+    let registry = RtcProviderPluginRegistry::new()
+        .with_provider(Arc::new(FakeProvider::new("acme", true)))
+        .expect("acme provider should register");
+    let service = test_rtc_service(registry)
+        .seed_default_room("910", "911", "912")
+        .with_persistence(persistence.clone());
+
+    let session = service
+        .create_media_session(
+            "910".into(),
+            Some("911".into()),
+            "912".into(),
+            RtcCreateAppMediaSessionRequest {
+                room_id: "room-default".into(),
+                media_mode: RtcMediaSessionMode::Video,
+                provider_profile_id: None,
+                provider: None,
+                region: Some("cn-test".into()),
+                recording_requested: false,
+                metadata: serde_json::json!({ "purpose": "media-call-flow" }),
+                idempotency_key: None,
+            },
+        )
+        .await
+        .expect("media session should be created");
+
+    let credential = service
+        .issue_participant_credential(
+            "910".into(),
+            Some("911".into()),
+            "912".into(),
+            RtcIssueParticipantCredentialRequest {
+                media_session_id: session.id.clone(),
+                participant_id: "participant-310".into(),
+                idempotency_key: None,
+            },
+        )
+        .await
+        .expect("participant credential should be issued");
+
+    let grants = persistence
+        .batches()
+        .into_iter()
+        .flat_map(|batch| batch.session_token_grants)
+        .collect::<Vec<_>>();
+    assert_eq!(grants.len(), 1);
+    assert_eq!(grants[0].session_id, session.id);
+    assert_eq!(grants[0].participant_id, "participant-310");
+    assert_eq!(grants[0].scope, "rtc.join");
+    assert_eq!(grants[0].status, RtcSessionTokenGrantStatus::Active);
+    assert_eq!(
+        grants[0].token_hash,
+        hash_participant_credential_token(credential.credential.as_str())
     );
 }
 
@@ -3210,6 +3279,8 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
         organization_id: Some("721".into()),
         provider: None,
         status: None,
+        owner_user_id: None,
+        created_after: None,
         page: None,
         page_size: None,
         cursor: None,
@@ -3222,6 +3293,8 @@ async fn backend_rtc_records_are_filtered_by_organization_scope() {
         organization_id: Some("wrong-organization".into()),
         provider: None,
         status: None,
+        owner_user_id: None,
+        created_after: None,
         page: None,
         page_size: None,
         cursor: None,
@@ -3343,6 +3416,47 @@ impl RecordingPersistence {
             .expect("recording persistence lock")
             .clone()
     }
+
+    fn paginate_credentials(
+        &self,
+        query: RtcScopedListQuery,
+    ) -> Result<RtcProviderCredentialListPage, RtcListWindowError> {
+        let application_id = query.provider_application_id.clone().ok_or_else(|| {
+            RtcListWindowError::bad_request("provider_application_id is required")
+        })?;
+        let mut items = Vec::new();
+        for batch in self.batches() {
+            for credential in batch.provider_credentials {
+                if credential.provider_application_id == application_id {
+                    items.push(credential);
+                }
+            }
+        }
+        items.sort_by(|left, right| left.id.cmp(&right.id));
+        items.dedup_by(|left, right| left.id == right.id);
+        let window = apply_list_window(
+            items,
+            &query.params,
+            |credential| {
+                vec![
+                    credential.id.clone(),
+                    credential.credential_label.clone(),
+                    format!("{:?}", credential.credential_role),
+                    format!("{:?}", credential.status),
+                ]
+            },
+            |credential, field| match field {
+                "label" | "credentialLabel" => credential.credential_label.clone(),
+                "role" | "credentialRole" => format!("{:?}", credential.credential_role),
+                "status" => format!("{:?}", credential.status),
+                _ => credential.id.clone(),
+            },
+        )?;
+        Ok(RtcProviderCredentialListPage {
+            items: window.items,
+            next_cursor: window.next_cursor,
+        })
+    }
 }
 
 impl RtcPersistencePort for RecordingPersistence {
@@ -3396,12 +3510,49 @@ impl RtcPersistencePort for RecordingPersistence {
         })
     }
 
+    fn prepare_media_session_create_with_idempotency<'a>(
+        &'a self,
+        idempotency_record: RtcMediaSessionIdempotencyRecord,
+        session: sdkwork_communication_rtc_service::RtcMediaSession,
+        _updated_at: String,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionIdempotencyClaim> {
+        let persistence = self.clone();
+        Box::pin(async move {
+            match persistence
+                .claim_media_session_create_idempotency(idempotency_record.clone())
+                .await?
+            {
+                RtcMediaSessionIdempotencyClaim::Existing(existing) => {
+                    Ok(RtcMediaSessionIdempotencyClaim::Existing(existing))
+                }
+                RtcMediaSessionIdempotencyClaim::Claimed => {
+                    persistence
+                        .persist_changes(RtcPersistenceChangeSet {
+                            media_sessions: vec![session],
+                            ..RtcPersistenceChangeSet::default()
+                        })
+                        .await?;
+                    Ok(RtcMediaSessionIdempotencyClaim::Claimed)
+                }
+            }
+        })
+    }
+
     fn load_media_session<'a>(
         &'a self,
         _tenant_id: &'a str,
         _organization_id: &'a str,
         _media_session_id: &'a str,
-    ) -> RtcPersistenceFuture<'a, Option<RtcMediaSession>> {
+    ) -> RtcPersistenceFuture<'a, Option<sdkwork_communication_rtc_service::RtcMediaSession>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn get_media_session_persist_version<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _media_session_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<i64>> {
         Box::pin(async { Ok(None) })
     }
 
@@ -3449,12 +3600,75 @@ impl RtcPersistencePort for RecordingPersistence {
         Box::pin(async { Ok(Vec::new()) })
     }
 
+    fn list_stale_media_sessions_for_reconcile<'a>(
+        &'a self,
+        _query: RtcStaleMediaSessionReconcileQuery,
+    ) -> RtcPersistenceFuture<'a, RtcStaleMediaSessionReconcileCandidates> {
+        Box::pin(async { Ok(RtcStaleMediaSessionReconcileCandidates::default()) })
+    }
+
     fn get_room<'a>(
         &'a self,
         _tenant_id: &'a str,
         _organization_id: &'a str,
         _room_id: &'a str,
     ) -> RtcPersistenceFuture<'a, Option<RtcRoom>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn get_provider_account<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _provider_account_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<sdkwork_communication_rtc_service::RtcProviderAccount>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn get_provider_application<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _provider_application_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<sdkwork_communication_rtc_service::RtcProviderApplication>>
+    {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn get_provider_credential<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _provider_credential_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<sdkwork_communication_rtc_service::RtcProviderCredential>>
+    {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn get_provider_profile<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _provider_profile_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<sdkwork_communication_rtc_service::RtcProviderProfile>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn get_provider_route<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _provider_route_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<sdkwork_communication_rtc_service::RtcProviderRoute>> {
+        Box::pin(async { Ok(None) })
+    }
+
+    fn get_provider_query_job<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _provider_query_job_id: &'a str,
+    ) -> RtcPersistenceFuture<'a, Option<sdkwork_communication_rtc_service::RtcProviderQueryJobRecord>> {
         Box::pin(async { Ok(None) })
     }
 
@@ -3467,11 +3681,100 @@ impl RtcPersistencePort for RecordingPersistence {
 
     fn list_rooms_page<'a>(
         &'a self,
-        _tenant_id: &'a str,
-        _organization_id: &'a str,
-        _params: RtcListWindowParams,
+        _query: RtcScopedListQuery,
     ) -> RtcPersistenceFuture<'a, RtcRoomListPage> {
         Box::pin(async { Ok(RtcRoomListPage::empty()) })
+    }
+
+    fn list_media_sessions_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcMediaSessionListPage> {
+        Box::pin(async { Ok(RtcMediaSessionListPage::empty()) })
+    }
+
+    fn list_active_provider_profiles_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcActiveProviderProfileListPage> {
+        Box::pin(async { Ok(RtcActiveProviderProfileListPage::empty()) })
+    }
+
+    fn list_media_artifacts_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcMediaArtifactListPage> {
+        Box::pin(async { Ok(RtcMediaArtifactListPage::empty()) })
+    }
+
+    fn list_provider_profiles_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderProfileListPage> {
+        Box::pin(async { Ok(RtcProviderProfileListPage::empty()) })
+    }
+
+    fn list_provider_accounts_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderAccountListPage> {
+        Box::pin(async { Ok(RtcProviderAccountListPage::empty()) })
+    }
+
+    fn list_provider_applications_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderApplicationListPage> {
+        Box::pin(async { Ok(RtcProviderApplicationListPage::empty()) })
+    }
+
+    fn list_provider_credentials_page<'a>(
+        &'a self,
+        query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderCredentialListPage> {
+        Box::pin(async move {
+            self.paginate_credentials(query).map_err(|error| {
+                sdkwork_communication_rtc_service::RtcPersistenceError::Unavailable(error.to_string())
+            })
+        })
+    }
+
+    fn list_provider_routes_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderRouteListPage> {
+        Box::pin(async { Ok(RtcProviderRouteListPage::empty()) })
+    }
+
+    fn list_webhook_events_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderWebhookEventListPage> {
+        Box::pin(async { Ok(RtcProviderWebhookEventListPage::empty()) })
+    }
+
+    fn list_provider_query_snapshots_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcProviderQuerySnapshotListPage> {
+        Box::pin(async { Ok(RtcProviderQuerySnapshotListPage::empty()) })
+    }
+
+    fn list_quality_samples_page<'a>(
+        &'a self,
+        _query: RtcScopedListQuery,
+    ) -> RtcPersistenceFuture<'a, RtcQualitySampleListPage> {
+        Box::pin(async { Ok(RtcQualitySampleListPage::empty()) })
+    }
+
+    fn revoke_session_token_grants_for_session<'a>(
+        &'a self,
+        _tenant_id: &'a str,
+        _organization_id: &'a str,
+        _session_id: &'a str,
+        _revoked_at: &'a str,
+    ) -> RtcPersistenceFuture<'a, ()> {
+        Box::pin(async { Ok(()) })
     }
 }
 
@@ -3696,7 +3999,7 @@ impl RtcProviderPort for FakeProvider {
                 "{}-token:{tenant_id}:{rtc_session_id}:{participant_id}",
                 self.provider
             ),
-            expires_at: "2026-06-10T01:00:00.000Z".into(),
+            expires_at: "2099-12-31T23:59:59.999Z".into(),
         })
     }
 

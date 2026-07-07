@@ -41,6 +41,7 @@ const schemaYaml = [
   'compliance_level: L2',
   'engines:',
   '  - postgres',
+  '  - sqlite',
   'table_prefix: rtc_',
   'tables:',
   ...tableNames.map(

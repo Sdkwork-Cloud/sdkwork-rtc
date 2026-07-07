@@ -284,6 +284,9 @@ fn list_request(context: &AppContext, query: RtcAppListQuery) -> RtcListRequest 
     RtcListRequest {
         tenant_id: context.tenant_id.clone(),
         organization_id: context.organization_id.clone(),
+        status: query.status,
+        owner_user_id: query.owner_user_id,
+        created_after: query.created_after,
         page: query.page,
         page_size: query.page_size,
         cursor: query.cursor,

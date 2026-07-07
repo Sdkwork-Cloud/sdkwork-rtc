@@ -1,8 +1,9 @@
-import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart'
+import 'package:sdkwork_rtc_backend_sdk/sdkwork_rtc_backend_sdk.dart'
     as generated;
 
 import '../admin_sdk_mapper.dart';
 import '../backend_rtc_client.dart';
+import '../models/paginated_list_result.dart';
 import '../models/provider_profile.dart';
 
 class ProviderProfileService {
@@ -10,17 +11,27 @@ class ProviderProfileService {
 
   ProviderProfileService(this._client);
 
-  Future<List<ProviderProfile>> list({String? provider}) async {
+  Future<PaginatedListResult<ProviderProfile>> list({
+    String? provider,
+    int? page,
+    int? pageSize,
+    String? cursor,
+    String? search,
+    String? sort,
+  }) async {
     final response = await _client.rtcProviderProfiles.list(
-      null,
-      null,
-      null,
-      null,
-      provider,
+      page,
+      pageSize,
+      cursor,
+      sort,
+      search ?? provider,
     );
-    return backendResponseItems(response)
-        .map(ProviderProfile.fromJson)
-        .toList();
+    return PaginatedListResult(
+      items: backendResponseItems(response)
+          .map(ProviderProfile.fromJson)
+          .toList(),
+      nextCursor: backendResponseNextCursor(response),
+    );
   }
 
   Future<ProviderProfile?> get(String id) async {

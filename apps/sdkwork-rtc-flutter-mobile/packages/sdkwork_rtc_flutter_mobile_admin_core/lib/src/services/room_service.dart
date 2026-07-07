@@ -2,17 +2,30 @@ import '../admin_sdk_mapper.dart';
 import '../backend_rtc_client.dart';
 import '../models/room.dart';
 
+class RoomListResult {
+  final List<Room> items;
+  final String? nextCursor;
+
+  const RoomListResult({
+    required this.items,
+    this.nextCursor,
+  });
+}
+
 class RoomService {
   final SdkworkBackendClient _client;
 
   RoomService(this._client);
 
-  Future<List<Room>> list({
+  Future<RoomListResult> list({
     int? page,
     int? limit,
     String? cursor,
     String? search,
     String? sort,
+    String? status,
+    String? ownerUserId,
+    String? createdAfter,
   }) async {
     final response = await _client.rtcRooms.list(
       page,
@@ -20,8 +33,14 @@ class RoomService {
       cursor,
       sort,
       search,
+      status,
+      ownerUserId,
+      createdAfter,
     );
-    return backendResponseItems(response).map(Room.fromJson).toList();
+    return RoomListResult(
+      items: backendResponseItems(response).map(Room.fromJson).toList(),
+      nextCursor: backendResponseNextCursor(response),
+    );
   }
 
   Future<Room> get(String id) async {

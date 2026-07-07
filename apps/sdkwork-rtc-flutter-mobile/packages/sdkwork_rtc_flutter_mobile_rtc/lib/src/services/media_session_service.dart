@@ -1,4 +1,4 @@
-import 'package:sdkwork_rtc_app_sdk_generated_dart/sdkwork_rtc_app_sdk_generated_dart.dart'
+import 'package:sdkwork_rtc_app_sdk/sdkwork_rtc_app_sdk.dart'
     as generated;
 import 'package:sdkwork_rtc_flutter_mobile_core/sdkwork_rtc_flutter_mobile_core.dart';
 
@@ -44,28 +44,25 @@ class MediaSessionService {
       params?.sort,
       params?.search,
     );
-    final data = response?.data;
-    final rawItems = data is Map<String, dynamic> ? data['items'] : null;
-    final sessions = rawItems is List<dynamic>
-        ? rawItems
-            .whereType<Map<String, dynamic>>()
-            .map(_mapGeneratedMediaSession)
-            .toList()
-        : <RtcMediaSession>[];
-    final nextCursor = data is Map<String, dynamic> ? data['nextCursor'] as String? : null;
+    final envelope = _typedResponseEnvelope(response);
+    final page = appSdkEnvelopeListPageFromMap(
+      envelope,
+      'RTC media session list response missing items',
+    );
     return MediaSessionListResult(
-      items: sessions,
-      nextCursor: nextCursor != null && nextCursor.isNotEmpty ? nextCursor : null,
+      items: page.items.map(RtcMediaSession.fromJson).toList(),
+      nextCursor: page.nextCursor,
     );
   }
 
   Future<RtcMediaSession> get(String mediaSessionId) async {
     final response = await _client.rtcMediaSessions.retrieve(mediaSessionId);
-    final session = response?.data;
-    if (session == null) {
-      throw StateError('RTC media session not found: $mediaSessionId');
-    }
-    return _mapGeneratedMediaSession(session.toJson());
+    final envelope = _typedResponseEnvelope(response);
+    final entity = appSdkEnvelopeEntityFromMap(
+      envelope,
+      'RTC media session not found: $mediaSessionId',
+    );
+    return RtcMediaSession.fromJson(entity);
   }
 
   Future<RtcMediaSession> create(
@@ -82,14 +79,39 @@ class MediaSessionService {
       idempotencyKey ??
           createRtcCommandIdempotencyKey('media-session-create'),
     );
-    final session = response?.data;
-    if (session == null) {
-      throw StateError('RTC media session was not created');
-    }
-    return _mapGeneratedMediaSession(session.toJson());
+    final envelope = _typedResponseEnvelope(response);
+    final entity = appSdkEnvelopeEntityFromMap(
+      envelope,
+      'RTC media session was not created',
+    );
+    return RtcMediaSession.fromJson(entity);
   }
 
-  RtcMediaSession _mapGeneratedMediaSession(Map<String, dynamic> json) {
-    return RtcMediaSession.fromJson(json);
+  Map<String, dynamic>? _typedResponseEnvelope(dynamic response) {
+    if (response == null) {
+      return null;
+    }
+    final dynamic value = response;
+    final data = value.data;
+    if (data == null) {
+      return <String, dynamic>{
+        if (value.code != null) 'code': value.code,
+        if (value.requestId != null) 'requestId': value.requestId,
+      };
+    }
+    final dataJson = data is Map<String, dynamic>
+        ? data
+        : data is Map
+            ? Map<String, dynamic>.from(data)
+            : (data.toJson is Map<String, dynamic> Function()
+                ? (data.toJson as Map<String, dynamic> Function())()
+                : null);
+    if (dataJson == null) {
+      return null;
+    }
+    if (dataJson.containsKey('item') || dataJson.containsKey('items')) {
+      return <String, dynamic>{'code': 0, 'data': dataJson};
+    }
+    return <String, dynamic>{'code': 0, 'data': <String, dynamic>{'item': dataJson}};
   }
 }

@@ -43,7 +43,7 @@ export class ProviderApplicationService {
           sort: params?.sort,
         },
       );
-    const page = readSdkWorkListPage<ProviderApplication>(response.data);
+    const page = readSdkWorkListPage<ProviderApplication>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor ?? null,
@@ -53,10 +53,10 @@ export class ProviderApplicationService {
   async get(id: string): Promise<ProviderApplication> {
     const response =
       await this.client.rtcProviderApplications.rtc.providerApplications.retrieve(id);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC provider application not found: ${id}`);
     }
-    return readSdkWorkItem<ProviderApplication>(response.data);
+    return readSdkWorkItem<ProviderApplication>(response);
   }
 
   async create(
@@ -70,10 +70,10 @@ export class ProviderApplicationService {
           typeof this.client.rtcProviderApplications.rtc.providerAccounts.applications.create
         >[1],
       );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider application data");
     }
-    return readSdkWorkItem<ProviderApplication>(response.data);
+    return readSdkWorkItem<ProviderApplication>(response);
   }
 
   async update(id: string, command: ProviderApplicationCommand): Promise<ProviderApplication> {
@@ -84,10 +84,10 @@ export class ProviderApplicationService {
           typeof this.client.rtcProviderApplications.rtc.providerApplications.update
         >[1],
       );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider application data");
     }
-    return readSdkWorkItem<ProviderApplication>(response.data);
+    return readSdkWorkItem<ProviderApplication>(response);
   }
 
   async disable(id: string, reason?: string): Promise<ProviderApplication> {
@@ -95,9 +95,9 @@ export class ProviderApplicationService {
       await this.client.rtcProviderApplications.rtc.providerApplications.disable(id, {
         reason,
       });
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider application data");
     }
-    return readSdkWorkItem<ProviderApplication>(response.data);
+    return readSdkWorkItem<ProviderApplication>(response);
   }
 }

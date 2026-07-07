@@ -92,6 +92,28 @@ impl RtcSqliteProviderRouteRepository {
         rows.into_iter().map(sqlite_row_to_provider_route).collect()
     }
 
+    pub async fn list_hydration_provider_routes_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderRoute>> {
+        let sql = provider_route_select_columns_sql(
+            r#"
+            WHERE tenant_id = ?
+              AND organization_id = ?
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter().map(sqlite_row_to_provider_route).collect()
+    }
+
     pub async fn list_active_provider_routes(
         &self,
         tenant_id: &str,
@@ -283,6 +305,30 @@ impl RtcPostgresProviderRouteRepository {
             .fetch_all(&self.pool)
             .await?;
 
+        rows.into_iter()
+            .map(postgres_row_to_provider_route)
+            .collect()
+    }
+
+    pub async fn list_hydration_provider_routes_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderRoute>> {
+        let sql = postgres_provider_route_select_columns_sql(
+            r#"
+            WHERE tenant_id = $1
+              AND organization_id = $2
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
         rows.into_iter()
             .map(postgres_row_to_provider_route)
             .collect()

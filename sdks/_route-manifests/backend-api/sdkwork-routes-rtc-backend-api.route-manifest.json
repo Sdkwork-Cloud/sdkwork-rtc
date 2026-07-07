@@ -770,7 +770,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "SdkWorkResourceResponse",
+        "response": "RtcProviderPluginListResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -804,7 +804,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "SdkWorkResourceResponse",
+        "response": "RtcProviderPluginResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -1366,7 +1366,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "SdkWorkResourceResponse",
+        "response": "RtcProviderConfigSchemaListResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {
@@ -1400,7 +1400,7 @@
       },
       "schemas": {
         "request": null,
-        "response": "SdkWorkResourceResponse",
+        "response": "RtcProviderConfigSchemaResponse",
         "problem": "ProblemDetail"
       },
       "ownership": {

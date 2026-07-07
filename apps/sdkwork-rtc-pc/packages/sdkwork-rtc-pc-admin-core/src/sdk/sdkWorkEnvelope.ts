@@ -1,11 +1,28 @@
 import type { SdkWorkPageData, SdkWorkResourceData } from "@sdkwork/utils";
 
-export function readSdkWorkListPage<TItem>(
-  data: SdkWorkPageData<Record<string, unknown>> | undefined,
-): { items: TItem[]; nextCursor?: string } {
-  if (!data) {
-    return { items: [] };
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object";
+}
+
+function unwrapSdkWorkPayload<T>(payload: unknown): T {
+  if (payload == null) {
+    throw new Error("Missing SDK response envelope");
   }
+  if (!isRecord(payload)) {
+    throw new Error("Invalid SDK response envelope: expected object with code and data");
+  }
+
+  if (payload.code === 0 && "data" in payload) {
+    return payload.data as T;
+  }
+
+  throw new Error("Invalid SDK response envelope: expected { code: 0, data }");
+}
+
+export function readSdkWorkListPage<TItem>(
+  payload: SdkWorkPageData<Record<string, unknown>> | undefined | null,
+): { items: TItem[]; nextCursor?: string } {
+  const data = unwrapSdkWorkPayload<SdkWorkPageData<Record<string, unknown>>>(payload);
 
   const nextCursor = data.pageInfo?.nextCursor;
   return {
@@ -15,15 +32,42 @@ export function readSdkWorkListPage<TItem>(
   };
 }
 
-export function readSdkWorkItem<TItem>(
-  data: SdkWorkResourceData<Record<string, unknown>> | Record<string, unknown> | undefined,
-): TItem {
-  if (!data) {
-    throw new Error("Missing SDK response data");
+/** Aggregates cursor-paginated lists for explicit export tooling only (not interactive admin tables). */
+export async function collectSdkWorkListPages<TItem>(
+  fetchPage: (cursor?: string) => Promise<{ items: TItem[]; nextCursor?: string | null }>,
+  maxPages = 50,
+): Promise<TItem[]> {
+  const items: TItem[] = [];
+  let cursor: string | undefined;
+  for (let page = 0; page < maxPages; page += 1) {
+    const result = await fetchPage(cursor);
+    items.push(...result.items);
+    const next = result.nextCursor?.trim();
+    if (!next) {
+      break;
+    }
+    cursor = next;
   }
+  return items;
+}
+
+export function readSdkWorkItem<TItem>(
+  payload:
+    | SdkWorkResourceData<Record<string, unknown>>
+    | Record<string, unknown>
+    | undefined
+    | null,
+): TItem {
+  const data = unwrapSdkWorkPayload<
+    SdkWorkResourceData<Record<string, unknown>> | Record<string, unknown>
+  >(payload);
 
   if ("item" in data && data.item !== undefined) {
     return data.item as TItem;
+  }
+
+  if (!("items" in data) && !("pageInfo" in data) && !("accepted" in data)) {
+    return data as TItem;
   }
 
   throw new Error("Missing SDK response data.item");

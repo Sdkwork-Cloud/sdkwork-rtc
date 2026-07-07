@@ -1,7 +1,8 @@
 use sdkwork_communication_rtc_service::{
     RtcCdnRelayHandle, RtcCdnRelayMode, RtcCdnRelayStartRequest, RtcCdnRelayStopRequest,
     RtcContractError, RtcLiveAudiencePlayback, RtcLiveAudiencePlaybackRequest,
-    format_cdn_relay_provider_session_id, utc_now_rfc3339_millis,
+    format_cdn_relay_provider_session_id, require_signed_provider_configuration,
+    utc_now_rfc3339_millis,
 };
 use serde_json::{Map, Value as JsonValue, json};
 
@@ -16,9 +17,11 @@ pub(crate) fn start_cdn_relay(
     request: RtcCdnRelayStartRequest,
 ) -> Result<RtcCdnRelayHandle, RtcContractError> {
     let Some(executor) = open_api_executor else {
+        require_signed_provider_configuration(false, "CDN relay start")?;
         return Ok(development_cdn_relay_handle(&request));
     };
     if config.secret_id.is_none() || config.secret_key.is_none() {
+        require_signed_provider_configuration(false, "CDN relay start")?;
         return Ok(development_cdn_relay_handle(&request));
     }
 
@@ -71,9 +74,11 @@ pub(crate) fn stop_cdn_relay(
     request: RtcCdnRelayStopRequest,
 ) -> Result<bool, RtcContractError> {
     let Some(executor) = open_api_executor else {
+        require_signed_provider_configuration(false, "CDN relay stop")?;
         return Ok(true);
     };
     if config.secret_id.is_none() || config.secret_key.is_none() {
+        require_signed_provider_configuration(false, "CDN relay stop")?;
         return Ok(true);
     }
 

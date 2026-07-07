@@ -10,5 +10,5 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  sdkwork_rtc_app_sdk_generated_dart:
-    path: ../../../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-dart/generated/server-openapi
+  sdkwork_rtc_app_sdk:
+    path: ../../../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-dart

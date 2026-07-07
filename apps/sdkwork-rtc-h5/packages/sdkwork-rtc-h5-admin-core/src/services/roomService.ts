@@ -21,8 +21,11 @@ export class RoomService {
       cursor: params?.cursor,
       q: params?.search,
       sort: params?.sort,
+      status: params?.status,
+      ownerUserId: params?.ownerUserId,
+      createdAfter: params?.createdAfter,
     });
-    const page = readSdkWorkListPage<Room>(response.data);
+    const page = readSdkWorkListPage<Room>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor,
@@ -31,9 +34,9 @@ export class RoomService {
 
   async get(id: string): Promise<Room> {
     const response = await this.client.rtcRooms.rtc.rooms.retrieve(id);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC room not found: ${id}`);
     }
-    return readSdkWorkItem<Room>(response.data);
+    return readSdkWorkItem<Room>(response);
   }
 }

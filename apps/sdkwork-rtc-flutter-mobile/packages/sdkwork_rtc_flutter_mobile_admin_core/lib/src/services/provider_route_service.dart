@@ -1,8 +1,9 @@
-import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart'
+import 'package:sdkwork_rtc_backend_sdk/sdkwork_rtc_backend_sdk.dart'
     as generated;
 
 import '../admin_sdk_mapper.dart';
 import '../backend_rtc_client.dart';
+import '../models/paginated_list_result.dart';
 import '../models/provider_route.dart';
 
 class ProviderRouteService {
@@ -10,9 +11,24 @@ class ProviderRouteService {
 
   ProviderRouteService(this._client);
 
-  Future<List<ProviderRoute>> list() async {
-    final response = await _client.rtcProviderRoutes.list();
-    return backendResponseItems(response).map(ProviderRoute.fromJson).toList();
+  Future<PaginatedListResult<ProviderRoute>> list({
+    int? page,
+    int? pageSize,
+    String? cursor,
+    String? search,
+    String? sort,
+  }) async {
+    final response = await _client.rtcProviderRoutes.list(
+      page,
+      pageSize,
+      cursor,
+      sort,
+      search,
+    );
+    return PaginatedListResult(
+      items: backendResponseItems(response).map(ProviderRoute.fromJson).toList(),
+      nextCursor: backendResponseNextCursor(response),
+    );
   }
 
   Future<ProviderRoute?> create(ProviderRouteCommand command) async {

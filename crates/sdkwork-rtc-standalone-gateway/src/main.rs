@@ -6,6 +6,7 @@ use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_ro
 use tracing::info;
 
 use sdkwork_communication_rtc_service::rtc_persistence_required;
+use sdkwork_communication_rtc_service::validate_production_runtime_profile;
 use sdkwork_rtc_standalone_gateway::{
     bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap},
     readiness::RtcDatabaseReadinessCheck,
@@ -16,6 +17,8 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
+
+    validate_production_runtime_profile().map_err(anyhow::Error::msg)?;
 
     let registry = build_builtin_provider_registry()?;
     let bootstrap = build_rtc_api_bootstrap(registry).await?;

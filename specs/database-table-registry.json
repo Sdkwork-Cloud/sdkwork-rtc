@@ -25,7 +25,9 @@
       "tableProfile": "relation_entity",
       "systemOfRecord": true,
       "writeOwner": "sdkwork-communication-rtc-repository-sqlx",
-      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql"
+      "migration": "crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql",
+      "implementationStatus": "reserved",
+      "notes": "DDL reserved for future persistent room membership. Active call participation is tracked in rtc_media_participant."
     },
     {
       "tableName": "rtc_media_session",

@@ -18,7 +18,7 @@ pnpm add sdkwork-rtc-backend-sdk-generated-typescript
 import { SdkworkBackendClient } from 'sdkwork-rtc-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://127.0.0.1:18088',
+  baseUrl: 'http://localhost:18088/backend/v3/api',
   timeout: 30000,
 });
 
@@ -27,14 +27,7 @@ client.setAuthToken('your-auth-token');
 client.setAccessToken('your-access-token');
 
 // Use the SDK
-const params = {
-  page: 1,
-  page_size: 2,
-  cursor: 'cursor',
-  sort: 'sort',
-  q: 'q',
-};
-const result = await client.rtcMediaArtifacts.rtc.mediaArtifacts.list(params);
+const result = await client.rtcProviderPlugins.rtc.providerPlugins.list();
 ```
 
 ## Authentication
@@ -51,7 +44,7 @@ Access-Token: <accessToken>
 import { SdkworkBackendClient } from 'sdkwork-rtc-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://127.0.0.1:18088',
+  baseUrl: 'http://localhost:18088/backend/v3/api',
   timeout: 30000, // Request timeout in ms
   headers: {      // Custom headers
     'X-Custom-Header': 'value',
@@ -139,14 +132,7 @@ const result = await client.rtcProviderCredentials.rtc.providerCredentials.retri
 
 ```typescript
 // Rtc provider Plugins list.
-const params = {
-  page: 1,
-  page_size: 2,
-  cursor: 'cursor',
-  sort: 'sort',
-  q: 'q',
-};
-const result = await client.rtcProviderPlugins.rtc.providerPlugins.list(params);
+const result = await client.rtcProviderPlugins.rtc.providerPlugins.list();
 ```
 
 ### rtc_provider_profiles
@@ -189,14 +175,7 @@ const result = await client.rtcProviderRoutes.rtc.providerRoutes.list(params);
 
 ```typescript
 // Rtc provider Schemas list.
-const params = {
-  page: 1,
-  page_size: 2,
-  cursor: 'cursor',
-  sort: 'sort',
-  q: 'q',
-};
-const result = await client.rtcProviderSchemas.rtc.providerSchemas.list(params);
+const result = await client.rtcProviderSchemas.rtc.providerSchemas.list();
 ```
 
 ### rtc_provider_webhooks
@@ -237,6 +216,9 @@ const params = {
   cursor: 'cursor',
   sort: 'sort',
   q: 'q',
+  status: 'active',
+  ownerUserId: 'ownerUserId',
+  createdAfter: 'createdAfter',
 };
 const result = await client.rtcRooms.rtc.rooms.list(params);
 ```
@@ -247,14 +229,7 @@ const result = await client.rtcRooms.rtc.rooms.list(params);
 import { SdkworkBackendClient, NetworkError, TimeoutError, AuthenticationError } from 'sdkwork-rtc-backend-sdk-generated-typescript';
 
 try {
-  const params = {
-    page: 1,
-    page_size: 2,
-    cursor: 'cursor',
-    sort: 'sort',
-    q: 'q',
-  };
-  const result = await client.rtcMediaArtifacts.rtc.mediaArtifacts.list(params);
+  const result = await client.rtcProviderPlugins.rtc.providerPlugins.list();
 } catch (error) {
   if (error instanceof AuthenticationError) {
     console.error('Authentication failed:', error.message);

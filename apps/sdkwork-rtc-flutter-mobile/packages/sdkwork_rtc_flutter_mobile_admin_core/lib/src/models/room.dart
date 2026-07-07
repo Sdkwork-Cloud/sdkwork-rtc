@@ -89,3 +89,25 @@ List<Room> filterRooms(List<Room> rooms, RoomFilterState filter) {
 
   return filtered;
 }
+
+String? roomDateRangeCreatedAfter(String dateRange) {
+  if (dateRange == 'all') {
+    return null;
+  }
+  final now = DateTime.now().toUtc();
+  late final DateTime cutoff;
+  switch (dateRange) {
+    case 'today':
+      cutoff = DateTime.utc(now.year, now.month, now.day);
+      break;
+    case 'week':
+      cutoff = now.subtract(const Duration(days: 7));
+      break;
+    case 'month':
+      cutoff = DateTime.utc(now.year, now.month - 1, now.day);
+      break;
+    default:
+      return null;
+  }
+  return cutoff.toIso8601String();
+}

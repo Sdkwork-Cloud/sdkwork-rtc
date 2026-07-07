@@ -7,9 +7,11 @@ const {
 
 Page({
   data: {
-    userId: "1",
+    userId: "",
     sessions: [],
+    nextCursor: "",
     loading: false,
+    loadingMore: false,
     creating: false,
     error: "",
     roomId: "",
@@ -24,7 +26,11 @@ Page({
     }
     try {
       const session = JSON.parse(raw);
-      this.setData({ userId: session.userId || "1" });
+      if (!session.userId) {
+        wx.reLaunch({ url: "/pages/login/index" });
+        return;
+      }
+      this.setData({ userId: session.userId });
       bootstrapRtcMiniProgram();
       this.loadSessions();
     } catch {
@@ -43,13 +49,36 @@ Page({
     this.setData({ mediaMode: this.data.mediaModes[index] || "video" });
   },
   async loadSessions() {
-    this.setData({ loading: true, error: "" });
+    this.setData({ loading: true, error: "", nextCursor: "" });
     try {
-      const sessions = await listMediaSessions();
-      this.setData({ sessions, loading: false });
+      const result = await listMediaSessions();
+      this.setData({
+        sessions: result.items,
+        nextCursor: result.nextCursor || "",
+        loading: false,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to load media sessions";
       this.setData({ loading: false, error: message });
+      wx.showToast({ title: message, icon: "none" });
+    }
+  },
+  async loadMoreSessions() {
+    const cursor = String(this.data.nextCursor || "").trim();
+    if (!cursor || this.data.loading || this.data.loadingMore) {
+      return;
+    }
+    this.setData({ loadingMore: true, error: "" });
+    try {
+      const result = await listMediaSessions({ cursor });
+      this.setData({
+        sessions: [...this.data.sessions, ...result.items],
+        nextCursor: result.nextCursor || "",
+        loadingMore: false,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to load more media sessions";
+      this.setData({ loadingMore: false, error: message });
       wx.showToast({ title: message, icon: "none" });
     }
   },

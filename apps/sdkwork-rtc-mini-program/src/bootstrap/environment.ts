@@ -4,11 +4,22 @@ export interface RtcEnvironment {
   defaultMediaMode: "audio" | "video" | "live";
 }
 
+declare const __SDKWORK_RTC_DEFAULT_API_BASE_URL__: string | undefined;
+declare const __SDKWORK_RTC_DEFAULT_APPBASE_LOGIN_URL__: string | undefined;
+
 const RUNTIME_CONFIG_KEY = "sdkwork.rtc.runtime.config";
 
 const defaultEnvironment: RtcEnvironment = {
-  apiBaseUrl: "http://127.0.0.1:18088/app/v3/api",
-  appbaseLoginUrl: "http://127.0.0.1:3900",
+  apiBaseUrl:
+    typeof __SDKWORK_RTC_DEFAULT_API_BASE_URL__ === "string" &&
+    __SDKWORK_RTC_DEFAULT_API_BASE_URL__.length > 0
+      ? __SDKWORK_RTC_DEFAULT_API_BASE_URL__
+      : "",
+  appbaseLoginUrl:
+    typeof __SDKWORK_RTC_DEFAULT_APPBASE_LOGIN_URL__ === "string" &&
+    __SDKWORK_RTC_DEFAULT_APPBASE_LOGIN_URL__.length > 0
+      ? __SDKWORK_RTC_DEFAULT_APPBASE_LOGIN_URL__
+      : "",
   defaultMediaMode: "video",
 };
 

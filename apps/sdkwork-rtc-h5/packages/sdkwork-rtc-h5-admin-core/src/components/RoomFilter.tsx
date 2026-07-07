@@ -92,6 +92,30 @@ export const DEFAULT_ROOM_FILTER: RoomFilterState = {
   dateRange: "all",
 };
 
+export function roomDateRangeCreatedAfter(
+  dateRange: RoomFilterState["dateRange"],
+): string | undefined {
+  if (dateRange === "all") {
+    return undefined;
+  }
+  const now = new Date();
+  let cutoff: Date;
+  switch (dateRange) {
+    case "today":
+      cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    case "week":
+      cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case "month":
+      cutoff = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      break;
+    default:
+      return undefined;
+  }
+  return cutoff.toISOString();
+}
+
 export function filterRooms(
   rooms: import("../types/room").Room[],
   filter: RoomFilterState,

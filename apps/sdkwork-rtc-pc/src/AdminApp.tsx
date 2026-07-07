@@ -13,7 +13,8 @@ import {
   ProviderWebhookEventList,
   RoomFilter,
   RoomList,
-  filterRooms,
+  roomDateRangeCreatedAfter,
+  collectSdkWorkListPages,
   mapPluginCapabilitiesToBackend,
   persistProviderWizard,
   profileCapabilitiesToBackendKeys,
@@ -46,9 +47,16 @@ function AdminLoading({ label = "Loading RTC admin data..." }: { label?: string 
 
 export function AdminApp({ route }: AdminAppProps) {
   const services = useMemo(() => createAdminServices(), []);
-  const adminData = useAdminData(services);
-
   const [roomFilter, setRoomFilter] = useState(DEFAULT_ROOM_FILTER);
+  const [roomSort, setRoomSort] = useState("-createdAt");
+  const adminData = useAdminData(services, {
+    roomQuery: roomFilter.search,
+    roomSort,
+    roomStatus: roomFilter.status === "all" ? undefined : roomFilter.status,
+    roomOwnerUserId: roomFilter.ownerUserId || undefined,
+    roomCreatedAfter: roomDateRangeCreatedAfter(roomFilter.dateRange),
+  });
+
   const [wizardSchema, setWizardSchema] = useState<ProviderConfigSchema | null>(null);
   const [wizardError, setWizardError] = useState<string | null>(null);
   const [wizardSaving, setWizardSaving] = useState(false);
@@ -72,7 +80,7 @@ export function AdminApp({ route }: AdminAppProps) {
     ReturnType<typeof services.queryJobs.listSnapshots>
   >["items"]>([]);
 
-  const filteredRooms = filterRooms(adminData.rooms.data, roomFilter);
+  const filteredRooms = adminData.rooms.data;
 
   const handleWizardComplete = async (result: ProviderWizardResult) => {
     setWizardSaving(true);
@@ -177,8 +185,8 @@ export function AdminApp({ route }: AdminAppProps) {
       }
 
       case "/admin/provider-accounts": {
-        const { loading, error, data, refresh } = adminData.accounts;
-        if (loading) return <AdminLoading />;
+        const { loading, error, data, refresh, hasMore, loadMore } = adminData.accounts;
+        if (loading && data.length === 0) return <AdminLoading />;
         return (
           <>
             {error && <AdminError message={error} />}
@@ -191,13 +199,18 @@ export function AdminApp({ route }: AdminAppProps) {
                 await refresh();
               }}
             />
+            {hasMore && (
+              <button type="button" onClick={() => void loadMore()} disabled={loading}>
+                {loading ? "Loading..." : "Load more accounts"}
+              </button>
+            )}
           </>
         );
       }
 
       case "/admin/provider-profiles": {
-        const { loading, error, data, refresh } = adminData.profiles;
-        if (loading) return <AdminLoading />;
+        const { loading, error, data, refresh, hasMore, loadMore } = adminData.profiles;
+        if (loading && data.length === 0) return <AdminLoading />;
         return (
           <>
             {error && <AdminError message={error} />}
@@ -217,25 +230,35 @@ export function AdminApp({ route }: AdminAppProps) {
                 await refresh();
               }}
             />
+            {hasMore && (
+              <button type="button" onClick={() => void loadMore()} disabled={loading}>
+                {loading ? "Loading..." : "Load more profiles"}
+              </button>
+            )}
           </>
         );
       }
 
       case "/admin/provider-routes": {
-        const { loading, error, data } = adminData.routes;
-        if (loading) return <AdminLoading />;
+        const { loading, error, data, hasMore, loadMore } = adminData.routes;
+        if (loading && data.length === 0) return <AdminLoading />;
         return (
           <>
             {error && <AdminError message={error} />}
             <h2>Provider Routes</h2>
             <ProviderRouteList routes={data} />
+            {hasMore && (
+              <button type="button" onClick={() => void loadMore()} disabled={loading}>
+                {loading ? "Loading..." : "Load more routes"}
+              </button>
+            )}
           </>
         );
       }
 
       case "/admin/providers": {
-        const { loading, error, data } = adminData.plugins;
-        if (loading) return <AdminLoading />;
+        const { loading, error, data, hasMore, loadMore } = adminData.plugins;
+        if (loading && data.length === 0 && !selectedPlugin) return <AdminLoading />;
         const profileForCapability =
           selectedProfile ??
           adminData.profiles.data.find((profile) => profile.provider === selectedPlugin?.providerKind) ??
@@ -263,6 +286,11 @@ export function AdminApp({ route }: AdminAppProps) {
                     setSelectedProfile(null);
                   }}
                 />
+                {hasMore && (
+                  <button type="button" onClick={() => void loadMore()} disabled={loading}>
+                    {loading ? "Loading..." : "Load more plugins"}
+                  </button>
+                )}
               </>
             ) : profileForCapability ? (
               <>
@@ -342,13 +370,13 @@ export function AdminApp({ route }: AdminAppProps) {
         );
       }
 
-      case "/admin/media-sessions": {
-        const { loading, error, data, refresh } = adminData.rooms;
-        if (loading) return <AdminLoading />;
+      case "/admin/rooms": {
+        const { loading, error, data, refresh, hasMore, loadMore } = adminData.rooms;
+        if (loading && data.length === 0) return <AdminLoading />;
         return (
           <>
             {error && <AdminError message={error} />}
-            <h2>Media Sessions</h2>
+            <h2>Rooms</h2>
             <RoomFilter
               filter={roomFilter}
               onChange={setRoomFilter}
@@ -358,22 +386,47 @@ export function AdminApp({ route }: AdminAppProps) {
             />
             <RoomList
               rooms={filteredRooms}
+              sort={roomSort}
+              onSortChange={setRoomSort}
               onSelect={() => undefined}
               onBatchAction={() => undefined}
               onRefresh={() => void refresh()}
+              loading={loading}
+              fetchAllRooms={() =>
+                collectSdkWorkListPages((cursor) =>
+                  services.rooms.list({
+                    cursor,
+                    search: roomFilter.search || undefined,
+                    status: roomFilter.status === "all" ? undefined : roomFilter.status,
+                    ownerUserId: roomFilter.ownerUserId || undefined,
+                    createdAfter: roomDateRangeCreatedAfter(roomFilter.dateRange),
+                    sort: roomSort,
+                  }),
+                )
+              }
             />
+            {hasMore && (
+              <button type="button" onClick={() => void loadMore()} disabled={loading}>
+                {loading ? "Loading..." : "Load more rooms"}
+              </button>
+            )}
           </>
         );
       }
 
       case "/admin/webhook-events": {
-        const { loading, error, data } = adminData.webhookEvents;
-        if (loading) return <AdminLoading />;
+        const { loading, error, data, hasMore, loadMore } = adminData.webhookEvents;
+        if (loading && data.length === 0) return <AdminLoading />;
         return (
           <>
             {error && <AdminError message={error} />}
             <h2>Webhook Events</h2>
             <ProviderWebhookEventList events={data} />
+            {hasMore && (
+              <button type="button" onClick={() => void loadMore()} disabled={loading}>
+                {loading ? "Loading..." : "Load more events"}
+              </button>
+            )}
           </>
         );
       }

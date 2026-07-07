@@ -1,8 +1,9 @@
-import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart'
+import 'package:sdkwork_rtc_backend_sdk/sdkwork_rtc_backend_sdk.dart'
     as generated;
 
 import '../admin_sdk_mapper.dart';
 import '../backend_rtc_client.dart';
+import '../models/paginated_list_result.dart';
 import '../models/provider_account.dart';
 
 class ProviderAccountService {
@@ -10,7 +11,7 @@ class ProviderAccountService {
 
   ProviderAccountService(this._client);
 
-  Future<List<ProviderAccount>> list({
+  Future<PaginatedListResult<ProviderAccount>> list({
     String? provider,
     String? status,
     int? page,
@@ -26,9 +27,12 @@ class ProviderAccountService {
       sort,
       search,
     );
-    return backendResponseItems(response)
-        .map(ProviderAccount.fromJson)
-        .toList();
+    return PaginatedListResult(
+      items: backendResponseItems(response)
+          .map(ProviderAccount.fromJson)
+          .toList(),
+      nextCursor: backendResponseNextCursor(response),
+    );
   }
 
   Future<ProviderAccount?> get(String id) async {

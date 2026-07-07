@@ -2754,60 +2754,14 @@
         ],
         "summary": "Rtc provider Plugins list.",
         "operationId": "rtc.providerPlugins.list",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 200,
-              "default": 20
-            }
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sort",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "q",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                  "$ref": "#/components/schemas/RtcProviderPluginListResponse"
                 }
               }
             }
@@ -2914,7 +2868,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                  "$ref": "#/components/schemas/RtcProviderPluginResponse"
                 }
               }
             }
@@ -4904,60 +4858,14 @@
         ],
         "summary": "Rtc provider Schemas list.",
         "operationId": "rtc.providerSchemas.list",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 200,
-              "default": 20
-            }
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sort",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "q",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                  "$ref": "#/components/schemas/RtcProviderConfigSchemaListResponse"
                 }
               }
             }
@@ -5064,7 +4972,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                  "$ref": "#/components/schemas/RtcProviderConfigSchemaResponse"
                 }
               }
             }
@@ -5633,6 +5541,36 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived",
+                "disabled"
+              ]
+            }
+          },
+          {
+            "name": "ownerUserId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
           }
         ],
         "responses": {
@@ -5889,6 +5827,48 @@
             "type": "object",
             "additionalProperties": true,
             "description": "Typed domain resource for the operation."
+          }
+        }
+      },
+      "PageInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "offset",
+              "cursor"
+            ]
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "totalItems": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hasMore": {
+            "type": "boolean"
           }
         }
       },
@@ -9146,6 +9126,342 @@
                 "properties": {
                   "item": {
                     "$ref": "#/components/schemas/RtcProviderRoute"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RtcProviderPluginDescriptor": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pluginId",
+          "domain",
+          "providerKind",
+          "displayName",
+          "interfaceVersion",
+          "configSchemaRef",
+          "defaultSelected",
+          "tenantOverrideAllowed",
+          "requiredCapabilities",
+          "optionalCapabilities",
+          "unsupportedFeatures",
+          "degradedBehaviors"
+        ],
+        "properties": {
+          "pluginId": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string",
+            "enum": [
+              "rtc"
+            ]
+          },
+          "providerKind": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "interfaceVersion": {
+            "type": "string"
+          },
+          "configSchemaRef": {
+            "type": "string"
+          },
+          "defaultSelected": {
+            "type": "boolean"
+          },
+          "tenantOverrideAllowed": {
+            "type": "boolean"
+          },
+          "requiredCapabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "optionalCapabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unsupportedFeatures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "degradedBehaviors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RtcProviderPluginListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "items",
+                  "pageInfo"
+                ],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RtcProviderPluginDescriptor"
+                    }
+                  },
+                  "pageInfo": {
+                    "$ref": "#/components/schemas/PageInfo"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RtcProviderPluginResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [
+                  "item"
+                ],
+                "properties": {
+                  "item": {
+                    "$ref": "#/components/schemas/RtcProviderPluginDescriptor"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RtcProviderConfigFieldSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "label",
+          "type"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean",
+            "default": false
+          },
+          "default": {},
+          "placeholder": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "values": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "min": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "max": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "hidden": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "RtcProviderCredentialRoleSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "label",
+          "description",
+          "fields"
+        ],
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcProviderConfigFieldSchema"
+            }
+          }
+        }
+      },
+      "RtcProviderConfigSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "displayName",
+          "description",
+          "accountFields",
+          "applicationFields",
+          "credentialRoles",
+          "profileFields",
+          "optionalCapabilities",
+          "requiredCapabilities"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "accountFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcProviderConfigFieldSchema"
+            }
+          },
+          "applicationFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcProviderConfigFieldSchema"
+            }
+          },
+          "credentialRoles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcProviderCredentialRoleSchema"
+            }
+          },
+          "profileFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RtcProviderConfigFieldSchema"
+            }
+          },
+          "optionalCapabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiredCapabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RtcProviderConfigSchemaListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "items",
+                  "pageInfo"
+                ],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RtcProviderConfigSchema"
+                    }
+                  },
+                  "pageInfo": {
+                    "$ref": "#/components/schemas/PageInfo"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RtcProviderConfigSchemaResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "required": [
+                  "item"
+                ],
+                "properties": {
+                  "item": {
+                    "$ref": "#/components/schemas/RtcProviderConfigSchema"
                   }
                 }
               }

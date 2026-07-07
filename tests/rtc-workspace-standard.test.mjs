@@ -72,7 +72,9 @@ test("sdkwork-rtc mini program root exposes user RTC surface packages", () => {
   assert.equal(appConfig.kind, "sdkwork.app");
   assert.equal(appConfig.runtime?.family, "mini-program");
   const rtcPackageSource = read(`${appRoot}/packages/sdkwork-rtc-mp-rtc/package.json`);
-  assert.match(rtcPackageSource, /sdkwork-rtc-app-sdk-generated-typescript/u, "sdkwork-rtc-mp-rtc must depend on the generated app SDK");
+  assert.match(rtcPackageSource, /@sdkwork\/rtc-app-sdk/u, "sdkwork-rtc-mp-rtc must depend on the composed RTC app SDK facade");
+  const roomPage = read(`${appRoot}/src/pages/media-session-room/index.js`);
+  assert.match(roomPage, /joinMediaSession/u, `${appRoot} media session room must join through runtime bundle`);
 });
 
 test("sdkwork-rtc flutter mobile exposes app auth deep link surfaces", () => {
@@ -103,7 +105,7 @@ test("sdkwork-rtc app roots expose dual app and admin surfaces", () => {
       `${appRoot}/src/App.tsx must default to user RTC routes`,
     );
     const rtcPackageSource = read(`${appRoot}/packages/${rtcPackage}/package.json`);
-    assert.match(rtcPackageSource, /sdkwork-rtc-app-sdk-generated-typescript/u, `${rtcPackage} must depend on the generated app SDK`);
+    assert.match(rtcPackageSource, /@sdkwork\/rtc-app-sdk/u, `${rtcPackage} must depend on the composed RTC app SDK facade`);
   }
 });
 

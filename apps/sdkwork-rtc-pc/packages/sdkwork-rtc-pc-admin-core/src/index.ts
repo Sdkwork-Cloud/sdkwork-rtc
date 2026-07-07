@@ -13,6 +13,8 @@ export type {
   PersistProviderWizardServices,
 } from "./services/persistProviderWizard";
 export { RoomService } from "./services/roomService";
+export { collectSdkWorkListPages, readSdkWorkItem, readSdkWorkListPage, formatSdkWorkError, readSdkWorkProblemDetail } from "./sdk/index.js";
+export type { SdkWorkProblemDetail } from "./sdk/index.js";
 export {
   createBackendRtcClient,
   resolveBackendRtcClient,
@@ -41,7 +43,7 @@ export { ProviderCapabilityConfig } from "./components/ProviderCapabilityConfig"
 export { ProviderWebhookEventList } from "./components/ProviderWebhookEventList";
 export { ProviderQueryJobPanel } from "./components/ProviderQueryJobPanel";
 export { RoomList } from "./components/RoomList";
-export { RoomFilter, DEFAULT_ROOM_FILTER, filterRooms } from "./components/RoomFilter";
+export { RoomFilter, DEFAULT_ROOM_FILTER, filterRooms, roomDateRangeCreatedAfter } from "./components/RoomFilter";
 export { RoomBatchActions } from "./components/RoomBatchActions";
 
 export {
@@ -96,6 +98,7 @@ export type {
   RoomListResponse,
   RoomBatchAction,
   RoomFilterState,
+  RoomSortField,
 } from "./types/room";
 
 export const ADMIN_STYLESHEET_PATH = "./admin-styles.css";

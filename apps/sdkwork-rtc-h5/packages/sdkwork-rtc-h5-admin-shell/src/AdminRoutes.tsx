@@ -7,7 +7,7 @@ export function AdminRoutes() {
       { path: "#/admin/provider-routes", label: "Provider Routes" },
       { path: "#/admin/providers", label: "Providers" },
       { path: "#/admin/wizard", label: "Setup Wizard" },
-      { path: "#/admin/media-sessions", label: "Media Sessions" },
+      { path: "#/admin/rooms", label: "Rooms" },
       { path: "#/admin/webhook-events", label: "Webhook Events" },
       { path: "#/admin/query-jobs", label: "Query Jobs" },
     ],

@@ -7,6 +7,7 @@ mod recording_lifecycle;
 mod recording_policy;
 mod room;
 mod session;
+mod token_grant;
 mod workspace;
 
 pub use drive::*;
@@ -18,4 +19,5 @@ pub use recording_lifecycle::*;
 pub use recording_policy::*;
 pub use room::*;
 pub use session::*;
+pub use token_grant::*;
 pub use workspace::*;

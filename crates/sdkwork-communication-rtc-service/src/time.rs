@@ -2,6 +2,14 @@ pub fn utc_now_rfc3339_millis() -> String {
     sdkwork_utils_rust::format_datetime(sdkwork_utils_rust::now(), None)
 }
 
+pub fn validate_rfc3339_datetime(value: &str) -> Result<(), String> {
+    if sdkwork_utils_rust::parse_datetime(value, None).is_some() {
+        Ok(())
+    } else {
+        Err(format!("invalid RFC3339 datetime: {value}"))
+    }
+}
+
 pub fn rfc3339_age_ms(value: &str) -> Option<u64> {
     sdkwork_utils_rust::parse_datetime(value, None).map(|started| {
         sdkwork_utils_rust::now()
@@ -31,6 +39,14 @@ pub fn format_unix_seconds_rfc3339(seconds: u32) -> String {
 
 pub fn format_unix_seconds_rfc3339_u64(seconds: u64) -> String {
     format_unix_timestamp_rfc3339(i64::try_from(seconds).unwrap_or(i64::MAX))
+}
+
+pub fn session_reconcile_cutoff_rfc3339(age_ms: u64) -> String {
+    let cutoff_ms = sdkwork_utils_rust::now().timestamp_millis()
+        - i64::try_from(age_ms).unwrap_or(i64::MAX);
+    let cutoff = sdkwork_utils_rust::from_unix_millis(cutoff_ms)
+        .expect("session reconcile cutoff must fit chrono range");
+    sdkwork_utils_rust::format_datetime(cutoff, None)
 }
 
 fn format_unix_timestamp_rfc3339(seconds: i64) -> String {

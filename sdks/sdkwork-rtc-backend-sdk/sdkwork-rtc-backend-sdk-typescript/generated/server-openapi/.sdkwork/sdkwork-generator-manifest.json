@@ -40,15 +40,15 @@
     },
     {
       "path": "package.json",
-      "sha256": "1b1662200dcdb57d53957493f81ec3e38b97dd010153f5203616bea81d91c4a6"
+      "sha256": "5b487516572f8ce41f931b3f026490b1e11509798514b4ae4826d947f4c72c9c"
     },
     {
       "path": "README.md",
-      "sha256": "d93bcf1688ca36078bd07e78d221810c66e24462eb1db5abf378d31348798bdc"
+      "sha256": "0d39bdc9f6a4ad91817f64f25e85d97136112b89fee60610ab9fe2446e83dcf3"
     },
     {
       "path": "sdkwork-sdk.json",
-      "sha256": "29bd4e8c14f6e2ed47152fc595acec1a31b05e4431df3bef2292fd21c6165310"
+      "sha256": "64d02f4d464ddf7070af43f06a9f5dcf806fafe3a49e37eab0ecf6c73d2490e1"
     },
     {
       "path": "src/api/base.ts",
@@ -84,7 +84,7 @@
     },
     {
       "path": "src/api/rtc-provider-plugins.ts",
-      "sha256": "c2851e10952a01ddf1365161cff994a8b7713a60f34bfb670d6e14a43795d537"
+      "sha256": "5d8049e8804fc283a20e67be33f110acd4f5f2b5059f619a204e9b9ea85c6e26"
     },
     {
       "path": "src/api/rtc-provider-profiles.ts",
@@ -100,7 +100,7 @@
     },
     {
       "path": "src/api/rtc-provider-schemas.ts",
-      "sha256": "8968807db47d0ecf9794121f85e37f7127f4f3ce2c2039d98e5e7620011005fc"
+      "sha256": "c031a18d81e63ea74083d57bb81496a38ec762d85577a8e6ef7fdbd06a3b4569"
     },
     {
       "path": "src/api/rtc-provider-webhooks.ts",
@@ -112,7 +112,7 @@
     },
     {
       "path": "src/api/rtc-rooms.ts",
-      "sha256": "86e8157c1ba8d4f8b73339b7761bd18fcc96f57156e31112659c57ac4d01f448"
+      "sha256": "e0406ce14ab5f59edff4ee3516c04e60269e56fea109deac0691750a2d2ca5ff"
     },
     {
       "path": "src/auth/index.ts",
@@ -144,7 +144,7 @@
     },
     {
       "path": "src/types/index.ts",
-      "sha256": "2bef408a62e0047d903db87b88400d9bb009654389ead6e8bfce90821d085bf5"
+      "sha256": "af67d98e21b7819ae151a9ef71f9884c759b75f1341953242a0f1a61fbb562af"
     },
     {
       "path": "src/types/media-access.ts",
@@ -165,6 +165,10 @@
     {
       "path": "src/types/media-source.ts",
       "sha256": "ebb9a604403756a4529cb47f1700dbd9c0beb6e4145b9a51985783429e29adf3"
+    },
+    {
+      "path": "src/types/page-info.ts",
+      "sha256": "0bf2b44313bc24851eb9ffb6063c1b9eb043e1e5721c8ace8882a3cfa21c932a"
     },
     {
       "path": "src/types/problem-detail.ts",
@@ -283,6 +287,22 @@
       "sha256": "979e59943ef7705de9851fb2beaaadd044a64edc03343a9282d393c69bbac815"
     },
     {
+      "path": "src/types/rtc-provider-config-field-schema.ts",
+      "sha256": "8bb00f50db62b1058295d82409ab69a61199a73b980a6bcf93577d8a6252c8cd"
+    },
+    {
+      "path": "src/types/rtc-provider-config-schema-list-response.ts",
+      "sha256": "520bff6a41081cbb3b6ce655d68851399337b22786e4b95ed0ca25c4bb0a7e62"
+    },
+    {
+      "path": "src/types/rtc-provider-config-schema-response.ts",
+      "sha256": "f242447611f80bf3f9a8c272ac0b9c6906e1e6e8e8fb3f3c644652af59251836"
+    },
+    {
+      "path": "src/types/rtc-provider-config-schema.ts",
+      "sha256": "c8b795b9f0fb2139cd4a9941cbf9a41fd406b6518fce87b06ae6b5563bcc8634"
+    },
+    {
       "path": "src/types/rtc-provider-credential-command.ts",
       "sha256": "e1f81be43364982bd215709a171952b09051eef75ba21060ee4783cbf8b64bda"
     },
@@ -299,8 +319,24 @@
       "sha256": "a706bb81d21d1945810db6ba34a73a145fcfeaa768eb3674d410eca36e34363b"
     },
     {
+      "path": "src/types/rtc-provider-credential-role-schema.ts",
+      "sha256": "913bb59e79939b64558d46de13094df582bd776f1e02ff019c1a819bcee98975"
+    },
+    {
       "path": "src/types/rtc-provider-credential.ts",
       "sha256": "f538f75eb136bbdadc78fa93780845ed5cf8e92408a1e269d4238ee211db1ea9"
+    },
+    {
+      "path": "src/types/rtc-provider-plugin-descriptor.ts",
+      "sha256": "33b3b41123fffc4c02a0ba4f65c0ed0ab3afdc19185631212e591becd20092f8"
+    },
+    {
+      "path": "src/types/rtc-provider-plugin-list-response.ts",
+      "sha256": "8b780da96eca8a5cbbe673c246a85ffd81b1c138636e343d4c696b74c264e29d"
+    },
+    {
+      "path": "src/types/rtc-provider-plugin-response.ts",
+      "sha256": "55d67f5aa27b7854a1297a06e5a785994f4d59efa2f8e82bc07d0c266fcada3c"
     },
     {
       "path": "src/types/rtc-provider-profile-command.ts",

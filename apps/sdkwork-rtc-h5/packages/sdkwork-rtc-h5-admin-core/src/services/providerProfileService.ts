@@ -34,7 +34,7 @@ export class ProviderProfileService {
       q: params?.search,
       sort: params?.sort,
     });
-    const page = readSdkWorkListPage<ProviderProfile>(response.data);
+    const page = readSdkWorkListPage<ProviderProfile>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor ?? null,
@@ -43,10 +43,10 @@ export class ProviderProfileService {
 
   async get(id: string): Promise<ProviderProfile> {
     const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.retrieve(id);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC provider profile not found: ${id}`);
     }
-    return readSdkWorkItem<ProviderProfile>(response.data);
+    return readSdkWorkItem<ProviderProfile>(response);
   }
 
   async create(command: ProviderProfileCommand): Promise<ProviderProfile> {
@@ -55,10 +55,10 @@ export class ProviderProfileService {
         typeof this.client.rtcProviderProfiles.rtc.providerProfiles.create
       >[0],
     );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider profile data");
     }
-    return readSdkWorkItem<ProviderProfile>(response.data);
+    return readSdkWorkItem<ProviderProfile>(response);
   }
 
   async update(id: string, command: ProviderProfileCommand): Promise<ProviderProfile> {
@@ -68,20 +68,20 @@ export class ProviderProfileService {
         typeof this.client.rtcProviderProfiles.rtc.providerProfiles.update
       >[1],
     );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider profile data");
     }
-    return readSdkWorkItem<ProviderProfile>(response.data);
+    return readSdkWorkItem<ProviderProfile>(response);
   }
 
   async disable(id: string, reason?: string): Promise<ProviderProfile> {
     const response = await this.client.rtcProviderProfiles.rtc.providerProfiles.disable(id, {
       reason,
     });
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider profile data");
     }
-    return readSdkWorkItem<ProviderProfile>(response.data);
+    return readSdkWorkItem<ProviderProfile>(response);
   }
 
   async verify(id: string, queryKind: string, timeoutMs?: number): Promise<unknown> {
@@ -91,7 +91,7 @@ export class ProviderProfileService {
       >[1]["queryKind"],
       timeoutMs,
     });
-    return response.data;
+    return response;
   }
 
   async configureCapabilities(
@@ -106,6 +106,6 @@ export class ProviderProfileService {
         disabledCapabilities,
       },
     );
-    return readSdkWorkItem<ProviderProfile>(response.data);
+    return readSdkWorkItem<ProviderProfile>(response);
   }
 }

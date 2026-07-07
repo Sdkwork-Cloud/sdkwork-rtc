@@ -25,6 +25,12 @@ class _AdminHomeState extends State<AdminHome> {
   List<ProviderPluginDescriptor> _plugins = [];
   List<ProviderWebhookEvent> _webhookEvents = [];
   List<Room> _rooms = [];
+  String? _roomsNextCursor;
+  String? _accountsNextCursor;
+  String? _profilesNextCursor;
+  String? _routesNextCursor;
+  String? _pluginsNextCursor;
+  String? _webhooksNextCursor;
 
   ProviderConfigSchema? _wizardSchema;
   ProviderPluginDescriptor? _selectedPlugin;
@@ -77,38 +83,88 @@ class _AdminHomeState extends State<AdminHome> {
         _services.profiles.list(),
         _services.schemas.listSchemas(),
       ]);
+      final profilesResult = results[0] as PaginatedListResult<ProviderProfile>;
       setState(() {
-        _profiles = results[0] as List<ProviderProfile>;
+        _profiles = profilesResult.items;
+        _profilesNextCursor = profilesResult.nextCursor;
         _schemas = results[1] as List<ProviderConfigSchema>;
       });
     });
   }
 
-  Future<void> _loadAccounts() async {
+  Future<void> _loadAccounts({bool loadMore = false}) async {
+    if (loadMore && (_accountsNextCursor == null || _accountsNextCursor!.isEmpty)) {
+      return;
+    }
     await _runLoad(() async {
-      final data = await _services.accounts.list();
-      setState(() => _accounts = data);
+      final result = await _services.accounts.list(
+        cursor: loadMore ? _accountsNextCursor : null,
+      );
+      setState(() {
+        if (loadMore) {
+          _accounts = [..._accounts, ...result.items];
+        } else {
+          _accounts = result.items;
+        }
+        _accountsNextCursor = result.nextCursor;
+      });
     });
   }
 
-  Future<void> _loadProfiles() async {
+  Future<void> _loadProfiles({bool loadMore = false}) async {
+    if (loadMore && (_profilesNextCursor == null || _profilesNextCursor!.isEmpty)) {
+      return;
+    }
     await _runLoad(() async {
-      final data = await _services.profiles.list();
-      setState(() => _profiles = data);
+      final result = await _services.profiles.list(
+        cursor: loadMore ? _profilesNextCursor : null,
+      );
+      setState(() {
+        if (loadMore) {
+          _profiles = [..._profiles, ...result.items];
+        } else {
+          _profiles = result.items;
+        }
+        _profilesNextCursor = result.nextCursor;
+      });
     });
   }
 
-  Future<void> _loadRoutes() async {
+  Future<void> _loadRoutes({bool loadMore = false}) async {
+    if (loadMore && (_routesNextCursor == null || _routesNextCursor!.isEmpty)) {
+      return;
+    }
     await _runLoad(() async {
-      final data = await _services.routes.list();
-      setState(() => _routes = data);
+      final result = await _services.routes.list(
+        cursor: loadMore ? _routesNextCursor : null,
+      );
+      setState(() {
+        if (loadMore) {
+          _routes = [..._routes, ...result.items];
+        } else {
+          _routes = result.items;
+        }
+        _routesNextCursor = result.nextCursor;
+      });
     });
   }
 
-  Future<void> _loadPlugins() async {
+  Future<void> _loadPlugins({bool loadMore = false}) async {
+    if (loadMore && (_pluginsNextCursor == null || _pluginsNextCursor!.isEmpty)) {
+      return;
+    }
     await _runLoad(() async {
-      final data = await _services.plugins.list();
-      setState(() => _plugins = data);
+      final result = await _services.plugins.list(
+        cursor: loadMore ? _pluginsNextCursor : null,
+      );
+      setState(() {
+        if (loadMore) {
+          _plugins = [..._plugins, ...result.items];
+        } else {
+          _plugins = result.items;
+        }
+        _pluginsNextCursor = result.nextCursor;
+      });
     });
   }
 
@@ -119,18 +175,67 @@ class _AdminHomeState extends State<AdminHome> {
     });
   }
 
-  Future<void> _loadRooms() async {
+  Future<void> _loadRooms({bool loadMore = false}) async {
+    if (loadMore && (_roomsNextCursor == null || _roomsNextCursor!.isEmpty)) {
+      return;
+    }
     await _runLoad(() async {
-      final data = await _services.rooms.list();
-      setState(() => _rooms = data);
+      final result = await _services.rooms.list(
+        cursor: loadMore ? _roomsNextCursor : null,
+        search: _roomFilter.search.isEmpty ? null : _roomFilter.search,
+        status: _roomFilter.status == 'all' ? null : _roomFilter.status,
+        ownerUserId:
+            _roomFilter.ownerUserId.isEmpty ? null : _roomFilter.ownerUserId,
+        createdAfter: roomDateRangeCreatedAfter(_roomFilter.dateRange),
+      );
+      setState(() {
+        if (loadMore) {
+          _rooms = [..._rooms, ...result.items];
+        } else {
+          _rooms = result.items;
+        }
+        _roomsNextCursor = result.nextCursor;
+      });
     });
   }
 
-  Future<void> _loadWebhooks() async {
+  void _onRoomFilterChanged(RoomFilterState value) {
+    setState(() => _roomFilter = value);
+    _loadRooms();
+  }
+
+  Future<void> _loadWebhooks({bool loadMore = false}) async {
+    if (loadMore && (_webhooksNextCursor == null || _webhooksNextCursor!.isEmpty)) {
+      return;
+    }
     await _runLoad(() async {
-      final data = await _services.webhooks.listEvents();
-      setState(() => _webhookEvents = data);
+      final result = await _services.webhooks.listEvents(
+        cursor: loadMore ? _webhooksNextCursor : null,
+      );
+      setState(() {
+        if (loadMore) {
+          _webhookEvents = [..._webhookEvents, ...result.items];
+        } else {
+          _webhookEvents = result.items;
+        }
+        _webhooksNextCursor = result.nextCursor;
+      });
     });
+  }
+
+  Widget _loadMoreButton({
+    required String label,
+    required String? nextCursor,
+    required VoidCallback onLoadMore,
+  }) {
+    final hasMore = nextCursor != null && nextCursor.isNotEmpty;
+    if (!hasMore) {
+      return const SizedBox.shrink();
+    }
+    return TextButton(
+      onPressed: _loading ? null : onLoadMore,
+      child: Text(_loading ? 'Loading...' : label),
+    );
   }
 
   Future<void> _handleWizardComplete(ProviderWizardResult result) async {
@@ -286,36 +391,69 @@ class _AdminHomeState extends State<AdminHome> {
         );
 
       case AdminRoute.accounts:
-        return ProviderAccountList(
-          accounts: _accounts,
-          onSelect: (_) {},
-          onDisable: (account) async {
-            await _services.accounts.disable(account.id);
-            await _loadAccounts();
-          },
+        return Column(
+          children: [
+            Expanded(
+              child: ProviderAccountList(
+                accounts: _accounts,
+                onSelect: (_) {},
+                onDisable: (account) async {
+                  await _services.accounts.disable(account.id);
+                  await _loadAccounts();
+                },
+              ),
+            ),
+            _loadMoreButton(
+              label: 'Load more accounts',
+              nextCursor: _accountsNextCursor,
+              onLoadMore: () => _loadAccounts(loadMore: true),
+            ),
+          ],
         );
 
       case AdminRoute.profiles:
-        return ProviderProfileList(
-          profiles: _profiles,
-          onSelect: (profile) => setState(() => _selectedProfile = profile),
-          onDisable: (profile) async {
-            await _services.profiles.disable(profile.id);
-            await _loadProfiles();
-          },
-          onVerify: (profile) async {
-            await _services.profiles.verify(profile.id, 'health');
-            await _loadProfiles();
-          },
+        return Column(
+          children: [
+            Expanded(
+              child: ProviderProfileList(
+                profiles: _profiles,
+                onSelect: (profile) => setState(() => _selectedProfile = profile),
+                onDisable: (profile) async {
+                  await _services.profiles.disable(profile.id);
+                  await _loadProfiles();
+                },
+                onVerify: (profile) async {
+                  await _services.profiles.verify(profile.id, 'health');
+                  await _loadProfiles();
+                },
+              ),
+            ),
+            _loadMoreButton(
+              label: 'Load more profiles',
+              nextCursor: _profilesNextCursor,
+              onLoadMore: () => _loadProfiles(loadMore: true),
+            ),
+          ],
         );
 
       case AdminRoute.routes:
-        return ProviderRouteList(
-          routes: _routes,
-          onDisable: (route) async {
-            await _services.routes.disable(route.id);
-            await _loadRoutes();
-          },
+        return Column(
+          children: [
+            Expanded(
+              child: ProviderRouteList(
+                routes: _routes,
+                onDisable: (route) async {
+                  await _services.routes.disable(route.id);
+                  await _loadRoutes();
+                },
+              ),
+            ),
+            _loadMoreButton(
+              label: 'Load more routes',
+              nextCursor: _routesNextCursor,
+              onLoadMore: () => _loadRoutes(loadMore: true),
+            ),
+          ],
         );
 
       case AdminRoute.providers:
@@ -328,7 +466,16 @@ class _AdminHomeState extends State<AdminHome> {
         return _buildRoomsPage();
 
       case AdminRoute.webhooks:
-        return ProviderWebhookEventList(events: _webhookEvents);
+        return Column(
+          children: [
+            Expanded(child: ProviderWebhookEventList(events: _webhookEvents)),
+            _loadMoreButton(
+              label: 'Load more events',
+              nextCursor: _webhooksNextCursor,
+              onLoadMore: () => _loadWebhooks(loadMore: true),
+            ),
+          ],
+        );
 
       case AdminRoute.queryJobs:
         return _buildQueryJobsPage();
@@ -346,12 +493,23 @@ class _AdminHomeState extends State<AdminHome> {
     }
 
     if (_selectedPlugin == null) {
-      return ProviderPluginList(
-        plugins: _plugins,
-        onSelect: (plugin) => setState(() {
-          _selectedPlugin = plugin;
-          _selectedProfile = null;
-        }),
+      return Column(
+        children: [
+          Expanded(
+            child: ProviderPluginList(
+              plugins: _plugins,
+              onSelect: (plugin) => setState(() {
+                _selectedPlugin = plugin;
+                _selectedProfile = null;
+              }),
+            ),
+          ),
+          _loadMoreButton(
+            label: 'Load more plugins',
+            nextCursor: _pluginsNextCursor,
+            onLoadMore: () => _loadPlugins(loadMore: true),
+          ),
+        ],
       );
     }
 
@@ -421,20 +579,19 @@ class _AdminHomeState extends State<AdminHome> {
   }
 
   Widget _buildRoomsPage() {
-    final filtered = filterRooms(_rooms, _roomFilter);
     return Column(
       children: [
         RoomFilterWidget(
           filter: _roomFilter,
-          onChanged: (value) => setState(() => _roomFilter = value),
-          onReset: () => setState(() => _roomFilter = RoomFilterState()),
+          onChanged: _onRoomFilterChanged,
+          onReset: () => _onRoomFilterChanged(RoomFilterState()),
           totalCount: _rooms.length,
-          filteredCount: filtered.length,
+          filteredCount: _rooms.length,
         ),
         const SizedBox(height: 8),
         Expanded(
           child: RoomListWidget(
-            rooms: filtered,
+            rooms: _rooms,
             onSelect: (_) {},
             selectedIds: _selectedRoomIds,
             onToggleSelect: (id) => setState(() {
@@ -445,20 +602,27 @@ class _AdminHomeState extends State<AdminHome> {
               }
             }),
             onSelectAll: () => setState(() {
-              if (_selectedRoomIds.length == filtered.length) {
+              if (_selectedRoomIds.length == _rooms.length) {
                 _selectedRoomIds.clear();
               } else {
                 _selectedRoomIds
                   ..clear()
-                  ..addAll(filtered.map((room) => room.id));
+                  ..addAll(_rooms.map((room) => room.id));
               }
             }),
-            allSelected: filtered.isNotEmpty && _selectedRoomIds.length == filtered.length,
+            allSelected: _rooms.isNotEmpty && _selectedRoomIds.length == _rooms.length,
           ),
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(onPressed: _loadRooms, child: const Text('Refresh')),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            _loadMoreButton(
+              label: 'Load more rooms',
+              nextCursor: _roomsNextCursor,
+              onLoadMore: () => _loadRooms(loadMore: true),
+            ),
+            TextButton(onPressed: () => _loadRooms(), child: const Text('Refresh')),
+          ],
         ),
       ],
     );

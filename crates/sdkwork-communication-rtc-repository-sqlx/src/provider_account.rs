@@ -135,6 +135,32 @@ impl RtcSqliteProviderAccountRepository {
             .collect()
     }
 
+    pub async fn list_hydration_provider_accounts_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderAccount>> {
+        let sql = provider_account_select_columns_sql(
+            r#"
+            WHERE tenant_id = ?
+              AND organization_id = ?
+              AND deleted_at IS NULL
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_provider_account)
+            .collect()
+    }
+
     pub async fn disable_provider_account(
         &self,
         provider_account_id: &str,
@@ -281,6 +307,32 @@ impl RtcSqliteProviderAccountRepository {
             .bind(provider_account_id)
             .bind(status)
             .bind(status)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_provider_application)
+            .collect()
+    }
+
+    pub async fn list_hydration_provider_applications_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderApplication>> {
+        let sql = provider_application_select_columns_sql(
+            r#"
+            WHERE tenant_id = ?
+              AND organization_id = ?
+              AND deleted_at IS NULL
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
             .fetch_all(&self.pool)
             .await?;
 
@@ -436,21 +488,55 @@ impl RtcSqliteProviderAccountRepository {
             .collect()
     }
 
+    pub async fn list_hydration_provider_credentials_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderCredential>> {
+        let sql = provider_credential_select_columns_sql(
+            r#"
+            WHERE tenant_id = ?
+              AND organization_id = ?
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_provider_credential)
+            .collect()
+    }
+
     pub async fn list_provider_accounts_page(
         &self,
         tenant_id: &str,
         organization_id: &str,
+        provider: Option<&str>,
+        status: Option<RtcProviderAccountStatus>,
         offset: usize,
         limit: usize,
         q: Option<&str>,
         sort_field: &str,
         sort_descending: bool,
     ) -> RtcStorageResult<Vec<RtcProviderAccount>> {
+        let status = status.as_ref().map(provider_account_status_to_i32);
         let mut where_parts = vec![
             "tenant_id = ?".to_string(),
             "organization_id = ?".to_string(),
             "deleted_at IS NULL".to_string(),
         ];
+        if provider.is_some() {
+            where_parts.push("provider = ?".to_string());
+        }
+        if status.is_some() {
+            where_parts.push("status = ?".to_string());
+        }
         let needle = q
             .map(str::trim)
             .filter(|value| !value.is_empty())
@@ -470,6 +556,12 @@ impl RtcSqliteProviderAccountRepository {
         let mut query = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(provider) = provider {
+            query = query.bind(provider);
+        }
+        if let Some(status) = status {
+            query = query.bind(status);
+        }
         if let Some(pattern) = needle.as_deref() {
             query = query
                 .bind(pattern)
@@ -747,6 +839,32 @@ impl RtcPostgresProviderAccountRepository {
             .collect()
     }
 
+    pub async fn list_hydration_provider_accounts_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderAccount>> {
+        let sql = postgres_provider_account_select_columns_sql(
+            r#"
+            WHERE tenant_id = $1
+              AND organization_id = $2
+              AND deleted_at IS NULL
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_provider_account)
+            .collect()
+    }
+
     pub async fn disable_provider_account(
         &self,
         provider_account_id: &str,
@@ -893,6 +1011,32 @@ impl RtcPostgresProviderAccountRepository {
             .bind(provider_account_id)
             .bind(status)
             .bind(status)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_provider_application)
+            .collect()
+    }
+
+    pub async fn list_hydration_provider_applications_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderApplication>> {
+        let sql = postgres_provider_application_select_columns_sql(
+            r#"
+            WHERE tenant_id = $1
+              AND organization_id = $2
+              AND deleted_at IS NULL
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
             .fetch_all(&self.pool)
             .await?;
 
@@ -1048,44 +1192,90 @@ impl RtcPostgresProviderAccountRepository {
             .collect()
     }
 
+    pub async fn list_hydration_provider_credentials_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderCredential>> {
+        let sql = postgres_provider_credential_select_columns_sql(
+            r#"
+            WHERE tenant_id = $1
+              AND organization_id = $2
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_provider_credential)
+            .collect()
+    }
+
     pub async fn list_provider_accounts_page(
         &self,
         tenant_id: &str,
         organization_id: &str,
+        provider: Option<&str>,
+        status: Option<RtcProviderAccountStatus>,
         offset: usize,
         limit: usize,
         q: Option<&str>,
         sort_field: &str,
         sort_descending: bool,
     ) -> RtcStorageResult<Vec<RtcProviderAccount>> {
+        let status = status.as_ref().map(provider_account_status_to_i32);
         let mut where_parts = vec![
             "tenant_id = $1".to_string(),
             "organization_id = $2".to_string(),
             "deleted_at IS NULL".to_string(),
         ];
+        let mut next_param = 3usize;
+        if provider.is_some() {
+            where_parts.push(format!("provider = ${next_param}"));
+            next_param += 1;
+        }
+        if status.is_some() {
+            where_parts.push(format!("status = ${next_param}"));
+            next_param += 1;
+        }
         let needle = q
             .map(str::trim)
             .filter(|value| !value.is_empty())
             .map(|value| format!("%{}%", value.to_ascii_lowercase()));
         if needle.is_some() {
-            where_parts.push(
-                "(LOWER(uuid) LIKE $3 OR LOWER(code) LIKE $4 OR LOWER(name) LIKE $5 OR LOWER(provider) LIKE $6)"
-                    .to_string(),
-            );
+            where_parts.push(format!(
+                "(LOWER(uuid) LIKE ${next_param} OR LOWER(code) LIKE ${} OR LOWER(name) LIKE ${} OR LOWER(provider) LIKE ${})",
+                next_param + 1,
+                next_param + 2,
+                next_param + 3
+            ));
+            next_param += 4;
         }
         let order_column = provider_account_sort_column(sort_field);
         let direction = if sort_descending { "DESC" } else { "ASC" };
-        let limit_param = if needle.is_some() { "$7" } else { "$3" };
-        let offset_param = if needle.is_some() { "$8" } else { "$4" };
+        let limit_param = next_param;
+        let offset_param = next_param + 1;
         let sql = postgres_provider_account_select_columns_sql(
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!(
-                "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
+                "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
             ),
         );
         let mut query = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
+        if let Some(provider) = provider {
+            query = query.bind(provider);
+        }
+        if let Some(status) = status {
+            query = query.bind(status);
+        }
         if let Some(pattern) = needle.as_deref() {
             query = query
                 .bind(pattern)

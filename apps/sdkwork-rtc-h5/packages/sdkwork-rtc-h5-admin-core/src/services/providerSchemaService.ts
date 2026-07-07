@@ -1,7 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderConfigSchema } from "../types/providerSchema";
-import { readSdkWorkItem } from "../sdk/index.js";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 export class ProviderSchemaService {
@@ -16,17 +16,17 @@ export class ProviderSchemaService {
 
   async listSchemas(): Promise<ProviderConfigSchema[]> {
     const response = await this.client.rtcProviderSchemas.rtc.providerSchemas.list();
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider schema data");
     }
-    return readSdkWorkItem<ProviderConfigSchema[]>(response.data);
+    return readSdkWorkListPage<ProviderConfigSchema>(response).items;
   }
 
   async getSchema(provider: string): Promise<ProviderConfigSchema> {
     const response = await this.client.rtcProviderSchemas.rtc.providerSchemas.retrieve(provider);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC provider schema not found: ${provider}`);
     }
-    return readSdkWorkItem<ProviderConfigSchema>(response.data);
+    return readSdkWorkItem<ProviderConfigSchema>(response);
   }
 }

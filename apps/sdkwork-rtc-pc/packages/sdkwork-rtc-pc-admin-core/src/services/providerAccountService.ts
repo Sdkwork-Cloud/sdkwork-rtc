@@ -35,7 +35,7 @@ export class ProviderAccountService {
       q: params?.search,
       sort: params?.sort,
     });
-    const page = readSdkWorkListPage<ProviderAccount>(response.data);
+    const page = readSdkWorkListPage<ProviderAccount>(response);
     return {
       items: page.items,
       nextCursor: page.nextCursor ?? null,
@@ -44,10 +44,10 @@ export class ProviderAccountService {
 
   async get(id: string): Promise<ProviderAccount> {
     const response = await this.client.rtcProviderAccounts.rtc.providerAccounts.retrieve(id);
-    if (!response.data) {
+    if (!response) {
       throw new Error(`RTC provider account not found: ${id}`);
     }
-    return readSdkWorkItem<ProviderAccount>(response.data);
+    return readSdkWorkItem<ProviderAccount>(response);
   }
 
   async create(command: ProviderAccountCommand): Promise<ProviderAccount> {
@@ -56,10 +56,10 @@ export class ProviderAccountService {
         typeof this.client.rtcProviderAccounts.rtc.providerAccounts.create
       >[0],
     );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider account data");
     }
-    return readSdkWorkItem<ProviderAccount>(response.data);
+    return readSdkWorkItem<ProviderAccount>(response);
   }
 
   async update(id: string, command: ProviderAccountCommand): Promise<ProviderAccount> {
@@ -69,19 +69,19 @@ export class ProviderAccountService {
         typeof this.client.rtcProviderAccounts.rtc.providerAccounts.update
       >[1],
     );
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider account data");
     }
-    return readSdkWorkItem<ProviderAccount>(response.data);
+    return readSdkWorkItem<ProviderAccount>(response);
   }
 
   async disable(id: string, reason?: string): Promise<ProviderAccount> {
     const response = await this.client.rtcProviderAccounts.rtc.providerAccounts.disable(id, {
       reason,
     });
-    if (!response.data) {
+    if (!response) {
       throw new Error("Invalid response: missing provider account data");
     }
-    return readSdkWorkItem<ProviderAccount>(response.data);
+    return readSdkWorkItem<ProviderAccount>(response);
   }
 }

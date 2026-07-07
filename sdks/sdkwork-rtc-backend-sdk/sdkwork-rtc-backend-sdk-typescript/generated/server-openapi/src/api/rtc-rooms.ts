@@ -10,6 +10,9 @@ export interface RtcRoomsRtcRoomsListParams {
   cursor?: string;
   sort?: string;
   q?: string;
+  status?: 'active' | 'archived' | 'disabled';
+  ownerUserId?: string;
+  createdAfter?: string;
 }
 
 export class RtcRoomsRtcRoomsApi {
@@ -28,6 +31,9 @@ export class RtcRoomsRtcRoomsApi {
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+      { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
+      { name: 'ownerUserId', value: params?.ownerUserId, style: 'form', explode: true, allowReserved: false },
+      { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
     return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/rooms`), query));
   }

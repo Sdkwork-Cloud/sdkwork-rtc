@@ -17,8 +17,8 @@ class RtcAdminSession {
 const defaultAdminPermissionScope = 'rtc.*';
 
 const defaultAdminSession = RtcAdminSession(
-  accessToken: 'dev-access-token',
-  authToken: 'dev-auth-token',
+  accessToken: '',
+  authToken: '',
   tenantId: 'default',
   organizationId: 'default',
   userId: 'admin',

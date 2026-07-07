@@ -1,6 +1,6 @@
-import 'package:sdkwork_rtc_app_sdk_generated_dart/app_client.dart';
+import 'package:sdkwork_rtc_app_sdk/sdkwork_rtc_app_sdk.dart' show SdkworkAppClient;
 
-export 'package:sdkwork_rtc_app_sdk_generated_dart/app_client.dart';
+export 'package:sdkwork_rtc_app_sdk/sdkwork_rtc_app_sdk.dart' show SdkworkAppClient;
 
 const appApiPrefix = '/app/v3/api';
 

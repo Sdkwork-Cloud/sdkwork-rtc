@@ -1,6 +1,8 @@
-import 'package:sdkwork_rtc_backend_sdk_generated_dart/backend_client.dart';
+import 'package:sdkwork_rtc_backend_sdk/sdkwork_rtc_backend_sdk.dart'
+    show SdkworkBackendClient;
 
-export 'package:sdkwork_rtc_backend_sdk_generated_dart/backend_client.dart';
+export 'package:sdkwork_rtc_backend_sdk/sdkwork_rtc_backend_sdk.dart'
+    show SdkworkBackendClient;
 
 const backendApiPrefix = '/backend/v3/api';
 

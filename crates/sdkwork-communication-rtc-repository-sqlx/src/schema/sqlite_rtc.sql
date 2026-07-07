@@ -19,6 +19,7 @@ CREATE TABLE rtc_room (
 CREATE INDEX idx_rtc_room_tenant_owner_status_updated
     ON rtc_room (tenant_id, organization_id, owner_user_id, status, updated_at);
 
+-- Reserved DDL for future persistent room membership. Active call participation uses rtc_media_participant.
 CREATE TABLE rtc_room_participant (
     id INTEGER NOT NULL,
     uuid TEXT NOT NULL,

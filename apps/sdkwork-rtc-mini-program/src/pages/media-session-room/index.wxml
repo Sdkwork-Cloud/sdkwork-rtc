@@ -13,11 +13,33 @@
 
     <view class="card">
       <text class="section-title">Join Session</text>
-      <input class="field" placeholder="Participant ID" value="{{participantId}}" bindinput="onParticipantInput" />
+      <text class="meta">Participant: {{participantId}}</text>
       <button class="primary" bindtap="onIssueCredential" loading="{{issuing}}">Issue Join Credential</button>
+      <button class="primary" bindtap="onJoinRoom" loading="{{joining}}">Join Media Room</button>
+      <button wx:if="{{mediaConnected}}" class="secondary" bindtap="onLeaveRoom">Leave Media Room</button>
       <text wx:if="{{joinMessage}}" class="join-message">{{joinMessage}}</text>
+      <text wx:if="{{mediaMessage}}" class="join-message">{{mediaMessage}}</text>
       <button wx:if="{{joinCredential}}" class="secondary" bindtap="onCopyCredential">Copy Join Credential</button>
       <text wx:if="{{joinCredential}}" class="credential-preview">{{joinCredential}}</text>
+    </view>
+
+    <view wx:if="{{mediaConnected}}" class="card media-card">
+      <text class="section-title">Local Preview</text>
+      <v-pusher
+        wx:if="{{pushUrl}}"
+        url="{{pushUrl}}"
+        enable-camera="{{true}}"
+        enable-mic="{{true}}"
+        beauty="{{0}}"
+        bind:pusherstatechange="onPusherStateChange"
+        bind:pushernetstatuschange="onPusherNetStatusChange"
+      />
+      <block wx:if="{{remoteStreams.length}}">
+        <text class="section-title">Remote Streams</text>
+        <block wx:for="{{remoteStreams}}" wx:key="id">
+          <v-player url="{{item.url}}" />
+        </block>
+      </block>
     </view>
   </block>
 </view>

@@ -7,8 +7,8 @@ export interface RtcAppSession {
 }
 
 export const DEFAULT_APP_SESSION: RtcAppSession = {
-  accessToken: "dev-access-token",
-  authToken: "dev-auth-token",
+  accessToken: "",
+  authToken: "",
   tenantId: "100001",
   organizationId: "default",
   userId: "1",

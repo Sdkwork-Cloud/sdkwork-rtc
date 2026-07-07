@@ -119,6 +119,28 @@ impl RtcSqliteProviderEventRepository {
             .collect()
     }
 
+    pub async fn list_hydration_webhook_events_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderWebhookEventRecord>> {
+        let sql = webhook_event_select_columns_sql(
+            "WHERE tenant_id = ? AND organization_id = ?",
+            "ORDER BY received_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_webhook_event_record)
+            .collect()
+    }
+
     pub async fn list_provider_query_jobs_for_scope(
         &self,
         tenant_id: &str,
@@ -139,6 +161,28 @@ impl RtcSqliteProviderEventRepository {
             .collect()
     }
 
+    pub async fn list_hydration_provider_query_jobs_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderQueryJobRecord>> {
+        let sql = provider_query_job_select_columns_sql(
+            "WHERE tenant_id = ? AND organization_id = ?",
+            "ORDER BY requested_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_provider_query_job_record)
+            .collect()
+    }
+
     pub async fn list_provider_query_snapshots_for_scope(
         &self,
         tenant_id: &str,
@@ -151,6 +195,28 @@ impl RtcSqliteProviderEventRepository {
         let rows = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(sqlite_row_to_provider_query_snapshot_record)
+            .collect()
+    }
+
+    pub async fn list_hydration_provider_query_snapshots_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderQuerySnapshotRecord>> {
+        let sql = provider_query_snapshot_select_columns_sql(
+            "WHERE tenant_id = ? AND organization_id = ?",
+            "ORDER BY captured_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
             .fetch_all(&self.pool)
             .await?;
 
@@ -517,6 +583,28 @@ impl RtcPostgresProviderEventRepository {
             .collect()
     }
 
+    pub async fn list_hydration_webhook_events_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderWebhookEventRecord>> {
+        let sql = postgres_webhook_event_select_columns_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2",
+            "ORDER BY received_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_webhook_event_record)
+            .collect()
+    }
+
     pub async fn list_provider_query_jobs_for_scope(
         &self,
         tenant_id: &str,
@@ -537,6 +625,28 @@ impl RtcPostgresProviderEventRepository {
             .collect()
     }
 
+    pub async fn list_hydration_provider_query_jobs_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderQueryJobRecord>> {
+        let sql = postgres_provider_query_job_select_columns_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2",
+            "ORDER BY requested_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_provider_query_job_record)
+            .collect()
+    }
+
     pub async fn list_provider_query_snapshots_for_scope(
         &self,
         tenant_id: &str,
@@ -549,6 +659,28 @@ impl RtcPostgresProviderEventRepository {
         let rows = sqlx::query(&sql)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
+            .fetch_all(&self.pool)
+            .await?;
+
+        rows.into_iter()
+            .map(postgres_row_to_provider_query_snapshot_record)
+            .collect()
+    }
+
+    pub async fn list_hydration_provider_query_snapshots_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderQuerySnapshotRecord>> {
+        let sql = postgres_provider_query_snapshot_select_columns_sql(
+            "WHERE tenant_id = $1 AND organization_id = $2",
+            "ORDER BY captured_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
             .fetch_all(&self.pool)
             .await?;
 

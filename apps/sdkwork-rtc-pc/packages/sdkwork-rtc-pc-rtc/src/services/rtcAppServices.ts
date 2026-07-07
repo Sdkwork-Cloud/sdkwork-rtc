@@ -1,4 +1,8 @@
-import { readSdkWorkItem, readSdkWorkListPage } from "@sdkwork/rtc-pc-core/sdk";
+import {
+  collectSdkWorkListPages,
+  readSdkWorkItem,
+  readSdkWorkListPage,
+} from "@sdkwork/rtc-pc-core/sdk";
 import type {
   RtcActiveProviderProfile,
   RtcCreateMediaSessionRequest,
@@ -45,12 +49,12 @@ export class MediaSessionService {
       q: params?.search,
       sort: params?.sort,
     });
-    return readSdkWorkListPage<RtcMediaSession>(response.data);
+    return readSdkWorkListPage<RtcMediaSession>(response);
   }
 
   async get(mediaSessionId: string): Promise<RtcMediaSession> {
     const response = await this.client.rtcMediaSessions.rtc.mediaSessions.retrieve(mediaSessionId);
-    return readSdkWorkItem<RtcMediaSession>(response.data);
+    return readSdkWorkItem<RtcMediaSession>(response);
   }
 
   async create(
@@ -61,7 +65,7 @@ export class MediaSessionService {
       idempotencyKey:
         options?.idempotencyKey ?? createRtcCommandIdempotencyKey("media-session-create"),
     });
-    return readSdkWorkItem<RtcMediaSession>(response.data);
+    return readSdkWorkItem<RtcMediaSession>(response);
   }
 }
 
@@ -69,9 +73,14 @@ export class ProviderProfileService {
   constructor(private readonly client: RtcAppSdkClient) {}
 
   async listActive(): Promise<RtcActiveProviderProfile[]> {
-    const response =
-      await this.client.rtcProviderProfiles.rtc.providerProfiles.active.list();
-    return readSdkWorkListPage<RtcActiveProviderProfile>(response.data).items;
+    return collectSdkWorkListPages(async (cursor) => {
+      const response =
+        await this.client.rtcProviderProfiles.rtc.providerProfiles.active.list({
+          pageSize: 200,
+          cursor,
+        });
+      return readSdkWorkListPage<RtcActiveProviderProfile>(response);
+    });
   }
 
   resolveDefaultProviderAppId(profiles: readonly RtcActiveProviderProfile[]): string | undefined {
@@ -109,7 +118,7 @@ export class ParticipantCredentialService {
             createRtcCommandIdempotencyKey("participant-credential-issue"),
         },
       );
-    const credential = readSdkWorkItem<{ credential: string }>(response.data);
+    const credential = readSdkWorkItem<{ credential: string }>(response);
     if (!credential.credential) {
       throw new Error("RTC participant credential was not issued");
     }

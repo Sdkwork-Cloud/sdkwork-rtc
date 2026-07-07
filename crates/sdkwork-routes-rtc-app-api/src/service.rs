@@ -16,6 +16,9 @@ pub type RtcAppApiFuture<T> = Pin<Box<dyn Future<Output = Result<T, RtcAppApiErr
 pub struct RtcListRequest {
     pub tenant_id: String,
     pub organization_id: Option<String>,
+    pub status: Option<String>,
+    pub owner_user_id: Option<String>,
+    pub created_after: Option<String>,
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,
@@ -40,6 +43,9 @@ impl From<&RtcListRequest> for RtcListWindowParams {
 #[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RtcAppListQuery {
+    pub status: Option<String>,
+    pub owner_user_id: Option<String>,
+    pub created_after: Option<String>,
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,

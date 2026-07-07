@@ -16,4 +16,6 @@ test("sdkwork-rtc mini program runtime bundle exports RTC helpers", () => {
   assert.match(source, /createMediaSession/u);
   assert.match(source, /getMediaSession/u);
   assert.match(source, /issueJoinCredential/u);
+  assert.match(source, /joinMediaSession/u);
+  assert.match(source, /leaveMediaSession/u);
 });

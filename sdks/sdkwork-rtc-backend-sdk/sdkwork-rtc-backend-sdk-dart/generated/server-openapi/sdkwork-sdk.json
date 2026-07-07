@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "language": "dart",
   "sdkType": "backend",
-  "packageName": "sdkwork-rtc-backend-sdk-generated-dart",
+  "packageName": "sdkwork-rtc-backend-sdk-generated-typescript",
+  "transportPackageName": "sdkwork-rtc-backend-sdk-generated-typescript",
+  "consumerPackageName": "@sdkwork/rtc-backend-sdk",
   "generator": "@sdkwork/sdk-generator",
   "capabilities": {
     "supportsGeneratedTests": true,

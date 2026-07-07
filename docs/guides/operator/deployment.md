@@ -23,13 +23,45 @@ CI builds the container image on release tags via `.github/workflows/rtc-server-
 Copy `deployments/templates/server.env.example` to a protected location and set:
 
 - `SDKWORK_RTC_ENVIRONMENT=production`
+- `SDKWORK_RTC_APP_CONTEXT_REQUIRE_SIGNATURE=true` — validates `x-sdkwork-context-signature` on incoming app-context headers; gateway refuses requests with missing or invalid signatures
+- `SDKWORK_RTC_APP_CONTEXT_SIGNATURE_SECRET` — shared HMAC secret (store in secret manager, not ConfigMap); **required** when `SDKWORK_RTC_APP_CONTEXT_REQUIRE_SIGNATURE=true`; must match the value used by upstream gateways or IAM proxies that sign `x-sdkwork-*` headers
+- `SDKWORK_RTC_HYDRATE_TENANT_ID` / `SDKWORK_RTC_HYDRATE_ORGANIZATION_ID` — tenant scope loaded into in-memory runtime at API server startup
 - `SDKWORK_RTC_DEPLOYMENT_PROFILE` — `standalone` or `cloud`
 - `SDKWORK_RTC_SERVICE_LAYOUT=split-services`
-- Database URL and pool settings (`SDKWORK_DATABASE_*`)
+- Database URL and pool settings (`SDKWORK_DATABASE_*` or `SDKWORK_RTC_DATABASE_*` / `SDKWORK_CLAW_DATABASE_*` per deployment template)
 - JWT / IAM verification settings consumed by `sdkwork-iam-web-adapter`
 - Provider plugin credentials (Volcengine, Tencent, Agora, Aliyun, LiveKit) via secret manager
 
 Production **requires** database persistence. The API server refuses to start without a configured RTC database when `SDKWORK_RTC_ENVIRONMENT` is not `development`, `dev`, `local`, or `test`.
+
+When `SDKWORK_RTC_DEPLOYMENT_PROFILE` is `production`, `staging`, or `prod`, the gateway also refuses to start if `SDKWORK_RTC_ENVIRONMENT` is still a development profile. Provider plugins reject unsigned credential placeholders in the same conditions.
+
+### App context signature (production)
+
+Upstream gateways or IAM proxies sign canonical `x-sdkwork-*` headers with HMAC-SHA256; RTC validates the `x-sdkwork-context-signature` header on every request (`sdkwork-rtc-app-context`).
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `SDKWORK_RTC_APP_CONTEXT_REQUIRE_SIGNATURE` | Yes (production) | Set `true`; gateway rejects missing or invalid signatures |
+| `SDKWORK_RTC_APP_CONTEXT_SIGNATURE_SECRET` | Yes when above is `true` | Shared HMAC secret — inject via secret manager, **not** the committed `server.env.example` (template enables signing but omits the secret) |
+
+The gateway validates signatures on every authenticated HTTP request. The reconcile worker does not accept HTTP traffic and does not read these variables.
+
+### Startup hydration caps
+
+Hydration bounds how many recent rows per entity type are loaded from SQL into the in-memory runtime on gateway startup. Queries select newest-first (`ORDER BY updated_at DESC`) with a SQL `LIMIT`; nested session children (tracks, artifacts, quality samples, completion records) load per hydrated media session. Caps prevent unbounded memory use after long-running deployments; rows outside the window remain in the database and are available via read-through retrieve on demand.
+
+| Env var | Default | Max | Loaded entities |
+| --- | --- | --- | --- |
+| `SDKWORK_RTC_HYDRATION_MAX_MEDIA_SESSIONS` | `200` | `2000` | Active/preparing/closing media sessions + nested children |
+| `SDKWORK_RTC_HYDRATION_MAX_ROOMS` | `500` | `5000` | Rooms |
+| `SDKWORK_RTC_HYDRATION_MAX_WEBHOOK_EVENTS` | `500` | `10000` | Provider webhook events |
+| `SDKWORK_RTC_HYDRATION_MAX_PROVIDER_QUERY_JOBS` | `200` | `5000` | Provider query jobs |
+| `SDKWORK_RTC_HYDRATION_MAX_PROVIDER_QUERY_SNAPSHOTS` | `200` | `5000` | Provider query snapshots |
+| `SDKWORK_RTC_HYDRATION_MAX_IDEMPOTENCY_RECORDS` | `500` | `10000` | Media session idempotency rows |
+| `SDKWORK_RTC_HYDRATION_MAX_SESSION_TOKEN_GRANTS` | `500` | `10000` | Session token grants (restart-safe revocation) |
+
+Raise caps only when a single tenant scope routinely exceeds defaults and memory headroom allows it. The reconcile worker skips gateway startup hydration env vars; it discovers scopes from `rtc_media_session` rows and hydrates each scope with the same caps before running reconciliation jobs.
 
 ## Deployment profiles
 
@@ -59,8 +91,9 @@ Binary: `sdkwork-rtc-reconcile`
 
 Runbook: `jobs/runbooks/rtc-session-reconciliation.md`
 
-- Discovers tenant scopes from active `rtc_media_session` rows.
-- Override scopes: `SDKWORK_RTC_RECONCILE_TENANT_SCOPES=tenant:org,tenant:org`
+- Skips gateway `SDKWORK_RTC_HYDRATE_*` bootstrap; discovers tenant scopes from `rtc_media_session` rows in `Preparing`, `Active`, `Closing`, or `Failed`, then hydrates each scope before reconciliation.
+- Override scopes: `SDKWORK_RTC_RECONCILE_TENANT_SCOPES=100:0,200:0` (`tenant_id:organization_id` segments)
+- Closes stale sessions, syncs provider drift when supported, compensates failed sessions with lingering provider ids, and runs recording-artifact lifecycle passes.
 - Exits non-zero when reconciliation failures remain (suitable for CronJob alerting).
 
 RTC does **not** call IM signaling APIs. Cross-service IM/RTC drift healing is owned by `sdkwork-im` per `docs/rtc-im-boundary.md`.

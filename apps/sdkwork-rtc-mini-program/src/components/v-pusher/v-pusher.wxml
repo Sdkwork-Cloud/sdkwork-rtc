@@ -1,0 +1,11 @@
+<live-pusher
+  wx:if="{{url}}"
+  url="{{url}}"
+  mode="RTC"
+  autopush="{{true}}"
+  enable-camera="{{enableCamera}}"
+  enable-mic="{{enableMic}}"
+  beauty="{{beauty}}"
+  bindstatechange="onStateChange"
+  bindnetstatus="onNetStatus"
+/>

@@ -1,9 +1,19 @@
 import { installWeixinFetch } from "@sdkwork/rtc-mp-host";
+import { createMiniProgramRtcMediaRuntime } from "@sdkwork/rtc-mp-rtc";
 
 import { bootstrap } from "./iamRuntime";
 import { createAppServices } from "./appServices";
 import { buildAppbaseLoginUrl } from "@sdkwork/rtc-mp-core";
 import { resolveEnvironment, saveRuntimeEnvironment } from "./environment";
+
+let mediaRuntimePromise: ReturnType<typeof createMiniProgramRtcMediaRuntime> | null = null;
+
+async function getMediaRuntime() {
+  if (!mediaRuntimePromise) {
+    mediaRuntimePromise = createMiniProgramRtcMediaRuntime();
+  }
+  return mediaRuntimePromise;
+}
 
 function getServices() {
   return createAppServices();
@@ -28,9 +38,12 @@ export function bootstrapRtcMiniProgram(query: Record<string, string | undefined
   bootstrap(query);
 }
 
-export async function listMediaSessions() {
-  const result = await getServices().mediaSessions.list();
-  return result.items.map(mapSessionSummary);
+export async function listMediaSessions(params?: { cursor?: string }) {
+  const result = await getServices().mediaSessions.list({ cursor: params?.cursor });
+  return {
+    items: result.items.map(mapSessionSummary),
+    nextCursor: result.nextCursor,
+  };
 }
 
 export async function createMediaSession(input: {
@@ -74,6 +87,63 @@ export async function issueJoinCredential(sessionId: string, participantId: stri
     roomId: session.roomId,
     mediaMode: session.mediaMode,
   };
+}
+
+export async function joinMediaSession(sessionId: string, participantId: string) {
+  const issued = await issueJoinCredential(sessionId, participantId);
+  const runtime = await getMediaRuntime();
+  const viewState = await runtime.join({
+    appId: issued.providerAppId,
+    sessionId,
+    roomId: issued.roomId,
+    participantId: participantId.trim(),
+    token: issued.credential,
+  });
+  return {
+    ...viewState,
+    credential: issued.credential,
+    providerAppId: issued.providerAppId,
+    roomId: issued.roomId,
+  };
+}
+
+export async function leaveMediaSession() {
+  const runtime = await getMediaRuntime();
+  await runtime.leave();
+}
+
+export function getMediaSessionRoomViewState() {
+  if (!mediaRuntimePromise) {
+    return Promise.resolve({
+      connected: false,
+      pushUrl: "",
+      remoteStreams: [],
+      message: "RTC media runtime has not been initialized.",
+    });
+  }
+  return mediaRuntimePromise.then((runtime) => runtime.getViewState());
+}
+
+export async function subscribeMediaSessionRoomViewState(
+  listener: (state: {
+    connected: boolean;
+    pushUrl: string;
+    remoteStreams: Array<{ id: string; uid: string; url: string; screen: boolean }>;
+    message: string;
+  }) => void,
+) {
+  const runtime = await getMediaRuntime();
+  return runtime.subscribeViewState(listener);
+}
+
+export async function reportMediaPusherStateChange(code: number, message: string) {
+  const runtime = await getMediaRuntime();
+  runtime.reportPusherStateChange(code, message);
+}
+
+export async function reportMediaPusherNetStatusChange(info: unknown) {
+  const runtime = await getMediaRuntime();
+  runtime.reportPusherNetStatusChange(info);
 }
 
 export function configureRtcRuntime(config: {

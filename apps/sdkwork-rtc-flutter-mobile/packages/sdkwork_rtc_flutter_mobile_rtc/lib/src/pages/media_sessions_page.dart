@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/media_session.dart';
 import '../models/media_session_view_state.dart';
+import '../services/media_session_service.dart';
 import '../services/rtc_app_services.dart';
 import '../widgets/media_session_create_form.dart';
 import '../widgets/media_session_list.dart';
@@ -77,6 +78,32 @@ class _MediaSessionsPageState extends State<MediaSessionsPage> {
     }
   }
 
+  Future<void> _loadMore() async {
+    if (_state.nextCursor == null || _state.loading) {
+      return;
+    }
+    setState(() => _state = _state.copyWith(loading: true, clearError: true));
+    try {
+      final response = await widget.services.mediaSessions.list(
+        MediaSessionListParams(cursor: _state.nextCursor),
+      );
+      setState(
+        () => _state = _state.copyWith(
+          sessions: [..._state.sessions, ...response.items],
+          nextCursor: response.nextCursor,
+          loading: false,
+        ),
+      );
+    } catch (error) {
+      setState(
+        () => _state = _state.copyWith(
+          loading: false,
+          error: error.toString(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -116,10 +143,21 @@ class _MediaSessionsPageState extends State<MediaSessionsPage> {
                 flex: 3,
                 child: _state.loading
                     ? const Center(child: CircularProgressIndicator())
-                    : MediaSessionList(
-                        sessions: _state.sessions,
-                        onSelect: (session) => widget.onOpenSession(session.id),
-                        onRefresh: _refresh,
+                    : Column(
+                        children: [
+                          Expanded(
+                            child: MediaSessionList(
+                              sessions: _state.sessions,
+                              onSelect: (session) => widget.onOpenSession(session.id),
+                              onRefresh: _refresh,
+                            ),
+                          ),
+                          if (_state.nextCursor != null)
+                            TextButton(
+                              onPressed: _state.loading ? null : _loadMore,
+                              child: const Text('Load more sessions'),
+                            ),
+                        ],
                       ),
               ),
             ],

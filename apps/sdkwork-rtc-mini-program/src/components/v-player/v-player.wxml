@@ -1,0 +1,8 @@
+<live-player
+  wx:if="{{url}}"
+  src="{{url}}"
+  mode="RTC"
+  autoplay="{{true}}"
+  bindstatechange="onStateChange"
+  bindnetstatus="onNetStatus"
+/>

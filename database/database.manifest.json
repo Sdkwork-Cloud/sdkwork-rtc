@@ -6,7 +6,8 @@
   "displayName": "RTC Database",
   "owner": "rtc-platform",
   "engines": [
-    "postgres"
+    "postgres",
+    "sqlite"
   ],
   "defaultEngine": "postgres",
   "tablePrefix": "rtc_",

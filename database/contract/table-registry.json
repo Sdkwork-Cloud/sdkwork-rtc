@@ -103,6 +103,12 @@
       "owner": "rtc-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
+    },
+    {
+      "table_name": "rtc_media_session_idempotency",
+      "owner": "rtc-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
     }
   ]
 }

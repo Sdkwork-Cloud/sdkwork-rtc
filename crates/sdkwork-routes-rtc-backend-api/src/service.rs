@@ -29,6 +29,8 @@ pub struct RtcBackendListRequest {
     pub organization_id: Option<String>,
     pub provider: Option<String>,
     pub status: Option<String>,
+    pub owner_user_id: Option<String>,
+    pub created_after: Option<String>,
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,
@@ -42,6 +44,8 @@ pub struct RtcBackendListRequest {
 pub struct RtcBackendListQuery {
     pub provider: Option<String>,
     pub status: Option<String>,
+    pub owner_user_id: Option<String>,
+    pub created_after: Option<String>,
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,

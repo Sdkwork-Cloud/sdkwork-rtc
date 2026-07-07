@@ -140,6 +140,31 @@ impl RtcSqliteProviderProfileRepository {
             .collect()
     }
 
+    pub async fn list_hydration_provider_profiles_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderProfile>> {
+        let sql = provider_profile_select_columns_sql(
+            r#"
+            WHERE tenant_id = ?
+              AND organization_id = ?
+              AND deleted_at IS NULL
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT ?",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
+        rows.into_iter()
+            .map(sqlite_row_to_provider_profile)
+            .collect()
+    }
+
     pub async fn list_active_provider_profiles(
         &self,
         tenant_id: &str,
@@ -480,6 +505,31 @@ impl RtcPostgresProviderProfileRepository {
             .fetch_all(&self.pool)
             .await?;
 
+        rows.into_iter()
+            .map(postgres_row_to_provider_profile)
+            .collect()
+    }
+
+    pub async fn list_hydration_provider_profiles_for_scope(
+        &self,
+        tenant_id: &str,
+        organization_id: &str,
+        limit: i64,
+    ) -> RtcStorageResult<Vec<RtcProviderProfile>> {
+        let sql = postgres_provider_profile_select_columns_sql(
+            r#"
+            WHERE tenant_id = $1
+              AND organization_id = $2
+              AND deleted_at IS NULL
+            "#,
+            "ORDER BY updated_at DESC, id DESC LIMIT $3",
+        );
+        let rows = sqlx::query(&sql)
+            .bind(parse_i64_field("tenant_id", tenant_id)?)
+            .bind(parse_i64_field("organization_id", organization_id)?)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await?;
         rows.into_iter()
             .map(postgres_row_to_provider_profile)
             .collect()

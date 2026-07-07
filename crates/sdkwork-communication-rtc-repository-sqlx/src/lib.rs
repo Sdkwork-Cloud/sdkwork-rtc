@@ -7,10 +7,12 @@ pub mod list_page;
 pub mod media_session;
 pub mod media_session_idempotency;
 pub mod persistence;
+pub mod persistence_list_pages;
 pub mod provider_account;
 pub mod provider_event;
 pub mod provider_profile;
 pub mod provider_route;
+pub mod session_token_grant;
 pub use completion_record::{
     RtcPostgresCompletionRecordRepository, RtcSqliteCompletionRecordRepository, RtcStorageError,
     RtcStorageResult,
@@ -32,6 +34,9 @@ pub use provider_profile::{
     RtcPostgresProviderProfileRepository, RtcSqliteProviderProfileRepository,
 };
 pub use provider_route::{RtcPostgresProviderRouteRepository, RtcSqliteProviderRouteRepository};
+pub use session_token_grant::{
+    RtcPostgresSessionTokenGrantRepository, RtcSqliteSessionTokenGrantRepository,
+};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RtcTableContract {
@@ -598,7 +603,8 @@ mod tests {
         RtcMediaSessionEndSource, RtcMediaSessionIdempotencyRecord, RtcMediaSessionMode,
         RtcMediaSessionStatus, RtcPersistenceChangeSet, RtcPersistencePort, RtcProviderEventKind,
         RtcProviderQueryJobRecord, RtcProviderQueryKind, RtcProviderQuerySnapshotRecord,
-        RtcProviderWebhookEventRecord, RtcRuntimeLoadRequest,
+        RtcProviderWebhookEventRecord, RtcRuntimeLoadRequest, RtcSessionTokenGrant,
+        RtcSessionTokenGrantStatus,
         media_session_create_idempotency_payload_hash, media_session_idempotency_record_id,
         utc_now_rfc3339_millis,
     };
@@ -890,6 +896,64 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn sqlite_persistence_port_loads_session_token_grants_in_runtime_snapshot() {
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect("sqlite::memory:")
+            .await
+            .expect("in-memory sqlite should start");
+        for statement in SQLITE_SCHEMA
+            .split(';')
+            .map(str::trim)
+            .filter(|statement| !statement.is_empty())
+        {
+            sqlx::query(statement)
+                .execute(&pool)
+                .await
+                .expect("rtc sqlite schema should apply");
+        }
+
+        let persistence = RtcSqlitePersistencePort::new(pool);
+        let grant = RtcSessionTokenGrant {
+            id: "grant-730".to_string(),
+            tenant_id: "730".to_string(),
+            organization_id: "731".to_string(),
+            session_id: "session-730".to_string(),
+            participant_id: "participant-730".to_string(),
+            provider_profile_id: Some("profile-730-731-acme-default".to_string()),
+            token_hash: "hash-730".to_string(),
+            scope: "rtc.join".to_string(),
+            expire_at: "2030-01-01T00:00:00.000Z".to_string(),
+            revoked_at: None,
+            created_at: utc_now_rfc3339_millis(),
+            status: RtcSessionTokenGrantStatus::Active,
+        };
+
+        persistence
+            .persist_changes(RtcPersistenceChangeSet {
+                session_token_grants: vec![grant.clone()],
+                ..RtcPersistenceChangeSet::default()
+            })
+            .await
+            .expect("session token grant should persist");
+
+        let snapshot = persistence
+            .load_runtime_snapshot(RtcRuntimeLoadRequest {
+                tenant_id: "730".to_string(),
+                organization_id: "731".to_string(),
+            })
+            .await
+            .expect("runtime snapshot should load");
+        assert_eq!(snapshot.session_token_grants.len(), 1);
+        assert_eq!(snapshot.session_token_grants[0].id, grant.id);
+        assert_eq!(snapshot.session_token_grants[0].session_id, "session-730");
+        assert_eq!(
+            snapshot.session_token_grants[0].status,
+            RtcSessionTokenGrantStatus::Active
+        );
+    }
+
     fn completed_session() -> RtcMediaSession {
         RtcMediaSession {
             id: "session-730".to_string(),
@@ -990,5 +1054,40 @@ mod tests {
             }),
             captured_at: "2026-06-10T00:10:05.000Z".to_string(),
         }
+    }
+
+    #[tokio::test]
+    async fn postgres_persistence_smoke_when_test_url_configured() {
+        let Some(database_url) = std::env::var("SDKWORK_RTC_POSTGRES_TEST_URL").ok() else {
+            return;
+        };
+
+        let pg_pool = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(2)
+            .connect(&database_url)
+            .await
+            .expect("postgres test url should connect");
+        for statement in POSTGRES_SCHEMA
+            .split(';')
+            .map(str::trim)
+            .filter(|statement| !statement.is_empty())
+        {
+            sqlx::query(statement)
+                .execute(&pg_pool)
+                .await
+                .expect("postgres rtc schema should apply");
+        }
+
+        let port = RtcPostgresPersistencePort::new(pg_pool);
+        let page = port
+            .list_rooms_page(sdkwork_communication_rtc_service::RtcScopedListQuery::new(
+                "100001",
+                "0",
+                sdkwork_communication_rtc_service::RtcListWindowParams::default(),
+            ))
+            .await
+            .expect("postgres rooms page should load");
+        assert!(page.next_cursor.is_none() || page.next_cursor.is_some());
+        let _ = page.items;
     }
 }

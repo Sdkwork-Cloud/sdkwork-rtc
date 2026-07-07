@@ -18,7 +18,7 @@ pnpm add sdkwork-rtc-app-sdk-generated-typescript
 import { SdkworkAppClient } from 'sdkwork-rtc-app-sdk-generated-typescript';
 
 const client = new SdkworkAppClient({
-  baseUrl: 'http://127.0.0.1:18088',
+  baseUrl: 'http://localhost:18088/app/v3/api',
   timeout: 30000,
 });
 
@@ -51,7 +51,7 @@ Access-Token: <accessToken>
 import { SdkworkAppClient } from 'sdkwork-rtc-app-sdk-generated-typescript';
 
 const client = new SdkworkAppClient({
-  baseUrl: 'http://127.0.0.1:18088',
+  baseUrl: 'http://localhost:18088/app/v3/api',
   timeout: 30000, // Request timeout in ms
   headers: {      // Custom headers
     'X-Custom-Header': 'value',
@@ -136,6 +136,9 @@ const params = {
   cursor: 'cursor',
   sort: 'sort',
   q: 'q',
+  status: 'active',
+  ownerUserId: 'ownerUserId',
+  createdAfter: 'createdAfter',
 };
 const result = await client.rtcRooms.rtc.rooms.list(params);
 ```

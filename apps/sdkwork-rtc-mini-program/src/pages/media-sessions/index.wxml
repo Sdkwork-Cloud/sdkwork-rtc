@@ -33,5 +33,14 @@
       </view>
     </block>
     <text wx:elif="{{!loading}}" class="empty">No media sessions found.</text>
+    <button
+      wx:if="{{nextCursor}}"
+      class="primary"
+      bindtap="loadMoreSessions"
+      loading="{{loadingMore}}"
+      disabled="{{loading || loadingMore}}"
+    >
+      {{loadingMore ? "Loading more..." : "Load more sessions"}}
+    </button>
   </view>
 </view>

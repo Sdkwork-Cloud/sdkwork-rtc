@@ -18,7 +18,9 @@ export function MediaSessionsPage({
   onOpenSession,
 }: MediaSessionsPageProps) {
   const [sessions, setSessions] = useState<RtcMediaSession[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +30,7 @@ export function MediaSessionsPage({
     try {
       const response = await services.mediaSessions.list();
       setSessions(response.items);
+      setNextCursor(response.nextCursor);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Failed to load media sessions";
       setError(message);
@@ -35,6 +38,24 @@ export function MediaSessionsPage({
       setLoading(false);
     }
   }, [services]);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loading || loadingMore) {
+      return;
+    }
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const response = await services.mediaSessions.list({ cursor: nextCursor });
+      setSessions((current) => [...current, ...response.items]);
+      setNextCursor(response.nextCursor);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "Failed to load more media sessions";
+      setError(message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loading, loadingMore, nextCursor, services]);
 
   useEffect(() => {
     void refresh();
@@ -82,6 +103,16 @@ export function MediaSessionsPage({
             onSelect={(session) => onOpenSession(session.id)}
             onRefresh={() => void refresh()}
           />
+          {nextCursor ? (
+            <button
+              type="button"
+              className="rtc-button-secondary"
+              disabled={loadingMore}
+              onClick={() => void loadMore()}
+            >
+              {loadingMore ? "Loading more..." : "Load more sessions"}
+            </button>
+          ) : null}
         </section>
       </div>
     </div>

@@ -5,31 +5,24 @@ Generated SDKWork v3 dual-token transport SDK.
 ## Installation
 
 ```bash
-dart pub add sdkwork_ai_prod_backend_sdk_generated_dart
+dart pub add sdkwork_rtc_backend_sdk_generated_dart
 ```
 
 ## Quick Start
 
 ```dart
-import 'package:sdkwork_ai_prod_backend_sdk_generated_dart/sdkwork_ai_prod_backend_sdk_generated_dart.dart';
+import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_generated_dart.dart';
 
 final client = SdkworkBackendClient(
   config: const SdkConfig(
-    baseUrl: 'http://127.0.0.1:18088',
+    baseUrl: 'http://localhost:18088/backend/v3/api',
   ),
 );
 client.setAuthToken('your-auth-token');
 client.setAccessToken('your-access-token');
 
 // Use the SDK
-final params = <String, dynamic>{
-  'page': 1,
-  'page_size': 2,
-  'cursor': 'cursor',
-  'sort': 'sort',
-  'q': 'q',
-};
-final result = await client.rtcMediaArtifacts.list(params);
+final result = await client.rtcProviderPlugins.list();
 print(result);
 ```
 
@@ -44,7 +37,7 @@ Access-Token: <accessToken>
 ## Configuration (Non-Auth)
 
 ```dart
-final client = SdkworkBackendClient.withBaseUrl(baseUrl: 'http://127.0.0.1:18088');
+final client = SdkworkBackendClient.withBaseUrl(baseUrl: 'http://localhost:18088/backend/v3/api');
 client.setHeader('X-Custom-Header', 'value');
 ```
 
@@ -133,14 +126,7 @@ print(result);
 
 ```dart
 // Rtc provider Plugins list.
-final params = <String, dynamic>{
-  'page': 1,
-  'page_size': 2,
-  'cursor': 'cursor',
-  'sort': 'sort',
-  'q': 'q',
-};
-final result = await client.rtcProviderPlugins.list(params);
+final result = await client.rtcProviderPlugins.list();
 print(result);
 ```
 
@@ -187,14 +173,7 @@ print(result);
 
 ```dart
 // Rtc provider Schemas list.
-final params = <String, dynamic>{
-  'page': 1,
-  'page_size': 2,
-  'cursor': 'cursor',
-  'sort': 'sort',
-  'q': 'q',
-};
-final result = await client.rtcProviderSchemas.list(params);
+final result = await client.rtcProviderSchemas.list();
 print(result);
 ```
 
@@ -238,6 +217,9 @@ final params = <String, dynamic>{
   'cursor': 'cursor',
   'sort': 'sort',
   'q': 'q',
+  'status': 'active',
+  'ownerUserId': '1',
+  'createdAfter': '2026-04-10T00:00:00Z',
 };
 final result = await client.rtcRooms.list(params);
 print(result);
@@ -247,14 +229,7 @@ print(result);
 
 ```dart
 try {
-  final params = <String, dynamic>{
-    'page': 1,
-    'page_size': 2,
-    'cursor': 'cursor',
-    'sort': 'sort',
-    'q': 'q',
-  };
-  final result = await client.rtcMediaArtifacts.list(params);
+  final result = await client.rtcProviderPlugins.list();
   print(result);
 } catch (error) {
   print('Error: $error');

@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "Media Session Room"
+  "navigationBarTitleText": "Media Session Room",
+  "usingComponents": {
+    "v-pusher": "../../components/v-pusher/v-pusher",
+    "v-player": "../../components/v-player/v-player"
+  }
 }

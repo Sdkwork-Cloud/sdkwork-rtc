@@ -18,8 +18,8 @@ const LEGACY_RTC_ADMIN_SESSION_STORAGE_KEY = "sdkwork.rtc.admin.session";
 export const DEFAULT_ADMIN_PERMISSION_SCOPE = "rtc.*";
 
 export const DEFAULT_ADMIN_SESSION: RtcAdminSession = {
-  accessToken: "dev-access-token",
-  authToken: "dev-auth-token",
+  accessToken: "",
+  authToken: "",
   tenantId: "100001",
   organizationId: "default",
   userId: "1",

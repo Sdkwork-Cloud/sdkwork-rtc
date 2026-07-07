@@ -61,6 +61,10 @@ const routeSources = [
 
 const HTTP_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
 const PROVIDER_WEBHOOK_RECEIVE_OPERATION_ID = "rtc.providerWebhooks.events.receive";
+const BOUNDED_CATALOG_LIST_OPERATIONS = new Set([
+  "rtc.providerPlugins.list",
+  "rtc.providerSchemas.list",
+]);
 const PROVIDER_WEBHOOK_SIGNATURE_HEADERS = [
   "X-Volc-Signature",
   "X-VolcEngine-Signature",
@@ -409,17 +413,34 @@ function buildOperation(source, route) {
     };
   }
 
-  if (isListOperation(route)) {
+  if (isPaginatedListOperation(route)) {
     operation.parameters.push(
       queryParameter("page", { type: "integer", minimum: 1, default: 1 }),
       queryParameter("page_size", { type: "integer", minimum: 1, maximum: 200, default: 20 }),
       queryParameter("cursor", { type: "string" }),
       queryParameter("sort", { type: "string" }),
       queryParameter("q", { type: "string" }),
+      ...operationListFilterParameters(route),
     );
   }
 
   return operation;
+}
+
+function operationListFilterParameters(route) {
+  switch (route.operationId) {
+    case "rtc.rooms.list":
+      return [
+        queryParameter("status", {
+          type: "string",
+          enum: ["active", "archived", "disabled"],
+        }),
+        queryParameter("ownerUserId", { type: "string" }),
+        queryParameter("createdAfter", { type: "string", format: "date-time" }),
+      ];
+    default:
+      return [];
+  }
 }
 
 function securityRequirement() {
@@ -1646,6 +1667,135 @@ function buildSchemas() {
       },
     }),
     RtcProviderRouteResponse: envelope({ $ref: "#/components/schemas/RtcProviderRoute" }),
+    RtcProviderPluginDescriptor: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "pluginId",
+        "domain",
+        "providerKind",
+        "displayName",
+        "interfaceVersion",
+        "configSchemaRef",
+        "defaultSelected",
+        "tenantOverrideAllowed",
+        "requiredCapabilities",
+        "optionalCapabilities",
+        "unsupportedFeatures",
+        "degradedBehaviors",
+      ],
+      properties: {
+        pluginId: { type: "string" },
+        domain: { type: "string", enum: ["rtc"] },
+        providerKind: { type: "string" },
+        displayName: { type: "string" },
+        interfaceVersion: { type: "string" },
+        configSchemaRef: { type: "string" },
+        defaultSelected: { type: "boolean" },
+        tenantOverrideAllowed: { type: "boolean" },
+        requiredCapabilities: { type: "array", items: { type: "string" } },
+        optionalCapabilities: { type: "array", items: { type: "string" } },
+        unsupportedFeatures: { type: "array", items: { type: "string" } },
+        degradedBehaviors: { type: "array", items: { type: "string" } },
+      },
+    },
+    RtcProviderPluginListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderPluginDescriptor" },
+        },
+      },
+    }),
+    RtcProviderPluginResponse: envelope({
+      $ref: "#/components/schemas/RtcProviderPluginDescriptor",
+    }),
+    RtcProviderConfigFieldSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["key", "label", "type"],
+      properties: {
+        key: { type: "string" },
+        label: { type: "string" },
+        type: { type: "string" },
+        required: { type: "boolean", default: false },
+        default: {},
+        placeholder: { type: ["string", "null"] },
+        values: { type: ["array", "null"], items: { type: "string" } },
+        min: { type: ["integer", "null"] },
+        max: { type: ["integer", "null"] },
+        hidden: { type: "boolean", default: false },
+      },
+    },
+    RtcProviderCredentialRoleSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["role", "label", "description", "fields"],
+      properties: {
+        role: { type: "string" },
+        label: { type: "string" },
+        description: { type: "string" },
+        fields: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderConfigFieldSchema" },
+        },
+      },
+    },
+    RtcProviderConfigSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "provider",
+        "displayName",
+        "description",
+        "accountFields",
+        "applicationFields",
+        "credentialRoles",
+        "profileFields",
+        "optionalCapabilities",
+        "requiredCapabilities",
+      ],
+      properties: {
+        provider: { type: "string" },
+        displayName: { type: "string" },
+        description: { type: "string" },
+        accountFields: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderConfigFieldSchema" },
+        },
+        applicationFields: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderConfigFieldSchema" },
+        },
+        credentialRoles: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderCredentialRoleSchema" },
+        },
+        profileFields: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderConfigFieldSchema" },
+        },
+        optionalCapabilities: { type: "array", items: { type: "string" } },
+        requiredCapabilities: { type: "array", items: { type: "string" } },
+      },
+    },
+    RtcProviderConfigSchemaListResponse: envelope({
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: { $ref: "#/components/schemas/RtcProviderConfigSchema" },
+        },
+      },
+    }),
+    RtcProviderConfigSchemaResponse: envelope({
+      $ref: "#/components/schemas/RtcProviderConfigSchema",
+    }),
     RtcQualitySample: {
       type: "object",
       additionalProperties: false,
@@ -2058,6 +2208,14 @@ function operationResponseSchemaName(route) {
       return "RtcProviderQueryJobResponse";
     case "rtc.providerQueryJobs.snapshots.list":
       return "RtcProviderQuerySnapshotListResponse";
+    case "rtc.providerPlugins.list":
+      return "RtcProviderPluginListResponse";
+    case "rtc.providerPlugins.retrieve":
+      return "RtcProviderPluginResponse";
+    case "rtc.providerSchemas.list":
+      return "RtcProviderConfigSchemaListResponse";
+    case "rtc.providerSchemas.retrieve":
+      return "RtcProviderConfigSchemaResponse";
     default:
       return "SdkWorkResourceResponse";
   }
@@ -2129,6 +2287,10 @@ function usesJsonBody(method) {
 
 function isListOperation(route) {
   return route.method.toLowerCase() === "get" && route.operationId.endsWith(".list");
+}
+
+function isPaginatedListOperation(route) {
+  return isListOperation(route) && !BOUNDED_CATALOG_LIST_OPERATIONS.has(route.operationId);
 }
 
 function compareRoutes(left, right) {

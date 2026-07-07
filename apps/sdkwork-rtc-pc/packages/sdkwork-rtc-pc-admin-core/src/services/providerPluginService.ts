@@ -1,9 +1,7 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
-import type { SdkWorkPageData } from "@sdkwork/utils";
-
 import type { ProviderPluginDescriptor } from "../types/providerSchema";
-import { readSdkWorkItem } from "../sdk/index.js";
+import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -35,15 +33,15 @@ export class ProviderPluginService {
       q: params?.search,
       sort: params?.sort,
     });
-    const page = readSdkWorkItem<SdkWorkPageData<ProviderPluginDescriptor>>(response.data);
+    const page = readSdkWorkListPage<ProviderPluginDescriptor>(response);
     return {
-      items: page.items ?? [],
-      nextCursor: page.pageInfo?.nextCursor ?? null,
+      items: page.items,
+      nextCursor: page.nextCursor ?? null,
     };
   }
 
   async get(provider: string): Promise<ProviderPluginDescriptor> {
     const response = await this.client.rtcProviderPlugins.rtc.providerPlugins.retrieve(provider);
-    return readSdkWorkItem<ProviderPluginDescriptor>(response.data);
+    return readSdkWorkItem<ProviderPluginDescriptor>(response);
   }
 }
