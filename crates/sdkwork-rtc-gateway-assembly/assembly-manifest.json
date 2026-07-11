@@ -4,7 +4,7 @@
   "applicationCode": "rtc",
   "packageName": "sdkwork-rtc-gateway-assembly",
   "crateDir": "crates/sdkwork-rtc-gateway-assembly",
-  "generatedAt": "2026-06-25T13:08:05.599Z",
+  "generatedAt": "2026-07-08T01:34:21.348Z",
   "routeCrates": [
     {
       "packageName": "sdkwork-routes-rtc-app-api",

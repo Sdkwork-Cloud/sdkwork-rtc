@@ -34,7 +34,7 @@ pub struct RtcBackendListRequest {
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,
-    pub limit: Option<u32>,
+    pub page_size: Option<u32>,
     pub q: Option<String>,
     pub sort: Option<String>,
 }
@@ -49,7 +49,7 @@ pub struct RtcBackendListQuery {
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,
-    pub limit: Option<u32>,
+    pub page_size: Option<u32>,
     pub q: Option<String>,
     pub sort: Option<String>,
 }
@@ -60,7 +60,7 @@ impl From<&RtcBackendListQuery> for sdkwork_communication_rtc_service::RtcListWi
             page: query.page,
             page_size: query.page_size,
             cursor: query.cursor.clone(),
-            limit: query.limit,
+            limit: query.page_size,
             q: query.q.clone(),
             sort: query.sort.clone(),
         }
@@ -73,7 +73,7 @@ impl From<&RtcBackendListRequest> for sdkwork_communication_rtc_service::RtcList
             page: request.page,
             page_size: request.page_size,
             cursor: request.cursor.clone(),
-            limit: request.limit,
+            limit: request.page_size,
             q: request.q.clone(),
             sort: request.sort.clone(),
         }

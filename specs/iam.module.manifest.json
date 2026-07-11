@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.iam.module",
+  "moduleId": "rtc",
+  "domain": "rtc",
+  "permissions": {
+    "catalog": [
+      {
+        "code": "rtc.media_artifacts.read",
+        "description": "Permission rtc.media_artifacts.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.media_sessions.close",
+        "description": "Permission rtc.media_sessions.close",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.media_sessions.credentials.issue",
+        "description": "Permission rtc.media_sessions.credentials.issue",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.media_sessions.read",
+        "description": "Permission rtc.media_sessions.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.media_sessions.write",
+        "description": "Permission rtc.media_sessions.write",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_accounts.read",
+        "description": "Permission rtc.provider_accounts.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_accounts.write",
+        "description": "Permission rtc.provider_accounts.write",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_applications.read",
+        "description": "Permission rtc.provider_applications.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_applications.write",
+        "description": "Permission rtc.provider_applications.write",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_credentials.read",
+        "description": "Permission rtc.provider_credentials.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_credentials.write",
+        "description": "Permission rtc.provider_credentials.write",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_plugins.read",
+        "description": "Permission rtc.provider_plugins.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_profiles.read",
+        "description": "Permission rtc.provider_profiles.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_profiles.verify",
+        "description": "Permission rtc.provider_profiles.verify",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_profiles.write",
+        "description": "Permission rtc.provider_profiles.write",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_query_jobs.read",
+        "description": "Permission rtc.provider_query_jobs.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_query_jobs.write",
+        "description": "Permission rtc.provider_query_jobs.write",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_routes.read",
+        "description": "Permission rtc.provider_routes.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_routes.write",
+        "description": "Permission rtc.provider_routes.write",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_schemas.read",
+        "description": "Permission rtc.provider_schemas.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_webhooks.read",
+        "description": "Permission rtc.provider_webhooks.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.provider_webhooks.receive",
+        "description": "Permission rtc.provider_webhooks.receive",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.quality.read",
+        "description": "Permission rtc.quality.read",
+        "source": "openapi"
+      },
+      {
+        "code": "rtc.rooms.read",
+        "description": "Permission rtc.rooms.read",
+        "source": "openapi"
+      }
+    ]
+  }
+}

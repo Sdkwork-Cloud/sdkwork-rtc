@@ -54,13 +54,14 @@
     "transportEntry": "sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/src/index.ts"
   },
   "workspace": "sdkwork-rtc-backend-sdk",
-  "authoritySpec": "openapi/sdkwork-rtc-backend-api.openapi.json",
+  "authoritySpec": "../../apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json",
   "derivedSpecs": {
     "default": "openapi/sdkwork-rtc-backend-api.sdkgen.json"
   },
   "discoverySurface": {
     "sdkTarget": "backend",
     "apiPrefix": "/backend/v3/api",
+    "schemaUrl": "/backend/v3/openapi.json",
     "generatedProtocols": [
       "http-openapi"
     ],
@@ -122,5 +123,8 @@
       "name": "github.com/sdkwork/sdkwork-rtc-backend-sdk",
       "version": "0.1.0"
     }
-  ]
+  ],
+  "title": "SDKWork RTC Backend API SDK",
+  "apiVersion": "0.1.0",
+  "openapiVersion": "3.1.2"
 }

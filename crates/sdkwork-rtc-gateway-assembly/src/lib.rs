@@ -1,11 +1,10 @@
 //! Gateway assembly for sdkwork-rtc.
+//! Application bootstrap lives in `bootstrap.rs`; route inventory is in `assembly-manifest.json`.
 
 mod bootstrap;
 mod generated;
 
-pub use bootstrap::{
-    ApplicationAssembly, assemble_application_router, assemble_application_router_with_service,
-};
+pub use bootstrap::{assemble_application_router, ApplicationAssembly};
 
 pub fn assembly_route_count() -> usize {
     generated::ROUTE_CRATE_COUNT
