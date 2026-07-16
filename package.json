@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev": "pnpm run dev:browser:postgres:split-services:standalone",
+    "stop": "node ../sdkwork-specs/tools/stop-sdkwork-workspace-processes.mjs --workspace .",    "dev": "pnpm run dev:browser:postgres:split-services:standalone",
     "dev:browser:postgres:split-services:standalone": "node scripts/rtc-dev.mjs --deployment-profile standalone --service-layout split-services --target pc",
     "dev:browser:postgres:split-services:cloud": "node scripts/rtc-dev.mjs --deployment-profile cloud --service-layout split-services --target pc",
     "dev:browser:postgres:split-services:standalone:local": "node scripts/rtc-dev.mjs --deployment-profile standalone --service-layout split-services --target h5",

@@ -20,13 +20,13 @@ async function loadLanguageWorkspaceCatalog() {
 }
 
 function readAssemblyProviders() {
-  const assemblyPath = path.resolve('..', '.sdkwork-assembly.json');
+  const assemblyPath = path.resolve('..', 'sdk-manifest.json');
   const assembly = JSON.parse(readFileSync(assemblyPath, 'utf8'));
   return assembly.providers;
 }
 
 function readAssembly() {
-  const assemblyPath = path.resolve('..', '.sdkwork-assembly.json');
+  const assemblyPath = path.resolve('..', 'sdk-manifest.json');
   return JSON.parse(readFileSync(assemblyPath, 'utf8'));
 }
 

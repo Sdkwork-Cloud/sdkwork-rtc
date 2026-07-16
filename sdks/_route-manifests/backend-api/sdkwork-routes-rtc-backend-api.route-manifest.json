@@ -959,7 +959,7 @@
     {
       "method": "PUT",
       "path": "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/capabilities",
-      "operationId": "rtc.providerProfiles.capabilities.configure",
+      "operationId": "rtc.providerProfiles.capabilities.update",
       "tags": [
         "rtcProviderProfiles"
       ],
@@ -1415,7 +1415,7 @@
     {
       "method": "POST",
       "path": "/backend/v3/api/rtc/provider_webhooks/{provider}/events",
-      "operationId": "rtc.providerWebhooks.events.receive",
+      "operationId": "rtc.providerWebhooks.events.create",
       "tags": [
         "rtcProviderWebhooks"
       ],

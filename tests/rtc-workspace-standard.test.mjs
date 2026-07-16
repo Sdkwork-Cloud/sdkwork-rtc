@@ -601,8 +601,8 @@ test("sdkwork-rtc manifests and tools use standard paths and route crate names",
     "sdks/materialize-rtc-v3-openapi-boundaries.mjs",
     "sdks/sdkwork-rtc-app-sdk/sdk-manifest.json",
     "sdks/sdkwork-rtc-backend-sdk/sdk-manifest.json",
-    "sdks/sdkwork-rtc-app-sdk/.sdkwork-assembly.json",
-    "sdks/sdkwork-rtc-backend-sdk/.sdkwork-assembly.json",
+    "sdks/sdkwork-rtc-app-sdk/sdk-manifest.json",
+    "sdks/sdkwork-rtc-backend-sdk/sdk-manifest.json",
   ]) {
     const source = read(filePath);
     assert.doesNotMatch(source, /generated[\\/]openapi/u, `${filePath} must not reference generated/openapi`);

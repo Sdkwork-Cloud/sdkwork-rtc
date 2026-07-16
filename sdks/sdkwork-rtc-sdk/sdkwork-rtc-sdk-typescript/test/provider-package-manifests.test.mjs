@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDir, '..');
 const providersRoot = path.join(packageRoot, 'providers');
-const assemblyPath = path.resolve(packageRoot, '..', '.sdkwork-assembly.json');
+const assemblyPath = path.resolve(packageRoot, '..', 'sdk-manifest.json');
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf8'));

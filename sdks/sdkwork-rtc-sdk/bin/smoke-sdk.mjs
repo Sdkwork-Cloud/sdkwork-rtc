@@ -210,7 +210,7 @@ function printSummary(requiredResults, optionalPassed, optionalSkipped) {
 }
 
 function assertAssembly(workspaceRoot) {
-  const assemblyPath = path.join(workspaceRoot, '.sdkwork-assembly.json');
+  const assemblyPath = path.join(workspaceRoot, 'sdk-manifest.json');
   if (!existsSync(assemblyPath)) {
     fail(`RTC assembly descriptor is missing: ${assemblyPath}`);
   }

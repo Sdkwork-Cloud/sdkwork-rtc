@@ -20,7 +20,7 @@ import { getReservedLanguageRootPublicContract } from '../bin/verify-sdk-languag
 import { verifyRtcSdkWorkspace } from '../bin/verify-sdk.mjs';
 
 const workspaceRoot = resolveRtcSdkWorkspaceRoot(import.meta.url);
-const assemblyPath = path.join(workspaceRoot, '.sdkwork-assembly.json');
+const assemblyPath = path.join(workspaceRoot, 'sdk-manifest.json');
 const sdksReadmePath = resolveRtcSdkSdksReadmePath(import.meta.url);
 
 function joined(parts, separator = '') {

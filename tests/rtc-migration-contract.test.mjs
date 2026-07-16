@@ -3147,7 +3147,7 @@ test("sdkwork-rtc capability keys use media runtime terms instead of call workfl
     "configs/provider-schemas/tencent.json",
     "configs/provider-schemas/agora.json",
     "configs/provider-schemas/livekit.json",
-    "sdks/sdkwork-rtc-sdk/.sdkwork-assembly.json",
+    "sdks/sdkwork-rtc-sdk/sdk-manifest.json",
     "sdks/sdkwork-rtc-sdk/bin/rtc-standard-contract-constants.mjs",
     "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/capability-catalog.ts",
     "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/provider-catalog.ts",
@@ -3165,7 +3165,7 @@ test("sdkwork-rtc capability keys use media runtime terms instead of call workfl
   assert.deepEqual(matches, []);
 
   const assembly = readFileSync(
-    workspacePath(rtcRoot, "sdks/sdkwork-rtc-sdk/.sdkwork-assembly.json"),
+    workspacePath(rtcRoot, "sdks/sdkwork-rtc-sdk/sdk-manifest.json"),
     "utf8",
   );
   assert.match(assembly, /"capabilityKey":\s*"media\.audio"/);
@@ -3576,7 +3576,7 @@ test("sdkwork-rtc builtin provider capability declarations stay aligned across p
     ]),
   );
   const assembly = JSON.parse(
-    readFileSync(workspacePath(rtcRoot, "sdks/sdkwork-rtc-sdk/.sdkwork-assembly.json"), "utf8"),
+    readFileSync(workspacePath(rtcRoot, "sdks/sdkwork-rtc-sdk/sdk-manifest.json"), "utf8"),
   );
   const providerCatalogSource = readFileSync(
     workspacePath(

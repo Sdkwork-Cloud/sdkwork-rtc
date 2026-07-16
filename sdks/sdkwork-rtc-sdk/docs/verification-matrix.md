@@ -40,7 +40,7 @@ node .\bin\verify-sdk.mjs
 
 The verifier must confirm:
 
-- `.sdkwork-assembly.json` parses and matches the standard baseline
+- `sdk-manifest.json` parses and matches the standard baseline
 - provider selection, support, activation, package boundary, capability, runtime surface, runtime
   immutability, root-public surface, lookup-helper naming, and error-code vocabularies are present
 - exactly one default provider is selected

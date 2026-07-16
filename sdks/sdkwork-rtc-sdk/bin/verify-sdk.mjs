@@ -317,7 +317,7 @@ function assertRuntimeDocs(workspaceRoot) {
 }
 
 export function verifyRtcSdkWorkspace(workspaceRoot) {
-  const assembly = readJsonFile(path.join(workspaceRoot, '.sdkwork-assembly.json'));
+  const assembly = readJsonFile(path.join(workspaceRoot, 'sdk-manifest.json'));
   assertAssembly(assembly);
   assertFilesExist(workspaceRoot, RTC_ROOT_REQUIRED_CONTRACT_FILES, 'root contract');
   assertFilesExist(workspaceRoot, RTC_TYPESCRIPT_REQUIRED_STANDARD_FILES, 'TypeScript standard');

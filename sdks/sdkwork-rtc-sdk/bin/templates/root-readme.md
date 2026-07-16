@@ -22,7 +22,7 @@ This workspace owns:
 - runtime immutability rules for assembly-driven metadata and runtime context snapshots
 - TypeScript and Flutter provider-plugin media runtime baselines
 - reserved scaffold boundaries for Rust, Java, C#, Swift, Kotlin, Go, and Python
-- documentation and verification assets generated from `.sdkwork-assembly.json`
+- documentation and verification assets generated from `sdk-manifest.json`
 
 This workspace does not own:
 
@@ -52,7 +52,7 @@ runtime behavior through the selected provider adapter.
 ## Materialization
 
 The root materializer keeps docs, catalog source files, workspace READMEs, and reserved-language
-scaffolds aligned to `.sdkwork-assembly.json`:
+scaffolds aligned to `sdk-manifest.json`:
 
 ```powershell
 node .\bin\materialize-sdk.mjs

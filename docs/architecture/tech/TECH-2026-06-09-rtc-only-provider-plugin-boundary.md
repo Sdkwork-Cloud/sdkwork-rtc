@@ -117,7 +117,7 @@ Expected: backend OpenAPI and route manifest use media session naming and no inv
 ### Task 4: SDK Plugin-Only Root
 
 **Files:**
-- Modify: `sdks/sdkwork-rtc-sdk/.sdkwork-assembly.json`
+- Modify: `sdks/sdkwork-rtc-sdk/sdk-manifest.json`
 - Modify: `sdks/sdkwork-rtc-sdk/bin/materialize-sdk.mjs`
 - Modify: `sdks/sdkwork-rtc-sdk/bin/materialize-sdk-reserved-scaffolds.mjs`
 - Regenerate SDK language/catalog files with `node sdks\sdkwork-rtc-sdk\bin\materialize-sdk.mjs`

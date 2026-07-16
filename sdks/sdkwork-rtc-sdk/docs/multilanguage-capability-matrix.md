@@ -1,6 +1,6 @@
 # RTC SDK Multilanguage Capability Matrix
 
-This matrix is materialized from `.sdkwork-assembly.json` so the official provider tiers, language
+This matrix is materialized from `sdk-manifest.json` so the official provider tiers, language
 support boundaries, and maturity tiers stay exact and verifiable.
 
 ## Provider Tier Semantics

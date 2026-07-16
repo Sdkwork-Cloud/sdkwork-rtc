@@ -5,7 +5,7 @@ import {
 
 export const RTC_ROOT_REQUIRED_CONTRACT_FILES = Object.freeze([
   '.gitignore',
-  '.sdkwork-assembly.json',
+  'sdk-manifest.json',
   'README.md',
   'bin/generator-runtime.mjs',
   'bin/materialize-sdk.mjs',

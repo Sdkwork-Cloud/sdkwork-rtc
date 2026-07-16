@@ -14,7 +14,7 @@ This directory contains the materialized standards for `sdkwork-rtc-sdk`.
 
 ## Source Of Truth
 
-`.sdkwork-assembly.json` drives:
+`sdk-manifest.json` drives:
 
 - provider catalog metadata
 - capability catalog metadata

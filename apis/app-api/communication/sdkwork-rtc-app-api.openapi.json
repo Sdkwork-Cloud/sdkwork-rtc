@@ -212,7 +212,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -533,7 +533,7 @@
           "rtcParticipantCredentials"
         ],
         "summary": "Rtc media Sessions participant Credentials issue.",
-        "operationId": "rtc.mediaSessions.participantCredentials.issue",
+        "operationId": "rtc.mediaSessions.participantCredentials.create",
         "parameters": [
           {
             "name": "mediaSessionId",
@@ -564,7 +564,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
