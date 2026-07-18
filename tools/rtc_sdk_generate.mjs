@@ -10,6 +10,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 
 const HTTP_METHODS = new Set(["get", "post", "put", "patch", "delete"]);
 const OFFICIAL_LANGUAGE_ORDER = ["typescript", "dart", "rust", "java", "python", "go"];
@@ -72,6 +73,7 @@ const driveBackendSdkDependency = {
 const families = [
   {
     familyName: "sdkwork-rtc-app-sdk",
+    consumerPackageName: "@sdkwork/rtc-app-sdk",
     authorityName: "sdkwork-rtc-app-api",
     sdkType: "app",
     apiPrefix: "/app/v3/api",
@@ -80,10 +82,13 @@ const families = [
       "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
     sourceOpenapi: "apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
     defaultBaseUrl: "http://127.0.0.1:18088",
+    schemaUrl: "/app/v3/openapi.json",
+    title: "SDKWork RTC App API SDK",
     sdkDependencies: [providerRuntimeSdkDependency, driveAppSdkDependency],
   },
   {
     familyName: "sdkwork-rtc-backend-sdk",
+    consumerPackageName: "@sdkwork/rtc-backend-sdk",
     authorityName: "sdkwork-rtc-backend-api",
     sdkType: "backend",
     apiPrefix: "/backend/v3/api",
@@ -92,6 +97,8 @@ const families = [
       "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
     sourceOpenapi: "apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json",
     defaultBaseUrl: "http://127.0.0.1:18088",
+    schemaUrl: "/backend/v3/openapi.json",
+    title: "SDKWork RTC Backend API SDK",
     sdkDependencies: [providerRuntimeSdkDependency, driveBackendSdkDependency],
   },
 ];
@@ -117,11 +124,25 @@ function ensureGeneratedTypescriptDist(family) {
   if (!existsSync(packageJson)) {
     throw new Error(`missing generated TypeScript package for ${family.familyName}`);
   }
-  const install = spawnSync("npm", ["install"], { cwd: outputPath, stdio: "inherit" });
+  const runNpm = (args) =>
+    process.platform === "win32"
+      ? spawnSync(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", `npm ${args.join(" ")}`], {
+          cwd: outputPath,
+          stdio: "inherit",
+        })
+      : spawnSync("npm", args, { cwd: outputPath, stdio: "inherit" });
+
+  const install = runNpm(["install"]);
+  if (install.error) {
+    throw new Error(`failed to start npm install for ${family.familyName}: ${install.error.message}`);
+  }
   if (install.status !== 0) {
     throw new Error(`failed to install generated TypeScript SDK deps for ${family.familyName}`);
   }
-  const build = spawnSync("npm", ["run", "build"], { cwd: outputPath, stdio: "inherit" });
+  const build = runNpm(["run", "build"]);
+  if (build.error) {
+    throw new Error(`failed to start npm build for ${family.familyName}: ${build.error.message}`);
+  }
   if (build.status !== 0) {
     throw new Error(`failed to build generated TypeScript SDK dist for ${family.familyName}`);
   }
@@ -145,6 +166,17 @@ function readJson(filePath) {
 function writeJson(filePath, value) {
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function materializeJson(filePath, value, check) {
+  if (!check) {
+    writeJson(filePath, value);
+    return;
+  }
+  if (!existsSync(filePath) || !isDeepStrictEqual(readJson(filePath), value)) {
+    const relativePath = path.relative(workspaceRoot, filePath).replaceAll("\\", "/");
+    throw new Error(`${relativePath} is stale; run pnpm sdk:generate`);
+  }
 }
 
 function collectOperations(openapi) {
@@ -225,12 +257,12 @@ function validateRouteManifest(family, openapiOperations) {
         throw new Error(`${route.operationId} manifest source package mismatch`);
       }
       const expectedAuthMode =
-        route.operationId === "rtc.providerWebhooks.events.receive" ? "public" : "dual-token";
+        route.operationId === "rtc.providerWebhooks.events.create" ? "public" : "dual-token";
       if (route.auth?.mode !== expectedAuthMode) {
         throw new Error(`${route.operationId} manifest auth mode must be ${expectedAuthMode}`);
       }
       if (
-        route.operationId === "rtc.providerWebhooks.events.receive" &&
+        route.operationId === "rtc.providerWebhooks.events.create" &&
         route.auth?.providerWebhookSignature !== true
       ) {
         throw new Error(`${route.operationId} manifest must require provider webhook signature`);
@@ -278,7 +310,7 @@ function validateOpenapi(family, openapi) {
     if (!operation.permission?.startsWith("rtc.")) {
       throw new Error(`${operation.operationId} permission mismatch`);
     }
-    if (operation.operationId === "rtc.providerWebhooks.events.receive") {
+    if (operation.operationId === "rtc.providerWebhooks.events.create") {
       if (operation.authMode !== "anonymous") {
         throw new Error(`${operation.operationId} must use anonymous provider webhook auth mode`);
       }
@@ -336,7 +368,7 @@ function languageEntries(family) {
     generatedPath: `${family.familyName}-${language}/generated/server-openapi`,
     name:
       language === "typescript"
-        ? `@sdkwork/${family.familyName}`
+        ? family.consumerPackageName
         : language === "dart"
           ? family.familyName.replaceAll("-", "_")
           : language === "java"
@@ -383,7 +415,7 @@ function componentSpec(family, operations) {
   };
 }
 
-function syncFamily(family) {
+function syncFamily(family, check = false) {
   const sourceOpenapiPath = resolveRoot(family.sourceOpenapi);
   if (!existsSync(sourceOpenapiPath)) {
     throw new Error(`missing source OpenAPI: ${sourceOpenapiPath}`);
@@ -395,36 +427,54 @@ function syncFamily(family) {
   const authorityPath = path.join(familyRoot, "openapi", `${family.authorityName}.openapi.json`);
   const sdkgenPath = path.join(familyRoot, "openapi", `${family.authorityName}.sdkgen.json`);
 
-  writeJson(authorityPath, openapi);
-  writeJson(sdkgenPath, openapi);
-  writeJson(path.join(familyRoot, "sdk-manifest.json"), {
+  materializeJson(authorityPath, openapi, check);
+  materializeJson(sdkgenPath, openapi, check);
+  const sdkManifest = {
     schemaVersion: 1,
-    workspace: family.familyName,
     sdkName: family.familyName,
-    sdkFamily: family.familyName,
-    sdkType: family.sdkType,
     sdkOwner: "sdkwork-rtc",
     apiAuthority: family.authorityName,
+    sdkFamily: family.familyName,
+    sdkType: family.sdkType,
+    apiPrefix: family.apiPrefix,
     sourceAuthoritySpec: `../../${family.sourceOpenapi}`,
-    authoritySpec: `openapi/${family.authorityName}.openapi.json`,
     generationInputSpec: `openapi/${family.authorityName}.sdkgen.json`,
+    sdkDependencies: family.sdkDependencies,
+    generatorName: "@sdkwork/sdk-generator",
+    generatorEntryPoint: GENERATOR_BIN,
+    standardProfile: STANDARD_PROFILE,
+    ownerOnlyOperationCount: operations.length,
+    packageName: family.consumerPackageName,
+    transportPackageName: `${family.familyName}-generated-typescript`,
+    typescript: {
+      composedRoot: `${family.familyName}-typescript`,
+      composedEntry: `${family.familyName}-typescript/src/index.ts`,
+      transportRoot: `${family.familyName}-typescript/generated/server-openapi`,
+      transportEntry: `${family.familyName}-typescript/generated/server-openapi/src/index.ts`,
+    },
+    workspace: family.familyName,
+    authoritySpec: `openapi/${family.authorityName}.openapi.json`,
     derivedSpecs: {
       default: `openapi/${family.authorityName}.sdkgen.json`,
     },
     discoverySurface: {
       sdkTarget: family.sdkType,
       apiPrefix: family.apiPrefix,
+      schemaUrl: family.schemaUrl,
       generatedProtocols: ["http-openapi"],
       manualTransports: [],
     },
     languages: languageEntries(family),
-    sdkDependencies: family.sdkDependencies,
-    generatorName: "@sdkwork/sdk-generator",
-    generatorEntryPoint: GENERATOR_BIN,
-    standardProfile: STANDARD_PROFILE,
-    ownerOnlyOperationCount: operations.length,
-  });
-  writeJson(path.join(familyRoot, "specs", "component.spec.json"), componentSpec(family, operations));
+    title: family.title,
+    apiVersion: "0.1.0",
+    openapiVersion: "3.1.2",
+  };
+  materializeJson(path.join(familyRoot, "sdk-manifest.json"), sdkManifest, check);
+  materializeJson(
+    path.join(familyRoot, "specs", "component.spec.json"),
+    componentSpec(family, operations),
+    check,
+  );
 
   return { familyRoot, sdkgenPath, operations };
 }
@@ -585,7 +635,7 @@ function runSdkgen(family, synced, args) {
 
 export async function runRtcSdkGenerator(family, argv) {
   const args = parseArgs(argv);
-  const synced = syncFamily(family);
+  const synced = syncFamily(family, args.check);
   if (!args.check) {
     runSdkgen(family, synced, args);
   }
@@ -601,7 +651,7 @@ async function main() {
   }
   try {
     for (const family of targets) {
-      const synced = syncFamily(family);
+      const synced = syncFamily(family, args.check);
       if (!args.check) {
         runSdkgen(family, synced, args);
       }

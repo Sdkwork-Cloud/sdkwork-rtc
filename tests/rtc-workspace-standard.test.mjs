@@ -544,9 +544,9 @@ test("sdkwork-rtc provider webhook ingress declares framework rate-limit tier", 
     read("sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json"),
   );
   const webhookRoute = backendManifest.routes.find(
-    (route) => route.operationId === "rtc.providerWebhooks.events.receive",
+    (route) => route.operationId === "rtc.providerWebhooks.events.create",
   );
-  assert.ok(webhookRoute, "backend manifest must declare provider webhook receive route");
+  assert.ok(webhookRoute, "backend manifest must declare provider webhook create route");
   assert.equal(webhookRoute.rateLimitTier, "openApiDefault");
 
   const backendWebBootstrap = read("crates/sdkwork-routes-rtc-backend-api/src/web_bootstrap.rs");
@@ -575,7 +575,7 @@ test("sdkwork-rtc mutation routes declare framework rate-limit tiers and idempot
       );
     }
     const credentialRoute = manifest.routes.find(
-      (route) => route.operationId === "rtc.mediaSessions.participantCredentials.issue",
+      (route) => route.operationId === "rtc.mediaSessions.participantCredentials.create",
     );
     if (credentialRoute) {
       assert.equal(credentialRoute.rateLimitTier, "authCritical");

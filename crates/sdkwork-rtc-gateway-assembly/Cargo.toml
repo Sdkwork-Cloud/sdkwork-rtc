@@ -17,5 +17,5 @@ sdkwork-communication-rtc-repository-sqlx.workspace = true
 sdkwork-communication-rtc-service.workspace = true
 sdkwork-rtc-service-host.workspace = true
 sdkwork-rtc-plugin-bootstrap.workspace = true
-sdkwork_routes_rtc_app_api = { package = "sdkwork-routes-rtc-app-api", path = "../sdkwork-routes-rtc-app-api" }
-sdkwork_routes_rtc_backend_api = { package = "sdkwork-routes-rtc-backend-api", path = "../sdkwork-routes-rtc-backend-api" }
+sdkwork-routes-rtc-app-api.workspace = true
+sdkwork-routes-rtc-backend-api.workspace = true

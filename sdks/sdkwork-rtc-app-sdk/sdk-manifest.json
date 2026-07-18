@@ -54,7 +54,7 @@
     "transportEntry": "sdkwork-rtc-app-sdk-typescript/generated/server-openapi/src/index.ts"
   },
   "workspace": "sdkwork-rtc-app-sdk",
-  "authoritySpec": "../../apis/app-api/communication/sdkwork-rtc-app-api.openapi.json",
+  "authoritySpec": "openapi/sdkwork-rtc-app-api.openapi.json",
   "derivedSpecs": {
     "default": "openapi/sdkwork-rtc-app-api.sdkgen.json"
   },
@@ -74,9 +74,8 @@
       "generationState": "declared",
       "releaseState": "not_published",
       "generatedPath": "sdkwork-rtc-app-sdk-typescript/generated/server-openapi",
-      "version": "0.1.0",
-      "consumerPackageName": "@sdkwork/sdkwork-rtc-app-sdk",
-      "transportPackageName": "sdkwork-rtc-app-sdk-generated-typescript"
+      "name": "@sdkwork/rtc-app-sdk",
+      "version": "0.1.0"
     },
     {
       "language": "dart",

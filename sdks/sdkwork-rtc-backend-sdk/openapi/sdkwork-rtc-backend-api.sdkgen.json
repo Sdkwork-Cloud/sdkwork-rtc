@@ -991,7 +991,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -1506,7 +1506,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -2151,7 +2151,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -3115,7 +3115,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -3457,7 +3457,7 @@
           "rtcProviderProfiles"
         ],
         "summary": "Rtc provider Profiles capabilities configure.",
-        "operationId": "rtc.providerProfiles.capabilities.configure",
+        "operationId": "rtc.providerProfiles.capabilities.update",
         "parameters": [
           {
             "name": "providerProfileId",
@@ -3862,7 +3862,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -4385,7 +4385,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -5062,7 +5062,7 @@
           "rtcProviderWebhooks"
         ],
         "summary": "Rtc provider Webhooks events receive.",
-        "operationId": "rtc.providerWebhooks.events.receive",
+        "operationId": "rtc.providerWebhooks.events.create",
         "parameters": [
           {
             "name": "provider",
@@ -5085,7 +5085,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {

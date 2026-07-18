@@ -1,15 +1,15 @@
 import {
   createClient as createGeneratedRtcAppClient,
   SdkworkAppClient,
-} from '../generated/server-openapi/src/index';
-import type { SdkworkAppConfig } from '../generated/server-openapi/src/types/common';
+} from '../generated/server-openapi/dist/index.js';
+import type { SdkworkAppConfig } from '../generated/server-openapi/dist/types/common.js';
 
 export { SdkworkAppClient, createGeneratedRtcAppClient };
 export type { SdkworkAppConfig };
-export * from '../generated/server-openapi/src/types';
-export * from '../generated/server-openapi/src/api';
-export * from '../generated/server-openapi/src/http';
-export * from '../generated/server-openapi/src/auth';
+export * from '../generated/server-openapi/dist/types/index.js';
+export * from '../generated/server-openapi/dist/api/index.js';
+export * from '../generated/server-openapi/dist/http/index.js';
+export * from '../generated/server-openapi/dist/auth/index.js';
 
 export type SdkworkRtcAppClient = SdkworkAppClient;
 

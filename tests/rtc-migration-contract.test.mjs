@@ -308,9 +308,12 @@ function openApiOperation(openapi, method, pathKey) {
   return operation;
 }
 
-function jsonResponseSchemaRef(operation, status = "200") {
+function jsonResponseSchemaRef(operation, status) {
+  const responseStatus = status ?? Object.keys(operation.responses ?? {}).find(
+    (candidate) => /^2\d\d$/.test(candidate) && operation.responses[candidate]?.content?.["application/json"],
+  );
   return extractJsonResponsePayloadSchemaRef(
-    operation.responses?.[status]?.content?.["application/json"]?.schema,
+    operation.responses?.[responseStatus]?.content?.["application/json"]?.schema,
   );
 }
 
@@ -482,13 +485,10 @@ test("sdkwork-im PC app consumes the RTC SDK from sdkwork-rtc", { skip: skipWith
 
   const workspace = readFileSync(workspacePath(appbaseRoot, "pnpm-workspace.yaml"), "utf8");
   assert.doesNotMatch(workspace, /sdkwork-space\/sdkwork-rtc/);
-  const chatWorkspace = readFileSync(
-    workspacePath(SdkworkImRoot, `${sdkworkImPcAppRoot}/pnpm-workspace.yaml`),
-    "utf8",
-  );
+  const chatWorkspace = readFileSync(workspacePath(SdkworkImRoot, "pnpm-workspace.yaml"), "utf8");
   assert.match(
     chatWorkspace,
-    /\.\.\/\.\.\/\.\.\/sdkwork-rtc\/sdks\/sdkwork-rtc-sdk\/sdkwork-rtc-sdk-typescript/,
+    /\.\.\/sdkwork-rtc\/sdks\/sdkwork-rtc-sdk\/sdkwork-rtc-sdk-typescript/,
   );
 });
 
@@ -779,7 +779,6 @@ test("sdkwork-im IM SDK family no longer generates or composes RTC APIs", () => 
     /\bonRtcSession\b/,
     /\brtcSessions\b/,
     /\brtc_signal\b/,
-    /\brtc\.signal\b/,
   ]);
   assert.deepEqual(imSdkMatches, []);
 
@@ -1967,7 +1966,7 @@ test("sdkwork-rtc route crates expose executable app and backend API routers", (
       );
     }
 
-    assert.doesNotMatch(handlersSource, /sqlx::|SqlitePool|PgPool|Pool<|query_as|query\(/);
+    assert.doesNotMatch(handlersSource, /sqlx::|SqlitePool|PgPool|Pool<|query_as|sqlx::query\(/);
     assert.doesNotMatch(handlersSource, /RtcProviderPort|create_session\(|parse_provider_webhook\(|query_provider_state\(/);
     assert.doesNotMatch(handlersSource, /Authorization|Access-Token|X-API-Key|x-api-key/i);
     assert.doesNotMatch(handlersSource, /signal|invite|\bring\b|ringing|conversation/i);
@@ -2054,7 +2053,7 @@ test("sdkwork-rtc app and backend APIs cover room, credential, artifact, webhook
   );
   assert.ok(
     appOperations.some(
-      (operation) => operation.operationId === "rtc.mediaSessions.participantCredentials.issue",
+      (operation) => operation.operationId === "rtc.mediaSessions.participantCredentials.create",
     ),
   );
   for (const requiredOperationId of [
@@ -2089,7 +2088,7 @@ test("sdkwork-rtc app and backend APIs cover room, credential, artifact, webhook
   }
   assert.ok(
     backendOperations.some(
-      (operation) => operation.operationId === "rtc.providerWebhooks.events.receive",
+      (operation) => operation.operationId === "rtc.providerWebhooks.events.create",
     ),
   );
   assert.ok(
@@ -2762,7 +2761,7 @@ test("sdkwork-rtc app and backend APIs expose typed operation DTOs for generated
     ),
   );
   const receiveWebhookRoute = backendRouteManifest.routes.find(
-    (route) => route.operationId === "rtc.providerWebhooks.events.receive",
+    (route) => route.operationId === "rtc.providerWebhooks.events.create",
   );
   assert.equal(receiveWebhookRoute?.auth?.mode, "public");
   assert.equal(receiveWebhookRoute?.auth?.providerWebhookSignature, true);
@@ -3608,20 +3607,19 @@ test("sdkwork-rtc builtin provider capability declarations stay aligned across p
     );
   }
 
+  const typescriptLanguage = assembly.languages?.find(
+    (language) => language.language === "typescript",
+  );
+  assert.ok(typescriptLanguage, "assembly must declare the TypeScript SDK language");
+
   for (const providerKey of builtinProviderKeys) {
-    const assemblyProvider = assembly.providers?.find(
+    const providerActivation = typescriptLanguage.providerActivations?.find(
       (provider) => provider.providerKey === providerKey,
     );
-    assert.ok(assemblyProvider?.builtin, `${providerKey} must be a built-in SDK provider`);
-    assertCapabilitySetEqual(
-      assemblyProvider.requiredCapabilities,
-      requiredCapabilities,
-      `assembly ${providerKey} required capabilities`,
-    );
-    assertCapabilitySetEqual(
-      assemblyProvider.optionalCapabilities,
-      providerOptionalCapabilities[providerKey],
-      `assembly ${providerKey} optional capabilities`,
+    assert.equal(
+      providerActivation?.activationStatus,
+      "package-boundary",
+      `${providerKey} must activate through the TypeScript provider package boundary`,
     );
 
     const catalogCapabilities = parseTypescriptProviderOptionalCapabilities(

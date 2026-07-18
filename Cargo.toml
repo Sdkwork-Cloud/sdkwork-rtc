@@ -57,6 +57,7 @@ sdkwork-rtc-service-host = { path = "crates/sdkwork-rtc-service-host" }
 sdkwork-rtc-plugin-bootstrap = { path = "crates/sdkwork-rtc-plugin-bootstrap" }
 sdkwork-communication-rtc-worker = { path = "crates/sdkwork-communication-rtc-worker" }
 sdkwork-rtc-standalone-gateway = { path = "crates/sdkwork-rtc-standalone-gateway" }
+sdkwork-rtc-gateway-assembly = { path = "crates/sdkwork-rtc-gateway-assembly" }
 sdkwork-drive-config = { path = "../sdkwork-drive/crates/sdkwork-drive-config" }
 sdkwork-drive-storage-contract = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-contract" }
 sdkwork-drive-storage-local = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-local" }
