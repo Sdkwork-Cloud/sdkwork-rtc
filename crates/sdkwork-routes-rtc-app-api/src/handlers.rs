@@ -13,8 +13,8 @@ use serde::Deserialize;
 use serde_json::{Value as JsonValue, json};
 
 use crate::responses::{
-    api_created, api_item, api_list_payload, list_params_from_app_query,
-    map_handler_error, resolved_trace_id, RtcAppHandlerError,
+    RtcAppHandlerError, api_created, api_item, api_list_payload, list_params_from_app_query,
+    map_handler_error, resolved_trace_id,
 };
 use crate::service::{
     RtcAppApiService, RtcAppListQuery, RtcCreateAppMediaSessionRequest, RtcCreateAppRoomRequest,
@@ -290,7 +290,6 @@ fn list_request(context: &AppContext, query: RtcAppListQuery) -> RtcListRequest 
         page: query.page,
         page_size: query.page_size,
         cursor: query.cursor,
-        limit: query.limit,
         q: query.q,
         sort: query.sort,
     }

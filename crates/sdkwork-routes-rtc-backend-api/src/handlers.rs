@@ -17,8 +17,8 @@ use sdkwork_rtc_app_context::AppContext;
 use sdkwork_web_core::WebRequestContext;
 
 use crate::responses::{
-    api_catalog_list, api_created, api_item, api_list_payload, list_params_from_backend_query,
-    map_handler_error, resolved_trace_id, RtcBackendHandlerError,
+    RtcBackendHandlerError, api_catalog_list, api_created, api_item, api_list_payload,
+    list_params_from_backend_query, map_handler_error, resolved_trace_id,
 };
 use crate::service::{
     RtcBackendApiService, RtcBackendListQuery, RtcBackendListRequest, RtcCloseMediaSessionRequest,
@@ -950,7 +950,6 @@ fn list_request(context: &AppContext, query: RtcBackendListQuery) -> RtcBackendL
         page: query.page,
         page_size: query.page_size,
         cursor: query.cursor,
-        limit: query.limit,
         q: query.q,
         sort: query.sort,
     }

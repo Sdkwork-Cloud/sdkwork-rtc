@@ -22,7 +22,6 @@ pub struct RtcListRequest {
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,
-    pub page_size: Option<u32>,
     pub q: Option<String>,
     pub sort: Option<String>,
 }
@@ -49,7 +48,6 @@ pub struct RtcAppListQuery {
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub cursor: Option<String>,
-    pub page_size: Option<u32>,
     pub q: Option<String>,
     pub sort: Option<String>,
 }
