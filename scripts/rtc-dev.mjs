@@ -6,19 +6,15 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import {
-  API_GATEWAY_REPO,
   DEFAULT_DEV_PROFILE_ID,
   listHealthSurfaces,
   listOrchestrationProcesses,
   loadProfile,
   mergeRuntimeEnv,
   REPO_ROOT,
-  resolveCloudGatewayConfigPath,
   resolveDevProfileId,
-  resolveGatewayBind,
   resolveIamDevEnv,
   resolveSurfaceHttpUrl,
-  shouldAutostartGateway,
   waitForHttpHealthy,
   IAM_APPLICATION_BOOTSTRAP_ENV,
 } from './lib/rtc-topology.mjs';
@@ -125,32 +121,6 @@ function healthPathForSurface(surfaceId) {
   return '/healthz';
 }
 
-function createPlatformGatewayProcess(env) {
-  const hosting = env.SDKWORK_RTC_HOSTING ?? 'self-hosted';
-  const bind = resolveGatewayBind(env, hosting);
-  const gatewayConfig = resolveCloudGatewayConfigPath(env, 'development');
-  return {
-    label: 'sdkwork-api-cloud-gateway',
-    command: cargoCommand(),
-    args: [
-      'run',
-      '-p',
-      'sdkwork-api-cloud-gateway',
-      '--bin',
-      'sdkwork-api-cloud-gateway',
-      '--',
-      '--config',
-      gatewayConfig,
-    ],
-    cwd: API_GATEWAY_REPO,
-    env: {
-      ...env,
-      SDKWORK_API_CLOUD_GATEWAY_BIND: bind,
-      SDKWORK_API_CLOUD_GATEWAY_CONFIG: gatewayConfig,
-    },
-  };
-}
-
 function createRtcApiServerProcess(env) {
   return {
     label: 'sdkwork-api-rtc-standalone-gateway',
@@ -217,10 +187,6 @@ function buildServerProcesses(profileId, env) {
       continue;
     }
     if (processDef.id === 'platform.api-gateway') {
-      if (!shouldAutostartGateway(env)) {
-        continue;
-      }
-      processes.push(createPlatformGatewayProcess(env));
       continue;
     }
     if (processDef.id === 'application.public-ingress') {
