@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/sdkwork-api-rtc-assembly",
     "crates/sdkwork-rtc-gateway-assembly",
     "plugins/rtc-aliyun",
     "plugins/rtc-agora",

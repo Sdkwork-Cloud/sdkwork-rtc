@@ -1,0 +1,32 @@
+{
+  "kind": "sdkwork.api.assembly",
+  "schemaVersion": 1,
+  "applicationCode": "rtc",
+  "apiMode": "served",
+  "packageName": "sdkwork-api-rtc-assembly",
+  "crateDir": "crates/sdkwork-api-rtc-assembly",
+  "routeCrates": [
+    {
+      "packageName": "sdkwork-routes-rtc-app-api",
+      "memberDir": "crates/sdkwork-routes-rtc-app-api",
+      "libName": "sdkwork_routes_rtc_app_api",
+      "surface": "app-api",
+      "pathPrefix": null,
+      "mountOrder": 0,
+      "componentRef": "crates/sdkwork-routes-rtc-app-api/specs/component.spec.json",
+      "routeManifestRef": "crates/sdkwork-routes-rtc-app-api/sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+      "sourceRef": "crates/sdkwork-routes-rtc-app-api/Cargo.toml"
+    },
+    {
+      "packageName": "sdkwork-routes-rtc-backend-api",
+      "memberDir": "crates/sdkwork-routes-rtc-backend-api",
+      "libName": "sdkwork_routes_rtc_backend_api",
+      "surface": "backend-api",
+      "pathPrefix": null,
+      "mountOrder": 1,
+      "componentRef": "crates/sdkwork-routes-rtc-backend-api/specs/component.spec.json",
+      "routeManifestRef": "crates/sdkwork-routes-rtc-backend-api/sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+      "sourceRef": "crates/sdkwork-routes-rtc-backend-api/Cargo.toml"
+    }
+  ]
+}
