@@ -26,7 +26,7 @@ Specs: `../sdkwork-specs/ARCHITECTURE_DECISION_SPEC.md`, `../sdkwork-specs/DOCUM
 └───────────────────────────┬─────────────────────────────────────┘
                             │ HTTPS /app|backend/v3/api/rtc/*
 ┌───────────────────────────▼─────────────────────────────────────┐
-│  sdkwork-rtc-standalone-gateway                                 │
+│  sdkwork-api-rtc-standalone-gateway                                 │
 │  sdkwork-web-framework + sdkwork-iam-web-adapter                │
 │  sdkwork-routes-rtc-app-api / sdkwork-routes-rtc-backend-api      │
 └───────────────────────────┬─────────────────────────────────────┘
@@ -75,7 +75,7 @@ See [TECH-rtc-im-boundary.md](TECH-rtc-im-boundary.md) for dependency direction.
 | `crates/sdkwork-communication-rtc-repository-sqlx` | Persistence + database bootstrap |
 | `crates/sdkwork-routes-rtc-*-api` | HTTP handlers wired through web framework |
 | `crates/sdkwork-rtc-service-host` | Drive-backed recording import |
-| `crates/sdkwork-rtc-standalone-gateway` | Production HTTP entrypoint |
+| `crates/sdkwork-api-rtc-standalone-gateway` | Production HTTP entrypoint |
 | `plugins/rtc-*` | Vendor provider adapters |
 | `configs/provider-registry/` | Default provider plugin roster (`platform-default.json`) |
 | `configs/recording-policy/` | Recording artifact retention and lifecycle thresholds (`platform-default.json`) |

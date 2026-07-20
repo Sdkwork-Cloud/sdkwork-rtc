@@ -1,5 +1,5 @@
 use sdkwork_communication_rtc_worker::{RtcWorker, RtcWorkerJob};
-use sdkwork_rtc_standalone_gateway::bootstrap::{
+use sdkwork_api_rtc_standalone_gateway::bootstrap::{
     build_builtin_provider_registry, build_rtc_reconcile_bootstrap,
 };
 use tracing::info;

@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use axum::Router;
-use sdkwork_rtc_gateway_assembly::assemble_application_router_with_service;
+use sdkwork_api_rtc_assembly::assemble_api_router_with_service;
 use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
 use tracing::info;
 
 use sdkwork_communication_rtc_service::rtc_persistence_required;
 use sdkwork_communication_rtc_service::validate_production_runtime_profile;
-use sdkwork_rtc_standalone_gateway::{
+use sdkwork_api_rtc_standalone_gateway::{
     bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap},
     readiness::RtcDatabaseReadinessCheck,
 };
@@ -24,7 +24,7 @@ async fn main() -> anyhow::Result<()> {
     let bootstrap = build_rtc_api_bootstrap(registry).await?;
     let service = bootstrap.service;
 
-    let assembly = assemble_application_router_with_service(service).await;
+    let assembly = assemble_api_router_with_service(service).await;
 
     let metrics = HttpMetricsRegistry::new();
 
@@ -45,12 +45,12 @@ async fn main() -> anyhow::Result<()> {
     let bind_addr = std::env::var("SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND")
         .unwrap_or_else(|_| "127.0.0.1:18088".into());
     let listener = tokio::net::TcpListener::bind(bind_addr.as_str()).await?;
-    info!(%bind_addr, "sdkwork-rtc-standalone-gateway listening");
+    info!(%bind_addr, "sdkwork-api-rtc-standalone-gateway listening");
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await?;
-    info!("sdkwork-rtc-standalone-gateway stopped");
+    info!("sdkwork-api-rtc-standalone-gateway stopped");
     Ok(())
 }
 

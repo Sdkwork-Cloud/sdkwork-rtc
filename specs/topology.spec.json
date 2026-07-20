@@ -79,8 +79,8 @@
   },
   "components": {
     "applicationApiServer": {
-      "crate": "sdkwork-rtc-standalone-gateway",
-      "binary": "sdkwork-rtc-standalone-gateway"
+      "crate": "sdkwork-api-rtc-standalone-gateway",
+      "binary": "sdkwork-api-rtc-standalone-gateway"
     }
   },
   "orchestration": {
@@ -89,8 +89,8 @@
         "processes": [
           {
             "id": "application.public-ingress",
-            "crate": "sdkwork-rtc-standalone-gateway",
-            "binary": "sdkwork-rtc-standalone-gateway",
+            "crate": "sdkwork-api-rtc-standalone-gateway",
+            "binary": "sdkwork-api-rtc-standalone-gateway",
             "required": true,
             "role": "api-standalone-gateway"
           }
@@ -113,8 +113,8 @@
         "processes": [
           {
             "id": "application.public-ingress",
-            "crate": "sdkwork-rtc-standalone-gateway",
-            "binary": "sdkwork-rtc-standalone-gateway",
+            "crate": "sdkwork-api-rtc-standalone-gateway",
+            "binary": "sdkwork-api-rtc-standalone-gateway",
             "required": true,
             "role": "api-standalone-gateway"
           },
@@ -135,8 +135,8 @@
         "processes": [
           {
             "id": "application.public-ingress",
-            "crate": "sdkwork-rtc-standalone-gateway",
-            "binary": "sdkwork-rtc-standalone-gateway",
+            "crate": "sdkwork-api-rtc-standalone-gateway",
+            "binary": "sdkwork-api-rtc-standalone-gateway",
             "required": true,
             "role": "api-standalone-gateway"
           }

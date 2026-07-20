@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
     "crates/sdkwork-api-rtc-assembly",
-    "crates/sdkwork-rtc-gateway-assembly",
+    "crates/sdkwork-api-rtc-assembly",
     "plugins/rtc-aliyun",
     "plugins/rtc-agora",
     "plugins/rtc-tencent",
@@ -19,7 +19,7 @@ members = [
     "crates/sdkwork-rtc-service-host",
     "crates/sdkwork-rtc-plugin-bootstrap",
     "crates/sdkwork-communication-rtc-worker",
-    "crates/sdkwork-rtc-standalone-gateway",
+    "crates/sdkwork-api-rtc-standalone-gateway",
 ]
 
 [workspace.package]
@@ -57,8 +57,8 @@ sdkwork-routes-rtc-backend-api = { path = "crates/sdkwork-routes-rtc-backend-api
 sdkwork-rtc-service-host = { path = "crates/sdkwork-rtc-service-host" }
 sdkwork-rtc-plugin-bootstrap = { path = "crates/sdkwork-rtc-plugin-bootstrap" }
 sdkwork-communication-rtc-worker = { path = "crates/sdkwork-communication-rtc-worker" }
-sdkwork-rtc-standalone-gateway = { path = "crates/sdkwork-rtc-standalone-gateway" }
-sdkwork-rtc-gateway-assembly = { path = "crates/sdkwork-rtc-gateway-assembly" }
+sdkwork-api-rtc-standalone-gateway = { path = "crates/sdkwork-api-rtc-standalone-gateway" }
+sdkwork-api-rtc-assembly = { path = "crates/sdkwork-api-rtc-assembly" }
 sdkwork-drive-config = { path = "../sdkwork-drive/crates/sdkwork-drive-config" }
 sdkwork-drive-storage-contract = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-contract" }
 sdkwork-drive-storage-local = { path = "../sdkwork-drive/crates/sdkwork-drive-storage-local" }

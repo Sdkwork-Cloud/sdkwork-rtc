@@ -23,7 +23,7 @@ spec:
           image: ghcr.io/sdkwork/rtc-standalone-gateway:latest
           imagePullPolicy: IfNotPresent
           command:
-            - /opt/sdkwork/rtc/bin/sdkwork-rtc-standalone-gateway
+            - /opt/sdkwork/rtc/bin/sdkwork-api-rtc-standalone-gateway
           ports:
             - name: http
               containerPort: 18088
@@ -43,7 +43,7 @@ spec:
             - name: SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND
               value: 0.0.0.0:18088
             - name: OTEL_SERVICE_NAME
-              value: sdkwork-rtc-standalone-gateway
+              value: sdkwork-api-rtc-standalone-gateway
           readinessProbe:
             httpGet:
               path: /readyz

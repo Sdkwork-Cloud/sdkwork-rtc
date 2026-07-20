@@ -32,7 +32,7 @@ See `kubernetes/README.md` for cloud split-services manifests (`rtc-standalone-g
 
 ## systemd (standalone appliance)
 
-- `systemd/sdkwork-rtc-standalone-gateway.service` — API server unit
+- `systemd/sdkwork-api-rtc-standalone-gateway.service` — API server unit
 - `systemd/sdkwork-rtc-reconcile.service` + `sdkwork-rtc-reconcile.timer` — periodic reconciliation
 
 ## Docker
@@ -42,7 +42,7 @@ See `docker/README.md` for multi-stage image build and local compose example.
 ## Server archive
 
 `node scripts/package-server.mjs package` produces `artifacts/release/server/sdkwork-rtc-<version>-<platform>-<arch>-server.tar.gz`
-with `sdkwork-rtc-standalone-gateway` and `sdkwork-rtc-reconcile` binaries.
+with `sdkwork-api-rtc-standalone-gateway` and `sdkwork-rtc-reconcile` binaries.
 
 ## Templates
 

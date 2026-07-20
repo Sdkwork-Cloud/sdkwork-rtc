@@ -167,7 +167,7 @@ test('client runtime env examples route IAM through platform.api-gateway', async
 });
 
 test('rtc api server reads topology bind env key', async () => {
-  const mainSource = await read('crates/sdkwork-rtc-standalone-gateway/src/main.rs');
+  const mainSource = await read('crates/sdkwork-api-rtc-standalone-gateway/src/main.rs');
   assert.match(mainSource, /SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND/);
   assert.doesNotMatch(mainSource, /SDKWORK_RTC_API_BIND/);
 });

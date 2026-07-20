@@ -1,12 +1,12 @@
 # RTC Production Deployment
 
-Operator guide for shipping `sdkwork-rtc-standalone-gateway` and `sdkwork-rtc-reconcile` to production.
+Operator guide for shipping `sdkwork-api-rtc-standalone-gateway` and `sdkwork-rtc-reconcile` to production.
 
 ## Release artifacts
 
 | Artifact | Path / registry | Contents |
 | --- | --- | --- |
-| Server archive | `artifacts/release/server/sdkwork-rtc-*-server.tar.gz` | `sdkwork-rtc-standalone-gateway`, `sdkwork-rtc-reconcile`, systemd units, env template |
+| Server archive | `artifacts/release/server/sdkwork-rtc-*-server.tar.gz` | `sdkwork-api-rtc-standalone-gateway`, `sdkwork-rtc-reconcile`, systemd units, env template |
 | Container image | `ghcr.io/sdkwork/rtc-standalone-gateway` | Both binaries under `/opt/sdkwork/rtc/bin/` |
 | Gateway config bundle | `dist/config-bundle/` | Cloud ingress / gateway topology (when using split gateway) |
 
@@ -78,7 +78,7 @@ Manifests: `deployments/kubernetes/cloud-split-services/`
 Units: `deployments/systemd/`
 
 1. Install binaries from the server archive to `/opt/sdkwork/rtc/bin/`.
-2. Enable `sdkwork-rtc-standalone-gateway.service`.
+2. Enable `sdkwork-api-rtc-standalone-gateway.service`.
 3. Enable `sdkwork-rtc-reconcile.timer` for periodic reconciliation.
 
 ### Docker / compose

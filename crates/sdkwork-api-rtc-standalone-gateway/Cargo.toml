@@ -1,15 +1,15 @@
 [package]
-name = "sdkwork-rtc-standalone-gateway"
+name = "sdkwork-api-rtc-standalone-gateway"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [lib]
-name = "sdkwork_rtc_standalone_gateway"
+name = "sdkwork_api_rtc_standalone_gateway"
 path = "src/lib.rs"
 
 [[bin]]
-name = "sdkwork-rtc-standalone-gateway"
+name = "sdkwork-api-rtc-standalone-gateway"
 path = "src/main.rs"
 
 [[bin]]
@@ -17,7 +17,7 @@ name = "sdkwork-rtc-reconcile"
 path = "src/bin/reconcile.rs"
 
 [dependencies]
-sdkwork-rtc-gateway-assembly.workspace = true
+sdkwork-api-rtc-assembly.workspace = true
 anyhow = "1.0.98"
 axum.workspace = true
 sdkwork-communication-rtc-repository-sqlx.workspace = true

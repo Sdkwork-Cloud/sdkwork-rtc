@@ -12,5 +12,10 @@ path = "src/lib.rs"
 [dependencies]
 axum.workspace = true
 tokio.workspace = true
+anyhow = "1.0.98"
+sdkwork-communication-rtc-repository-sqlx.workspace = true
+sdkwork-communication-rtc-service.workspace = true
+sdkwork-rtc-service-host.workspace = true
+sdkwork-rtc-plugin-bootstrap.workspace = true
 sdkwork-routes-rtc-app-api.workspace = true
 sdkwork-routes-rtc-backend-api.workspace = true

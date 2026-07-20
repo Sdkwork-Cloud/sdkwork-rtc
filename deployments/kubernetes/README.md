@@ -15,7 +15,7 @@ Cloud split-services topology for production RTC authority.
 1. Materialize secrets from `deployments/templates/server.env.example` into cluster Secrets (`rtc-standalone-gateway-secrets`).
 2. Apply `configmap.example.yaml` files with production database and tenant values.
 3. Build/publish container image that ships:
-   - `/opt/sdkwork/rtc/bin/sdkwork-rtc-standalone-gateway`
+   - `/opt/sdkwork/rtc/bin/sdkwork-api-rtc-standalone-gateway`
    - `/opt/sdkwork/rtc/bin/sdkwork-rtc-reconcile`
 
 ## Apply order

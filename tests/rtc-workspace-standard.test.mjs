@@ -294,7 +294,7 @@ test("sdkwork-rtc core Rust runtime crates declare component specs", () => {
     "crates/sdkwork-routes-rtc-app-api",
     "crates/sdkwork-routes-rtc-backend-api",
     "crates/sdkwork-rtc-service-host",
-    "crates/sdkwork-rtc-standalone-gateway",
+    "crates/sdkwork-api-rtc-standalone-gateway",
     "crates/sdkwork-rtc-app-context",
     "crates/sdkwork-rtc-openapi",
     "crates/sdkwork-rtc-api-registry",
@@ -312,7 +312,7 @@ test("sdkwork-rtc core Rust runtime crates declare component specs", () => {
 test("sdkwork-rtc integrates sdkwork-database framework for persistence bootstrap", () => {
   const repositoryCargo = read("crates/sdkwork-communication-rtc-repository-sqlx/Cargo.toml");
   const databaseModule = read("crates/sdkwork-communication-rtc-repository-sqlx/src/database.rs");
-  const apiBootstrap = read("crates/sdkwork-rtc-standalone-gateway/src/bootstrap.rs");
+  const apiBootstrap = read("crates/sdkwork-api-rtc-standalone-gateway/src/bootstrap.rs");
 
   for (const dependency of [
     "sdkwork-database-config",
@@ -520,9 +520,9 @@ test("sdkwork-rtc route manifests declare WebRequestContext and apiSurface", () 
 });
 
 test("sdkwork-rtc standalone-gateway wires database readiness when persistence pool is configured", () => {
-  const mainSource = read("crates/sdkwork-rtc-standalone-gateway/src/main.rs");
-  const bootstrapSource = read("crates/sdkwork-rtc-standalone-gateway/src/bootstrap.rs");
-  const readinessSource = read("crates/sdkwork-rtc-standalone-gateway/src/readiness.rs");
+  const mainSource = read("crates/sdkwork-api-rtc-standalone-gateway/src/main.rs");
+  const bootstrapSource = read("crates/sdkwork-api-rtc-standalone-gateway/src/bootstrap.rs");
+  const readinessSource = read("crates/sdkwork-api-rtc-standalone-gateway/src/readiness.rs");
   const databaseModule = read("crates/sdkwork-communication-rtc-repository-sqlx/src/database.rs");
 
   assert.match(databaseModule, /connect_rtc_persistence_bootstrap_from_env/u);
@@ -650,7 +650,7 @@ test("sdkwork-rtc externalizes recording artifact lifecycle policy under configs
     "recording policy loader must include platform-default manifest",
   );
   assert.match(
-    read("crates/sdkwork-rtc-standalone-gateway/src/bin/reconcile.rs"),
+    read("crates/sdkwork-api-rtc-standalone-gateway/src/bin/reconcile.rs"),
     /run_recording_artifact_lifecycle_job/u,
     "reconcile binary must run recording artifact lifecycle reconciliation",
   );
@@ -706,15 +706,15 @@ test("sdkwork-rtc ships production deployment manifests and reconcile binary", (
     "deployments/docker/Dockerfile",
     "deployments/docker/README.md",
     "deployments/docker/docker-compose.standalone.example.yaml",
-    "deployments/systemd/sdkwork-rtc-standalone-gateway.service",
+    "deployments/systemd/sdkwork-api-rtc-standalone-gateway.service",
     "docs/guides/operator/deployment.md",
     "scripts/package-server.mjs",
-    "crates/sdkwork-rtc-standalone-gateway/src/bin/reconcile.rs",
+    "crates/sdkwork-api-rtc-standalone-gateway/src/bin/reconcile.rs",
   ]) {
     assert.ok(exists(filePath), `${filePath} must exist`);
   }
 
-  const apiServerCargo = read("crates/sdkwork-rtc-standalone-gateway/Cargo.toml");
+  const apiServerCargo = read("crates/sdkwork-api-rtc-standalone-gateway/Cargo.toml");
   assert.match(apiServerCargo, /name = "sdkwork-rtc-reconcile"/u);
   assert.match(
     read("jobs/schedules/rtc-session-reconciliation.yaml"),
@@ -725,7 +725,7 @@ test("sdkwork-rtc ships production deployment manifests and reconcile binary", (
   assert.match(packageJson.scripts["release:package:server"], /package-server\.mjs package/u);
 
   const packageServer = read("scripts/package-server.mjs");
-  assert.match(packageServer, /sdkwork-rtc-standalone-gateway/u);
+  assert.match(packageServer, /sdkwork-api-rtc-standalone-gateway/u);
   assert.match(packageServer, /sdkwork-rtc-reconcile/u);
   assert.match(read("deployments/docker/Dockerfile"), /sdkwork-rtc-reconcile/u);
   assert.match(read(".github/workflows/rtc-server-image.yml"), /ghcr\.io\/sdkwork\/rtc-standalone-gateway/u);

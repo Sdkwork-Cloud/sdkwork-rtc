@@ -4,7 +4,7 @@
 
 `ghcr.io/sdkwork/rtc-standalone-gateway` ships:
 
-- `/opt/sdkwork/rtc/bin/sdkwork-rtc-standalone-gateway`
+- `/opt/sdkwork/rtc/bin/sdkwork-api-rtc-standalone-gateway`
 - `/opt/sdkwork/rtc/bin/sdkwork-rtc-reconcile`
 
 ## Build
