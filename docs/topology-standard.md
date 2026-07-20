@@ -10,14 +10,14 @@ Platform standard: `../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 
 ```bash
 pnpm dev
-pnpm dev:browser:postgres:split-services:standalone:local
+pnpm dev:browser:postgres:standalone:local
 pnpm dev:flutter-android
 ```
 
 Cloud development profile:
 
 ```bash
-pnpm dev:browser:postgres:split-services:cloud
+pnpm dev:browser:cloud
 ```
 
 Server-only smoke (no client renderer):

@@ -108,9 +108,9 @@ Default dev profile: `standalone.split-services.development`
 
 ```powershell
 pnpm dev                                                    # PC admin UI + RTC API server
-pnpm dev:browser:postgres:split-services:standalone:local   # H5 admin UI + RTC API server
+pnpm dev:browser:postgres:standalone:local   # H5 admin UI + RTC API server
 pnpm dev:flutter-android                                    # Flutter mobile + RTC API server
-pnpm dev:browser:postgres:split-services:cloud              # cloud deployment profile with platform API gateway
+pnpm dev:browser:cloud              # cloud deployment profile with platform API gateway
 pnpm dev:server                                             # RTC API server only
 ```
 

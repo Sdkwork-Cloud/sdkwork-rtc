@@ -130,8 +130,8 @@ assert.match(
 );
 assert.match(
   JSON.stringify(packageJson.scripts ?? {}),
-  /"dev:browser:postgres:split-services:standalone"/u,
-  'package.json must expose dev:browser:postgres:split-services:standalone',
+  /"dev:browser:postgres:standalone"/u,
+  'package.json must expose dev:browser:postgres:standalone',
 );
 
 assert.ok(fs.existsSync(path.join(repoRoot, 'scripts/rtc-dev.mjs')), 'rtc-dev orchestrator required');

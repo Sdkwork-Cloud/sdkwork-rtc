@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component-deployment",
+  "application": "sdkwork-rtc-sdkwork-rtc-pc",
+  "parentTopologySpec": "../../../specs/topology.spec.json"
+}

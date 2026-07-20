@@ -722,7 +722,7 @@ test("sdkwork-rtc ships production deployment manifests and reconcile binary", (
   );
 
   const packageJson = JSON.parse(read("package.json"));
-  assert.match(packageJson.scripts["package:server"], /package-server\.mjs package/u);
+  assert.match(packageJson.scripts["release:package:server"], /package-server\.mjs package/u);
 
   const packageServer = read("scripts/package-server.mjs");
   assert.match(packageServer, /sdkwork-rtc-standalone-gateway/u);

@@ -50,9 +50,9 @@ test('declares v2 topology spec and profile env files for sdkwork-rtc', async ()
 
   for (const profileId of [
     'standalone.split-services.development',
-    'standalone.unified-process.development',
-    'cloud.split-services.development',
-    'cloud.split-services.production',
+    'standalone.development',
+    'cloud.development',
+    'cloud.production',
   ]) {
     const profilePath = spec.profileFiles[profileId];
     assert.equal(await exists(profilePath), true, `${profilePath} should exist`);
@@ -69,12 +69,12 @@ test('declares v2 topology spec and profile env files for sdkwork-rtc', async ()
 test('root package.json wires @sdkwork/app-topology and standard dev scripts', async () => {
   const packageJson = await readJson('package.json');
   assert.equal(packageJson.dependencies['@sdkwork/app-topology'], 'file:../sdkwork-app-topology');
-  assert.match(packageJson.scripts.dev, /dev:browser:postgres:split-services:standalone/u);
+  assert.match(packageJson.scripts.dev, /dev:browser:postgres:standalone/u);
   assert.match(
-    packageJson.scripts['dev:browser:postgres:split-services:standalone'],
+    packageJson.scripts['dev:browser:postgres:standalone'],
     /scripts\/rtc-dev\.mjs/,
   );
-  assert.match(packageJson.scripts['dev:browser:postgres:split-services:cloud'], /--deployment-profile cloud/u);
+  assert.match(packageJson.scripts['dev:browser:cloud'], /--deployment-profile cloud/u);
   assert.match(packageJson.scripts['test:topology-validate'], /sdkwork-topology\.mjs validate/);
 });
 

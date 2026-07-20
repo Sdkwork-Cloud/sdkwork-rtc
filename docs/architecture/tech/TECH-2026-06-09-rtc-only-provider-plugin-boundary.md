@@ -109,7 +109,7 @@ Materialize `RtcMediaSession` and `RtcMediaParticipant` schemas with media runti
 Run:
 
 ```powershell
-pnpm run materialize:openapi
+pnpm run api:materialize
 ```
 
 Expected: backend OpenAPI and route manifest use media session naming and no invitation/call lifecycle schemas.
@@ -169,7 +169,7 @@ node sdks\sdkwork-rtc-sdk\test\verify-sdk-automation.test.mjs
 Run:
 
 ```powershell
-pnpm run materialize:openapi
+pnpm run api:materialize
 pnpm run sdk:check
 pnpm run typecheck
 pnpm test
