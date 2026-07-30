@@ -1058,7 +1058,7 @@ mod tests {
 
     #[tokio::test]
     async fn postgres_persistence_smoke_when_test_url_configured() {
-        let Some(database_url) = std::env::var("SDKWORK_RTC_POSTGRES_TEST_URL").ok() else {
+        let Some(database_url) = std::env::var("SDKWORK_DATABASE_TEST_POSTGRES_URL").ok() else {
             return;
         };
 
