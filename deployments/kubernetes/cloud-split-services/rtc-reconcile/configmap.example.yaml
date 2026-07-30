@@ -4,13 +4,15 @@ metadata:
   name: rtc-reconcile-runtime
   namespace: sdkwork-rtc
 data:
-  SDKWORK_RTC_DATABASE_ENGINE: postgresql
-  SDKWORK_RTC_DATABASE_HOST: db.example.com
-  SDKWORK_RTC_DATABASE_PORT: "5432"
-  SDKWORK_RTC_DATABASE_NAME: sdkwork_rtc
-  SDKWORK_RTC_DATABASE_SCHEMA: public
-  SDKWORK_RTC_DATABASE_SSL_MODE: require
-  SDKWORK_RTC_DATABASE_MAX_CONNECTIONS: "10"
+  SDKWORK_DATABASE_ENGINE: postgresql
+  SDKWORK_DATABASE_HOST: db.example.com
+  SDKWORK_DATABASE_PORT: "5432"
+  SDKWORK_DATABASE_NAME: sdkwork_ai_prod
+  SDKWORK_DATABASE_SCHEMA: sdkwork_ai_prod
+  SDKWORK_DATABASE_USERNAME: sdkwork_ai_prod
+  SDKWORK_DATABASE_PASSWORD_FILE: /var/run/secrets/sdkwork/database-password
+  SDKWORK_DATABASE_SSL_MODE: require
+  SDKWORK_DATABASE_MAX_CONNECTIONS: "10"
   # Optional explicit scopes override DB discovery:
   # SDKWORK_RTC_RECONCILE_TENANT_SCOPES: "100:0,200:0"
   OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability.svc:4318

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sdkwork_communication_rtc_service::RtcPersistencePort;
 use sdkwork_database_repository::health::{HealthCheckResult, HealthChecker, HealthStatus};
-use sdkwork_database_sqlx::{DatabasePool, PoolError, create_pool_from_env};
+use sdkwork_database_sqlx::{create_pool_from_env, DatabasePool, PoolError};
 
 use crate::{RtcPostgresPersistencePort, RtcSqlitePersistencePort};
 
@@ -14,37 +14,35 @@ pub struct RtcPersistenceBootstrap {
 }
 
 const RTC_DATABASE_ENV_KEYS: &[&str] = &[
-    "SDKWORK_RTC_DATABASE_URL",
-    "SDKWORK_RTC_DATABASE_FILE",
-    "SDKWORK_RTC_DATABASE_ENGINE",
-    "SDKWORK_RTC_DATABASE_HOST",
-    "SDKWORK_RTC_DATABASE_PORT",
-    "SDKWORK_RTC_DATABASE_NAME",
-    "SDKWORK_RTC_DATABASE_SCHEMA",
-    "SDKWORK_RTC_DATABASE_USERNAME",
-    "SDKWORK_RTC_DATABASE_PASSWORD",
-    "SDKWORK_RTC_DATABASE_PASSWORD_FILE",
-    "SDKWORK_RTC_DATABASE_SSL_MODE",
-    "SDKWORK_RTC_DATABASE_MODE",
-    "SDKWORK_RTC_DATABASE_TABLE_PREFIX",
-    "SDKWORK_RTC_DATABASE_MAX_CONNECTIONS",
-    "SDKWORK_RTC_DATABASE_MIN_CONNECTIONS",
-    "SDKWORK_RTC_DATABASE_ACQUIRE_TIMEOUT",
-    "SDKWORK_RTC_DATABASE_IDLE_TIMEOUT",
-    "SDKWORK_RTC_DATABASE_MAX_LIFETIME",
+    "SDKWORK_DATABASE_URL",
+    "SDKWORK_DATABASE_FILE",
+    "SDKWORK_DATABASE_ENGINE",
+    "SDKWORK_DATABASE_HOST",
+    "SDKWORK_DATABASE_PORT",
+    "SDKWORK_DATABASE_NAME",
+    "SDKWORK_DATABASE_SCHEMA",
+    "SDKWORK_DATABASE_USERNAME",
+    "SDKWORK_DATABASE_PASSWORD",
+    "SDKWORK_DATABASE_PASSWORD_FILE",
+    "SDKWORK_DATABASE_SSL_MODE",
+    "SDKWORK_DATABASE_MAX_CONNECTIONS",
+    "SDKWORK_DATABASE_MIN_CONNECTIONS",
+    "SDKWORK_DATABASE_ACQUIRE_TIMEOUT",
+    "SDKWORK_DATABASE_IDLE_TIMEOUT",
+    "SDKWORK_DATABASE_MAX_LIFETIME",
 ];
 
 /// Connects an RTC persistence port using the standard SDKWork database env profile.
-pub async fn connect_rtc_persistence_from_env()
--> Result<Option<Arc<dyn RtcPersistencePort>>, PoolError> {
+pub async fn connect_rtc_persistence_from_env(
+) -> Result<Option<Arc<dyn RtcPersistencePort>>, PoolError> {
     Ok(connect_rtc_persistence_bootstrap_from_env()
         .await?
         .map(|bootstrap| bootstrap.persistence))
 }
 
 /// Connects RTC persistence and retains the framework pool for readiness probes.
-pub async fn connect_rtc_persistence_bootstrap_from_env()
--> Result<Option<RtcPersistenceBootstrap>, PoolError> {
+pub async fn connect_rtc_persistence_bootstrap_from_env(
+) -> Result<Option<RtcPersistenceBootstrap>, PoolError> {
     if !rtc_database_env_explicitly_configured() {
         return Ok(None);
     }
@@ -114,15 +112,15 @@ mod tests {
     use std::collections::HashMap;
 
     #[test]
-    fn rtc_database_env_is_not_configured_without_rtc_prefixed_keys() {
+    fn rtc_database_env_is_not_configured_without_database_keys() {
         assert!(!rtc_database_env_values_explicitly_configured(|_| None));
     }
 
     #[test]
-    fn rtc_database_env_is_configured_when_rtc_database_url_is_set() {
+    fn rtc_database_env_is_configured_when_database_url_is_set() {
         let values = HashMap::from([(
-            "SDKWORK_RTC_DATABASE_URL".to_string(),
-            "sqlite://./.runtime/rtc.sqlite".to_string(),
+            "SDKWORK_DATABASE_URL".to_string(),
+            "postgresql://sdkwork_ai_dev:secret@localhost/sdkwork_ai_dev".to_string(),
         )]);
         assert!(rtc_database_env_values_explicitly_configured(|key| {
             values.get(key).cloned()
@@ -130,8 +128,8 @@ mod tests {
     }
 
     #[test]
-    fn rtc_database_env_ignores_blank_rtc_prefixed_values() {
-        let values = HashMap::from([("SDKWORK_RTC_DATABASE_URL".to_string(), "   ".to_string())]);
+    fn rtc_database_env_ignores_blank_database_values() {
+        let values = HashMap::from([("SDKWORK_DATABASE_URL".to_string(), "   ".to_string())]);
         assert!(!rtc_database_env_values_explicitly_configured(|key| {
             values.get(key).cloned()
         }));

@@ -28,7 +28,7 @@ Copy `deployments/templates/server.env.example` to a protected location and set:
 - `SDKWORK_RTC_HYDRATE_TENANT_ID` / `SDKWORK_RTC_HYDRATE_ORGANIZATION_ID` — tenant scope loaded into in-memory runtime at API server startup
 - `SDKWORK_RTC_DEPLOYMENT_PROFILE` — `standalone` or `cloud`
 - `SDKWORK_RTC_SERVICE_LAYOUT=split-services`
-- Database URL and pool settings (`SDKWORK_DATABASE_*` or `SDKWORK_RTC_DATABASE_*` / `SDKWORK_CLAW_DATABASE_*` per deployment template)
+- Database URL and pool settings (`SDKWORK_DATABASE_*` per deployment template)
 - JWT / IAM verification settings consumed by `sdkwork-iam-web-adapter`
 - Provider plugin credentials (Volcengine, Tencent, Agora, Aliyun, LiveKit) via secret manager
 

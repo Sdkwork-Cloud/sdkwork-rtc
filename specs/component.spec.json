@@ -146,7 +146,7 @@
     ],
     "events": [],
     "configKeys": [
-      "SDKWORK_RTC_DATABASE_URL",
+      "SDKWORK_DATABASE_URL",
       "SDKWORK_RTC_HOSTING",
       "SDKWORK_RTC_SERVICE_LAYOUT",
       "SDKWORK_RTC_ENVIRONMENT",

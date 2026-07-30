@@ -3,16 +3,18 @@ services:
   postgres:
     image: postgres:16-bookworm
     environment:
-      POSTGRES_DB: sdkwork_rtc
-      POSTGRES_USER: sdkwork_rtc
-      POSTGRES_PASSWORD: replace-with-strong-password
+      POSTGRES_DB: sdkwork_ai_prod
+      POSTGRES_USER: sdkwork_ai_prod
+      POSTGRES_PASSWORD: ${SDKWORK_DATABASE_PASSWORD:?set SDKWORK_DATABASE_PASSWORD}
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sdkwork_rtc -d sdkwork_rtc"]
+      test: ["CMD-SHELL", "pg_isready -U sdkwork_ai_prod -d sdkwork_ai_prod"]
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - ./init/001-workspace-schema.sql:/docker-entrypoint-initdb.d/001-workspace-schema.sql:ro
 
   rtc-standalone-gateway:
     image: ghcr.io/sdkwork/rtc-standalone-gateway:latest
@@ -26,14 +28,15 @@ services:
       SDKWORK_RTC_DEPLOYMENT_PROFILE: standalone
       SDKWORK_RTC_SERVICE_LAYOUT: split-services
       SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND: 0.0.0.0:18088
-      SDKWORK_RTC_DATABASE_ENGINE: postgresql
-      SDKWORK_RTC_DATABASE_HOST: postgres
-      SDKWORK_RTC_DATABASE_PORT: "5432"
-      SDKWORK_RTC_DATABASE_NAME: sdkwork_rtc
-      SDKWORK_RTC_DATABASE_SCHEMA: public
-      SDKWORK_RTC_DATABASE_USERNAME: sdkwork_rtc
-      SDKWORK_RTC_DATABASE_PASSWORD: replace-with-strong-password
-      SDKWORK_RTC_DATABASE_SSL_MODE: disable
+      SDKWORK_DATABASE_ENGINE: postgresql
+      SDKWORK_DATABASE_HOST: postgres
+      SDKWORK_DATABASE_PORT: "5432"
+      SDKWORK_DATABASE_NAME: sdkwork_ai_prod
+      SDKWORK_DATABASE_SCHEMA: sdkwork_ai_prod
+      SDKWORK_DATABASE_USERNAME: sdkwork_ai_prod
+      SDKWORK_DATABASE_PASSWORD: ${SDKWORK_DATABASE_PASSWORD:?set SDKWORK_DATABASE_PASSWORD}
+      SDKWORK_DATABASE_SSL_MODE: disable
+      SDKWORK_DATABASE_MAX_CONNECTIONS: "20"
       SDKWORK_RTC_HYDRATE_TENANT_ID: "100"
       SDKWORK_RTC_HYDRATE_ORGANIZATION_ID: "0"
       SDKWORK_RTC_APP_CONTEXT_REQUIRE_SIGNATURE: "false"
