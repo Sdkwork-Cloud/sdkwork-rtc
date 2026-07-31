@@ -2,6 +2,7 @@
   "schemaVersion": 5,
   "kind": "sdkwork.app.topology",
   "appId": "sdkwork-rtc",
+  "applicationCode": "rtc",
   "archetype": "application-http-gateway",
   "profileRoot": "configs/topology",
   "profilePattern": "{deploymentProfile}.{environment}.env",
@@ -73,9 +74,6 @@
     "platform.api-gateway": {
       "httpHost": "api.sdkwork.com"
     }
-  },
-  "database": {
-    "appPrefix": "SDKWORK_RTC"
   },
   "components": {
     "applicationApiServer": {
