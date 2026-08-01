@@ -38,7 +38,7 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 sha2 = "0.10"
 uuid = { version = "1", features = ["v4"] }
-sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio-rustls", "any", "sqlite", "postgres", "json"] }
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "tls-rustls", "any", "sqlite", "postgres", "json"] }
 
 # SDKWork workspace members - declared once at workspace root
 sdkwork-rtc-database-host = { path = "crates/sdkwork-rtc-database-host" }
@@ -67,7 +67,7 @@ sdkwork-database-config = { path = "../sdkwork-database/crates/sdkwork-database-
 sdkwork-database-lifecycle = { path = "../sdkwork-database/crates/sdkwork-database-lifecycle", package = "sdkwork-database-lifecycle" }
 sdkwork-database-spi = { path = "../sdkwork-database/crates/sdkwork-database-spi", package = "sdkwork-database-spi" }
 sdkwork-database-repository = { path = "../sdkwork-database/crates/sdkwork-database-repository", package = "sdkwork-database-repository" }
-sdkwork-database-sqlx = { path = "../sdkwork-database/crates/sdkwork-database-sqlx", package = "sdkwork-database-sqlx" }
+sdkwork-database-sqlx = { path = "../sdkwork-database/crates/sdkwork-database-sqlx", package = "sdkwork-database-sqlx", features = ["postgres", "sqlite"] }
 sdkwork-iam-web-adapter = { path = "../sdkwork-iam/crates/sdkwork-iam-web-adapter" }
 sdkwork-web-axum = { path = "../sdkwork-web-framework/crates/sdkwork-web-axum" }
 sdkwork-web-bootstrap = { path = "../sdkwork-web-framework/crates/sdkwork-web-bootstrap" }

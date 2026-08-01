@@ -734,7 +734,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -836,7 +836,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -908,7 +908,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -1072,7 +1072,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pg_pool)
                 .await
                 .expect("postgres rtc schema should apply");

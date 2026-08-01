@@ -85,7 +85,7 @@ impl RtcSqliteSessionTokenGrantRepository {
         if participant_id.is_some() {
             sql.push_str(" AND participant_id = ?");
         }
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(RtcSessionTokenGrantStatus::Revoked.as_i32())
             .bind(revoked_at)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
@@ -124,7 +124,7 @@ impl RtcSqliteSessionTokenGrantRepository {
         if participant_id.is_some() {
             sql.push_str(" AND participant_id = ?");
         }
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(RtcSessionTokenGrantStatus::Revoked.as_i32())
             .bind(revoked_at)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
@@ -295,7 +295,7 @@ impl RtcPostgresSessionTokenGrantRepository {
               AND status = $6
             "#
         };
-        let mut query = sqlx::query(sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(RtcSessionTokenGrantStatus::Revoked.as_i32())
             .bind(revoked_at)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
@@ -494,7 +494,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");

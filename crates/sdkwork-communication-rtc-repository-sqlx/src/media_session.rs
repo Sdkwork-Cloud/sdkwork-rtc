@@ -406,7 +406,7 @@ impl RtcSqliteMediaSessionRepository {
         recorded_at: &str,
     ) -> RtcStorageResult<Option<RtcMediaSessionCompletionInput>> {
         let sql = sqlite_media_session_select_sql("WHERE uuid = ?", "");
-        let session_row = sqlx::query(&sql)
+        let session_row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -446,7 +446,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE session_id = ?",
             "ORDER BY joined_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -472,7 +472,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, joined_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -496,7 +496,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE session_id = ?",
             "ORDER BY started_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -512,7 +512,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE session_id = ?",
             "ORDER BY started_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -528,7 +528,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE session_id = ?",
             "ORDER BY sampled_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -552,7 +552,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, started_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -576,7 +576,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, started_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -600,7 +600,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, sampled_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -617,7 +617,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE tenant_id = ? AND organization_id = ?",
             "ORDER BY started_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -641,7 +641,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE tenant_id = ? AND organization_id = ? AND status IN (1, 2, 3) AND deleted_at IS NULL",
             "ORDER BY updated_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -693,7 +693,7 @@ impl RtcSqliteMediaSessionRepository {
             "#,
             "ORDER BY started_at ASC, id ASC LIMIT ?",
         );
-        let stale_rows = sqlx::query(&stale_sql)
+        let stale_rows = sqlx::query(sqlx::AssertSqlSafe(stale_sql.as_str()))
             .bind(query.preparing_cutoff.as_str())
             .bind(query.active_default_cutoff.as_str())
             .bind(limit)
@@ -709,7 +709,7 @@ impl RtcSqliteMediaSessionRepository {
             "#,
             "ORDER BY updated_at ASC, id ASC LIMIT ?",
         );
-        let drift_rows = sqlx::query(&drift_sql)
+        let drift_rows = sqlx::query(sqlx::AssertSqlSafe(drift_sql.as_str()))
             .bind(limit)
             .fetch_all(&self.pool)
             .await?;
@@ -723,7 +723,7 @@ impl RtcSqliteMediaSessionRepository {
             "#,
             "ORDER BY updated_at ASC, id ASC LIMIT ?",
         );
-        let failed_rows = sqlx::query(&failed_sql)
+        let failed_rows = sqlx::query(sqlx::AssertSqlSafe(failed_sql.as_str()))
             .bind(limit)
             .fetch_all(&self.pool)
             .await?;
@@ -819,7 +819,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE uuid = ? AND tenant_id = ? AND organization_id = ?",
             "",
         );
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
@@ -861,7 +861,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE tenant_id = ? AND organization_id = ? AND deleted_at IS NULL",
             "ORDER BY updated_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -879,7 +879,7 @@ impl RtcSqliteMediaSessionRepository {
             "WHERE tenant_id = ? AND organization_id = ? AND deleted_at IS NULL",
             "ORDER BY updated_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -937,7 +937,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(value) = status_filter {
@@ -990,7 +990,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(pattern) = needle.as_deref() {
@@ -1056,7 +1056,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(session_id);
@@ -1105,7 +1105,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(session_id) = session_id {
@@ -1155,7 +1155,7 @@ impl RtcSqliteMediaSessionRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(session_id) = session_id {
@@ -1584,7 +1584,7 @@ impl RtcPostgresMediaSessionRepository {
         recorded_at: &str,
     ) -> RtcStorageResult<Option<RtcMediaSessionCompletionInput>> {
         let sql = postgres_media_session_select_sql("WHERE uuid = $1", "");
-        let session_row = sqlx::query(&sql)
+        let session_row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -1624,7 +1624,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE session_id = $1",
             "ORDER BY joined_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -1651,7 +1651,7 @@ impl RtcPostgresMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, joined_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -1675,7 +1675,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE session_id = $1",
             "ORDER BY started_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -1691,7 +1691,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE session_id = $1",
             "ORDER BY started_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -1709,7 +1709,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE session_id = $1",
             "ORDER BY sampled_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .fetch_all(&self.pool)
             .await?;
@@ -1736,7 +1736,7 @@ impl RtcPostgresMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, started_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -1761,7 +1761,7 @@ impl RtcPostgresMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, started_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -1788,7 +1788,7 @@ impl RtcPostgresMediaSessionRepository {
             &format!("WHERE session_id IN ({placeholders})"),
             "ORDER BY session_id ASC, sampled_at ASC, id ASC",
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -1807,7 +1807,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE tenant_id = $1 AND organization_id = $2",
             "ORDER BY started_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -1831,7 +1831,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE tenant_id = $1 AND organization_id = $2 AND status IN (1, 2, 3) AND deleted_at IS NULL",
             "ORDER BY updated_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -1883,7 +1883,7 @@ impl RtcPostgresMediaSessionRepository {
             "#,
             "ORDER BY started_at ASC, id ASC LIMIT $3",
         );
-        let stale_rows = sqlx::query(&stale_sql)
+        let stale_rows = sqlx::query(sqlx::AssertSqlSafe(stale_sql.as_str()))
             .bind(query.preparing_cutoff.as_str())
             .bind(query.active_default_cutoff.as_str())
             .bind(limit)
@@ -1899,7 +1899,7 @@ impl RtcPostgresMediaSessionRepository {
             "#,
             "ORDER BY updated_at ASC, id ASC LIMIT $1",
         );
-        let drift_rows = sqlx::query(&drift_sql)
+        let drift_rows = sqlx::query(sqlx::AssertSqlSafe(drift_sql.as_str()))
             .bind(limit)
             .fetch_all(&self.pool)
             .await?;
@@ -1913,7 +1913,7 @@ impl RtcPostgresMediaSessionRepository {
             "#,
             "ORDER BY updated_at ASC, id ASC LIMIT $1",
         );
-        let failed_rows = sqlx::query(&failed_sql)
+        let failed_rows = sqlx::query(sqlx::AssertSqlSafe(failed_sql.as_str()))
             .bind(limit)
             .fetch_all(&self.pool)
             .await?;
@@ -2027,7 +2027,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE uuid = $1 AND tenant_id = $2 AND organization_id = $3",
             "",
         );
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(media_session_id)
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
@@ -2069,7 +2069,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE tenant_id = $1 AND organization_id = $2 AND deleted_at IS NULL",
             "ORDER BY updated_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -2087,7 +2087,7 @@ impl RtcPostgresMediaSessionRepository {
             "WHERE tenant_id = $1 AND organization_id = $2 AND deleted_at IS NULL",
             "ORDER BY updated_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -2156,7 +2156,7 @@ impl RtcPostgresMediaSessionRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(value) = status_filter {
@@ -2213,7 +2213,7 @@ impl RtcPostgresMediaSessionRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(pattern) = needle.as_deref() {
@@ -2283,7 +2283,7 @@ impl RtcPostgresMediaSessionRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(session_id);
@@ -2342,7 +2342,7 @@ impl RtcPostgresMediaSessionRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(session_id) = session_id {
@@ -2402,7 +2402,7 @@ impl RtcPostgresMediaSessionRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(session_id) = session_id {
@@ -3890,7 +3890,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -4008,7 +4008,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");

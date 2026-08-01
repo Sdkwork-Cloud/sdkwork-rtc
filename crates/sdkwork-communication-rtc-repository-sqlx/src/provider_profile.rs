@@ -106,7 +106,7 @@ impl RtcSqliteProviderProfileRepository {
         provider_profile_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderProfile>> {
         let sql = provider_profile_select_columns_sql("WHERE uuid = ?", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_profile_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -128,7 +128,7 @@ impl RtcSqliteProviderProfileRepository {
             "#,
             "ORDER BY is_default DESC, priority ASC, provider ASC, code ASC",
         );
-        let query = sqlx::query(&sql)
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(code)
@@ -154,7 +154,7 @@ impl RtcSqliteProviderProfileRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -181,7 +181,7 @@ impl RtcSqliteProviderProfileRepository {
             "#,
             "ORDER BY is_default DESC, priority ASC, provider ASC, code ASC",
         );
-        let query = sqlx::query(&sql)
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider)
@@ -229,7 +229,7 @@ impl RtcSqliteProviderProfileRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(provider) = provider {
@@ -288,7 +288,7 @@ impl RtcSqliteProviderProfileRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(provider) = provider {
@@ -475,7 +475,7 @@ impl RtcPostgresProviderProfileRepository {
         provider_profile_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderProfile>> {
         let sql = postgres_provider_profile_select_columns_sql("WHERE uuid = $1", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_profile_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -497,7 +497,7 @@ impl RtcPostgresProviderProfileRepository {
             "#,
             "ORDER BY is_default DESC, priority ASC, provider ASC, code ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(code)
@@ -524,7 +524,7 @@ impl RtcPostgresProviderProfileRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -551,7 +551,7 @@ impl RtcPostgresProviderProfileRepository {
             "#,
             "ORDER BY is_default DESC, priority ASC, provider ASC, code ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider)
@@ -611,7 +611,7 @@ impl RtcPostgresProviderProfileRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(provider) = provider {
@@ -681,7 +681,7 @@ impl RtcPostgresProviderProfileRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(provider) = provider {
@@ -1273,7 +1273,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -1421,7 +1421,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");

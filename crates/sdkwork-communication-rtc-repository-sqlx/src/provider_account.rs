@@ -94,7 +94,7 @@ impl RtcSqliteProviderAccountRepository {
         provider_account_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderAccount>> {
         let sql = provider_account_select_columns_sql("WHERE uuid = ?", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_account_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -120,7 +120,7 @@ impl RtcSqliteProviderAccountRepository {
             "#,
             "ORDER BY provider ASC, code ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider)
@@ -149,7 +149,7 @@ impl RtcSqliteProviderAccountRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -274,7 +274,7 @@ impl RtcSqliteProviderAccountRepository {
         provider_application_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderApplication>> {
         let sql = provider_application_select_columns_sql("WHERE uuid = ?", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_application_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -300,7 +300,7 @@ impl RtcSqliteProviderAccountRepository {
             "#,
             "ORDER BY provider ASC, code ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_account_id)
@@ -329,7 +329,7 @@ impl RtcSqliteProviderAccountRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -448,7 +448,7 @@ impl RtcSqliteProviderAccountRepository {
         provider_credential_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderCredential>> {
         let sql = provider_credential_select_columns_sql("WHERE uuid = ?", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_credential_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -473,7 +473,7 @@ impl RtcSqliteProviderAccountRepository {
             "#,
             "ORDER BY provider ASC, credential_role ASC, credential_label ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_application_id)
@@ -501,7 +501,7 @@ impl RtcSqliteProviderAccountRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -553,7 +553,7 @@ impl RtcSqliteProviderAccountRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(provider) = provider {
@@ -612,7 +612,7 @@ impl RtcSqliteProviderAccountRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_account_id);
@@ -664,7 +664,7 @@ impl RtcSqliteProviderAccountRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_application_id);
@@ -798,7 +798,7 @@ impl RtcPostgresProviderAccountRepository {
         provider_account_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderAccount>> {
         let sql = postgres_provider_account_select_columns_sql("WHERE uuid = $1", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_account_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -824,7 +824,7 @@ impl RtcPostgresProviderAccountRepository {
             "#,
             "ORDER BY provider ASC, code ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider)
@@ -853,7 +853,7 @@ impl RtcPostgresProviderAccountRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -978,7 +978,7 @@ impl RtcPostgresProviderAccountRepository {
         provider_application_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderApplication>> {
         let sql = postgres_provider_application_select_columns_sql("WHERE uuid = $1", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_application_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -1004,7 +1004,7 @@ impl RtcPostgresProviderAccountRepository {
             "#,
             "ORDER BY provider ASC, code ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_account_id)
@@ -1033,7 +1033,7 @@ impl RtcPostgresProviderAccountRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -1152,7 +1152,7 @@ impl RtcPostgresProviderAccountRepository {
         provider_credential_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderCredential>> {
         let sql = postgres_provider_credential_select_columns_sql("WHERE uuid = $1", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_credential_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -1177,7 +1177,7 @@ impl RtcPostgresProviderAccountRepository {
             "#,
             "ORDER BY provider ASC, credential_role ASC, credential_label ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_application_id)
@@ -1205,7 +1205,7 @@ impl RtcPostgresProviderAccountRepository {
             "#,
             "ORDER BY updated_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -1267,7 +1267,7 @@ impl RtcPostgresProviderAccountRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT ${limit_param} OFFSET ${offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(provider) = provider {
@@ -1330,7 +1330,7 @@ impl RtcPostgresProviderAccountRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_account_id);
@@ -1386,7 +1386,7 @@ impl RtcPostgresProviderAccountRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider_application_id);
@@ -2273,7 +2273,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");

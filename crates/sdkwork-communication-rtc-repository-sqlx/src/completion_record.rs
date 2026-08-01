@@ -371,7 +371,7 @@ impl RtcSqliteCompletionRecordRepository {
             ORDER BY session_id ASC, recorded_at ASC
             "#
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -709,7 +709,7 @@ impl RtcPostgresCompletionRecordRepository {
             ORDER BY session_id ASC, recorded_at ASC
             "#
         );
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         for session_id in session_ids {
             query = query.bind(session_id);
         }
@@ -1027,7 +1027,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -1163,7 +1163,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");

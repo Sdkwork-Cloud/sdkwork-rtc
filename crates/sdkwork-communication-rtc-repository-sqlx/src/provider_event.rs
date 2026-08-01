@@ -91,7 +91,7 @@ impl RtcSqliteProviderEventRepository {
         webhook_event_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderWebhookEventRecord>> {
         let sql = webhook_event_select_columns_sql("WHERE uuid = ?", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(webhook_event_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -108,7 +108,7 @@ impl RtcSqliteProviderEventRepository {
             "WHERE tenant_id = ? AND organization_id = ?",
             "ORDER BY received_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -129,7 +129,7 @@ impl RtcSqliteProviderEventRepository {
             "WHERE tenant_id = ? AND organization_id = ?",
             "ORDER BY received_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -150,7 +150,7 @@ impl RtcSqliteProviderEventRepository {
             "WHERE tenant_id = ? AND organization_id = ?",
             "ORDER BY requested_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -171,7 +171,7 @@ impl RtcSqliteProviderEventRepository {
             "WHERE tenant_id = ? AND organization_id = ?",
             "ORDER BY requested_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -192,7 +192,7 @@ impl RtcSqliteProviderEventRepository {
             "WHERE tenant_id = ? AND organization_id = ?",
             "ORDER BY captured_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -213,7 +213,7 @@ impl RtcSqliteProviderEventRepository {
             "WHERE tenant_id = ? AND organization_id = ?",
             "ORDER BY captured_at DESC, id DESC LIMIT ?",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -303,7 +303,7 @@ impl RtcSqliteProviderEventRepository {
         provider_query_job_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderQueryJobRecord>> {
         let sql = provider_query_job_select_columns_sql("WHERE uuid = ?", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_query_job_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -319,7 +319,7 @@ impl RtcSqliteProviderEventRepository {
             "WHERE provider_query_job_id = ?",
             "ORDER BY captured_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_query_job_id)
             .fetch_all(&self.pool)
             .await?;
@@ -359,7 +359,7 @@ impl RtcSqliteProviderEventRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(pattern) = needle.as_deref() {
@@ -415,7 +415,7 @@ impl RtcSqliteProviderEventRepository {
             &format!("WHERE {}", where_parts.join(" AND ")),
             &format!("ORDER BY {order_column} {direction}, id ASC LIMIT ? OFFSET ?"),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(job_id) = provider_query_job_id {
@@ -458,7 +458,7 @@ impl RtcSqliteProviderEventRepository {
             "#,
             "",
         );
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider)
@@ -555,7 +555,7 @@ impl RtcPostgresProviderEventRepository {
         webhook_event_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderWebhookEventRecord>> {
         let sql = postgres_webhook_event_select_columns_sql("WHERE uuid = $1", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(webhook_event_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -572,7 +572,7 @@ impl RtcPostgresProviderEventRepository {
             "WHERE tenant_id = $1 AND organization_id = $2",
             "ORDER BY received_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -593,7 +593,7 @@ impl RtcPostgresProviderEventRepository {
             "WHERE tenant_id = $1 AND organization_id = $2",
             "ORDER BY received_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -614,7 +614,7 @@ impl RtcPostgresProviderEventRepository {
             "WHERE tenant_id = $1 AND organization_id = $2",
             "ORDER BY requested_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -635,7 +635,7 @@ impl RtcPostgresProviderEventRepository {
             "WHERE tenant_id = $1 AND organization_id = $2",
             "ORDER BY requested_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -656,7 +656,7 @@ impl RtcPostgresProviderEventRepository {
             "WHERE tenant_id = $1 AND organization_id = $2",
             "ORDER BY captured_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .fetch_all(&self.pool)
@@ -677,7 +677,7 @@ impl RtcPostgresProviderEventRepository {
             "WHERE tenant_id = $1 AND organization_id = $2",
             "ORDER BY captured_at DESC, id DESC LIMIT $3",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(limit)
@@ -768,7 +768,7 @@ impl RtcPostgresProviderEventRepository {
         provider_query_job_id: &str,
     ) -> RtcStorageResult<Option<RtcProviderQueryJobRecord>> {
         let sql = postgres_provider_query_job_select_columns_sql("WHERE uuid = $1", "");
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_query_job_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -785,7 +785,7 @@ impl RtcPostgresProviderEventRepository {
             "WHERE provider_query_job_id = $1",
             "ORDER BY captured_at ASC, id ASC",
         );
-        let rows = sqlx::query(&sql)
+        let rows = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(provider_query_job_id)
             .fetch_all(&self.pool)
             .await?;
@@ -829,7 +829,7 @@ impl RtcPostgresProviderEventRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(pattern) = needle.as_deref() {
@@ -895,7 +895,7 @@ impl RtcPostgresProviderEventRepository {
                 "ORDER BY {order_column} {direction}, id ASC LIMIT {limit_param} OFFSET {offset_param}"
             ),
         );
-        let mut query = sqlx::query(&sql)
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?);
         if let Some(job_id) = provider_query_job_id {
@@ -938,7 +938,7 @@ impl RtcPostgresProviderEventRepository {
             "#,
             "",
         );
-        let row = sqlx::query(&sql)
+        let row = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(parse_i64_field("tenant_id", tenant_id)?)
             .bind(parse_i64_field("organization_id", organization_id)?)
             .bind(provider)
@@ -1783,7 +1783,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -1890,7 +1890,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
@@ -1935,7 +1935,7 @@ mod tests {
             .map(str::trim)
             .filter(|statement| !statement.is_empty())
         {
-            sqlx::query(statement)
+            sqlx::query(sqlx::AssertSqlSafe(statement))
                 .execute(&pool)
                 .await
                 .expect("rtc sqlite schema should apply");
