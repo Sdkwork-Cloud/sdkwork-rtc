@@ -11,18 +11,19 @@
   "dependencies": {
     "@sdkwork/auth-pc-react": "workspace:*",
     "@sdkwork/auth-runtime-pc-react": "workspace:*",
+    "@sdkwork/iam-contracts": "workspace:*",
+    "@sdkwork/rtc-app-sdk": "workspace:*",
     "@sdkwork/rtc-pc-admin-core": "workspace:*",
     "@sdkwork/rtc-pc-admin-shell": "workspace:*",
     "@sdkwork/rtc-pc-core": "workspace:*",
     "@sdkwork/rtc-pc-rtc": "workspace:*",
     "@sdkwork/rtc-pc-shell": "workspace:*",
     "@sdkwork/sdk-common": "^1.0.2",
+    "@tailwindcss/vite": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^7.17.0",
-    "@sdkwork/rtc-app-sdk": "workspace:*",
-    "tailwindcss": "catalog:",
-    "@tailwindcss/vite": "catalog:"
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",
