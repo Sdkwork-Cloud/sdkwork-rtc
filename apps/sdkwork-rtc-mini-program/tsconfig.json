@@ -3,7 +3,10 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "lib": ["ES2023", "DOM"],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
@@ -13,15 +16,10 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2023",
-    "types": ["node", "miniprogram-api-typings"],
-    "paths": {
-      "@sdkwork/rtc-app-sdk": [
-        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts"
-      ],
-      "@sdkwork/rtc-app-sdk/types": [
-        "../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts"
-      ]
-    }
+    "types": [
+      "node",
+      "miniprogram-api-typings"
+    ]
   },
   "include": [
     "packages/**/*.ts",

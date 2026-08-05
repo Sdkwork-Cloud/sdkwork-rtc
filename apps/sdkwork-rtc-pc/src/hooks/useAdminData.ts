@@ -124,7 +124,7 @@ export function useAdminData(
   const dashboard = useAsyncResource(
     async () => {
       const [profiles, schemas] = await Promise.all([
-        services.profiles.list({ pageSize: 200 }),
+        services.profiles.list({ limit: 200 }),
         services.schemas.listSchemas(),
       ]);
       return { profiles: profiles.items, schemas };

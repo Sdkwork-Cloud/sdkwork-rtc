@@ -26,13 +26,7 @@ export class ProviderPluginService {
     search?: string;
     sort?: string;
   }): Promise<ListResponse> {
-    const response = await this.client.rtcProviderPlugins.rtc.providerPlugins.list({
-      page: params?.page,
-      pageSize: params?.limit,
-      cursor: params?.cursor,
-      q: params?.search,
-      sort: params?.sort,
-    });
+    const response = await this.client.rtcProviderPlugins.rtc.providerPlugins.list();
     const page = readSdkWorkListPage<ProviderPluginDescriptor>(response);
     return {
       items: page.items,

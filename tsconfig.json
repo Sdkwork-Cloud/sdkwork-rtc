@@ -15,5 +15,11 @@
     "apps/sdkwork-rtc-h5/src/**",
     "apps/sdkwork-rtc-h5/vite.config.ts",
     "apps/sdkwork-rtc-mini-program/src/**"
-  ]
+  ],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "Bundler",
+    "module": "ESNext"
+  }
 }

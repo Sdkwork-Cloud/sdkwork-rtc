@@ -20,7 +20,7 @@ function unwrapSdkWorkPayload<T>(payload: unknown): T {
 }
 
 export function readSdkWorkListPage<TItem>(
-  payload: SdkWorkPageData<Record<string, unknown>> | undefined | null,
+  payload: unknown,
 ): { items: TItem[]; nextCursor?: string } {
   const data = unwrapSdkWorkPayload<SdkWorkPageData<Record<string, unknown>>>(payload);
 
@@ -52,15 +52,9 @@ export async function collectSdkWorkListPages<TItem>(
 }
 
 export function readSdkWorkItem<TItem>(
-  payload:
-    | SdkWorkResourceData<Record<string, unknown>>
-    | Record<string, unknown>
-    | undefined
-    | null,
+  payload: unknown,
 ): TItem {
-  const data = unwrapSdkWorkPayload<
-    SdkWorkResourceData<Record<string, unknown>> | Record<string, unknown>
-  >(payload);
+  const data = unwrapSdkWorkPayload<Record<string, unknown>>(payload);
 
   if ("item" in data && data.item !== undefined) {
     return data.item as TItem;
