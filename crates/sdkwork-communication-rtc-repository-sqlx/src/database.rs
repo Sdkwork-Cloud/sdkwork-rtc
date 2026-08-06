@@ -4,7 +4,7 @@ use sdkwork_communication_rtc_service::RtcPersistencePort;
 use sdkwork_database_repository::health::{HealthCheckResult, HealthChecker, HealthStatus};
 use sdkwork_database_sqlx::{create_pool_from_env, DatabasePool, PoolError};
 
-use crate::{RtcPostgresPersistencePort, RtcSqlitePersistencePort};
+use crate::RtcPostgresPersistencePort;
 
 /// RTC persistence bootstrap output, including the framework pool when available.
 #[derive(Clone)]
@@ -83,12 +83,9 @@ pub async fn persistence_from_database_pool(
                 .map_err(|error| sqlx::Error::Configuration(error.into()))?;
             Ok(Arc::new(RtcPostgresPersistencePort::new(pg_pool.clone())))
         }
-        DatabasePool::Sqlite(ref sqlite_pool, _) => {
-            sdkwork_rtc_database_host::bootstrap_rtc_database(pool.clone())
-                .await
-                .map_err(|error| sqlx::Error::Configuration(error.into()))?;
-            Ok(Arc::new(RtcSqlitePersistencePort::new(sqlite_pool.clone())))
-        }
+        _ => Err(sqlx::Error::Configuration(
+            "sdkwork-rtc persistence is authoritative-server PostgreSQL only; a PostgreSQL pool is required".into(),
+        )),
     }
 }
 
