@@ -1,7 +1,7 @@
 -- SDKWork rtc consolidated initialization baseline (postgres)
 -- Generated from crates/sdkwork-communication-rtc-repository-sqlx/src/schema/postgres_rtc.sql
 -- Application is in initialization state: full DDL lives here; migrations/ is reserved for post-GA changes.
-CREATE TABLE rtc_room (
+CREATE TABLE IF NOT EXISTS rtc_room (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -19,11 +19,11 @@ CREATE TABLE rtc_room (
     CONSTRAINT uk_rtc_room_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_room_tenant_owner_status_updated
+CREATE INDEX IF NOT EXISTS idx_rtc_room_tenant_owner_status_updated
     ON rtc_room (tenant_id, organization_id, owner_user_id, status, updated_at);
 
 -- Reserved DDL for future persistent room membership. Active call participation uses rtc_media_participant.
-CREATE TABLE rtc_room_participant (
+CREATE TABLE IF NOT EXISTS rtc_room_participant (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -42,10 +42,10 @@ CREATE TABLE rtc_room_participant (
     CONSTRAINT uk_rtc_room_participant_room_user UNIQUE (room_id, user_id)
 );
 
-CREATE INDEX idx_rtc_room_participant_room_state
+CREATE INDEX IF NOT EXISTS idx_rtc_room_participant_room_state
     ON rtc_room_participant (tenant_id, organization_id, room_id, state);
 
-CREATE TABLE rtc_media_session (
+CREATE TABLE IF NOT EXISTS rtc_media_session (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -78,16 +78,16 @@ CREATE TABLE rtc_media_session (
     CONSTRAINT uk_rtc_media_session_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_media_session_tenant_room_status_updated
+CREATE INDEX IF NOT EXISTS idx_rtc_media_session_tenant_room_status_updated
     ON rtc_media_session (tenant_id, organization_id, room_id, status, updated_at);
 
-CREATE INDEX idx_rtc_media_session_provider_status
+CREATE INDEX IF NOT EXISTS idx_rtc_media_session_provider_status
     ON rtc_media_session (provider_profile_id, status, updated_at);
 
-CREATE INDEX idx_rtc_media_session_completion_recorded
+CREATE INDEX IF NOT EXISTS idx_rtc_media_session_completion_recorded
     ON rtc_media_session (tenant_id, organization_id, completion_recorded_at);
 
-CREATE TABLE rtc_media_session_completion_record (
+CREATE TABLE IF NOT EXISTS rtc_media_session_completion_record (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -128,13 +128,13 @@ CREATE TABLE rtc_media_session_completion_record (
     CONSTRAINT uk_rtc_media_session_completion_record_session UNIQUE (session_id)
 );
 
-CREATE INDEX idx_rtc_media_session_completion_record_tenant_recorded
+CREATE INDEX IF NOT EXISTS idx_rtc_media_session_completion_record_tenant_recorded
     ON rtc_media_session_completion_record (tenant_id, organization_id, recorded_at);
 
-CREATE INDEX idx_rtc_media_session_completion_record_provider_recorded
+CREATE INDEX IF NOT EXISTS idx_rtc_media_session_completion_record_provider_recorded
     ON rtc_media_session_completion_record (provider_profile_id, recorded_at);
 
-CREATE TABLE rtc_media_artifact (
+CREATE TABLE IF NOT EXISTS rtc_media_artifact (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -168,13 +168,13 @@ CREATE TABLE rtc_media_artifact (
     CONSTRAINT ck_rtc_media_artifact_drive_space_type CHECK (drive_space_type = 'rtc')
 );
 
-CREATE INDEX idx_rtc_media_artifact_session_created
+CREATE INDEX IF NOT EXISTS idx_rtc_media_artifact_session_created
     ON rtc_media_artifact (tenant_id, organization_id, session_id, created_at);
 
-CREATE INDEX idx_rtc_media_artifact_owner_created
+CREATE INDEX IF NOT EXISTS idx_rtc_media_artifact_owner_created
     ON rtc_media_artifact (tenant_id, organization_id, owner_user_id, created_at);
 
-CREATE TABLE rtc_media_participant (
+CREATE TABLE IF NOT EXISTS rtc_media_participant (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -201,10 +201,10 @@ CREATE TABLE rtc_media_participant (
     CONSTRAINT uk_rtc_media_participant_session_user UNIQUE (session_id, user_id)
 );
 
-CREATE INDEX idx_rtc_media_participant_session_state
+CREATE INDEX IF NOT EXISTS idx_rtc_media_participant_session_state
     ON rtc_media_participant (tenant_id, organization_id, session_id, state);
 
-CREATE TABLE rtc_media_track (
+CREATE TABLE IF NOT EXISTS rtc_media_track (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -227,10 +227,10 @@ CREATE TABLE rtc_media_track (
     CONSTRAINT uk_rtc_media_track_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_media_track_session_participant_kind
+CREATE INDEX IF NOT EXISTS idx_rtc_media_track_session_participant_kind
     ON rtc_media_track (tenant_id, organization_id, session_id, participant_id, track_kind);
 
-CREATE TABLE rtc_quality_sample (
+CREATE TABLE IF NOT EXISTS rtc_quality_sample (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -247,10 +247,10 @@ CREATE TABLE rtc_quality_sample (
     CONSTRAINT uk_rtc_quality_sample_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_quality_sample_session_sampled
+CREATE INDEX IF NOT EXISTS idx_rtc_quality_sample_session_sampled
     ON rtc_quality_sample (tenant_id, organization_id, session_id, sampled_at);
 
-CREATE TABLE rtc_provider_account (
+CREATE TABLE IF NOT EXISTS rtc_provider_account (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -283,10 +283,10 @@ CREATE TABLE rtc_provider_account (
     )
 );
 
-CREATE INDEX idx_rtc_provider_account_scope_provider_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_account_scope_provider_status
     ON rtc_provider_account (tenant_id, organization_id, provider, status);
 
-CREATE TABLE rtc_provider_application (
+CREATE TABLE IF NOT EXISTS rtc_provider_application (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -324,13 +324,13 @@ CREATE TABLE rtc_provider_application (
     -- idx_rtc_provider_application_scope_provider_status
 );
 
-CREATE INDEX idx_rtc_provider_application_scope_provider_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_application_scope_provider_status
     ON rtc_provider_application (tenant_id, organization_id, provider, status);
 
-CREATE INDEX idx_rtc_provider_application_account_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_application_account_status
     ON rtc_provider_application (provider_account_id, status);
 
-CREATE TABLE rtc_provider_credential (
+CREATE TABLE IF NOT EXISTS rtc_provider_credential (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -366,7 +366,7 @@ CREATE TABLE rtc_provider_credential (
     -- idx_rtc_provider_credential_scope_role_status
 );
 
-CREATE INDEX idx_rtc_provider_credential_scope_role_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_credential_scope_role_status
     ON rtc_provider_credential (
         tenant_id,
         organization_id,
@@ -375,10 +375,10 @@ CREATE INDEX idx_rtc_provider_credential_scope_role_status
         status
     );
 
-CREATE INDEX idx_rtc_provider_credential_application_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_credential_application_status
     ON rtc_provider_credential (provider_application_id, status);
 
-CREATE TABLE rtc_provider_profile (
+CREATE TABLE IF NOT EXISTS rtc_provider_profile (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -415,16 +415,16 @@ CREATE TABLE rtc_provider_profile (
     CONSTRAINT uk_rtc_provider_profile_tenant_org_provider_code UNIQUE (tenant_id, organization_id, provider, code)
 );
 
-CREATE INDEX idx_rtc_provider_profile_tenant_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_profile_tenant_status
     ON rtc_provider_profile (tenant_id, organization_id, status);
 
-CREATE INDEX idx_rtc_provider_profile_tenant_provider_status_priority
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_profile_tenant_provider_status_priority
     ON rtc_provider_profile (tenant_id, organization_id, provider, status, priority);
 
-CREATE INDEX idx_rtc_provider_profile_tenant_default
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_profile_tenant_default
     ON rtc_provider_profile (tenant_id, organization_id, is_default, status, priority);
 
-CREATE TABLE rtc_provider_route (
+CREATE TABLE IF NOT EXISTS rtc_provider_route (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -448,13 +448,13 @@ CREATE TABLE rtc_provider_route (
     )
 );
 
-CREATE INDEX idx_rtc_provider_route_profile_type_status_priority
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_route_profile_type_status_priority
     ON rtc_provider_route (tenant_id, organization_id, provider_profile_id, route_type, status, priority);
 
-CREATE INDEX idx_rtc_provider_route_scope_status_priority
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_route_scope_status_priority
     ON rtc_provider_route (tenant_id, organization_id, route_type, region, status, priority);
 
-CREATE TABLE rtc_session_token_grant (
+CREATE TABLE IF NOT EXISTS rtc_session_token_grant (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -472,13 +472,13 @@ CREATE TABLE rtc_session_token_grant (
     CONSTRAINT uk_rtc_session_token_grant_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_session_token_grant_session_participant_status
+CREATE INDEX IF NOT EXISTS idx_rtc_session_token_grant_session_participant_status
     ON rtc_session_token_grant (tenant_id, organization_id, session_id, participant_id, status);
 
-CREATE INDEX idx_rtc_session_token_grant_expire_status
+CREATE INDEX IF NOT EXISTS idx_rtc_session_token_grant_expire_status
     ON rtc_session_token_grant (expire_at, status);
 
-CREATE TABLE rtc_provider_webhook_event (
+CREATE TABLE IF NOT EXISTS rtc_provider_webhook_event (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -516,13 +516,13 @@ CREATE TABLE rtc_provider_webhook_event (
     )
 );
 
-CREATE INDEX idx_rtc_provider_webhook_event_status_received
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_webhook_event_status_received
     ON rtc_provider_webhook_event (tenant_id, organization_id, status, received_at);
 
-CREATE INDEX idx_rtc_provider_webhook_event_room_received
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_webhook_event_room_received
     ON rtc_provider_webhook_event (tenant_id, organization_id, provider, room_id, received_at);
 
-CREATE TABLE rtc_provider_query_job (
+CREATE TABLE IF NOT EXISTS rtc_provider_query_job (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -547,16 +547,16 @@ CREATE TABLE rtc_provider_query_job (
     CONSTRAINT uk_rtc_provider_query_job_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_provider_query_job_provider_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_query_job_provider_status
     ON rtc_provider_query_job (tenant_id, organization_id, provider, status, requested_at);
 
-CREATE INDEX idx_rtc_provider_query_job_target_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_query_job_target_status
     ON rtc_provider_query_job (tenant_id, organization_id, target_kind, target_id, status, requested_at);
 
-CREATE INDEX idx_rtc_provider_query_job_provider_session_status
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_query_job_provider_session_status
     ON rtc_provider_query_job (tenant_id, organization_id, provider, provider_session_id, status, requested_at);
 
-CREATE TABLE rtc_provider_query_snapshot (
+CREATE TABLE IF NOT EXISTS rtc_provider_query_snapshot (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -575,16 +575,16 @@ CREATE TABLE rtc_provider_query_snapshot (
     CONSTRAINT uk_rtc_provider_query_snapshot_uuid UNIQUE (uuid)
 );
 
-CREATE INDEX idx_rtc_provider_query_snapshot_job_captured
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_query_snapshot_job_captured
     ON rtc_provider_query_snapshot (tenant_id, organization_id, provider_query_job_id, captured_at);
 
-CREATE INDEX idx_rtc_provider_query_snapshot_target_captured
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_query_snapshot_target_captured
     ON rtc_provider_query_snapshot (tenant_id, organization_id, target_kind, target_id, captured_at);
 
-CREATE INDEX idx_rtc_provider_query_snapshot_provider_session_captured
+CREATE INDEX IF NOT EXISTS idx_rtc_provider_query_snapshot_provider_session_captured
     ON rtc_provider_query_snapshot (tenant_id, organization_id, provider, provider_session_id, captured_at);
 
-CREATE TABLE rtc_media_session_idempotency (
+CREATE TABLE IF NOT EXISTS rtc_media_session_idempotency (
     id BIGINT NOT NULL,
     uuid VARCHAR(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -599,5 +599,5 @@ CREATE TABLE rtc_media_session_idempotency (
     CONSTRAINT uk_rtc_media_session_idempotency_scope UNIQUE (tenant_id, organization_id, idempotency_key)
 );
 
-CREATE INDEX idx_rtc_media_session_idempotency_session
+CREATE INDEX IF NOT EXISTS idx_rtc_media_session_idempotency_session
     ON rtc_media_session_idempotency (tenant_id, organization_id, media_session_id);
