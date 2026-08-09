@@ -1831,12 +1831,14 @@ dependencies = [
  "axum",
  "sdkwork-communication-rtc-repository-sqlx",
  "sdkwork-communication-rtc-service",
+ "sdkwork-database-sqlx",
  "sdkwork-routes-rtc-app-api",
  "sdkwork-routes-rtc-backend-api",
  "sdkwork-rtc-plugin-bootstrap",
  "sdkwork-rtc-service-host",
  "sdkwork-web-bootstrap",
  "sdkwork-web-core",
+ "serde_json",
  "tokio",
 ]
 

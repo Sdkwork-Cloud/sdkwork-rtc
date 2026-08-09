@@ -10,8 +10,12 @@ use sdkwork_web_core::{
 
 include!(concat!(env!("OUT_DIR"), "/rtc_backend_http_routes.rs"));
 
+pub fn gateway_route_manifest() -> HttpRouteManifest {
+    HttpRouteManifest::new(RTC_BACKEND_HTTP_ROUTES)
+}
+
 #[derive(Clone, Default)]
-struct RtcBackendContextInjector;
+pub struct RtcBackendContextInjector;
 
 impl DomainContextInjector for RtcBackendContextInjector {
     fn inject(&self, request: &mut axum::extract::Request, context: &WebRequestContext) {

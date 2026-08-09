@@ -1,16 +1,27 @@
 //! Gateway bootstrap for sdkwork-rtc.
 //! Multi-surface assembly merges business routers only; listeners add infra via `service_router`.
+//!
+//! The assembly exports the indivisible `ApiAssemblyContribution` contract
+//! (API_ASSEMBLY_SPEC.md section 4); the platform cloud gateway composes the
+//! contribution with its process-shared PostgreSQL pool.
 
-use axum::Router;
-use sdkwork_communication_rtc_repository_sqlx::connect_rtc_persistence_bootstrap_from_env;
-use sdkwork_communication_rtc_service::rtc_persistence_required;
-use sdkwork_rtc_plugin_bootstrap::build_builtin_provider_registry;
-use sdkwork_rtc_service_host::RtcProductService;
 use std::sync::Arc;
 
-pub struct ApiAssembly {
-    pub router: Router,
-}
+use axum::Router;
+use sdkwork_communication_rtc_repository_sqlx::{
+    connect_rtc_persistence_bootstrap_from_env, persistence_from_database_pool,
+};
+use sdkwork_communication_rtc_service::rtc_persistence_required;
+use sdkwork_database_sqlx::DatabasePool;
+use sdkwork_rtc_plugin_bootstrap::build_builtin_provider_registry;
+use sdkwork_rtc_service_host::RtcProductService;
+use sdkwork_web_bootstrap::{
+    ApiAssemblyContribution, DatabasePoolReadinessCheck, ReadinessCheck,
+};
+use sdkwork_web_core::HttpRouteManifest;
+
+/// Indivisible host-neutral API assembly contribution (web-bootstrap contract).
+pub type ApiAssembly = ApiAssemblyContribution;
 
 async fn bootstrap_product_service() -> anyhow::Result<Arc<RtcProductService>> {
     let registry = build_builtin_provider_registry()?;
@@ -37,6 +48,55 @@ async fn bootstrap_product_service() -> anyhow::Result<Arc<RtcProductService>> {
     Ok(Arc::new(service))
 }
 
+fn combined_route_manifest() -> HttpRouteManifest {
+    let manifests = [
+        sdkwork_routes_rtc_app_api::gateway_route_manifest(),
+        sdkwork_routes_rtc_backend_api::gateway_route_manifest(),
+    ];
+    HttpRouteManifest::from_owned_routes(
+        manifests
+            .into_iter()
+            .flat_map(|manifest| manifest.routes().to_vec())
+            .collect(),
+    )
+}
+
+fn openapi_documents() -> Result<Vec<serde_json::Value>, String> {
+    [
+        (
+            "sdkwork-rtc-app-api",
+            include_str!("../../../apis/app-api/communication/sdkwork-rtc-app-api.openapi.json"),
+        ),
+        (
+            "sdkwork-rtc-backend-api",
+            include_str!("../../../apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json"),
+        ),
+    ]
+    .into_iter()
+    .map(|(owner, source)| {
+        serde_json::from_str(source).map_err(|error| format!("invalid {owner} OpenAPI: {error}"))
+    })
+    .collect()
+}
+
+fn contribution_from(
+    router: Router,
+    readiness_check: Arc<dyn ReadinessCheck>,
+) -> Result<ApiAssembly, String> {
+    ApiAssemblyContribution::from_openapi_documents(
+        "sdkwork-rtc",
+        "SDKWork RTC API",
+        router,
+        combined_route_manifest(),
+        openapi_documents()?,
+        vec![
+            Arc::new(sdkwork_routes_rtc_app_api::RtcAppContextInjector),
+            Arc::new(sdkwork_routes_rtc_backend_api::RtcBackendContextInjector),
+        ],
+        readiness_check,
+    )
+}
+
 pub async fn assemble_api_router_with_service(
     service: Arc<RtcProductService>,
 ) -> ApiAssembly {
@@ -49,11 +109,42 @@ pub async fn assemble_api_router_with_service(
     )
     .await;
 
-    ApiAssembly {
-        router: Router::new().merge(app_router).merge(backend_router),
-    }
+    contribution_from(
+        Router::new().merge(app_router).merge(backend_router),
+        Arc::new(sdkwork_web_bootstrap::AlwaysReady),
+    )
+    .expect("rtc contribution contract is valid")
 }
 
 pub async fn assemble_api_router() -> anyhow::Result<ApiAssembly> {
     Ok(assemble_api_router_with_service(bootstrap_product_service().await?).await)
+}
+
+/// Assemble the RTC contribution against a caller-provided database pool so the
+/// platform cloud gateway can share its process-wide PostgreSQL pool.
+pub async fn assemble_api_router_with_pool(pool: DatabasePool) -> Result<ApiAssembly, String> {
+    let registry =
+        build_builtin_provider_registry().map_err(|error| format!("{error}"))?;
+    let mut service = RtcProductService::new(registry);
+    let persistence = persistence_from_database_pool(pool.clone())
+        .await
+        .map_err(|error| format!("connect RTC persistence: {error}"))?;
+    service = service.with_persistence(persistence);
+    let tenant_id =
+        std::env::var("SDKWORK_RTC_HYDRATE_TENANT_ID").unwrap_or_else(|_| "default".into());
+    let organization_id = std::env::var("SDKWORK_RTC_HYDRATE_ORGANIZATION_ID")
+        .unwrap_or_else(|_| "default".into());
+    service
+        .hydrate_from_persistence(tenant_id, organization_id)
+        .await
+        .map_err(|error| format!("hydrate RTC persistence: {error}"))?;
+    let service = Arc::new(service);
+
+    let router = Router::new()
+        .merge(sdkwork_routes_rtc_app_api::gateway_mount(service.clone()))
+        .merge(sdkwork_routes_rtc_backend_api::gateway_mount(service));
+    contribution_from(
+        router,
+        Arc::new(DatabasePoolReadinessCheck::new(pool)),
+    )
 }
