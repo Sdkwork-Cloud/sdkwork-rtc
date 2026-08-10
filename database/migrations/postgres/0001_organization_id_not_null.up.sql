@@ -18,74 +18,92 @@
 
 BEGIN;
 
+ALTER TABLE rtc_room ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_room SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_room ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_room ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_room_participant ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_room_participant SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_room_participant ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_room_participant ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_media_session ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_media_session SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_media_session ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_media_session ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_media_session_completion_record ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_media_session_completion_record SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_media_session_completion_record ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_media_session_completion_record ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_media_artifact ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_media_artifact SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_media_artifact ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_media_artifact ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_media_participant ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_media_participant SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_media_participant ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_media_participant ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_media_track ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_media_track SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_media_track ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_media_track ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_quality_sample ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_quality_sample SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_quality_sample ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_quality_sample ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_account ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_account SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_account ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_account ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_application ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_application SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_application ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_application ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_credential ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_credential SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_credential ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_credential ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_profile ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_profile SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_profile ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_profile ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_route ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_route SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_route ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_route ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_session_token_grant ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_session_token_grant SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_session_token_grant ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_session_token_grant ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_webhook_event ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_webhook_event SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_webhook_event ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_webhook_event ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_query_job ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_query_job SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_query_job ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_query_job ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_provider_query_snapshot ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_provider_query_snapshot SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_provider_query_snapshot ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_provider_query_snapshot ALTER COLUMN organization_id SET NOT NULL;
 
+ALTER TABLE rtc_media_session_idempotency ADD COLUMN IF NOT EXISTS organization_id BIGINT NOT NULL DEFAULT 0;
 UPDATE rtc_media_session_idempotency SET organization_id = 0 WHERE organization_id IS NULL;
 ALTER TABLE rtc_media_session_idempotency ALTER COLUMN organization_id SET DEFAULT 0;
 ALTER TABLE rtc_media_session_idempotency ALTER COLUMN organization_id SET NOT NULL;
