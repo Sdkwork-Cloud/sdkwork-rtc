@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-rtc-h5-call",
+    "displayName": "SDKWork RTC H5 Call",
+    "version": "0.1.0",
+    "type": "react-package",
+    "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-call",
+    "domain": "communication",
+    "declaredDomain": "communication",
+    "capability": "rtc-call",
+    "status": "ready",
+    "languages": ["typescript"],
+    "generated": false,
+    "private": true,
+    "manifests": ["package.json"]
+  },
+  "contracts": {
+    "publicExports": ["."],
+    "sdkClients": ["@sdkwork/rtc-sdk"],
+    "forbiddenDependencies": ["@sdkwork/im-sdk", "@sdkwork/im-h5-core"]
+  }
+}

@@ -39,6 +39,7 @@
       "types": "./src/composition/index.ts",
       "import": "./src/composition/index.ts",
       "default": "./src/composition/index.ts"
-    }
+    },
+    "./src/admin-styles.css": "./src/admin-styles.css"
   }
 }

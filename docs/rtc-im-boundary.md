@@ -70,7 +70,20 @@ IM PC app (`sdkwork-im-pc`) follows this split:
 | Signaling | `CallService.ts` | `@sdkwork/im-sdk` → `.calls.*` |
 | Media | `RtcMediaService.ts` | `@sdkwork/rtc-sdk` → join, publish, mute |
 
-Signaling must not import `@sdkwork/rtc-sdk`. Media must not re-implement call invite/accept/reject through RTC app APIs.
+IM H5 app (`sdkwork-im-h5`) follows the same split through the RTC authority
+call package (`sdkwork-rtc-h5-call`): the full-screen call UI, domain state
+machine, and media runtime live in `sdkwork-rtc`; the IM H5 side only injects
+an `RtcCallSignalingPort` adapter (`imH5CallSignaling.ts`) over `@sdkwork/im-sdk`
+`.calls.*` plus the shared H5 realtime connection, and bridges incoming calls
+to the `/call/voice|video/:id` routes. Without an injected signaling port the
+call page is fail-closed (typed unavailable state; never simulates a call).
+
+| Layer | Surface | SDK / API |
+|-------|---------|-----------|
+| Signaling | `@sdkwork/rtc-h5-call` port + IM adapter | `@sdkwork/im-sdk` → `.calls.*` |
+| UI + media | `@sdkwork/rtc-h5-call` (pages/components/media) | `@sdkwork/rtc-sdk` → join, publish, mute, bind |
+
+Signaling must not import `@sdkwork/rtc-sdk`. Media must not re-implement call invite/accept/reject through RTC app APIs. `sdkwork-rtc-h5-call` must not depend on any `@sdkwork/im-*` package.
 
 ## API Ownership
 

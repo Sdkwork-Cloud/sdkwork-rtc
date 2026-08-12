@@ -15,10 +15,12 @@
     "@sdkwork/rtc-app-sdk": "workspace:*",
     "@sdkwork/rtc-h5-admin-core": "workspace:*",
     "@sdkwork/rtc-h5-admin-shell": "workspace:*",
+    "@sdkwork/rtc-h5-call": "workspace:*",
     "@sdkwork/rtc-h5-core": "workspace:*",
     "@sdkwork/rtc-h5-rtc": "workspace:*",
     "@sdkwork/rtc-h5-shell": "workspace:*",
     "@sdkwork/sdk-common": "^1.0.2",
+    "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^7.17.0"

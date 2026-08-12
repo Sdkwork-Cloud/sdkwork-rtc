@@ -5,6 +5,7 @@ import {
   MediaSessionsPage,
   createRtcMediaWorkspaceManifest,
 } from "@sdkwork/rtc-h5-rtc";
+import { RtcCallPage } from "@sdkwork/rtc-h5-call";
 import { readRtcIamSessionTokens, toRtcAppSession } from "@sdkwork/rtc-h5-core";
 
 import { createAppServices } from "./bootstrap/appServices";
@@ -19,6 +20,11 @@ function parseMediaSessionRoute(route: string): string | null {
   return match?.[1] ?? null;
 }
 
+function parseCallRoute(route: string): "video" | "voice" | null {
+  const match = route.match(/^\/rtc\/calls\/(video|voice)$/u);
+  return (match?.[1] as "video" | "voice" | undefined) ?? null;
+}
+
 export function RtcApp({ route }: RtcAppProps) {
   const services = useMemo(() => createAppServices(), []);
   const environment = useMemo(() => resolveEnvironment(), []);
@@ -27,9 +33,25 @@ export function RtcApp({ route }: RtcAppProps) {
   const [participantId, setParticipantId] = useState(session?.userId ?? "user");
 
   const sessionId = parseMediaSessionRoute(route);
+  const callType = parseCallRoute(route);
   const activePath = route.startsWith("/rtc") ? route : workspace.routePath;
 
   const renderRoute = () => {
+    // Demo call surface: real signaling is injected by the host application
+    // (IM H5 adapter implements RtcCallSignalingPort). Without signaling the
+    // page is fail-closed and shows the typed unavailable state.
+    if (callType) {
+      return (
+        <RtcCallPage
+          type={callType}
+          targetName={session?.userId ?? "Demo User"}
+          onExit={() => {
+            window.location.hash = "#/rtc/media-sessions";
+          }}
+        />
+      );
+    }
+
     if (sessionId) {
       return (
         <MediaSessionRoomPage
