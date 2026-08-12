@@ -10,8 +10,8 @@ export interface RtcMediaSessionCompletionArtifactSummary {
   driveNodeId: string;
   driveNodeVersion?: string | null;
   providerArtifactId?: string | null;
-  startedAt?: string;
-  endedAt?: string;
+  startedAt?: string | null;
+  endedAt?: string | null;
   durationMs?: string | null;
   failureReason?: string | null;
 }

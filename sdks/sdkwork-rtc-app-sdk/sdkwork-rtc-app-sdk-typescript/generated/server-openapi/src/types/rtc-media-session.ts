@@ -12,9 +12,9 @@ export interface RtcMediaSession {
   status: 'preparing' | 'active' | 'closing' | 'ended' | 'failed';
   providerProfileId?: string | null;
   providerSessionId?: string | null;
-  startedAt?: string;
-  connectedAt?: string;
-  endedAt?: string;
+  startedAt?: string | null;
+  connectedAt?: string | null;
+  endedAt?: string | null;
   durationMs?: string | null;
   endReason?: string | null;
   endSource?: 'manual_close' | 'provider_webhook' | 'active_provider_query' | 'provider_state_sync' | 'timeout' | 'system_reconcile' | 'unknown' | null;
@@ -22,7 +22,7 @@ export interface RtcMediaSession {
   maxConcurrentParticipants?: number;
   qualitySummary?: RtcMediaSessionCompletionQualitySummary | null;
   recordingSummary?: RtcMediaSessionCompletionRecordingSummary | null;
-  completionRecordedAt?: string;
+  completionRecordedAt?: string | null;
   lastProviderWebhookEventId?: string | null;
   lastProviderQueryJobId?: string | null;
   participants: RtcMediaParticipant[];

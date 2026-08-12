@@ -10,7 +10,7 @@ export interface RtcActiveProviderProfile {
   environment: 'production' | 'staging' | 'development' | 'test' | 'sandbox';
   region?: string | null;
   providerAppId?: string | null;
-  endpoint?: string;
+  endpoint?: string | null;
   capabilities: RtcProviderCapabilitySnapshot;
   healthStatus: 'unknown' | 'healthy' | 'degraded' | 'unhealthy';
 }

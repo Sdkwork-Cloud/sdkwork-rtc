@@ -15,8 +15,8 @@ export interface RtcMediaArtifact {
   drive: RtcDriveReference;
   resource: MediaResource;
   resourceHash?: string | null;
-  startedAt?: string;
-  endedAt?: string;
+  startedAt?: string | null;
+  endedAt?: string | null;
   durationMs?: string | null;
   failureReason?: string | null;
   sourceProviderWebhookEventId?: string | null;

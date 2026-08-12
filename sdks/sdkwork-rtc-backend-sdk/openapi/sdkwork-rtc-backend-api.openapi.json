@@ -141,6 +141,30 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "processing",
+                "ready",
+                "failed",
+                "deleted"
+              ]
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
           }
         ],
         "responses": {
@@ -391,6 +415,38 @@
             "required": false,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "preparing",
+                "active",
+                "closing",
+                "ended",
+                "failed"
+              ]
+            }
+          },
+          {
+            "name": "ownerUserId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
@@ -991,7 +1047,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -1506,7 +1562,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -2151,7 +2207,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -3115,7 +3171,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -3457,7 +3513,7 @@
           "rtcProviderProfiles"
         ],
         "summary": "Rtc provider Profiles capabilities configure.",
-        "operationId": "rtc.providerProfiles.capabilities.update",
+        "operationId": "rtc.providerProfiles.capabilities.configure",
         "parameters": [
           {
             "name": "providerProfileId",
@@ -3862,7 +3918,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -4385,7 +4441,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -5062,7 +5118,7 @@
           "rtcProviderWebhooks"
         ],
         "summary": "Rtc provider Webhooks events receive.",
-        "operationId": "rtc.providerWebhooks.events.create",
+        "operationId": "rtc.providerWebhooks.events.receive",
         "parameters": [
           {
             "name": "provider",
@@ -5085,7 +5141,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -5397,6 +5453,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
           }
         ],
         "responses": {
@@ -5661,6 +5726,126 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "rtc.rooms.read",
         "x-sdkwork-auth-mode": "dual-token"
+      },
+      "post": {
+        "tags": [
+          "rtcRooms"
+        ],
+        "summary": "Rtc rooms create.",
+        "operationId": "rtc.rooms.create",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key scoped by tenant, organization, method, and path."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtcRoomResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-rtc",
+        "x-sdkwork-api-authority": "sdkwork-rtc-backend-api",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-rtc-backend-api",
+        "x-sdkwork-domain": "rtc",
+        "x-sdkwork-resource": "rtc.rooms",
+        "x-sdkwork-request-context": "WebRequestContext",
+        "x-sdkwork-api-surface": "backend-api",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "rtc.rooms.write",
+        "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-rate-limit-tier": "openApiDefault",
+        "x-sdkwork-idempotent": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RtcCreateRoomRequest"
+              }
+            }
+          }
+        }
       }
     },
     "/backend/v3/api/rtc/rooms/{roomId}": {
@@ -5916,6 +6101,14 @@
             "format": "uuid",
             "description": "Server-owned request correlation id."
           },
+          "i18nKey": {
+            "type": "string",
+            "description": "Optional stable localization key such as errors.result.40001."
+          },
+          "locale": {
+            "type": "string",
+            "description": "Optional effective BCP 47 locale used by framework message mapping."
+          },
           "errors": {
             "type": "array",
             "items": {
@@ -5943,6 +6136,28 @@
             "format": "int32",
             "minimum": 40011,
             "maximum": 40099
+          },
+          "i18nKey": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
           }
         }
       },
@@ -6308,6 +6523,26 @@
             }
           }
         ]
+      },
+      "RtcCreateRoomRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "roomId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
       },
       "RtcCloseMediaSessionRequest": {
         "type": "object",

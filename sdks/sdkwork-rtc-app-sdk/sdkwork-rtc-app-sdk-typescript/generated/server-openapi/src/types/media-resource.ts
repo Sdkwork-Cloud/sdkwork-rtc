@@ -8,8 +8,8 @@ export interface MediaResource {
   kind: MediaKind;
   source: MediaSource;
   /** Delivery URL. It is optional and may be temporary. */
-  url?: string;
-  publicUrl?: string;
+  url?: string | null;
+  publicUrl?: string | null;
   uri?: string | null;
   objectBlobId?: string | null;
   fileName?: string | null;

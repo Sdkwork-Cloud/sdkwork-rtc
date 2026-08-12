@@ -1,5 +1,5 @@
 import { appApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { RtcRoom } from '../types';
 
@@ -24,7 +24,7 @@ export class RtcRoomsRtcRoomsApi {
 
 
 /** Rtc rooms list. */
-  async list(params?: RtcRoomsRtcRoomsListParams): Promise<Record<string, unknown>> {
+  async list(params?: RtcRoomsRtcRoomsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: RtcRoom[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -35,12 +35,12 @@ export class RtcRoomsRtcRoomsApi {
       { name: 'ownerUserId', value: params?.ownerUserId, style: 'form', explode: true, allowReserved: false },
       { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/rtc/rooms`), query));
+    return this.client.request<{ items: RtcRoom[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/rooms`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc rooms retrieve. */
-  async retrieve(roomId: string): Promise<RtcRoom> {
-    return this.client.get<RtcRoom>(appApiPath(`/rtc/rooms/${serializePathParameter(roomId, { name: 'roomId', style: 'simple', explode: false })}`));
+  async retrieve(roomId: string, requestOptions?: ApiRequestOptions): Promise<RtcRoom> {
+    return this.client.request<RtcRoom>(appApiPath(`/rtc/rooms/${serializePathParameter(roomId, { name: 'roomId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 

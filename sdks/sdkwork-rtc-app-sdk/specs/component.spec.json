@@ -71,7 +71,7 @@
       "rtc.mediaSessions.create",
       "rtc.mediaSessions.retrieve",
       "rtc.mediaSessions.completionRecord.retrieve",
-      "rtc.mediaSessions.participantCredentials.create",
+      "rtc.mediaSessions.participantCredentials.issue",
       "rtc.mediaSessions.recordingArtifacts.list",
       "rtc.providerProfiles.active.list",
       "rtc.rooms.list",

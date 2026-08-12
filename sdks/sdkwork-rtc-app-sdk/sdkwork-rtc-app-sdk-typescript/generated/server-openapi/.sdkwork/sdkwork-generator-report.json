@@ -12,11 +12,13 @@
   "mode": "apply",
   "hasChanges": true,
   "hasDestructiveChanges": false,
-  "changeFingerprint": "e38bd8421f2fb867a4dfb40ba584b6a38b5feb3eccd92ee218426c21ba7c2fa9",
+  "changeFingerprint": "443e00862dd6eca4b2ce6c079899d37f8a1f0e6f4d67c3858d25279a5487a57e",
   "changeImpact": {
     "schemaVersion": 1,
     "areas": [
       "api-surface",
+      "models",
+      "runtime",
       "build-metadata",
       "documentation"
     ],
@@ -24,14 +26,50 @@
       {
         "area": "api-surface",
         "paths": [
-          "src/api/rtc-rooms.ts"
+          "src/api/rtc-media-sessions.ts",
+          "src/api/rtc-participant-credentials.ts",
+          "src/api/rtc-provider-profiles.ts",
+          "src/api/rtc-recording-artifacts.ts",
+          "src/api/rtc-rooms.ts",
+          "src/http/client.ts"
+        ]
+      },
+      {
+        "area": "models",
+        "paths": [
+          "src/types/field-error.ts",
+          "src/types/media-access.ts",
+          "src/types/media-resource.ts",
+          "src/types/problem-detail.ts",
+          "src/types/rtc-active-provider-profile-list-response.ts",
+          "src/types/rtc-active-provider-profile.ts",
+          "src/types/rtc-media-artifact-list-response.ts",
+          "src/types/rtc-media-artifact.ts",
+          "src/types/rtc-media-participant.ts",
+          "src/types/rtc-media-session-completion-artifact-summary.ts",
+          "src/types/rtc-media-session-completion-participant-summary.ts",
+          "src/types/rtc-media-session-completion-quality-summary.ts",
+          "src/types/rtc-media-session-completion-record-response.ts",
+          "src/types/rtc-media-session-completion-record.ts",
+          "src/types/rtc-media-session-completion-track-summary.ts",
+          "src/types/rtc-media-session-list-response.ts",
+          "src/types/rtc-media-session-response.ts",
+          "src/types/rtc-media-session.ts",
+          "src/types/rtc-participant-credential-response.ts",
+          "src/types/rtc-room-list-response.ts",
+          "src/types/rtc-room-response.ts"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "src/http/client.ts"
         ]
       },
       {
         "area": "build-metadata",
         "paths": [
-          "package.json",
-          "sdkwork-sdk.json"
+          "package.json"
         ]
       },
       {
@@ -42,18 +80,16 @@
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, build-metadata, documentation. Verification is required."
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required."
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "high",
+    "riskLevel": "medium",
     "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "backed-up-generated-files",
-      "manual-review-required",
       "verification-required"
     ]
   },
@@ -65,7 +101,7 @@
         "id": "verify-check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, build-metadata, documentation.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -83,7 +119,7 @@
         "id": "verify-build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, build-metadata, documentation.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -102,13 +138,13 @@
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, build-metadata, documentation.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -126,7 +162,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, build-metadata, documentation.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -165,19 +201,44 @@
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 4,
+    "writtenFiles": 29,
     "skippedScaffoldFiles": 2,
-    "skippedUnchangedGeneratedFiles": 55,
+    "skippedUnchangedGeneratedFiles": 30,
     "deletedGeneratedFiles": 0,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "e38bd8421f2fb867a4dfb40ba584b6a38b5feb3eccd92ee218426c21ba7c2fa9",
+    "changeFingerprint": "443e00862dd6eca4b2ce6c079899d37f8a1f0e6f4d67c3858d25279a5487a57e",
     "changes": {
       "createdGeneratedFiles": [],
       "updatedGeneratedFiles": [
         "package.json",
         "README.md",
-        "sdkwork-sdk.json",
-        "src/api/rtc-rooms.ts"
+        "src/api/rtc-media-sessions.ts",
+        "src/api/rtc-participant-credentials.ts",
+        "src/api/rtc-provider-profiles.ts",
+        "src/api/rtc-recording-artifacts.ts",
+        "src/api/rtc-rooms.ts",
+        "src/http/client.ts",
+        "src/types/field-error.ts",
+        "src/types/media-access.ts",
+        "src/types/media-resource.ts",
+        "src/types/problem-detail.ts",
+        "src/types/rtc-active-provider-profile-list-response.ts",
+        "src/types/rtc-active-provider-profile.ts",
+        "src/types/rtc-media-artifact-list-response.ts",
+        "src/types/rtc-media-artifact.ts",
+        "src/types/rtc-media-participant.ts",
+        "src/types/rtc-media-session-completion-artifact-summary.ts",
+        "src/types/rtc-media-session-completion-participant-summary.ts",
+        "src/types/rtc-media-session-completion-quality-summary.ts",
+        "src/types/rtc-media-session-completion-record-response.ts",
+        "src/types/rtc-media-session-completion-record.ts",
+        "src/types/rtc-media-session-completion-track-summary.ts",
+        "src/types/rtc-media-session-list-response.ts",
+        "src/types/rtc-media-session-response.ts",
+        "src/types/rtc-media-session.ts",
+        "src/types/rtc-participant-credential-response.ts",
+        "src/types/rtc-room-list-response.ts",
+        "src/types/rtc-room-response.ts"
       ],
       "unchangedGeneratedFiles": [
         "bin/publish-core.mjs",
@@ -187,50 +248,25 @@
         "bin/sdk-gen.sh",
         "CHANGELOG.md",
         "LICENSE",
+        "sdkwork-sdk.json",
         "src/api/base.ts",
         "src/api/index.ts",
         "src/api/paths.ts",
-        "src/api/rtc-media-sessions.ts",
-        "src/api/rtc-participant-credentials.ts",
-        "src/api/rtc-provider-profiles.ts",
-        "src/api/rtc-recording-artifacts.ts",
         "src/auth/index.ts",
-        "src/http/client.ts",
         "src/http/index.ts",
         "src/index.ts",
         "src/sdk.ts",
         "src/types/common.ts",
-        "src/types/field-error.ts",
         "src/types/index.ts",
-        "src/types/media-access.ts",
         "src/types/media-checksum.ts",
         "src/types/media-kind.ts",
-        "src/types/media-resource.ts",
         "src/types/media-source.ts",
-        "src/types/problem-detail.ts",
-        "src/types/rtc-active-provider-profile-list-response.ts",
-        "src/types/rtc-active-provider-profile.ts",
         "src/types/rtc-create-media-session-request.ts",
         "src/types/rtc-drive-reference.ts",
-        "src/types/rtc-media-artifact-list-response.ts",
-        "src/types/rtc-media-artifact.ts",
-        "src/types/rtc-media-participant.ts",
-        "src/types/rtc-media-session-completion-artifact-summary.ts",
-        "src/types/rtc-media-session-completion-participant-summary.ts",
-        "src/types/rtc-media-session-completion-quality-summary.ts",
-        "src/types/rtc-media-session-completion-record-response.ts",
-        "src/types/rtc-media-session-completion-record.ts",
         "src/types/rtc-media-session-completion-recording-summary.ts",
-        "src/types/rtc-media-session-completion-track-summary.ts",
-        "src/types/rtc-media-session-list-response.ts",
-        "src/types/rtc-media-session-response.ts",
-        "src/types/rtc-media-session.ts",
         "src/types/rtc-operation-command.ts",
-        "src/types/rtc-participant-credential-response.ts",
         "src/types/rtc-participant-credential.ts",
         "src/types/rtc-provider-capability-snapshot.ts",
-        "src/types/rtc-room-list-response.ts",
-        "src/types/rtc-room-response.ts",
         "src/types/rtc-room.ts",
         "src/types/sdk-work-api-response.ts",
         "src/types/sdk-work-platform-error-code.ts",
@@ -242,15 +278,14 @@
         "custom/build-runtime.mjs",
         "custom/README.md"
       ],
-      "backedUpFiles": [
-        "package.json",
-        "sdkwork-sdk.json"
-      ]
+      "backedUpFiles": []
     },
     "impact": {
       "schemaVersion": 1,
       "areas": [
         "api-surface",
+        "models",
+        "runtime",
         "build-metadata",
         "documentation"
       ],
@@ -258,14 +293,50 @@
         {
           "area": "api-surface",
           "paths": [
-            "src/api/rtc-rooms.ts"
+            "src/api/rtc-media-sessions.ts",
+            "src/api/rtc-participant-credentials.ts",
+            "src/api/rtc-provider-profiles.ts",
+            "src/api/rtc-recording-artifacts.ts",
+            "src/api/rtc-rooms.ts",
+            "src/http/client.ts"
+          ]
+        },
+        {
+          "area": "models",
+          "paths": [
+            "src/types/field-error.ts",
+            "src/types/media-access.ts",
+            "src/types/media-resource.ts",
+            "src/types/problem-detail.ts",
+            "src/types/rtc-active-provider-profile-list-response.ts",
+            "src/types/rtc-active-provider-profile.ts",
+            "src/types/rtc-media-artifact-list-response.ts",
+            "src/types/rtc-media-artifact.ts",
+            "src/types/rtc-media-participant.ts",
+            "src/types/rtc-media-session-completion-artifact-summary.ts",
+            "src/types/rtc-media-session-completion-participant-summary.ts",
+            "src/types/rtc-media-session-completion-quality-summary.ts",
+            "src/types/rtc-media-session-completion-record-response.ts",
+            "src/types/rtc-media-session-completion-record.ts",
+            "src/types/rtc-media-session-completion-track-summary.ts",
+            "src/types/rtc-media-session-list-response.ts",
+            "src/types/rtc-media-session-response.ts",
+            "src/types/rtc-media-session.ts",
+            "src/types/rtc-participant-credential-response.ts",
+            "src/types/rtc-room-list-response.ts",
+            "src/types/rtc-room-response.ts"
+          ]
+        },
+        {
+          "area": "runtime",
+          "paths": [
+            "src/http/client.ts"
           ]
         },
         {
           "area": "build-metadata",
           "paths": [
-            "package.json",
-            "sdkwork-sdk.json"
+            "package.json"
           ]
         },
         {
@@ -276,18 +347,18 @@
         }
       ],
       "requiresVerification": true,
-      "summary": "Detected impact areas: api-surface, build-metadata, documentation. Verification is required."
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required."
     },
     "verificationPlan": {
       "shouldRun": true,
       "runPhase": "now",
-      "summary": "Detected impact areas: api-surface, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
       "steps": [
         {
           "id": "check",
           "title": "Unified package check",
           "required": true,
-          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, build-metadata, documentation.",
+          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
           "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [
@@ -305,7 +376,7 @@
           "id": "build",
           "title": "Unified package build",
           "required": true,
-          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, build-metadata, documentation.",
+          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
           "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [
@@ -323,21 +394,16 @@
     },
     "executionDecision": {
       "schemaVersion": 1,
-      "riskLevel": "high",
+      "riskLevel": "medium",
       "nextAction": "verify",
       "requiresManualReview": false,
       "applyRequiresExpectedFingerprint": false,
       "summary": "Changes have been applied. Run the required verification plan now.",
       "reasons": [
-        "backed-up-generated-files",
-        "manual-review-required",
         "verification-required"
       ]
     },
-    "backedUpFiles": [
-      "package.json",
-      "sdkwork-sdk.json"
-    ],
+    "backedUpFiles": [],
     "preservedLegacyFiles": false
   }
 }

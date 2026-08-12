@@ -959,7 +959,7 @@
     {
       "method": "PUT",
       "path": "/backend/v3/api/rtc/provider_profiles/{providerProfileId}/capabilities",
-      "operationId": "rtc.providerProfiles.capabilities.update",
+      "operationId": "rtc.providerProfiles.capabilities.configure",
       "tags": [
         "rtcProviderProfiles"
       ],
@@ -1415,7 +1415,7 @@
     {
       "method": "POST",
       "path": "/backend/v3/api/rtc/provider_webhooks/{provider}/events",
-      "operationId": "rtc.providerWebhooks.events.create",
+      "operationId": "rtc.providerWebhooks.events.receive",
       "tags": [
         "rtcProviderWebhooks"
       ],
@@ -1542,6 +1542,42 @@
         "response": "RtcRoomListResponse",
         "problem": "ProblemDetail"
       },
+      "ownership": {
+        "owner": "sdkwork-rtc",
+        "apiAuthority": "sdkwork-rtc-backend-api"
+      },
+      "source": {
+        "packageName": "sdkwork-routes-rtc-backend-api",
+        "file": "crates/sdkwork-routes-rtc-backend-api/src/paths.rs"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/rtc/rooms",
+      "operationId": "rtc.rooms.create",
+      "tags": [
+        "rtcRooms"
+      ],
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api",
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "rtc.rooms.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "crate::handlers",
+        "name": "rooms_create"
+      },
+      "schemas": {
+        "request": "RtcCreateRoomRequest",
+        "response": "RtcRoomResponse",
+        "problem": "ProblemDetail"
+      },
+      "rateLimitTier": "openApiDefault",
+      "idempotent": true,
       "ownership": {
         "owner": "sdkwork-rtc",
         "apiAuthority": "sdkwork-rtc-backend-api"

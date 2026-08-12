@@ -1,5 +1,5 @@
 import { appApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { RtcActiveProviderProfile } from '../types';
 
@@ -21,7 +21,7 @@ export class RtcProviderProfilesRtcProviderProfilesActiveApi {
 
 
 /** Rtc provider Profiles active list. */
-  async list(params?: RtcProviderProfilesRtcProviderProfilesActiveListParams): Promise<Record<string, unknown>> {
+  async list(params?: RtcProviderProfilesRtcProviderProfilesActiveListParams, requestOptions?: ApiRequestOptions): Promise<{ items: RtcActiveProviderProfile[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -29,7 +29,7 @@ export class RtcProviderProfilesRtcProviderProfilesActiveApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/rtc/provider_profiles/active`), query));
+    return this.client.request<{ items: RtcActiveProviderProfile[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/provider_profiles/active`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 

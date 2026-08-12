@@ -84,6 +84,14 @@ pub const RTC_BACKEND_ROUTES: &[RtcBackendRoute] = &[
         permission: "rtc.rooms.read",
     },
     RtcBackendRoute {
+        method: "POST",
+        path: RTC_BACKEND_ROOMS_PATH,
+        tag: "rtcRooms",
+        operation_id: "rtc.rooms.create",
+        owner: RTC_OWNER,
+        permission: "rtc.rooms.write",
+    },
+    RtcBackendRoute {
         method: "GET",
         path: RTC_BACKEND_ROOM_PATH,
         tag: "rtcRooms",

@@ -438,6 +438,25 @@ function operationListFilterParameters(route) {
         queryParameter("ownerUserId", { type: "string" }),
         queryParameter("createdAfter", { type: "string", format: "date-time" }),
       ];
+    case "rtc.mediaSessions.list":
+      return [
+        queryParameter("status", {
+          type: "string",
+          enum: ["preparing", "active", "closing", "ended", "failed"],
+        }),
+        queryParameter("ownerUserId", { type: "string" }),
+        queryParameter("createdAfter", { type: "string", format: "date-time" }),
+      ];
+    case "rtc.mediaArtifacts.list":
+      return [
+        queryParameter("status", {
+          type: "string",
+          enum: ["pending", "processing", "ready", "failed", "deleted"],
+        }),
+        queryParameter("createdAfter", { type: "string", format: "date-time" }),
+      ];
+    case "rtc.qualitySamples.list":
+      return [queryParameter("createdAfter", { type: "string", format: "date-time" })];
     default:
       return [];
   }
@@ -666,6 +685,15 @@ function buildSchemas() {
       },
     }),
     RtcRoomResponse: envelope({ $ref: "#/components/schemas/RtcRoom" }),
+    RtcCreateRoomRequest: {
+      type: "object",
+      additionalProperties: false,
+      required: ["title"],
+      properties: {
+        title: { type: "string", minLength: 1, maxLength: 120 },
+        roomId: { type: ["string", "null"] },
+      },
+    },
     RtcCreateMediaSessionRequest: {
       type: "object",
       additionalProperties: false,
@@ -2132,6 +2160,8 @@ function operationRequestSchemaName(route) {
       return "RtcProviderWebhookReceiveRequest";
     case "rtc.providerQueryJobs.create":
       return "RtcProviderQueryJobCreateRequest";
+    case "rtc.rooms.create":
+      return "RtcCreateRoomRequest";
     default:
       return usesJsonBody(route.method.toLowerCase()) ? "RtcOperationCommand" : null;
   }
@@ -2142,6 +2172,7 @@ function operationResponseSchemaName(route) {
     case "rtc.rooms.list":
       return "RtcRoomListResponse";
     case "rtc.rooms.retrieve":
+    case "rtc.rooms.create":
       return "RtcRoomResponse";
     case "rtc.mediaSessions.list":
       return "RtcMediaSessionListResponse";
