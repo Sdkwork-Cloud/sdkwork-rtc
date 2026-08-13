@@ -9,9 +9,9 @@ export interface RtcMediaParticipant {
   videoMuted?: boolean;
   screenShareActive?: boolean;
   providerParticipantId?: string | null;
-  joinedAt?: string;
-  leftAt?: string;
+  joinedAt?: string | null;
+  leftAt?: string | null;
   durationMs?: string | null;
   leaveReason?: string | null;
-  lastSeenAt?: string;
+  lastSeenAt?: string | null;
 }

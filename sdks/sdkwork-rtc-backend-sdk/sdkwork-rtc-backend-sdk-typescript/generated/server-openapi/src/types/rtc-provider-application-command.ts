@@ -6,10 +6,10 @@ export interface RtcProviderApplicationCommand {
   region?: string | null;
   providerApplicationId: string;
   providerApplicationIdKind: 'volcengine_app_id' | 'tencent_sdk_app_id' | 'provider_application_id';
-  accessEndpoint?: string;
-  apiEndpoint?: string;
+  accessEndpoint?: string | null;
+  apiEndpoint?: string | null;
   apiHost?: string | null;
   apiVersion?: string | null;
-  webhookCallbackUrl?: string;
+  webhookCallbackUrl?: string | null;
   configSnapshot: Record<string, unknown>;
 }

@@ -15,9 +15,9 @@ export interface RtcMediaSessionCompletionRecord {
   providerSessionId?: string | null;
   mediaMode: 'audio' | 'video' | 'live';
   sessionStatus: 'preparing' | 'active' | 'closing' | 'ended' | 'failed';
-  startedAt?: string;
-  connectedAt?: string;
-  endedAt?: string;
+  startedAt?: string | null;
+  connectedAt?: string | null;
+  endedAt?: string | null;
   durationMs?: string | null;
   endReason?: string | null;
   endSource?: 'manual_close' | 'provider_webhook' | 'active_provider_query' | 'provider_state_sync' | 'timeout' | 'system_reconcile' | 'unknown' | null;

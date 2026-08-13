@@ -13,6 +13,6 @@ export interface RtcProviderQueryJob {
   providerRequestId?: string | null;
   status: 'requested' | 'running' | 'completed' | 'failed';
   requestedAt: string;
-  completedAt?: string;
+  completedAt?: string | null;
   resultSnapshot?: Record<string, unknown>;
 }

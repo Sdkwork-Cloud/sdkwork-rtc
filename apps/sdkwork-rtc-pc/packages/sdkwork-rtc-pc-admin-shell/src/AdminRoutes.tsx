@@ -1,15 +1,14 @@
+import { ADMIN_SECTIONS } from "./AdminHeader";
+
+/**
+ * Route metadata for the RTC admin surfaces (grouped by section). Consumed
+ * by hosts for documentation/navigation; route rendering lives in the app.
+ */
 export function AdminRoutes() {
   return {
-    routes: [
-      { path: "#/admin/dashboard", label: "Dashboard" },
-      { path: "#/admin/provider-accounts", label: "Provider Accounts" },
-      { path: "#/admin/provider-profiles", label: "Provider Profiles" },
-      { path: "#/admin/provider-routes", label: "Provider Routes" },
-      { path: "#/admin/providers", label: "Providers" },
-      { path: "#/admin/wizard", label: "Setup Wizard" },
-      { path: "#/admin/rooms", label: "Rooms" },
-      { path: "#/admin/webhook-events", label: "Webhook Events" },
-      { path: "#/admin/query-jobs", label: "Query Jobs" },
-    ],
+    sections: ADMIN_SECTIONS,
+    routes: ADMIN_SECTIONS.flatMap((section) =>
+      section.routes.map((path) => ({ path: `#${path}`, section: section.key, label: path })),
+    ),
   };
 }

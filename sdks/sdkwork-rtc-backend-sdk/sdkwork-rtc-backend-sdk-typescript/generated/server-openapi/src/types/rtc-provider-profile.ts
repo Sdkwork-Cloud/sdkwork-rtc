@@ -13,7 +13,7 @@ export interface RtcProviderProfile {
   environment: 'production' | 'staging' | 'development' | 'test' | 'sandbox';
   region?: string | null;
   providerAppId?: string | null;
-  endpoint?: string;
+  endpoint?: string | null;
   /** Reference to secret-managed provider credentials. Raw provider secrets are never returned by the RTC API. */
   credentialRef?: string | null;
   credentialFingerprint?: string | null;
@@ -23,10 +23,10 @@ export interface RtcProviderProfile {
   capabilities: RtcProviderCapabilitySnapshot;
   configSnapshot?: Record<string, unknown>;
   healthStatus: 'unknown' | 'healthy' | 'degraded' | 'unhealthy';
-  lastVerifiedAt?: string;
+  lastVerifiedAt?: string | null;
   lastVerificationLatencyMs?: number | null;
   lastVerificationError?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   version: string;
 }

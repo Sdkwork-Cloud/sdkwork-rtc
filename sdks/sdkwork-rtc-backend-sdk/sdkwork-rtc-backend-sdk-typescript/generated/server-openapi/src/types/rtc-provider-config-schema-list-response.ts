@@ -3,7 +3,7 @@ import type { RtcProviderConfigSchema } from './rtc-provider-config-schema';
 
 export interface RtcProviderConfigSchemaListResponse {
   code: 0;
-  data: unknown & Record<string, unknown>;
+  data: unknown & { items: RtcProviderConfigSchema[]; pageInfo: PageInfo; };
   /** Server-owned request correlation id. */
   traceId: string;
 }

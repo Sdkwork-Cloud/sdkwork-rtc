@@ -12,16 +12,16 @@ export interface RtcProviderCredential {
   credentialFingerprint?: string | null;
   secretVersion?: string | null;
   status: 'active' | 'pending' | 'disabled' | 'revoked' | 'expired';
-  validFrom?: string;
-  expiresAt?: string;
-  rotationDueAt?: string;
-  rotatedAt?: string;
-  revokedAt?: string;
-  lastVerifiedAt?: string;
-  lastUsedAt?: string;
+  validFrom?: string | null;
+  expiresAt?: string | null;
+  rotationDueAt?: string | null;
+  rotatedAt?: string | null;
+  revokedAt?: string | null;
+  lastVerifiedAt?: string | null;
+  lastUsedAt?: string | null;
   createdBy?: string | null;
   updatedBy?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   version: string;
 }

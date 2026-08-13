@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { PageInfo, RtcProviderPluginDescriptor } from '../types';
 
@@ -13,13 +13,13 @@ export class RtcProviderPluginsRtcProviderPluginsApi {
 
 
 /** Rtc provider Plugins list. */
-  async list(): Promise<Record<string, unknown>> {
-    return this.client.get<Record<string, unknown>>(backendApiPath(`/rtc/provider_plugins`));
+  async list(requestOptions?: ApiRequestOptions): Promise<{ items: RtcProviderPluginDescriptor[]; pageInfo: PageInfo; }> {
+    return this.client.request<{ items: RtcProviderPluginDescriptor[]; pageInfo: PageInfo; }>(backendApiPath(`/rtc/provider_plugins`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc provider Plugins retrieve. */
-  async retrieve(provider: string): Promise<RtcProviderPluginDescriptor> {
-    return this.client.get<RtcProviderPluginDescriptor>(backendApiPath(`/rtc/provider_plugins/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`));
+  async retrieve(provider: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderPluginDescriptor> {
+    return this.client.request<RtcProviderPluginDescriptor>(backendApiPath(`/rtc/provider_plugins/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 

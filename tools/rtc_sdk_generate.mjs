@@ -256,15 +256,14 @@ function validateRouteManifest(family, openapiOperations) {
       if (route.source?.packageName !== family.sourceRouteCrate) {
         throw new Error(`${route.operationId} manifest source package mismatch`);
       }
-      const expectedAuthMode =
-        route.operationId === "rtc.providerWebhooks.events.create" ? "public" : "dual-token";
+      const isProviderWebhookReceive =
+        route.operationId === "rtc.providerWebhooks.events.create"
+        || route.operationId === "rtc.providerWebhooks.events.receive";
+      const expectedAuthMode = isProviderWebhookReceive ? "public" : "dual-token";
       if (route.auth?.mode !== expectedAuthMode) {
         throw new Error(`${route.operationId} manifest auth mode must be ${expectedAuthMode}`);
       }
-      if (
-        route.operationId === "rtc.providerWebhooks.events.create" &&
-        route.auth?.providerWebhookSignature !== true
-      ) {
+      if (isProviderWebhookReceive && route.auth?.providerWebhookSignature !== true) {
         throw new Error(`${route.operationId} manifest must require provider webhook signature`);
       }
       if (!route.auth?.permission?.startsWith("rtc.")) {
@@ -310,7 +309,10 @@ function validateOpenapi(family, openapi) {
     if (!operation.permission?.startsWith("rtc.")) {
       throw new Error(`${operation.operationId} permission mismatch`);
     }
-    if (operation.operationId === "rtc.providerWebhooks.events.create") {
+    if (
+      operation.operationId === "rtc.providerWebhooks.events.create"
+      || operation.operationId === "rtc.providerWebhooks.events.receive"
+    ) {
       if (operation.authMode !== "anonymous") {
         throw new Error(`${operation.operationId} must use anonymous provider webhook auth mode`);
       }

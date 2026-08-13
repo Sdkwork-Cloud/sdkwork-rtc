@@ -18,7 +18,7 @@ pnpm add sdkwork-rtc-backend-sdk-generated-typescript
 import { SdkworkBackendClient } from 'sdkwork-rtc-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://localhost:18088/backend/v3/api',
+  baseUrl: 'http://127.0.0.1:18088',
   timeout: 30000,
 });
 
@@ -44,7 +44,7 @@ Access-Token: <accessToken>
 import { SdkworkBackendClient } from 'sdkwork-rtc-backend-sdk-generated-typescript';
 
 const client = new SdkworkBackendClient({
-  baseUrl: 'http://localhost:18088/backend/v3/api',
+  baseUrl: 'http://127.0.0.1:18088',
   timeout: 30000, // Request timeout in ms
   headers: {      // Custom headers
     'X-Custom-Header': 'value',
@@ -80,6 +80,8 @@ const params = {
   cursor: 'cursor',
   sort: 'sort',
   q: 'q',
+  status: 'pending',
+  createdAfter: 'createdAfter',
 };
 const result = await client.rtcMediaArtifacts.rtc.mediaArtifacts.list(params);
 ```
@@ -94,6 +96,9 @@ const params = {
   cursor: 'cursor',
   sort: 'sort',
   q: 'q',
+  status: 'preparing',
+  ownerUserId: 'ownerUserId',
+  createdAfter: 'createdAfter',
 };
 const result = await client.rtcMediaSessions.rtc.mediaSessions.list(params);
 ```
@@ -202,6 +207,7 @@ const params = {
   cursor: 'cursor',
   sort: 'sort',
   q: 'q',
+  createdAfter: 'createdAfter',
 };
 const result = await client.rtcQualitySamples.rtc.qualitySamples.list(params);
 ```

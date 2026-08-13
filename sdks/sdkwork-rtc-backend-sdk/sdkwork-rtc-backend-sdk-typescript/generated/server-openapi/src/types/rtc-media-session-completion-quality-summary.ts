@@ -8,6 +8,6 @@ export interface RtcMediaSessionCompletionQualitySummary {
   maxPacketLossRate?: string | null;
   minBitrateKbps?: number | null;
   avgBitrateKbps?: number | null;
-  firstSampledAt?: string;
-  lastSampledAt?: string;
+  firstSampledAt?: string | null;
+  lastSampledAt?: string | null;
 }

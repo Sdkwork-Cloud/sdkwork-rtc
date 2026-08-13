@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { RtcQualitySample } from '../types';
 
@@ -10,6 +10,7 @@ export interface RtcQualitySamplesRtcQualitySamplesListParams {
   cursor?: string;
   sort?: string;
   q?: string;
+  createdAfter?: string;
 }
 
 export class RtcQualitySamplesRtcQualitySamplesApi {
@@ -21,15 +22,16 @@ export class RtcQualitySamplesRtcQualitySamplesApi {
 
 
 /** Rtc quality Samples list. */
-  async list(params?: RtcQualitySamplesRtcQualitySamplesListParams): Promise<Record<string, unknown>> {
+  async list(params?: RtcQualitySamplesRtcQualitySamplesListParams, requestOptions?: ApiRequestOptions): Promise<{ items: RtcQualitySample[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+      { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/quality_samples`), query));
+    return this.client.request<{ items: RtcQualitySample[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/quality_samples`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 

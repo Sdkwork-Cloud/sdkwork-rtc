@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { RtcProviderWebhookEvent, RtcProviderWebhookReceiveRequest } from '../types';
 
@@ -25,18 +25,18 @@ export class RtcProviderWebhooksRtcProviderWebhooksEventsApi {
 
 
 /** Rtc provider Webhooks events receive. */
-  async receive(provider: string, body: RtcProviderWebhookReceiveRequest, params?: RtcProviderWebhooksRtcProviderWebhooksEventsReceiveParams): Promise<RtcProviderWebhookEvent> {
+  async receive(provider: string, body: RtcProviderWebhookReceiveRequest, params?: RtcProviderWebhooksRtcProviderWebhooksEventsReceiveParams, requestOptions?: ApiRequestOptions): Promise<RtcProviderWebhookEvent> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.request<RtcProviderWebhookEvent>(backendApiPath(`/rtc/provider_webhooks/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}/events`), { method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', skipAuth: true });
+    return this.client.request<RtcProviderWebhookEvent>(backendApiPath(`/rtc/provider_webhooks/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}/events`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', skipAuth: true, sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Webhooks events list. */
-  async list(params?: RtcProviderWebhooksRtcProviderWebhooksEventsListParams): Promise<Record<string, unknown>> {
+  async list(params?: RtcProviderWebhooksRtcProviderWebhooksEventsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: RtcProviderWebhookEvent[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -44,7 +44,7 @@ export class RtcProviderWebhooksRtcProviderWebhooksEventsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/provider_webhooks/events`), query));
+    return this.client.request<{ items: RtcProviderWebhookEvent[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_webhooks/events`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 

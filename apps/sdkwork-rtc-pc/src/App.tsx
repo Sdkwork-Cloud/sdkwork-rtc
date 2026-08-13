@@ -8,6 +8,7 @@ import { bootstrap } from "./bootstrap/runtime";
 
 import "@sdkwork/rtc-pc-rtc/src/rtc-app-styles.css";
 import "@sdkwork/rtc-pc-admin-core/src/admin-styles.css";
+import "@sdkwork/rtc-pc-admin-core/src/admin-design-system.css";
 
 bootstrap();
 

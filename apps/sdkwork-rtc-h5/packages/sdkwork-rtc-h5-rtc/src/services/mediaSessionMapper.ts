@@ -21,9 +21,9 @@ export function mapMediaSessionToRtcSession(
     localParticipantId,
     mediaMode: session.mediaMode as SdkworkRtcMediaSessionMode,
     status: session.status,
-    startedAt: session.startedAt,
-    activeAt: session.connectedAt ?? session.startedAt,
-    endedAt: session.endedAt,
+    startedAt: session.startedAt ?? undefined,
+    activeAt: session.connectedAt ?? session.startedAt ?? undefined,
+    endedAt: session.endedAt ?? undefined,
     participants: (session.participants ?? []).map((participant: RtcMediaParticipant) => ({
       id: participant.id,
       name: participant.displayName ?? participant.id,

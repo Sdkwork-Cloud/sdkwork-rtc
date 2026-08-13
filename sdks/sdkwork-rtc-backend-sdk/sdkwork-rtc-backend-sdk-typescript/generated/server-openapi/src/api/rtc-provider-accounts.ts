@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { RtcProviderAccount, RtcProviderAccountCommand, RtcProviderAccountDisableRequest } from '../types';
 
@@ -33,7 +33,7 @@ export class RtcProviderAccountsRtcProviderAccountsApi {
 
 
 /** Rtc provider Accounts list. */
-  async list(params?: RtcProviderAccountsRtcProviderAccountsListParams): Promise<Record<string, unknown>> {
+  async list(params?: RtcProviderAccountsRtcProviderAccountsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: RtcProviderAccount[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
@@ -41,45 +41,45 @@ export class RtcProviderAccountsRtcProviderAccountsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/provider_accounts`), query));
+    return this.client.request<{ items: RtcProviderAccount[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_accounts`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc provider Accounts create. */
-  async create(body: RtcProviderAccountCommand, params?: RtcProviderAccountsRtcProviderAccountsCreateParams): Promise<RtcProviderAccount> {
+  async create(body: RtcProviderAccountCommand, params?: RtcProviderAccountsRtcProviderAccountsCreateParams, requestOptions?: ApiRequestOptions): Promise<RtcProviderAccount> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts`), body, undefined, requestHeaders, 'application/json');
+    return this.client.request<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Accounts retrieve. */
-  async retrieve(providerAccountId: string): Promise<RtcProviderAccount> {
-    return this.client.get<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}`));
+  async retrieve(providerAccountId: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderAccount> {
+    return this.client.request<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Accounts update. */
-  async update(providerAccountId: string, body?: RtcProviderAccountCommand, params?: RtcProviderAccountsRtcProviderAccountsUpdateParams): Promise<RtcProviderAccount> {
+  async update(providerAccountId: string, body?: RtcProviderAccountCommand, params?: RtcProviderAccountsRtcProviderAccountsUpdateParams, requestOptions?: ApiRequestOptions): Promise<RtcProviderAccount> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.patch<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}`), body, undefined, requestHeaders, 'application/json');
+    return this.client.request<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'PATCH' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Accounts disable. */
-  async disable(providerAccountId: string, body: RtcProviderAccountDisableRequest, params?: RtcProviderAccountsRtcProviderAccountsDisableParams): Promise<RtcProviderAccount> {
+  async disable(providerAccountId: string, body: RtcProviderAccountDisableRequest, params?: RtcProviderAccountsRtcProviderAccountsDisableParams, requestOptions?: ApiRequestOptions): Promise<RtcProviderAccount> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}/disable`), body, undefined, requestHeaders, 'application/json');
+    return this.client.request<RtcProviderAccount>(backendApiPath(`/rtc/provider_accounts/${serializePathParameter(providerAccountId, { name: 'providerAccountId', style: 'simple', explode: false })}/disable`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 

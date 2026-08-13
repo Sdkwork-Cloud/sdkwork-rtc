@@ -2,7 +2,7 @@ import type { RtcMediaSessionCompletionRecord } from './rtc-media-session-comple
 
 export interface RtcMediaSessionCompletionRecordResponse {
   code: 0;
-  data: unknown & Record<string, unknown>;
+  data: unknown & { item: RtcMediaSessionCompletionRecord; };
   /** Server-owned request correlation id. */
   traceId: string;
 }

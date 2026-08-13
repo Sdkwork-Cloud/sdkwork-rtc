@@ -11,13 +11,13 @@ export interface RtcProviderAccount {
   cloudAccountId?: string | null;
   projectId?: string | null;
   resourceGroupId?: string | null;
-  lastVerifiedAt?: string;
+  lastVerifiedAt?: string | null;
   lastVerificationError?: string | null;
   createdBy?: string | null;
   updatedBy?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   version: string;
-  deletedAt?: string;
+  deletedAt?: string | null;
   deletedBy?: string | null;
 }

@@ -8,6 +8,7 @@ import { bootstrap } from "./bootstrap/runtime";
 
 import "@sdkwork/rtc-h5-rtc/src/rtc-app-styles.css";
 import "@sdkwork/rtc-h5-admin-core/src/admin-styles.css";
+import "@sdkwork/rtc-h5-admin-core/src/admin-design-system.css";
 import "@sdkwork/rtc-h5-call/src/styles/rtc-call-styles.css";
 
 bootstrap();

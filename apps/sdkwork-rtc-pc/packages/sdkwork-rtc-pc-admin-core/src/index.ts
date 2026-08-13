@@ -102,3 +102,93 @@ export type {
 } from "./types/room";
 
 export const ADMIN_STYLESHEET_PATH = "./admin-styles.css";
+
+// --- 实时音视频中心：会话 / 记录文件 / 质量 / 房间 ---
+export { MediaSessionService } from "./services/mediaSessionService";
+export { MediaArtifactService } from "./services/mediaArtifactService";
+export { QualitySampleService } from "./services/qualitySampleService";
+export {
+  MediaSessionList,
+  DEFAULT_MEDIA_SESSION_FILTER,
+  buildMediaSessionListParams,
+  mediaSessionDateRangeCreatedAfter,
+} from "./components/MediaSessionList";
+export type {
+  MediaSessionListProps,
+  MediaSessionFilterState,
+} from "./components/MediaSessionList";
+export { MediaSessionDetailPanel } from "./components/MediaSessionDetailPanel";
+export type { MediaSessionDetailPanelProps } from "./components/MediaSessionDetailPanel";
+export {
+  MediaArtifactList,
+  DEFAULT_MEDIA_ARTIFACT_FILTER,
+  buildMediaArtifactListParams,
+  mediaArtifactDateRangeCreatedAfter,
+} from "./components/MediaArtifactList";
+export type {
+  MediaArtifactListProps,
+  MediaArtifactFilterState,
+} from "./components/MediaArtifactList";
+export { MediaArtifactDetailPanel } from "./components/MediaArtifactDetailPanel";
+export type { MediaArtifactDetailPanelProps } from "./components/MediaArtifactDetailPanel";
+export {
+  QualitySampleList,
+  DEFAULT_QUALITY_SAMPLE_FILTER,
+  buildQualitySampleListParams,
+  qualitySampleDateRangeCreatedAfter,
+} from "./components/QualitySampleList";
+export type {
+  QualitySampleListProps,
+  QualitySampleFilterState,
+} from "./components/QualitySampleList";
+export { RoomCreateDialog } from "./components/RoomCreateDialog";
+export type { RoomCreateDialogProps } from "./components/RoomCreateDialog";
+export { RoomDetailPanel } from "./components/RoomDetailPanel";
+export type { RoomDetailPanelProps } from "./components/RoomDetailPanel";
+export { ProviderApplicationPage } from "./components/ProviderApplicationPage";
+export type {
+  ProviderApplicationPageProps,
+  ProviderApplicationServicePort,
+} from "./components/ProviderApplicationPage";
+export { ProviderCredentialPage } from "./components/ProviderCredentialPage";
+export type {
+  ProviderCredentialPageProps,
+  ProviderCredentialServicePort,
+  ProviderCredentialApplicationPort,
+} from "./components/ProviderCredentialPage";
+export { formatDateTime, formatDurationMs, formatBytes, formatPercentRate, exportRowsToCsv } from "./utils/format";
+
+export type {
+  RtcMediaSession,
+  RtcMediaParticipant,
+  RtcMediaMode,
+  RtcMediaSessionStatus,
+  RtcMediaSessionEndSource,
+  MediaSessionListParams,
+  MediaSessionListResponse,
+} from "./types/mediaSession";
+export type {
+  RtcMediaArtifact,
+  RtcArtifactKind,
+  RtcArtifactStatus,
+  RtcDriveReference,
+  RtcMediaResource,
+  MediaArtifactListParams,
+  MediaArtifactListResponse,
+} from "./types/mediaArtifact";
+export { parseDriveUri } from "./types/mediaArtifact";
+export type { RtcQualitySample, QualitySampleListParams, QualitySampleListResponse } from "./types/qualitySample";
+export type {
+  RtcMediaSessionCompletionRecord,
+  RtcCompletionParticipantSummary,
+  RtcCompletionTrackSummary,
+  RtcCompletionQualitySummary,
+  RtcCompletionRecordingSummary,
+} from "./types/completionRecord";
+export type { RoomCreateCommand } from "./types/room";
+
+export { RtcAdminCenterWorkspace } from "./components/RtcAdminCenterWorkspace";
+export type {
+  RtcAdminCenterWorkspaceProps,
+} from "./components/RtcAdminCenterWorkspace";
+export type { RtcAdminCenterServices, ListPort } from "./types/adminServices";

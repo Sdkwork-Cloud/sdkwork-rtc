@@ -25,6 +25,11 @@ export interface RoomListResponse {
   nextCursor?: string;
 }
 
+export interface RoomCreateCommand {
+  title: string;
+  roomId?: string | null;
+}
+
 export interface RoomBatchAction {
   type: "archive" | "disable" | "delete" | "export";
   roomIds: string[];

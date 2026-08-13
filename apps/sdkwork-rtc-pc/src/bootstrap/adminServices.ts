@@ -1,4 +1,6 @@
 import {
+  MediaArtifactService,
+  MediaSessionService,
   ProviderAccountService,
   ProviderApplicationService,
   ProviderCredentialService,
@@ -8,6 +10,7 @@ import {
   ProviderRouteService,
   ProviderSchemaService,
   ProviderWebhookService,
+  QualitySampleService,
   RoomService,
   createBackendRtcClient,
 } from "@sdkwork/rtc-pc-admin-core";
@@ -28,6 +31,9 @@ export interface RtcAdminServices {
   routes: ProviderRouteService;
   schemas: ProviderSchemaService;
   rooms: RoomService;
+  mediaSessions: MediaSessionService;
+  mediaArtifacts: MediaArtifactService;
+  qualitySamples: QualitySampleService;
   plugins: ProviderPluginService;
   webhooks: ProviderWebhookService;
   queryJobs: ProviderQueryJobService;
@@ -58,6 +64,9 @@ export function createAdminServices(): RtcAdminServices {
     routes: new ProviderRouteService(client),
     schemas: new ProviderSchemaService(client),
     rooms: new RoomService(client),
+    mediaSessions: new MediaSessionService(client),
+    mediaArtifacts: new MediaArtifactService(client),
+    qualitySamples: new QualitySampleService(client),
     plugins: new ProviderPluginService(client),
     webhooks: new ProviderWebhookService(client),
     queryJobs: new ProviderQueryJobService(client),

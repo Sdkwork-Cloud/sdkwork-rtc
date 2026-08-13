@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { PageInfo, RtcProviderConfigSchema } from '../types';
 
@@ -13,13 +13,13 @@ export class RtcProviderSchemasRtcProviderSchemasApi {
 
 
 /** Rtc provider Schemas list. */
-  async list(): Promise<Record<string, unknown>> {
-    return this.client.get<Record<string, unknown>>(backendApiPath(`/rtc/provider_schemas`));
+  async list(requestOptions?: ApiRequestOptions): Promise<{ items: RtcProviderConfigSchema[]; pageInfo: PageInfo; }> {
+    return this.client.request<{ items: RtcProviderConfigSchema[]; pageInfo: PageInfo; }>(backendApiPath(`/rtc/provider_schemas`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc provider Schemas retrieve. */
-  async retrieve(provider: string): Promise<RtcProviderConfigSchema> {
-    return this.client.get<RtcProviderConfigSchema>(backendApiPath(`/rtc/provider_schemas/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`));
+  async retrieve(provider: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderConfigSchema> {
+    return this.client.request<RtcProviderConfigSchema>(backendApiPath(`/rtc/provider_schemas/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 

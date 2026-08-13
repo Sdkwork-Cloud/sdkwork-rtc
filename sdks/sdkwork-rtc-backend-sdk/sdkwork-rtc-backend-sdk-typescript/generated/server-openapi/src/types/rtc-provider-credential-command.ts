@@ -5,7 +5,7 @@ export interface RtcProviderCredentialCommand {
   credentialFingerprint?: string | null;
   secretVersion?: string | null;
   status?: 'active' | 'pending' | 'disabled' | 'revoked' | 'expired';
-  validFrom?: string;
-  expiresAt?: string;
-  rotationDueAt?: string;
+  validFrom?: string | null;
+  expiresAt?: string | null;
+  rotationDueAt?: string | null;
 }

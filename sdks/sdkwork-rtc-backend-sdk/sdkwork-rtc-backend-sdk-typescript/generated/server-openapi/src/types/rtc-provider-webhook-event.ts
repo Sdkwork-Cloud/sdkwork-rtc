@@ -16,6 +16,6 @@ export interface RtcProviderWebhookEvent {
   normalizedEvent?: Record<string, unknown>;
   signatureHeader?: string | null;
   receivedAt: string;
-  processedAt?: string;
+  processedAt?: string | null;
   status: 'received' | 'processed' | 'duplicate' | 'failed';
 }

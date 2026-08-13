@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { RtcMediaArtifact } from '../types';
 
@@ -10,6 +10,8 @@ export interface RtcMediaArtifactsRtcMediaArtifactsListParams {
   cursor?: string;
   sort?: string;
   q?: string;
+  status?: 'pending' | 'processing' | 'ready' | 'failed' | 'deleted';
+  createdAfter?: string;
 }
 
 export class RtcMediaArtifactsRtcMediaArtifactsApi {
@@ -21,20 +23,22 @@ export class RtcMediaArtifactsRtcMediaArtifactsApi {
 
 
 /** Rtc media Artifacts list. */
-  async list(params?: RtcMediaArtifactsRtcMediaArtifactsListParams): Promise<Record<string, unknown>> {
+  async list(params?: RtcMediaArtifactsRtcMediaArtifactsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: RtcMediaArtifact[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+      { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
+      { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/rtc/media_artifacts`), query));
+    return this.client.request<{ items: RtcMediaArtifact[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/media_artifacts`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc media Artifacts retrieve. */
-  async retrieve(mediaArtifactId: string): Promise<RtcMediaArtifact> {
-    return this.client.get<RtcMediaArtifact>(backendApiPath(`/rtc/media_artifacts/${serializePathParameter(mediaArtifactId, { name: 'mediaArtifactId', style: 'simple', explode: false })}`));
+  async retrieve(mediaArtifactId: string, requestOptions?: ApiRequestOptions): Promise<RtcMediaArtifact> {
+    return this.client.request<RtcMediaArtifact>(backendApiPath(`/rtc/media_artifacts/${serializePathParameter(mediaArtifactId, { name: 'mediaArtifactId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 

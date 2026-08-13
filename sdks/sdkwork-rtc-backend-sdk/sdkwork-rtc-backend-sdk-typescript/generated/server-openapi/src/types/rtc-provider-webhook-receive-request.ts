@@ -6,5 +6,5 @@ export interface RtcProviderWebhookReceiveRequest {
   headers?: Record<string, string>;
   rawPayload?: Record<string, unknown>;
   /** Optional gateway receive timestamp. The RTC runtime records the authoritative receive time when this field is absent. */
-  receivedAt?: string;
+  receivedAt?: string | null;
 }

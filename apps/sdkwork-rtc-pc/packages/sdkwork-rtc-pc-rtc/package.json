@@ -20,6 +20,7 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
-    }
+    },
+    "./src/rtc-app-styles.css": "./src/rtc-app-styles.css"
   }
 }

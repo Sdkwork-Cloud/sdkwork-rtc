@@ -3,7 +3,7 @@ import type { RtcProviderPluginDescriptor } from './rtc-provider-plugin-descript
 
 export interface RtcProviderPluginListResponse {
   code: 0;
-  data: unknown & Record<string, unknown>;
+  data: unknown & { items: RtcProviderPluginDescriptor[]; pageInfo: PageInfo; };
   /** Server-owned request correlation id. */
   traceId: string;
 }

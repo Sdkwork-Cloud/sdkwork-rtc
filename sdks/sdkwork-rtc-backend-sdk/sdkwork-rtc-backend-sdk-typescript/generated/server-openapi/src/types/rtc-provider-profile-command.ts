@@ -10,7 +10,7 @@ export interface RtcProviderProfileCommand {
   environment: 'production' | 'staging' | 'development' | 'test' | 'sandbox';
   region?: string | null;
   providerAppId?: string | null;
-  endpoint?: string;
+  endpoint?: string | null;
   credentialRef?: string | null;
   webhookSecretRef?: string | null;
   capabilities: RtcProviderCapabilitySnapshot;

@@ -1,6 +1,6 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
-import type { Room, RoomListParams, RoomListResponse } from "../types/room";
+import type { Room, RoomCreateCommand, RoomListParams, RoomListResponse } from "../types/room";
 import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
@@ -37,6 +37,14 @@ export class RoomService {
     if (!response) {
       throw new Error(`RTC room not found: ${id}`);
     }
+    return readSdkWorkItem<Room>(response);
+  }
+
+  async create(command: RoomCreateCommand): Promise<Room> {
+    const response = await this.client.rtcRooms.rtc.rooms.create({
+      title: command.title,
+      roomId: command.roomId ?? null,
+    });
     return readSdkWorkItem<Room>(response);
   }
 }

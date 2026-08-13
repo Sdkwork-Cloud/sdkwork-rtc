@@ -16,6 +16,7 @@ export type { RtcDriveReference } from './rtc-drive-reference';
 export type { RtcRoom } from './rtc-room';
 export type { RtcRoomListResponse } from './rtc-room-list-response';
 export type { RtcRoomResponse } from './rtc-room-response';
+export type { RtcCreateRoomRequest } from './rtc-create-room-request';
 export type { RtcCloseMediaSessionRequest } from './rtc-close-media-session-request';
 export type { RtcMediaSession } from './rtc-media-session';
 export type { RtcMediaSessionListResponse } from './rtc-media-session-list-response';

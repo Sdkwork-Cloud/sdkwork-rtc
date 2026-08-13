@@ -4,8 +4,8 @@ export interface RtcMediaSessionCompletionTrackSummary {
   trackKind: 'audio' | 'video' | 'screen_share' | 'data';
   trackSource: 'microphone' | 'camera' | 'screen' | 'system' | 'custom';
   status: 'publishing' | 'muted' | 'stopped' | 'failed';
-  startedAt?: string;
-  endedAt?: string;
+  startedAt?: string | null;
+  endedAt?: string | null;
   durationMs?: string | null;
   mutedDurationMs?: string | null;
   endReason?: string | null;

@@ -117,9 +117,20 @@ export function useAdminData(
     roomStatus?: "active" | "archived" | "disabled";
     roomOwnerUserId?: string;
     roomCreatedAfter?: string;
+    mediaSessionQuery?: string;
+    mediaSessionStatus?: "preparing" | "active" | "closing" | "ended" | "failed";
+    mediaSessionCreatedAfter?: string;
+    mediaArtifactQuery?: string;
+    mediaArtifactStatus?: "pending" | "processing" | "ready" | "failed" | "deleted";
+    mediaArtifactCreatedAfter?: string;
+    qualitySampleQuery?: string;
+    qualitySampleCreatedAfter?: string;
   },
 ) {
   const debouncedRoomQuery = useDebouncedValue(options?.roomQuery ?? "", 300);
+  const debouncedSessionQuery = useDebouncedValue(options?.mediaSessionQuery ?? "", 300);
+  const debouncedArtifactQuery = useDebouncedValue(options?.mediaArtifactQuery ?? "", 300);
+  const debouncedQualityQuery = useDebouncedValue(options?.qualitySampleQuery ?? "", 300);
 
   const dashboard = useAsyncResource(
     async () => {
@@ -175,6 +186,49 @@ export function useAdminData(
     [services],
   );
 
+  const mediaSessions = useSdkWorkPaginatedList(
+    (cursor) =>
+      services.mediaSessions.list({
+        cursor,
+        search: debouncedSessionQuery || undefined,
+        sort: options?.mediaSessionQuery ? undefined : "-startedAt",
+        status: options?.mediaSessionStatus,
+        createdAfter: options?.mediaSessionCreatedAfter,
+      }),
+    [
+      services,
+      debouncedSessionQuery,
+      options?.mediaSessionStatus,
+      options?.mediaSessionCreatedAfter,
+    ],
+  );
+
+  const mediaArtifacts = useSdkWorkPaginatedList(
+    (cursor) =>
+      services.mediaArtifacts.list({
+        cursor,
+        search: debouncedArtifactQuery || undefined,
+        status: options?.mediaArtifactStatus,
+        createdAfter: options?.mediaArtifactCreatedAfter,
+      }),
+    [
+      services,
+      debouncedArtifactQuery,
+      options?.mediaArtifactStatus,
+      options?.mediaArtifactCreatedAfter,
+    ],
+  );
+
+  const qualitySamples = useSdkWorkPaginatedList(
+    (cursor) =>
+      services.qualitySamples.list({
+        cursor,
+        search: debouncedQualityQuery || undefined,
+        createdAfter: options?.qualitySampleCreatedAfter,
+      }),
+    [services, debouncedQualityQuery, options?.qualitySampleCreatedAfter],
+  );
+
   const schemas = useAsyncResource(
     async () => services.schemas.listSchemas(),
     [],
@@ -187,6 +241,9 @@ export function useAdminData(
     profiles,
     routes,
     rooms,
+    mediaSessions,
+    mediaArtifacts,
+    qualitySamples,
     plugins,
     webhookEvents,
     schemas,
