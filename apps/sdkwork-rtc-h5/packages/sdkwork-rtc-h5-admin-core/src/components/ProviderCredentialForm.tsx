@@ -79,7 +79,7 @@ export function ProviderCredentialForm({ roles, onSubmit, onCancel }: Props) {
             type={field.type === "secret_ref" ? "password" : "text"}
             value={values[field.key] ?? ""}
             onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-            placeholder={field.placeholder}
+            placeholder={field.placeholder ?? undefined}
             className={errors[field.key] ? "field-error" : ""}
           />
           {errors[field.key] && (

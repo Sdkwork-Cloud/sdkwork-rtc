@@ -13,7 +13,7 @@ export type {
   PersistProviderWizardServices,
 } from "./services/persistProviderWizard";
 export { RoomService } from "./services/roomService";
-export { collectSdkWorkListPages, readSdkWorkItem, readSdkWorkListPage, formatSdkWorkError, readSdkWorkProblemDetail } from "./sdk/index.js";
+export { formatSdkWorkError, readSdkWorkProblemDetail } from "./sdk/index.js";
 export type { SdkWorkProblemDetail } from "./sdk/index.js";
 export {
   createBackendRtcClient,

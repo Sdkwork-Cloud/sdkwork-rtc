@@ -1,4 +1,5 @@
 export type {
+  RtcActiveProviderProfile,
   RtcCreateMediaSessionRequest,
   RtcMediaParticipant,
   RtcMediaSession,

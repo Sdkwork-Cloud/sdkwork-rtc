@@ -27,8 +27,8 @@ export {
   type RtcIamSession,
 } from "./session/iamSession";
 export type { RtcAppSdkClient, RtcAppSdkPort } from "./sdk/appSdkPort";
-export { collectSdkWorkListPages, readSdkWorkItem, readSdkWorkListPage } from "./sdk/sdkWorkEnvelope";
 export type {
+  RtcActiveProviderProfile,
   RtcCreateMediaSessionRequest,
   RtcMediaParticipant,
   RtcMediaSession,

@@ -4,7 +4,6 @@ import type {
   ProviderApplication,
   ProviderApplicationCommand,
 } from "../types/providerApplication";
-import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -43,10 +42,12 @@ export class ProviderApplicationService {
           sort: params?.sort,
         },
       );
-    const page = readSdkWorkListPage<ProviderApplication>(response);
+    // The generated SDK unwraps the sdkwork-v3 envelope, so the response is
+    // already the `data` payload ({ items, pageInfo }).
+    const nextCursor = response.pageInfo?.nextCursor;
     return {
-      items: page.items,
-      nextCursor: page.nextCursor ?? null,
+      items: response.items,
+      nextCursor: nextCursor && nextCursor.length > 0 ? nextCursor : null,
     };
   }
 
@@ -56,7 +57,7 @@ export class ProviderApplicationService {
     if (!response) {
       throw new Error(`RTC provider application not found: ${id}`);
     }
-    return readSdkWorkItem<ProviderApplication>(response);
+    return response;
   }
 
   async create(
@@ -73,7 +74,7 @@ export class ProviderApplicationService {
     if (!response) {
       throw new Error("Invalid response: missing provider application data");
     }
-    return readSdkWorkItem<ProviderApplication>(response);
+    return response;
   }
 
   async update(id: string, command: ProviderApplicationCommand): Promise<ProviderApplication> {
@@ -87,7 +88,7 @@ export class ProviderApplicationService {
     if (!response) {
       throw new Error("Invalid response: missing provider application data");
     }
-    return readSdkWorkItem<ProviderApplication>(response);
+    return response;
   }
 
   async disable(id: string, reason?: string): Promise<ProviderApplication> {
@@ -98,6 +99,6 @@ export class ProviderApplicationService {
     if (!response) {
       throw new Error("Invalid response: missing provider application data");
     }
-    return readSdkWorkItem<ProviderApplication>(response);
+    return response;
   }
 }

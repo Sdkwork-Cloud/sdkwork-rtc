@@ -1,46 +1,18 @@
-export interface ConfigFieldSchema {
-  key: string;
-  label: string;
-  type: "string" | "number" | "boolean" | "enum" | "secret_ref";
-  required?: boolean;
-  default?: unknown;
-  placeholder?: string;
-  values?: string[];
-  min?: number;
-  max?: number;
-  hidden?: boolean;
-}
+import type {
+  RtcProviderConfigFieldSchema,
+  RtcProviderConfigSchema,
+  RtcProviderCredentialRoleSchema,
+  RtcProviderPluginDescriptor,
+} from "@sdkwork/rtc-backend-sdk";
 
-export interface CredentialRoleSchema {
-  role: string;
-  label: string;
-  description: string;
-  fields: ConfigFieldSchema[];
-}
+/** RTC provider config field schema — the generated SDK `RtcProviderConfigFieldSchema` (contract authority). */
+export type ConfigFieldSchema = RtcProviderConfigFieldSchema;
 
-export interface ProviderConfigSchema {
-  provider: string;
-  displayName: string;
-  description: string;
-  accountFields: ConfigFieldSchema[];
-  applicationFields: ConfigFieldSchema[];
-  credentialRoles: CredentialRoleSchema[];
-  profileFields: ConfigFieldSchema[];
-  optionalCapabilities: string[];
-  requiredCapabilities: string[];
-}
+/** RTC provider credential role schema — the generated SDK `RtcProviderCredentialRoleSchema` (contract authority). */
+export type CredentialRoleSchema = RtcProviderCredentialRoleSchema;
 
-export interface ProviderPluginDescriptor {
-  pluginId: string;
-  domain: string;
-  providerKind: string;
-  displayName: string;
-  interfaceVersion: string;
-  configSchemaRef: string;
-  defaultSelected: boolean;
-  tenantOverrideAllowed: boolean;
-  requiredCapabilities: string[];
-  optionalCapabilities: string[];
-  unsupportedFeatures: string[];
-  degradedBehaviors: string[];
-}
+/** RTC provider config schema — the generated SDK `RtcProviderConfigSchema` (contract authority). */
+export type ProviderConfigSchema = RtcProviderConfigSchema;
+
+/** RTC provider plugin descriptor — the generated SDK `RtcProviderPluginDescriptor` (contract authority). */
+export type ProviderPluginDescriptor = RtcProviderPluginDescriptor;

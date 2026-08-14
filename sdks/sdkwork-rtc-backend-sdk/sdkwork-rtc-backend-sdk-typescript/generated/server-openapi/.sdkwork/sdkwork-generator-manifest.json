@@ -88,7 +88,7 @@
     },
     {
       "path": "src/api/rtc-provider-profiles.ts",
-      "sha256": "7197c7eea28c61f53841ba74bce46ee3121dbe0e1db6bca84ed338dde9ab225d"
+      "sha256": "ff17499f01ba3587271d423d9092c814aa4ec5fe1627a4ad6f16bbf457fc1339"
     },
     {
       "path": "src/api/rtc-provider-query-jobs.ts",
@@ -120,7 +120,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "8232d087b029fcd6897617116ca4f8609a728915cc0ca2f1796c66c00c8d89d9"
+      "sha256": "959c2a1f20f3029fe15077f2c8f67dc913cd6a397740bc599b6b96fd81022a71"
     },
     {
       "path": "src/http/index.ts",
@@ -144,7 +144,7 @@
     },
     {
       "path": "src/types/index.ts",
-      "sha256": "ac895b5aef910872956096399c4d359aa8672e90de8643bf130e342b6af778f4"
+      "sha256": "3c34a46d32f16d28c5e6ba67ada74774470888e358c629aa879c2b55ec26b5f3"
     },
     {
       "path": "src/types/media-access.ts",
@@ -461,14 +461,6 @@
     {
       "path": "src/types/sdk-work-platform-error-code.ts",
       "sha256": "f5e30be72be3d1aebd8200627bfac368f10cdd69d2271d24e6b4a2d7edf97fb7"
-    },
-    {
-      "path": "src/types/sdk-work-resource-data.ts",
-      "sha256": "f5a027b000a19c08d5b2560ae47fea43c83f4c5d7e85ad37faafe1e9177459cd"
-    },
-    {
-      "path": "src/types/sdk-work-resource-response.ts",
-      "sha256": "89c05f5549bef773335245f56f61ca1a6959978726799391d584a6bd25d12fdc"
     },
     {
       "path": "tsconfig.json",

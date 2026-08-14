@@ -1,24 +1,13 @@
-export interface ProviderQueryJob {
-  id: string;
-  tenantId?: string;
-  organizationId?: string;
-  provider: string;
-  providerProfileId?: string | null;
-  queryKind:
-    | "room_online_users"
-    | "room_state"
-    | "media_session_state"
-    | "recording_artifacts"
-    | "quality_samples";
-  targetKind: "room" | "media_session" | "recording" | "quality";
-  targetId: string;
-  roomId?: string | null;
-  mediaSessionId?: string | null;
-  status: "requested" | "running" | "completed" | "failed";
-  requestedAt: string;
-  completedAt?: string;
-  resultSnapshot?: Record<string, unknown>;
-}
+import type {
+  RtcProviderQueryJob,
+  RtcProviderQuerySnapshot,
+} from "@sdkwork/rtc-backend-sdk";
+
+/** RTC provider query job admin view model — the generated SDK `RtcProviderQueryJob` (contract authority). */
+export type ProviderQueryJob = RtcProviderQueryJob;
+
+/** RTC provider query snapshot admin view model — the generated SDK `RtcProviderQuerySnapshot` (contract authority). */
+export type ProviderQuerySnapshot = RtcProviderQuerySnapshot;
 
 export interface ProviderQueryJobCreateCommand {
   provider: string;
@@ -28,17 +17,4 @@ export interface ProviderQueryJobCreateCommand {
   mediaSessionId?: string | null;
   providerSessionId?: string | null;
   cursor?: string | null;
-}
-
-export interface ProviderQuerySnapshot {
-  id: string;
-  providerQueryJobId: string;
-  provider: string;
-  queryKind: string;
-  targetKind: string;
-  targetId: string;
-  providerSessionId?: string | null;
-  snapshotKind: string;
-  snapshotPayload: Record<string, unknown>;
-  capturedAt: string;
 }

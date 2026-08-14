@@ -1,8 +1,3 @@
-import {
-  collectSdkWorkListPages,
-  readSdkWorkItem,
-  readSdkWorkListPage,
-} from "@sdkwork/rtc-mp-core/sdk";
 import type {
   RtcActiveProviderProfile,
   RtcCreateMediaSessionRequest,
@@ -49,12 +44,18 @@ export class MediaSessionService {
       q: params?.search,
       sort: params?.sort,
     });
-    return readSdkWorkListPage<RtcMediaSession>(response);
+    // The generated SDK unwraps the sdkwork-v3 envelope, so the response is
+    // already the `data` payload ({ items, pageInfo }).
+    const nextCursor = response.pageInfo?.nextCursor;
+    return {
+      items: response.items,
+      nextCursor: nextCursor && nextCursor.length > 0 ? nextCursor : undefined,
+    };
   }
 
   async get(mediaSessionId: string): Promise<RtcMediaSession> {
     const response = await this.client.rtcMediaSessions.rtc.mediaSessions.retrieve(mediaSessionId);
-    return readSdkWorkItem<RtcMediaSession>(response);
+    return response;
   }
 
   async create(
@@ -65,7 +66,7 @@ export class MediaSessionService {
       idempotencyKey:
         options?.idempotencyKey ?? createRtcCommandIdempotencyKey("media-session-create"),
     });
-    return readSdkWorkItem<RtcMediaSession>(response);
+    return response;
   }
 }
 
@@ -73,14 +74,24 @@ export class ProviderProfileService {
   constructor(private readonly client: RtcAppSdkClient) {}
 
   async listActive(): Promise<RtcActiveProviderProfile[]> {
-    return collectSdkWorkListPages(async (cursor) => {
+    // Non-interactive bootstrap lookup: aggregates cursor pages to resolve
+    // the default provider app id/key (explicit export tooling semantics).
+    const items: RtcActiveProviderProfile[] = [];
+    let cursor: string | undefined;
+    for (let page = 0; page < 50; page += 1) {
       const response =
         await this.client.rtcProviderProfiles.rtc.providerProfiles.active.list({
           pageSize: 200,
           cursor,
         });
-      return readSdkWorkListPage<RtcActiveProviderProfile>(response);
-    });
+      items.push(...response.items);
+      const next = response.pageInfo?.nextCursor?.trim();
+      if (!next) {
+        break;
+      }
+      cursor = next;
+    }
+    return items;
   }
 
   resolveDefaultProviderAppId(profiles: readonly RtcActiveProviderProfile[]): string | undefined {
@@ -118,7 +129,7 @@ export class ParticipantCredentialService {
             createRtcCommandIdempotencyKey("participant-credential-issue"),
         },
       );
-    const credential = readSdkWorkItem<{ credential: string }>(response);
+    const credential = response;
     if (!credential.credential) {
       throw new Error("RTC participant credential was not issued");
     }

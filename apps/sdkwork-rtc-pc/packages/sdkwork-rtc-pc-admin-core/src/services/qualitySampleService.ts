@@ -5,7 +5,6 @@ import type {
   QualitySampleListResponse,
   RtcQualitySample,
 } from "../types/qualitySample";
-import { readSdkWorkListPage } from "../sdk/index.js";
 import {
   resolveBackendRtcClient,
   type RtcBackendClientOptions,
@@ -31,10 +30,12 @@ export class QualitySampleService {
       sort: params?.sort,
       createdAfter: params?.createdAfter,
     });
-    const page = readSdkWorkListPage<RtcQualitySample>(response);
+    // The generated SDK unwraps the sdkwork-v3 envelope, so the response is
+    // already the `data` payload ({ items, pageInfo }).
+    const nextCursor = response.pageInfo?.nextCursor;
     return {
-      items: page.items,
-      nextCursor: page.nextCursor,
+      items: response.items,
+      nextCursor: nextCursor && nextCursor.length > 0 ? nextCursor : undefined,
     };
   }
 }

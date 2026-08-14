@@ -12,6 +12,151 @@ List<dynamic>? _sdkworkAsList(dynamic value) {
   return value is List ? value : null;
 }
 
+class SdkWorkApiResponse {
+  final int? code;
+  final dynamic data;
+  final String? traceId;
+
+  SdkWorkApiResponse({
+    this.code,
+    this.data,
+    this.traceId
+  });
+
+  factory SdkWorkApiResponse.fromJson(Map<String, dynamic> json) {
+    return SdkWorkApiResponse(
+      code: json['code'] is int ? json['code'] : null,
+      data: json['data'],
+      traceId: json['traceId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'code': code,
+      'data': data,
+      'traceId': traceId,
+    };
+  }
+}
+
+class ProblemDetail {
+  final String? type;
+  final String? title;
+  final int? status;
+  final String? detail;
+  final String? instance;
+  final int? code;
+  final String? traceId;
+  final String? i18nKey;
+  final String? locale;
+  final List<FieldError>? errors;
+
+  ProblemDetail({
+    this.type,
+    this.title,
+    this.status,
+    this.detail,
+    this.instance,
+    this.code,
+    this.traceId,
+    this.i18nKey,
+    this.locale,
+    this.errors
+  });
+
+  factory ProblemDetail.fromJson(Map<String, dynamic> json) {
+    return ProblemDetail(
+      type: json['type']?.toString(),
+      title: json['title']?.toString(),
+      status: json['status'] is int ? json['status'] : null,
+      detail: json['detail']?.toString(),
+      instance: json['instance']?.toString(),
+      code: json['code'] is int ? json['code'] : null,
+      traceId: json['traceId']?.toString(),
+      i18nKey: json['i18nKey']?.toString(),
+      locale: json['locale']?.toString(),
+      errors: (() {
+        final list = _sdkworkAsList(json['errors']);
+        if (list == null) {
+          return null;
+        }
+        return list
+            .map((item) => (() {
+        final map = _sdkworkAsMap(item);
+        return map == null ? null : FieldError.fromJson(map);
+      })())
+            .whereType<FieldError>()
+            .toList();
+      })()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'type': type,
+      'title': title,
+      'status': status,
+      'detail': detail,
+      'instance': instance,
+      'code': code,
+      'traceId': traceId,
+      'i18nKey': i18nKey,
+      'locale': locale,
+      'errors': errors?.map((item) => item.toJson()).toList(),
+    };
+  }
+}
+
+class FieldError {
+  final String? field;
+  final String? message;
+  final int? code;
+  final String? i18nKey;
+  final Map<String, dynamic>? params;
+
+  FieldError({
+    this.field,
+    this.message,
+    this.code,
+    this.i18nKey,
+    this.params
+  });
+
+  factory FieldError.fromJson(Map<String, dynamic> json) {
+    return FieldError(
+      field: json['field']?.toString(),
+      message: json['message']?.toString(),
+      code: json['code'] is int ? json['code'] : null,
+      i18nKey: json['i18nKey']?.toString(),
+      params: (() {
+        final map = _sdkworkAsMap(json['params']);
+        if (map == null) {
+          return null;
+        }
+        final result = <String, String>{};
+        map.forEach((key, item) {
+          final deserialized = item?.toString();
+          if (deserialized is String) {
+            result[key] = deserialized;
+          }
+        });
+        return result;
+      })()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'field': field,
+      'message': message,
+      'code': code,
+      'i18nKey': i18nKey,
+      'params': params?.map((key, item) => MapEntry(key, item)),
+    };
+  }
+}
+
 class MediaChecksum {
   final String? algorithm;
   final String? value;
@@ -231,68 +376,57 @@ class RtcRoom {
 }
 
 class RtcRoomListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcRoomListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcRoomListResponse.fromJson(Map<String, dynamic> json) {
     return RtcRoomListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcRoomResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcRoom? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcRoomResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcRoomResponse.fromJson(Map<String, dynamic> json) {
     return RtcRoomResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcRoom.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -468,68 +602,57 @@ class RtcMediaSession {
 }
 
 class RtcMediaSessionListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaSessionListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaSessionListResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaSessionListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
 
 class RtcMediaSessionResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcMediaSession? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaSessionResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaSessionResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaSessionResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcMediaSession.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -647,36 +770,29 @@ class RtcParticipantCredential {
 }
 
 class RtcParticipantCredentialResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcParticipantCredential? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcParticipantCredentialResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcParticipantCredentialResponse.fromJson(Map<String, dynamic> json) {
     return RtcParticipantCredentialResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcParticipantCredential.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -780,33 +896,29 @@ class RtcMediaArtifact {
 }
 
 class RtcMediaArtifactListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaArtifactListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaArtifactListResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaArtifactListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -1270,36 +1382,29 @@ class RtcMediaSessionCompletionRecord {
 }
 
 class RtcMediaSessionCompletionRecordResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final RtcMediaSessionCompletionRecord? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcMediaSessionCompletionRecordResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcMediaSessionCompletionRecordResponse.fromJson(Map<String, dynamic> json) {
     return RtcMediaSessionCompletionRecordResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: (() {
-        final map = _sdkworkAsMap(json['data']);
-        return map == null ? null : RtcMediaSessionCompletionRecord.fromJson(map);
-      })()
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
-      'data': data?.toJson(),
+      'data': data,
+      'traceId': traceId,
     };
   }
 }
@@ -1375,6 +1480,9 @@ class RtcProviderCapabilitySnapshot {
   final bool? audio;
   final bool? video;
   final bool? live;
+  final bool? liveBroadcast;
+  final bool? liveAudience;
+  final bool? cdnRelay;
   final bool? screenShare;
   final bool? recording;
   final bool? webhook;
@@ -1387,6 +1495,9 @@ class RtcProviderCapabilitySnapshot {
     this.audio,
     this.video,
     this.live,
+    this.liveBroadcast,
+    this.liveAudience,
+    this.cdnRelay,
     this.screenShare,
     this.recording,
     this.webhook,
@@ -1401,6 +1512,9 @@ class RtcProviderCapabilitySnapshot {
       audio: json['audio'] is bool ? json['audio'] : null,
       video: json['video'] is bool ? json['video'] : null,
       live: json['live'] is bool ? json['live'] : null,
+      liveBroadcast: json['liveBroadcast'] is bool ? json['liveBroadcast'] : null,
+      liveAudience: json['liveAudience'] is bool ? json['liveAudience'] : null,
+      cdnRelay: json['cdnRelay'] is bool ? json['cdnRelay'] : null,
       screenShare: json['screenShare'] is bool ? json['screenShare'] : null,
       recording: json['recording'] is bool ? json['recording'] : null,
       webhook: json['webhook'] is bool ? json['webhook'] : null,
@@ -1425,6 +1539,9 @@ class RtcProviderCapabilitySnapshot {
       'audio': audio,
       'video': video,
       'live': live,
+      'liveBroadcast': liveBroadcast,
+      'liveAudience': liveAudience,
+      'cdnRelay': cdnRelay,
       'screenShare': screenShare,
       'recording': recording,
       'webhook': webhook,
@@ -1437,125 +1554,29 @@ class RtcProviderCapabilitySnapshot {
 }
 
 class RtcActiveProviderProfileListResponse {
-  final String? code;
-  final String? message;
-  final String? requestId;
-  final Map<String, dynamic>? data;
+  final int? code;
+  final dynamic data;
+  final String? traceId;
 
   RtcActiveProviderProfileListResponse({
     this.code,
-    this.message,
-    this.requestId,
-    this.data
+    this.data,
+    this.traceId
   });
 
   factory RtcActiveProviderProfileListResponse.fromJson(Map<String, dynamic> json) {
     return RtcActiveProviderProfileListResponse(
-      code: json['code']?.toString(),
-      message: json['message']?.toString(),
-      requestId: json['requestId']?.toString(),
-      data: _sdkworkAsMap(json['data'])
+      code: json['code'] is int ? json['code'] : null,
+      data: _sdkworkAsMap(json['data']),
+      traceId: json['traceId']?.toString()
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'code': code,
-      'message': message,
-      'requestId': requestId,
       'data': data,
-    };
-  }
-}
-
-class ProblemDetail {
-  final String? type;
-  final String? title;
-  final int? status;
-  final String? detail;
-  final String? instance;
-  final String? code;
-  final String? traceId;
-  final String? requestId;
-  final List<FieldError>? errors;
-
-  ProblemDetail({
-    this.type,
-    this.title,
-    this.status,
-    this.detail,
-    this.instance,
-    this.code,
-    this.traceId,
-    this.requestId,
-    this.errors
-  });
-
-  factory ProblemDetail.fromJson(Map<String, dynamic> json) {
-    return ProblemDetail(
-      type: json['type']?.toString(),
-      title: json['title']?.toString(),
-      status: json['status'] is int ? json['status'] : null,
-      detail: json['detail']?.toString(),
-      instance: json['instance']?.toString(),
-      code: json['code']?.toString(),
-      traceId: json['traceId']?.toString(),
-      requestId: json['requestId']?.toString(),
-      errors: (() {
-        final list = _sdkworkAsList(json['errors']);
-        if (list == null) {
-          return null;
-        }
-        return list
-            .map((item) => (() {
-        final map = _sdkworkAsMap(item);
-        return map == null ? null : FieldError.fromJson(map);
-      })())
-            .whereType<FieldError>()
-            .toList();
-      })()
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'type': type,
-      'title': title,
-      'status': status,
-      'detail': detail,
-      'instance': instance,
-      'code': code,
       'traceId': traceId,
-      'requestId': requestId,
-      'errors': errors?.map((item) => item.toJson()).toList(),
-    };
-  }
-}
-
-class FieldError {
-  final String? field;
-  final String? message;
-  final String? code;
-
-  FieldError({
-    this.field,
-    this.message,
-    this.code
-  });
-
-  factory FieldError.fromJson(Map<String, dynamic> json) {
-    return FieldError(
-      field: json['field']?.toString(),
-      message: json['message']?.toString(),
-      code: json['code']?.toString()
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'field': field,
-      'message': message,
-      'code': code,
     };
   }
 }

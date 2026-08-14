@@ -12,13 +12,14 @@ class RtcQualitySamplesApi {
   RtcQualitySamplesApi(this._client);
 
   /// Rtc quality Samples list.
-  Future<RtcQualitySampleListResponse?> list([int? page, int? pageSize, String? cursor, String? sort, String? q]) async {
+  Future<RtcQualitySampleListResponse?> list([int? page, int? pageSize, String? cursor, String? sort, String? q, String? createdAfter]) async {
     final query = buildQueryString([
       QueryParameterSpec('page', page, 'form', true, false, null),
       QueryParameterSpec('page_size', pageSize, 'form', true, false, null),
       QueryParameterSpec('cursor', cursor, 'form', true, false, null),
       QueryParameterSpec('sort', sort, 'form', true, false, null),
-      QueryParameterSpec('q', q, 'form', true, false, null)
+      QueryParameterSpec('q', q, 'form', true, false, null),
+      QueryParameterSpec('createdAfter', createdAfter, 'form', true, false, null)
     ]);
     final response = await _client.get(ApiPaths.appendQueryString(ApiPaths.backendPath('/rtc/quality_samples'), query));
     return (() {

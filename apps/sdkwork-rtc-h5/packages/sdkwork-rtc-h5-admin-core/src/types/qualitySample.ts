@@ -1,18 +1,12 @@
 /**
- * RTC quality sample admin domain type — mirror of the backend
- * `RtcQualitySample` schema.
+ * RTC quality sample admin domain type — the generated SDK `RtcQualitySample`
+ * is the contract authority; the admin surface re-exports it and adds
+ * list/filter types only.
  */
 
-export interface RtcQualitySample {
-  id: string;
-  mediaSessionId: string;
-  participantId?: string;
-  latencyMs?: number;
-  packetLossRate?: string;
-  jitterMs?: number;
-  bitrateKbps?: number;
-  sampledAt?: string;
-}
+import type { RtcQualitySample as SdkRtcQualitySample } from "@sdkwork/rtc-backend-sdk";
+
+export type RtcQualitySample = SdkRtcQualitySample;
 
 export interface QualitySampleListParams {
   search?: string;

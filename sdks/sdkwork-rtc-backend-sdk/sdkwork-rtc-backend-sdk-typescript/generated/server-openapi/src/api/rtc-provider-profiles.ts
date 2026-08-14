@@ -17,14 +17,14 @@ export class RtcProviderProfilesRtcProviderProfilesCapabilitiesApi {
 
 
 /** Rtc provider Profiles capabilities configure. */
-  async configure(providerProfileId: string, body: RtcOperationCommand, params?: RtcProviderProfilesRtcProviderProfilesCapabilitiesConfigureParams, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+  async configure(providerProfileId: string, body: RtcOperationCommand, params?: RtcProviderProfilesRtcProviderProfilesCapabilitiesConfigureParams, requestOptions?: ApiRequestOptions): Promise<RtcProviderProfile> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.request<Record<string, unknown>>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/capabilities`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'PUT' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderProfile>(backendApiPath(`/rtc/provider_profiles/${serializePathParameter(providerProfileId, { name: 'providerProfileId', style: 'simple', explode: false })}/capabilities`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'PUT' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 

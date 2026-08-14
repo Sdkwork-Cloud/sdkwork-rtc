@@ -1,7 +1,6 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { Room, RoomCreateCommand, RoomListParams, RoomListResponse } from "../types/room";
-import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 export class RoomService {
@@ -25,10 +24,12 @@ export class RoomService {
       ownerUserId: params?.ownerUserId,
       createdAfter: params?.createdAfter,
     });
-    const page = readSdkWorkListPage<Room>(response);
+    // The generated SDK unwraps the sdkwork-v3 envelope, so the response is
+    // already the `data` payload ({ items, pageInfo }).
+    const nextCursor = response.pageInfo?.nextCursor;
     return {
-      items: page.items,
-      nextCursor: page.nextCursor,
+      items: response.items,
+      nextCursor: nextCursor && nextCursor.length > 0 ? nextCursor : undefined,
     };
   }
 
@@ -37,7 +38,7 @@ export class RoomService {
     if (!response) {
       throw new Error(`RTC room not found: ${id}`);
     }
-    return readSdkWorkItem<Room>(response);
+    return response;
   }
 
   async create(command: RoomCreateCommand): Promise<Room> {
@@ -45,6 +46,6 @@ export class RoomService {
       title: command.title,
       roomId: command.roomId ?? null,
     });
-    return readSdkWorkItem<Room>(response);
+    return response;
   }
 }

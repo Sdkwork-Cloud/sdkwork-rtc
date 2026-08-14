@@ -5,7 +5,6 @@ import type {
   MediaArtifactListResponse,
   RtcMediaArtifact,
 } from "../types/mediaArtifact";
-import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import {
   resolveBackendRtcClient,
   type RtcBackendClientOptions,
@@ -32,10 +31,12 @@ export class MediaArtifactService {
       status: params?.status,
       createdAfter: params?.createdAfter,
     });
-    const page = readSdkWorkListPage<RtcMediaArtifact>(response);
+    // The generated SDK unwraps the sdkwork-v3 envelope, so the response is
+    // already the `data` payload ({ items, pageInfo }).
+    const nextCursor = response.pageInfo?.nextCursor;
     return {
-      items: page.items,
-      nextCursor: page.nextCursor,
+      items: response.items,
+      nextCursor: nextCursor && nextCursor.length > 0 ? nextCursor : undefined,
     };
   }
 
@@ -44,6 +45,6 @@ export class MediaArtifactService {
     if (!response) {
       throw new Error(`RTC media artifact not found: ${id}`);
     }
-    return readSdkWorkItem<RtcMediaArtifact>(response);
+    return response;
   }
 }

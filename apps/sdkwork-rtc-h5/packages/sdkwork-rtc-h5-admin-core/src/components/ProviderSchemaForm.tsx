@@ -50,9 +50,9 @@ export function ProviderSchemaForm({ schema, values, onChange, section, errors =
               type="number"
               value={(values[field.key] as number) ?? (field.default as number) ?? ""}
               onChange={(e) => handleChange(field.key, Number(e.target.value))}
-              min={field.min}
-              max={field.max}
-              placeholder={field.placeholder}
+              min={field.min ?? undefined}
+              max={field.max ?? undefined}
+              placeholder={field.placeholder ?? undefined}
               className={errors[field.key] ? "field-error" : ""}
             />
           ) : field.type === "boolean" ? (
@@ -71,7 +71,7 @@ export function ProviderSchemaForm({ schema, values, onChange, section, errors =
               type={field.type === "secret_ref" ? "password" : "text"}
               value={(values[field.key] as string) ?? (field.default as string) ?? ""}
               onChange={(e) => handleChange(field.key, e.target.value)}
-              placeholder={field.placeholder}
+              placeholder={field.placeholder ?? undefined}
               className={errors[field.key] ? "field-error" : ""}
             />
           )}
@@ -97,10 +97,10 @@ export function validateSchemaFields(
     }
     if (field.type === "number" && value !== undefined && value !== null) {
       const num = Number(value);
-      if (field.min !== undefined && num < field.min) {
+      if (field.min != null && num < field.min) {
         errors[field.key] = `${field.label} must be at least ${field.min}`;
       }
-      if (field.max !== undefined && num > field.max) {
+      if (field.max != null && num > field.max) {
         errors[field.key] = `${field.label} must be at most ${field.max}`;
       }
     }

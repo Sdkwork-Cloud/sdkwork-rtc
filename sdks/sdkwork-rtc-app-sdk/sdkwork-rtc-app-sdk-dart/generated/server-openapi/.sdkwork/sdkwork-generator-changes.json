@@ -9,14 +9,16 @@
     "protocol": "http",
     "packageName": "sdkwork-rtc-app-sdk-generated-dart"
   },
-  "changeFingerprint": "e0c54bea7f2836b8a4e1ac08298a238918f2935870583e405c7d55a00bb6d48d",
+  "changeFingerprint": "8e1f101d45e5b2a5d266babe0faf140f3e280234961c53627d48b7b9562431e2",
   "changes": {
     "createdGeneratedFiles": [],
     "updatedGeneratedFiles": [
-      "lib/src/api/api.dart",
       "lib/src/api/rtc_media_sessions.dart",
-      "lib/src/api/rtc_participant_credentials.dart",
-      "README.md"
+      "lib/src/api/rtc_rooms.dart",
+      "lib/src/http/client.dart",
+      "lib/src/models.dart",
+      "README.md",
+      "sdkwork-sdk.json"
     ],
     "unchangedGeneratedFiles": [
       "analysis_options.yaml",
@@ -26,38 +28,59 @@
       "CHANGELOG.md",
       "lib/app_client.dart",
       "lib/sdkwork_rtc_app_sdk_generated_dart.dart",
+      "lib/src/api/api.dart",
       "lib/src/api/paths.dart",
       "lib/src/api/response_helpers.dart",
+      "lib/src/api/rtc_participant_credentials.dart",
       "lib/src/api/rtc_provider_profiles.dart",
       "lib/src/api/rtc_recording_artifacts.dart",
-      "lib/src/api/rtc_rooms.dart",
-      "lib/src/http/client.dart",
       "lib/src/http/sdk_config.dart",
-      "lib/src/models.dart",
       "LICENSE",
-      "pubspec.yaml",
-      "sdkwork-sdk.json"
+      "pubspec.yaml"
     ],
     "deletedGeneratedFiles": [],
     "scaffoldedFiles": [],
     "preservedScaffoldFiles": [
       "custom/README.md"
     ],
-    "backedUpFiles": []
+    "backedUpFiles": [
+      "README.md"
+    ]
   },
   "impact": {
     "schemaVersion": 1,
     "areas": [
       "api-surface",
+      "models",
+      "runtime",
+      "build-metadata",
       "documentation"
     ],
     "details": [
       {
         "area": "api-surface",
         "paths": [
-          "lib/src/api/api.dart",
           "lib/src/api/rtc_media_sessions.dart",
-          "lib/src/api/rtc_participant_credentials.dart"
+          "lib/src/api/rtc_rooms.dart",
+          "lib/src/http/client.dart"
+        ]
+      },
+      {
+        "area": "models",
+        "paths": [
+          "lib/src/models.dart"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "lib/src/http/client.dart"
+        ]
+      },
+      {
+        "area": "build-metadata",
+        "paths": [
+          "sdkwork-sdk.json"
         ]
       },
       {
@@ -68,18 +91,18 @@
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, documentation. Verification is required."
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required."
   },
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, documentation.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-app-sdk\\sdkwork-rtc-app-sdk-dart\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -97,12 +120,14 @@
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "medium",
+    "riskLevel": "high",
     "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
+      "backed-up-generated-files",
+      "manual-review-required",
       "verification-required"
     ]
   },

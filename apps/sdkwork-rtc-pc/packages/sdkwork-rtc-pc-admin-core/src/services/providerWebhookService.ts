@@ -1,7 +1,6 @@
 import type { AuthTokenManager } from "@sdkwork/sdk-common";
 
 import type { ProviderWebhookEvent } from "../types/providerWebhookEvent";
-import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import { resolveBackendRtcClient, type RtcBackendClientOptions, type RtcBackendClientSource } from "./backendClient";
 
 interface ListResponse {
@@ -33,10 +32,12 @@ export class ProviderWebhookService {
       q: params?.search,
       sort: params?.sort,
     });
-    const page = readSdkWorkListPage<ProviderWebhookEvent>(response);
+    // The generated SDK unwraps the sdkwork-v3 envelope, so the response is
+    // already the `data` payload ({ items, pageInfo }).
+    const nextCursor = response.pageInfo?.nextCursor;
     return {
-      items: page.items,
-      nextCursor: page.nextCursor ?? null,
+      items: response.items,
+      nextCursor: nextCursor && nextCursor.length > 0 ? nextCursor : null,
     };
   }
 }

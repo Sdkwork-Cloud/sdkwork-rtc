@@ -1,76 +1,22 @@
 /**
- * RTC media artifact (recording file) admin domain types — mirror of the
- * backend `RtcMediaArtifact` / `RtcDriveReference` / `MediaResource` schemas.
+ * RTC media artifact (recording file) admin domain types — the generated SDK
+ * `RtcMediaArtifact` / `RtcDriveReference` / `MediaResource` schemas are the
+ * contract authority; the admin surface re-exports them and adds list/filter
+ * types plus a drive URI helper.
  */
+
+import type {
+  MediaResource as SdkMediaResource,
+  RtcDriveReference as SdkRtcDriveReference,
+  RtcMediaArtifact as SdkRtcMediaArtifact,
+} from "@sdkwork/rtc-backend-sdk";
 
 export type RtcArtifactKind = "recording" | "transcript" | "screen_share" | "snapshot" | "other";
 export type RtcArtifactStatus = "pending" | "processing" | "ready" | "failed" | "deleted";
 
-export interface RtcDriveReference {
-  driveUri: string;
-  spaceId: string;
-  spaceType: "rtc";
-  nodeId: string;
-  nodeVersion?: string | null;
-}
-
-export type RtcMediaResourceKind =
-  | "image"
-  | "video"
-  | "audio"
-  | "voice"
-  | "document"
-  | "archive"
-  | "model"
-  | "other";
-
-export type RtcMediaResourceSource =
-  | "drive"
-  | "external_url"
-  | "data_url"
-  | "provider_asset"
-  | "generated";
-
-export interface RtcMediaResource {
-  id?: string | null;
-  kind: RtcMediaResourceKind;
-  source: RtcMediaResourceSource;
-  url?: string | null;
-  publicUrl?: string | null;
-  uri?: string | null;
-  fileName?: string | null;
-  mimeType?: string | null;
-  sizeBytes?: number | null;
-  checksum?: {
-    algorithm: "sha256" | "md5" | "etag";
-    value: string;
-  } | null;
-  width?: number | null;
-  height?: number | null;
-  durationSeconds?: number | null;
-}
-
-export interface RtcMediaArtifact {
-  id: string;
-  tenantId: string;
-  organizationId: string;
-  mediaSessionId: string;
-  ownerUserId: string;
-  artifactKind: RtcArtifactKind;
-  artifactStatus: RtcArtifactStatus;
-  mediaRole?: string;
-  providerProfileId?: string;
-  providerArtifactId?: string;
-  drive?: RtcDriveReference | null;
-  resource?: RtcMediaResource | null;
-  resourceHash?: string;
-  startedAt?: string;
-  endedAt?: string;
-  durationMs?: string;
-  failureReason?: string;
-  sourceProviderWebhookEventId?: string;
-  sourceProviderQueryJobId?: string;
-}
+export type RtcDriveReference = SdkRtcDriveReference;
+export type RtcMediaResource = SdkMediaResource;
+export type RtcMediaArtifact = SdkRtcMediaArtifact;
 
 export interface MediaArtifactListParams {
   search?: string;

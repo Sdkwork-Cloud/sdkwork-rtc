@@ -5,6 +5,8 @@
   "language": "dart",
   "sdkType": "app",
   "packageName": "sdkwork-rtc-app-sdk-generated-dart",
+  "transportPackageName": "sdkwork-rtc-app-sdk-generated-dart",
+  "consumerPackageName": "sdkwork-rtc-app-sdk-generated-dart",
   "generator": "@sdkwork/sdk-generator",
   "capabilities": {
     "supportsGeneratedTests": true,

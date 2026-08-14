@@ -978,7 +978,7 @@
       },
       "schemas": {
         "request": "RtcOperationCommand",
-        "response": "SdkWorkResourceResponse",
+        "response": "RtcProviderProfileResponse",
         "problem": "ProblemDetail"
       },
       "rateLimitTier": "openApiDefault",

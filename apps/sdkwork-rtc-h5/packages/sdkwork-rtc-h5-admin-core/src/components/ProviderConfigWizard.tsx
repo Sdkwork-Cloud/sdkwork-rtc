@@ -238,7 +238,7 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
                               },
                             })
                           }
-                          placeholder={field.placeholder}
+                          placeholder={field.placeholder ?? undefined}
                         />
                       </div>
                     ))}

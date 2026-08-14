@@ -1,13 +1,7 @@
-export interface ProviderRoute {
-  id: string;
-  tenantId: string;
-  organizationId: string;
-  providerProfileId: string;
-  routeType: string;
-  region?: string;
-  priority: number;
-  status: "active" | "disabled";
-}
+import type { RtcProviderRoute } from "@sdkwork/rtc-backend-sdk";
+
+/** RTC provider route admin view model — the generated SDK `RtcProviderRoute` (contract authority). */
+export type ProviderRoute = RtcProviderRoute;
 
 export interface ProviderRouteCommand {
   providerProfileId: string;

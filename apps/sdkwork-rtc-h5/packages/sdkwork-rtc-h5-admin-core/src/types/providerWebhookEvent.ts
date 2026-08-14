@@ -1,29 +1,4 @@
-export interface ProviderWebhookEvent {
-  id: string;
-  tenantId?: string;
-  organizationId?: string;
-  provider: string;
-  providerProfileId?: string | null;
-  externalEventId?: string | null;
-  eventType: string;
-  eventKind:
-    | "room_started"
-    | "room_ended"
-    | "participant_joined"
-    | "participant_left"
-    | "recording_started"
-    | "recording_completed"
-    | "recording_failed"
-    | "media_track_started"
-    | "media_track_stopped"
-    | "quality_sample"
-    | "unknown";
-  roomId?: string | null;
-  mediaSessionId?: string | null;
-  participantId?: string | null;
-  recordingId?: string | null;
-  payloadHash: string;
-  status: "received" | "processed" | "duplicate" | "failed";
-  receivedAt: string;
-  processedAt?: string;
-}
+import type { RtcProviderWebhookEvent } from "@sdkwork/rtc-backend-sdk";
+
+/** RTC provider webhook event admin view model — the generated SDK `RtcProviderWebhookEvent` (contract authority). */
+export type ProviderWebhookEvent = RtcProviderWebhookEvent;

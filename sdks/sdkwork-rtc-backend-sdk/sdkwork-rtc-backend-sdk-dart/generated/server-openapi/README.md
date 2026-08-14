@@ -15,7 +15,7 @@ import 'package:sdkwork_rtc_backend_sdk_generated_dart/sdkwork_rtc_backend_sdk_g
 
 final client = SdkworkBackendClient(
   config: const SdkConfig(
-    baseUrl: 'http://localhost:18088/backend/v3/api',
+    baseUrl: 'http://127.0.0.1:18088',
   ),
 );
 client.setAuthToken('your-auth-token');
@@ -37,7 +37,7 @@ Access-Token: <accessToken>
 ## Configuration (Non-Auth)
 
 ```dart
-final client = SdkworkBackendClient.withBaseUrl(baseUrl: 'http://localhost:18088/backend/v3/api');
+final client = SdkworkBackendClient.withBaseUrl(baseUrl: 'http://127.0.0.1:18088');
 client.setHeader('X-Custom-Header', 'value');
 ```
 
@@ -69,6 +69,8 @@ final params = <String, dynamic>{
   'cursor': 'cursor',
   'sort': 'sort',
   'q': 'q',
+  'status': 'pending',
+  'createdAfter': '2026-04-10T00:00:00Z',
 };
 final result = await client.rtcMediaArtifacts.list(params);
 print(result);
@@ -84,6 +86,9 @@ final params = <String, dynamic>{
   'cursor': 'cursor',
   'sort': 'sort',
   'q': 'q',
+  'status': 'preparing',
+  'ownerUserId': '1',
+  'createdAfter': '2026-04-10T00:00:00Z',
 };
 final result = await client.rtcMediaSessions.list(params);
 print(result);
@@ -202,6 +207,7 @@ final params = <String, dynamic>{
   'cursor': 'cursor',
   'sort': 'sort',
   'q': 'q',
+  'createdAfter': '2026-04-10T00:00:00Z',
 };
 final result = await client.rtcQualitySamples.list(params);
 print(result);

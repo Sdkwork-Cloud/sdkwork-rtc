@@ -9,15 +9,17 @@
     "protocol": "http",
     "packageName": "sdkwork-rtc-backend-sdk-generated-dart"
   },
-  "changeFingerprint": "37e91a2a0676a46c57c6e935385f953dd75dfd4b9628c5c1129a585415118ccb",
+  "changeFingerprint": "cb5c5b0c808dcd2bb3813014556ba17cb80b3b4957f8bd8ef63efb3194986004",
   "changes": {
     "createdGeneratedFiles": [],
     "updatedGeneratedFiles": [
       "lib/src/api/api.dart",
-      "lib/src/api/rtc_provider_plugins.dart",
+      "lib/src/api/rtc_media_artifacts.dart",
+      "lib/src/api/rtc_media_sessions.dart",
       "lib/src/api/rtc_provider_profiles.dart",
-      "lib/src/api/rtc_provider_schemas.dart",
+      "lib/src/api/rtc_quality_samples.dart",
       "lib/src/api/rtc_rooms.dart",
+      "lib/src/http/client.dart",
       "lib/src/models.dart",
       "README.md",
       "sdkwork-sdk.json"
@@ -32,16 +34,14 @@
       "lib/sdkwork_rtc_backend_sdk_generated_dart.dart",
       "lib/src/api/paths.dart",
       "lib/src/api/response_helpers.dart",
-      "lib/src/api/rtc_media_artifacts.dart",
-      "lib/src/api/rtc_media_sessions.dart",
       "lib/src/api/rtc_provider_accounts.dart",
       "lib/src/api/rtc_provider_applications.dart",
       "lib/src/api/rtc_provider_credentials.dart",
+      "lib/src/api/rtc_provider_plugins.dart",
       "lib/src/api/rtc_provider_query_jobs.dart",
       "lib/src/api/rtc_provider_routes.dart",
+      "lib/src/api/rtc_provider_schemas.dart",
       "lib/src/api/rtc_provider_webhooks.dart",
-      "lib/src/api/rtc_quality_samples.dart",
-      "lib/src/http/client.dart",
       "lib/src/http/sdk_config.dart",
       "LICENSE",
       "pubspec.yaml"
@@ -51,15 +51,14 @@
     "preservedScaffoldFiles": [
       "custom/README.md"
     ],
-    "backedUpFiles": [
-      "README.md"
-    ]
+    "backedUpFiles": []
   },
   "impact": {
     "schemaVersion": 1,
     "areas": [
       "api-surface",
       "models",
+      "runtime",
       "build-metadata",
       "documentation"
     ],
@@ -68,16 +67,24 @@
         "area": "api-surface",
         "paths": [
           "lib/src/api/api.dart",
-          "lib/src/api/rtc_provider_plugins.dart",
+          "lib/src/api/rtc_media_artifacts.dart",
+          "lib/src/api/rtc_media_sessions.dart",
           "lib/src/api/rtc_provider_profiles.dart",
-          "lib/src/api/rtc_provider_schemas.dart",
-          "lib/src/api/rtc_rooms.dart"
+          "lib/src/api/rtc_quality_samples.dart",
+          "lib/src/api/rtc_rooms.dart",
+          "lib/src/http/client.dart"
         ]
       },
       {
         "area": "models",
         "paths": [
           "lib/src/models.dart"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "lib/src/http/client.dart"
         ]
       },
       {
@@ -94,18 +101,18 @@
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models, build-metadata, documentation. Verification is required."
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required."
   },
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, build-metadata, documentation.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, documentation.",
         "workingDirectory": "E:\\sdkwork-space\\sdkwork-rtc\\sdks\\sdkwork-rtc-backend-sdk\\sdkwork-rtc-backend-sdk-dart\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -123,14 +130,12 @@
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "high",
+    "riskLevel": "medium",
     "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "backed-up-generated-files",
-      "manual-review-required",
       "verification-required"
     ]
   },

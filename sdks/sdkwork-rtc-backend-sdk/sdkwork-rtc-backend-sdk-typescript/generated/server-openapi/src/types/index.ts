@@ -1,11 +1,9 @@
 export * from './common';
 export type { SdkWorkApiResponse } from './sdk-work-api-response';
-export type { SdkWorkResourceData } from './sdk-work-resource-data';
 export type { PageInfo } from './page-info';
 export type { SdkWorkPlatformErrorCode } from './sdk-work-platform-error-code';
 export type { ProblemDetail } from './problem-detail';
 export type { FieldError } from './field-error';
-export type { SdkWorkResourceResponse } from './sdk-work-resource-response';
 export type { RtcOperationCommand } from './rtc-operation-command';
 export type { MediaKind } from './media-kind';
 export type { MediaSource } from './media-source';

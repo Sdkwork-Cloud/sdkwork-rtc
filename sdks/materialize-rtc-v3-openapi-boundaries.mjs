@@ -2218,6 +2218,7 @@ function operationResponseSchemaName(route) {
     case "rtc.providerProfiles.retrieve":
     case "rtc.providerProfiles.update":
     case "rtc.providerProfiles.disable":
+    case "rtc.providerProfiles.capabilities.configure":
       return "RtcProviderProfileResponse";
     case "rtc.providerProfiles.verify":
       return "RtcProviderProfileVerifyResultResponse";

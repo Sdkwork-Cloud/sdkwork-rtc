@@ -40,26 +40,6 @@ class SdkWorkApiResponse {
   }
 }
 
-class SdkWorkResourceData {
-  final Map<String, dynamic>? item;
-
-  SdkWorkResourceData({
-    this.item
-  });
-
-  factory SdkWorkResourceData.fromJson(Map<String, dynamic> json) {
-    return SdkWorkResourceData(
-      item: _sdkworkAsMap(json['item'])
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'item': item,
-    };
-  }
-}
-
 class PageInfo {
   final String? mode;
   final int? page;
@@ -112,6 +92,8 @@ class ProblemDetail {
   final String? instance;
   final int? code;
   final String? traceId;
+  final String? i18nKey;
+  final String? locale;
   final List<FieldError>? errors;
 
   ProblemDetail({
@@ -122,6 +104,8 @@ class ProblemDetail {
     this.instance,
     this.code,
     this.traceId,
+    this.i18nKey,
+    this.locale,
     this.errors
   });
 
@@ -134,6 +118,8 @@ class ProblemDetail {
       instance: json['instance']?.toString(),
       code: json['code'] is int ? json['code'] : null,
       traceId: json['traceId']?.toString(),
+      i18nKey: json['i18nKey']?.toString(),
+      locale: json['locale']?.toString(),
       errors: (() {
         final list = _sdkworkAsList(json['errors']);
         if (list == null) {
@@ -159,6 +145,8 @@ class ProblemDetail {
       'instance': instance,
       'code': code,
       'traceId': traceId,
+      'i18nKey': i18nKey,
+      'locale': locale,
       'errors': errors?.map((item) => item.toJson()).toList(),
     };
   }
@@ -168,18 +156,37 @@ class FieldError {
   final String? field;
   final String? message;
   final int? code;
+  final String? i18nKey;
+  final Map<String, dynamic>? params;
 
   FieldError({
     this.field,
     this.message,
-    this.code
+    this.code,
+    this.i18nKey,
+    this.params
   });
 
   factory FieldError.fromJson(Map<String, dynamic> json) {
     return FieldError(
       field: json['field']?.toString(),
       message: json['message']?.toString(),
-      code: json['code'] is int ? json['code'] : null
+      code: json['code'] is int ? json['code'] : null,
+      i18nKey: json['i18nKey']?.toString(),
+      params: (() {
+        final map = _sdkworkAsMap(json['params']);
+        if (map == null) {
+          return null;
+        }
+        final result = <String, String>{};
+        map.forEach((key, item) {
+          final deserialized = item?.toString();
+          if (deserialized is String) {
+            result[key] = deserialized;
+          }
+        });
+        return result;
+      })()
     );
   }
 
@@ -188,34 +195,8 @@ class FieldError {
       'field': field,
       'message': message,
       'code': code,
-    };
-  }
-}
-
-class SdkWorkResourceResponse {
-  final int? code;
-  final dynamic data;
-  final String? traceId;
-
-  SdkWorkResourceResponse({
-    this.code,
-    this.data,
-    this.traceId
-  });
-
-  factory SdkWorkResourceResponse.fromJson(Map<String, dynamic> json) {
-    return SdkWorkResourceResponse(
-      code: json['code'] is int ? json['code'] : null,
-      data: json['data'],
-      traceId: json['traceId']?.toString()
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'code': code,
-      'data': data,
-      'traceId': traceId,
+      'i18nKey': i18nKey,
+      'params': params?.map((key, item) => MapEntry(key, item)),
     };
   }
 }
@@ -490,6 +471,30 @@ class RtcRoomResponse {
       'code': code,
       'data': data,
       'traceId': traceId,
+    };
+  }
+}
+
+class RtcCreateRoomRequest {
+  final String? title;
+  final String? roomId;
+
+  RtcCreateRoomRequest({
+    this.title,
+    this.roomId
+  });
+
+  factory RtcCreateRoomRequest.fromJson(Map<String, dynamic> json) {
+    return RtcCreateRoomRequest(
+      title: json['title']?.toString(),
+      roomId: json['roomId']?.toString()
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'title': title,
+      'roomId': roomId,
     };
   }
 }

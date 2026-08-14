@@ -1,13 +1,14 @@
-export interface Room {
-  id: string;
-  tenantId: string;
-  organizationId: string;
-  ownerUserId: string;
-  title: string;
-  status: "active" | "archived" | "disabled";
+import type { RtcRoom } from "@sdkwork/rtc-backend-sdk";
+
+/**
+ * RTC room admin view model — the generated SDK `RtcRoom` (contract
+ * authority) extended with optional display fields the admin UI renders
+ * when present.
+ */
+export type Room = RtcRoom & {
   createdAt?: string;
   updatedAt?: string;
-}
+};
 
 export interface RoomListParams {
   search?: string;

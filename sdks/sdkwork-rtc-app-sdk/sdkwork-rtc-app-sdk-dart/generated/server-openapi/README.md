@@ -5,13 +5,13 @@ Generated SDKWork v3 dual-token transport SDK.
 ## Installation
 
 ```bash
-dart pub add sdkwork_ai_prod_app_sdk_generated_dart
+dart pub add sdkwork_rtc_app_sdk_generated_dart
 ```
 
 ## Quick Start
 
 ```dart
-import 'package:sdkwork_ai_prod_app_sdk_generated_dart/sdkwork_ai_prod_app_sdk_generated_dart.dart';
+import 'package:sdkwork_rtc_app_sdk_generated_dart/sdkwork_rtc_app_sdk_generated_dart.dart';
 
 final client = SdkworkAppClient(
   config: const SdkConfig(
@@ -29,7 +29,7 @@ final params = <String, dynamic>{
   'sort': 'sort',
   'q': 'q',
 };
-final result = await client.rtcMediaSessions.list(params);
+final result = await client.rtcProviderProfiles.activeList(params);
 print(result);
 ```
 
@@ -68,6 +68,9 @@ final params = <String, dynamic>{
   'cursor': 'cursor',
   'sort': 'sort',
   'q': 'q',
+  'status': 'preparing',
+  'ownerUserId': '1',
+  'createdAfter': '2026-04-10T00:00:00Z',
 };
 final result = await client.rtcMediaSessions.list(params);
 print(result);
@@ -127,6 +130,9 @@ final params = <String, dynamic>{
   'cursor': 'cursor',
   'sort': 'sort',
   'q': 'q',
+  'status': 'active',
+  'ownerUserId': '1',
+  'createdAfter': '2026-04-10T00:00:00Z',
 };
 final result = await client.rtcRooms.list(params);
 print(result);
@@ -143,7 +149,7 @@ try {
     'sort': 'sort',
     'q': 'q',
   };
-  final result = await client.rtcMediaSessions.list(params);
+  final result = await client.rtcProviderProfiles.activeList(params);
   print(result);
 } catch (error) {
   print('Error: $error');

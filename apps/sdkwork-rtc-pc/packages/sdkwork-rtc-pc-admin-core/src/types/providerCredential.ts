@@ -1,29 +1,7 @@
-export interface ProviderCredential {
-  id: string;
-  tenantId: string;
-  organizationId: string;
-  providerAccountId: string;
-  providerApplicationId: string;
-  provider: string;
-  credentialRole: string;
-  credentialLabel: string;
-  credentialRef: string;
-  credentialFingerprint?: string;
-  secretVersion?: string;
-  status: "active" | "pending" | "disabled" | "revoked" | "expired";
-  validFrom?: string;
-  expiresAt?: string;
-  rotationDueAt?: string;
-  rotatedAt?: string;
-  revokedAt?: string;
-  lastVerifiedAt?: string;
-  lastUsedAt?: string;
-  createdBy?: string;
-  updatedBy?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  version: string;
-}
+import type { RtcProviderCredential } from "@sdkwork/rtc-backend-sdk";
+
+/** RTC provider credential admin view model — the generated SDK `RtcProviderCredential` (contract authority). */
+export type ProviderCredential = RtcProviderCredential;
 
 export interface ProviderCredentialCommand {
   credentialRole: string;

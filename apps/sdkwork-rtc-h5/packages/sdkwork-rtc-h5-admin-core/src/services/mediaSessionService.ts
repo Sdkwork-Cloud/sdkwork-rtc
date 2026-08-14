@@ -6,7 +6,6 @@ import type {
   RtcMediaSession,
 } from "../types/mediaSession";
 import type { RtcMediaSessionCompletionRecord } from "../types/completionRecord";
-import { readSdkWorkItem, readSdkWorkListPage } from "../sdk/index.js";
 import {
   resolveBackendRtcClient,
   type RtcBackendClientOptions,
@@ -34,10 +33,12 @@ export class MediaSessionService {
       ownerUserId: params?.ownerUserId,
       createdAfter: params?.createdAfter,
     });
-    const page = readSdkWorkListPage<RtcMediaSession>(response);
+    // The generated SDK unwraps the sdkwork-v3 envelope, so the response is
+    // already the `data` payload ({ items, pageInfo }).
+    const nextCursor = response.pageInfo?.nextCursor;
     return {
-      items: page.items,
-      nextCursor: page.nextCursor,
+      items: response.items,
+      nextCursor: nextCursor && nextCursor.length > 0 ? nextCursor : undefined,
     };
   }
 
@@ -46,12 +47,12 @@ export class MediaSessionService {
     if (!response) {
       throw new Error(`RTC media session not found: ${id}`);
     }
-    return readSdkWorkItem<RtcMediaSession>(response);
+    return response;
   }
 
   async close(id: string): Promise<RtcMediaSession> {
     const response = await this.client.rtcMediaSessions.rtc.mediaSessions.close(id, {});
-    return readSdkWorkItem<RtcMediaSession>(response);
+    return response;
   }
 
   async getCompletionRecord(id: string): Promise<RtcMediaSessionCompletionRecord> {
@@ -61,6 +62,6 @@ export class MediaSessionService {
     if (!response) {
       throw new Error(`RTC media session completion record not found: ${id}`);
     }
-    return readSdkWorkItem<RtcMediaSessionCompletionRecord>(response);
+    return response;
   }
 }

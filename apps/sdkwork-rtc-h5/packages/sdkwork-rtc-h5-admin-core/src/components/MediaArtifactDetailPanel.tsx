@@ -137,7 +137,9 @@ export function MediaArtifactDetailPanel({ artifact, onBack }: MediaArtifactDeta
               </div>
               <div className="admin-detail-item">
                 <span className="admin-detail-label">Size</span>
-                <span className="admin-detail-value">{formatBytes(resource.sizeBytes)}</span>
+                <span className="admin-detail-value">
+                  {formatBytes(resource.sizeBytes != null ? Number(resource.sizeBytes) : undefined)}
+                </span>
               </div>
               <div className="admin-detail-item">
                 <span className="admin-detail-label">Media Duration</span>
