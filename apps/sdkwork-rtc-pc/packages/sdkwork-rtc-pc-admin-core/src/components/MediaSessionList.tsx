@@ -104,7 +104,7 @@ export function MediaSessionList({
   const statusOptions = useMemo(() => Object.keys(SESSION_STATUS_LABELS) as RtcMediaSessionStatus[], []);
 
   return (
-    <div className="admin-card">
+    <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
         <h2>实时会话</h2>
         <div className="admin-card-actions">

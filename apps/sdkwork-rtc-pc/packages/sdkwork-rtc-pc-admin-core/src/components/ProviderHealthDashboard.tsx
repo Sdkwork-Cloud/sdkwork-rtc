@@ -87,37 +87,39 @@ export function ProviderHealthDashboard({ profiles, schemas, onVerify, onRefresh
 
       <div className="capabilities-matrix">
         <h3>Capabilities Matrix</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Provider</th>
-              <th>Audio</th>
-              <th>Video</th>
-              <th>Live</th>
-              <th>Screen Share</th>
-              <th>Recording</th>
-              <th>Webhook</th>
-              <th>Active Query</th>
-            </tr>
-          </thead>
-          <tbody>
-            {providerStatuses.map((status) => {
-              const caps = status.defaultProfile?.capabilities;
-              return (
-                <tr key={status.provider}>
-                  <td>{status.displayName}</td>
-                  <td>{caps?.audio ? "✅" : "❌"}</td>
-                  <td>{caps?.video ? "✅" : "❌"}</td>
-                  <td>{caps?.live ? "✅" : "❌"}</td>
-                  <td>{caps?.screenShare ? "✅" : "❌"}</td>
-                  <td>{caps?.recording ? "✅" : "❌"}</td>
-                  <td>{caps?.webhook ? "✅" : "❌"}</td>
-                  <td>{caps?.activeQuery ? "✅" : "❌"}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="provider-table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Audio</th>
+                <th>Video</th>
+                <th>Live</th>
+                <th>Screen Share</th>
+                <th>Recording</th>
+                <th>Webhook</th>
+                <th>Active Query</th>
+              </tr>
+            </thead>
+            <tbody>
+              {providerStatuses.map((status) => {
+                const caps = status.defaultProfile?.capabilities;
+                return (
+                  <tr key={status.provider}>
+                    <td>{status.displayName}</td>
+                    <td>{caps?.audio ? "✅" : "❌"}</td>
+                    <td>{caps?.video ? "✅" : "❌"}</td>
+                    <td>{caps?.live ? "✅" : "❌"}</td>
+                    <td>{caps?.screenShare ? "✅" : "❌"}</td>
+                    <td>{caps?.recording ? "✅" : "❌"}</td>
+                    <td>{caps?.webhook ? "✅" : "❌"}</td>
+                    <td>{caps?.activeQuery ? "✅" : "❌"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

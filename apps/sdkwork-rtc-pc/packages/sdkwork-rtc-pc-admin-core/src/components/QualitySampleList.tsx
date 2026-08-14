@@ -81,7 +81,7 @@ export function QualitySampleList({
   }, [onExportAll, samples]);
 
   return (
-    <div className="admin-card">
+    <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
         <h2>质量监控</h2>
         <div className="admin-card-actions">

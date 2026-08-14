@@ -106,7 +106,7 @@ export function MediaArtifactList({
   }, [artifacts, onExportAll]);
 
   return (
-    <div className="admin-card">
+    <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
         <h2>通话记录文件</h2>
         <div className="admin-card-actions">

@@ -32,19 +32,40 @@ async fn bootstrap_product_service() -> anyhow::Result<Arc<RtcProductService>> {
         .map_err(|error| anyhow::anyhow!("connect RTC persistence: {error}"))?
     {
         service = service.with_persistence(bootstrap.persistence);
-        let tenant_id =
-            std::env::var("SDKWORK_RTC_HYDRATE_TENANT_ID").unwrap_or_else(|_| "default".into());
-        let organization_id = std::env::var("SDKWORK_RTC_HYDRATE_ORGANIZATION_ID")
-            .unwrap_or_else(|_| "default".into());
-        service
-            .hydrate_from_persistence(tenant_id, organization_id)
-            .await?;
+        hydrate_service_from_persistence(&mut service)
+            .await
+            .map_err(anyhow::Error::msg)?;
     } else if rtc_persistence_required() {
         return Err(anyhow::anyhow!(
             "RTC database persistence is required when SDKWORK_RTC_ENVIRONMENT is not development, dev, local, or test"
         ));
     }
 
+    Ok(Arc::new(service))
+}
+
+async fn hydrate_service_from_persistence(service: &mut RtcProductService) -> Result<(), String> {
+    let tenant_id =
+        std::env::var("SDKWORK_RTC_HYDRATE_TENANT_ID").unwrap_or_else(|_| "default".into());
+    let organization_id = std::env::var("SDKWORK_RTC_HYDRATE_ORGANIZATION_ID")
+        .unwrap_or_else(|_| "default".into());
+    service
+        .hydrate_from_persistence(tenant_id, organization_id)
+        .await
+        .map_err(|error| format!("hydrate RTC persistence: {error}"))?;
+    Ok(())
+}
+
+/// Boots the RTC product service on a caller-provided shared pool.
+async fn bootstrap_service_with_pool(pool: &DatabasePool) -> Result<Arc<RtcProductService>, String> {
+    let registry =
+        build_builtin_provider_registry().map_err(|error| format!("{error}"))?;
+    let mut service = RtcProductService::new(registry);
+    let persistence = persistence_from_database_pool(pool.clone())
+        .await
+        .map_err(|error| format!("connect RTC persistence: {error}"))?;
+    service = service.with_persistence(persistence);
+    hydrate_service_from_persistence(&mut service).await?;
     Ok(Arc::new(service))
 }
 
@@ -123,28 +144,40 @@ pub async fn assemble_api_router() -> anyhow::Result<ApiAssembly> {
 /// Assemble the RTC contribution against a caller-provided database pool so the
 /// platform cloud gateway can share its process-wide PostgreSQL pool.
 pub async fn assemble_api_router_with_pool(pool: DatabasePool) -> Result<ApiAssembly, String> {
-    let registry =
-        build_builtin_provider_registry().map_err(|error| format!("{error}"))?;
-    let mut service = RtcProductService::new(registry);
-    let persistence = persistence_from_database_pool(pool.clone())
-        .await
-        .map_err(|error| format!("connect RTC persistence: {error}"))?;
-    service = service.with_persistence(persistence);
-    let tenant_id =
-        std::env::var("SDKWORK_RTC_HYDRATE_TENANT_ID").unwrap_or_else(|_| "default".into());
-    let organization_id = std::env::var("SDKWORK_RTC_HYDRATE_ORGANIZATION_ID")
-        .unwrap_or_else(|_| "default".into());
-    service
-        .hydrate_from_persistence(tenant_id, organization_id)
-        .await
-        .map_err(|error| format!("hydrate RTC persistence: {error}"))?;
-    let service = Arc::new(service);
+    let service = bootstrap_service_with_pool(&pool).await?;
 
     let router = Router::new()
         .merge(sdkwork_routes_rtc_app_api::gateway_mount(service.clone()))
         .merge(sdkwork_routes_rtc_backend_api::gateway_mount(service));
     contribution_from(
         router,
+        Arc::new(DatabasePoolReadinessCheck::new(pool)),
+    )
+}
+
+/// Compose the RTC backend contribution on a shared pool owned by the
+/// consuming host (same-origin dependency composition). Mirrors
+/// `assemble_api_router_with_pool`; consumers select this entrypoint instead
+/// of importing `sdkwork-routes-*` directly (API_ASSEMBLY_SPEC §3/§6.1). The
+/// returned contribution is indivisible: it carries the backend router, route
+/// manifest, OpenAPI authority, the `RtcBackendContextInjector` the backend
+/// handlers require, and a readiness check.
+pub async fn assemble_backend_api_contribution_with_pool(
+    pool: DatabasePool,
+) -> Result<ApiAssembly, String> {
+    let service = bootstrap_service_with_pool(&pool).await?;
+    let router = sdkwork_routes_rtc_backend_api::gateway_mount(service);
+    let backend_openapi: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json"
+    ))
+    .map_err(|error| format!("invalid sdkwork-rtc-backend-api OpenAPI: {error}"))?;
+    ApiAssemblyContribution::from_openapi_documents(
+        "sdkwork-rtc",
+        "SDKWork RTC Backend API",
+        router,
+        sdkwork_routes_rtc_backend_api::gateway_route_manifest(),
+        vec![backend_openapi],
+        vec![Arc::new(sdkwork_routes_rtc_backend_api::RtcBackendContextInjector)],
         Arc::new(DatabasePoolReadinessCheck::new(pool)),
     )
 }

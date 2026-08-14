@@ -30,26 +30,28 @@ export function ProviderQueryJobPanel({ job, snapshots }: Props) {
       {snapshots.length > 0 && (
         <div className="query-job-snapshots">
           <h3>Snapshots</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Kind</th>
-                <th>Captured At</th>
-                <th>Payload</th>
-              </tr>
-            </thead>
-            <tbody>
-              {snapshots.map((snapshot) => (
-                <tr key={snapshot.id}>
-                  <td>{snapshot.snapshotKind}</td>
-                  <td>{snapshot.capturedAt}</td>
-                  <td>
-                    <code>{JSON.stringify(snapshot.snapshotPayload)}</code>
-                  </td>
+          <div className="query-job-snapshots-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Kind</th>
+                  <th>Captured At</th>
+                  <th>Payload</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {snapshots.map((snapshot) => (
+                  <tr key={snapshot.id}>
+                    <td>{snapshot.snapshotKind}</td>
+                    <td>{snapshot.capturedAt}</td>
+                    <td>
+                      <code>{JSON.stringify(snapshot.snapshotPayload)}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

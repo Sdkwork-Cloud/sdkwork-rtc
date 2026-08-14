@@ -118,7 +118,7 @@ export function ProviderCredentialPage({
   );
 
   return (
-    <div className="admin-card">
+    <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
         <h2>Provider 凭据</h2>
       </div>

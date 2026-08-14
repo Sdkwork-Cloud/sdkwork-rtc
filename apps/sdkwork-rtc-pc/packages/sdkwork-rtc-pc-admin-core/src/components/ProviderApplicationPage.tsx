@@ -74,7 +74,7 @@ export function ProviderApplicationPage({
   );
 
   return (
-    <div className="admin-card">
+    <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
         <h2>Provider 应用</h2>
       </div>

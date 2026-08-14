@@ -635,28 +635,21 @@ export function RtcAdminCenterWorkspace({
             {schemasError && <AdminError message={schemasError} />}
             {wizardError && <AdminError message={wizardError} />}
             {!wizardSchema ? (
-              <div style={{ textAlign: "center", padding: "48px" }}>
+              <div className="admin-wizard-picker">
                 <h2>Provider Setup Wizard</h2>
-                <p style={{ color: "#6c757d", marginBottom: "24px" }}>
+                <p className="admin-wizard-picker-hint">
                   Configure a new RTC provider step by step
                 </p>
-                <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                <div className="admin-wizard-picker-cards">
                   {schemas.map((schema) => (
                     <button
                       key={schema.provider}
+                      className="admin-wizard-picker-card"
                       onClick={() => setWizardSchema(schema)}
-                      style={{
-                        padding: "16px 24px",
-                        border: "1px solid #dee2e6",
-                        borderRadius: "8px",
-                        background: "white",
-                        cursor: "pointer",
-                        fontSize: "16px",
-                      }}
                     >
                       <strong>{schema.displayName}</strong>
                       <br />
-                      <span style={{ fontSize: "13px", color: "#6c757d" }}>{schema.description}</span>
+                      <span className="admin-wizard-picker-card-desc">{schema.description}</span>
                     </button>
                   ))}
                 </div>
@@ -938,7 +931,7 @@ export function RtcAdminCenterWorkspace({
     }
   };
 
-  return <>{renderRoute()}</>;
+  return <div className="rtc-admin-page">{renderRoute()}</div>;
 }
 
 /** Collects every page of a cursor-paginated list (used by CSV exports). */
