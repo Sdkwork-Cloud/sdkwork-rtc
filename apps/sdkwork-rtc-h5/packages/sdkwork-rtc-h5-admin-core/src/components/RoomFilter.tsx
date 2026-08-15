@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { RoomFilterState } from "../types/room";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function RoomFilter({ filter, onChange, onReset, totalCount, filteredCount }: Props) {
+  const { t } = useTranslation();
   const updateFilter = (updates: Partial<RoomFilterState>) => {
     onChange({ ...filter, ...updates });
   };
@@ -25,7 +27,7 @@ export function RoomFilter({ filter, onChange, onReset, totalCount, filteredCoun
         <div className="filter-field search-field">
           <input
             type="text"
-            placeholder="Search rooms by title, ID, or owner..."
+            placeholder={t("admin.rtc.rooms.filter.search", "Search rooms by title, ID, or owner...")}
             value={filter.search}
             onChange={(e) => updateFilter({ search: e.target.value })}
           />
@@ -38,10 +40,10 @@ export function RoomFilter({ filter, onChange, onReset, totalCount, filteredCoun
               updateFilter({ status: e.target.value as RoomFilterState["status"] })
             }
           >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="archived">Archived</option>
-            <option value="disabled">Disabled</option>
+            <option value="all">{t("admin.rtc.rooms.filter.allStatus", "All Status")}</option>
+            <option value="active">{t("admin.rtc.status.active", "Active")}</option>
+            <option value="archived">{t("admin.rtc.status.archived", "Archived")}</option>
+            <option value="disabled">{t("admin.rtc.status.disabled", "Disabled")}</option>
           </select>
         </div>
 
@@ -52,17 +54,17 @@ export function RoomFilter({ filter, onChange, onReset, totalCount, filteredCoun
               updateFilter({ dateRange: e.target.value as RoomFilterState["dateRange"] })
             }
           >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
+            <option value="all">{t("admin.rtc.rooms.filter.allTime", "All Time")}</option>
+            <option value="today">{t("admin.rtc.rooms.filter.today", "Today")}</option>
+            <option value="week">{t("admin.rtc.rooms.filter.thisWeek", "This Week")}</option>
+            <option value="month">{t("admin.rtc.rooms.filter.thisMonth", "This Month")}</option>
           </select>
         </div>
 
         <div className="filter-field">
           <input
             type="text"
-            placeholder="Owner User ID"
+            placeholder={t("admin.rtc.rooms.filter.owner", "Owner User ID")}
             value={filter.ownerUserId}
             onChange={(e) => updateFilter({ ownerUserId: e.target.value })}
           />
@@ -70,16 +72,21 @@ export function RoomFilter({ filter, onChange, onReset, totalCount, filteredCoun
 
         {hasActiveFilters && (
           <button className="filter-reset" onClick={onReset}>
-            Clear Filters
+            {t("admin.rtc.rooms.filter.clear", "Clear Filters")}
           </button>
         )}
       </div>
 
       <div className="filter-summary">
         <span>
-          Showing {filteredCount} of {totalCount} rooms
+          {t("admin.rtc.rooms.filter.summary", "Showing {{filtered}} of {{total}} rooms", {
+            filtered: filteredCount,
+            total: totalCount,
+          })}
         </span>
-        {hasActiveFilters && <span className="filter-active-badge">Filtered</span>}
+        {hasActiveFilters && (
+          <span className="filter-active-badge">{t("admin.rtc.rooms.filter.filtered", "Filtered")}</span>
+        )}
       </div>
     </div>
   );

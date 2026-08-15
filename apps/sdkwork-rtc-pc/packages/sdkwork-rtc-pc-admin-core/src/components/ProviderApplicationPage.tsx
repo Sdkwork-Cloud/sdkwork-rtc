@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ProviderAccount } from "../types/providerAccount";
 import type { ProviderApplication } from "../types/providerApplication";
@@ -27,6 +28,7 @@ export function ProviderApplicationPage({
   accountsLoading,
   services,
 }: ProviderApplicationPageProps) {
+  const { t } = useTranslation();
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [applications, setApplications] = useState<ProviderApplication[]>([]);
   const [loading, setLoading] = useState(false);
@@ -46,12 +48,16 @@ export function ProviderApplicationPage({
         const page = await services.list(accountId, { limit: 200 });
         setApplications(page.items);
       } catch (caught) {
-        setError(caught instanceof Error ? caught.message : "Failed to load applications");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : t("admin.rtc.applications.failedLoad", "Failed to load applications"),
+        );
       } finally {
         setLoading(false);
       }
     },
-    [services],
+    [services, t],
   );
 
   useEffect(() => {
@@ -67,16 +73,20 @@ export function ProviderApplicationPage({
         await services.disable(application.id);
         await loadApplications(effectiveAccountId);
       } catch (caught) {
-        setError(caught instanceof Error ? caught.message : "Failed to disable application");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : t("admin.rtc.applications.failedDisable", "Failed to disable application"),
+        );
       }
     },
-    [effectiveAccountId, loadApplications, services],
+    [effectiveAccountId, loadApplications, services, t],
   );
 
   return (
     <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
-        <h2>Provider 应用</h2>
+        <h2>{t("admin.rtc.applications.title", "Provider Applications")}</h2>
       </div>
       <div className="admin-filter-bar">
         <select
@@ -84,7 +94,9 @@ export function ProviderApplicationPage({
           onChange={(event) => setSelectedAccountId(event.target.value)}
           disabled={accountsLoading || accounts.length === 0}
         >
-          {accounts.length === 0 && <option value="">No accounts available</option>}
+          {accounts.length === 0 && (
+            <option value="">{t("admin.rtc.applications.noAccounts", "No accounts available")}</option>
+          )}
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>
               {account.name} ({account.provider})
@@ -94,20 +106,24 @@ export function ProviderApplicationPage({
       </div>
       {error && <div className="admin-error">{error}</div>}
       {loading ? (
-        <p className="admin-muted">Loading applications...</p>
+        <p className="admin-muted">
+          {t("admin.rtc.applications.loading", "Loading applications...")}
+        </p>
       ) : applications.length === 0 ? (
-        <p className="admin-muted">No applications for this account.</p>
+        <p className="admin-muted">
+          {t("admin.rtc.applications.empty", "No applications for this account.")}
+        </p>
       ) : (
         <div className="admin-table-wrapper">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Status</th>
-                <th>App ID</th>
-                <th>Region</th>
-                <th>Actions</th>
+                <th>{t("admin.rtc.applications.col.code", "Code")}</th>
+                <th>{t("admin.rtc.applications.col.name", "Name")}</th>
+                <th>{t("admin.rtc.applications.col.status", "Status")}</th>
+                <th>{t("admin.rtc.applications.col.appId", "App ID")}</th>
+                <th>{t("admin.rtc.applications.col.region", "Region")}</th>
+                <th>{t("admin.rtc.applications.col.actions", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -128,7 +144,7 @@ export function ProviderApplicationPage({
                       onClick={() => void handleDisable(application)}
                       disabled={application.status !== "active"}
                     >
-                      Disable
+                      {t("admin.rtc.applications.disable", "Disable")}
                     </button>
                   </td>
                 </tr>

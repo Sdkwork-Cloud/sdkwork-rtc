@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderRouteCommand } from "../types/providerRoute";
 
 interface Props {
@@ -7,11 +9,12 @@ interface Props {
 }
 
 export function ProviderRouteForm({ profileIds, onSubmit, onCancel }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="provider-route-form">
-      <h3>Add Provider Route</h3>
+      <h3>{t("admin.rtc.routes.form.title", "Add Provider Route")}</h3>
       <div className="form-field">
-        <label>Provider Profile</label>
+        <label>{t("admin.rtc.routes.form.profile", "Provider Profile")}</label>
         <select id="route-profile">
           {profileIds.map((id) => (
             <option key={id} value={id}>
@@ -21,19 +24,19 @@ export function ProviderRouteForm({ profileIds, onSubmit, onCancel }: Props) {
         </select>
       </div>
       <div className="form-field">
-        <label>Route Type</label>
+        <label>{t("admin.rtc.routes.form.routeType", "Route Type")}</label>
         <input type="text" id="route-type" defaultValue="region" />
       </div>
       <div className="form-field">
-        <label>Region</label>
-        <input type="text" id="route-region" placeholder="cn-beijing" />
+        <label>{t("admin.rtc.routes.form.region", "Region")}</label>
+        <input type="text" id="route-region" placeholder={t("admin.rtc.routes.form.regionPlaceholder", "cn-beijing")} />
       </div>
       <div className="form-field">
-        <label>Priority</label>
+        <label>{t("admin.rtc.routes.form.priority", "Priority")}</label>
         <input type="number" id="route-priority" defaultValue={0} />
       </div>
       <div className="form-actions">
-        <button onClick={onCancel}>Cancel</button>
+        <button onClick={onCancel}>{t("admin.rtc.cancel", "Cancel")}</button>
         <button
           onClick={() =>
             onSubmit({
@@ -44,7 +47,7 @@ export function ProviderRouteForm({ profileIds, onSubmit, onCancel }: Props) {
             })
           }
         >
-          Save
+          {t("admin.rtc.save", "Save")}
         </button>
       </div>
     </div>

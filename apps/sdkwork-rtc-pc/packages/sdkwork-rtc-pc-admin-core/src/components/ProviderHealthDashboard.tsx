@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderProfile } from "../types/providerProfile";
 import type { ProviderConfigSchema } from "../types/providerSchema";
 
@@ -20,13 +22,14 @@ interface ProviderStatus {
 }
 
 export function ProviderHealthDashboard({ profiles, schemas, onVerify, onRefresh }: Props) {
+  const { t } = useTranslation();
   const providerStatuses = buildProviderStatuses(profiles, schemas);
 
   return (
     <div className="provider-health-dashboard">
       <div className="dashboard-header">
-        <h2>Provider Health Dashboard</h2>
-        <button onClick={onRefresh}>Refresh</button>
+        <h2>{t("admin.rtc.dashboard.title", "Provider Health Dashboard")}</h2>
+        <button onClick={onRefresh}>{t("admin.rtc.refresh", "Refresh")}</button>
       </div>
 
       <div className="provider-grid">
@@ -42,43 +45,51 @@ export function ProviderHealthDashboard({ profiles, schemas, onVerify, onRefresh
             <div className="provider-stats">
               <div className="stat">
                 <span className="stat-value">{status.totalProfiles}</span>
-                <span className="stat-label">Profiles</span>
+                <span className="stat-label">{t("admin.rtc.dashboard.statProfiles", "Profiles")}</span>
               </div>
               <div className="stat">
                 <span className="stat-value">{status.activeProfiles}</span>
-                <span className="stat-label">Active</span>
+                <span className="stat-label">{t("admin.rtc.dashboard.statActive", "Active")}</span>
               </div>
               <div className="stat">
                 <span className="stat-value">{status.healthyProfiles}</span>
-                <span className="stat-label">Healthy</span>
+                <span className="stat-label">{t("admin.rtc.dashboard.statHealthy", "Healthy")}</span>
               </div>
             </div>
 
             {status.defaultProfile && (
               <div className="default-profile">
-                <h4>Default Profile</h4>
+                <h4>{t("admin.rtc.dashboard.defaultProfile", "Default Profile")}</h4>
                 <p>{status.defaultProfile.name}</p>
                 <span className={`health-status ${status.defaultProfile.healthStatus}`}>
                   {status.defaultProfile.healthStatus}
                 </span>
                 {status.defaultProfile.lastVerifiedAt && (
                   <p className="last-verified">
-                    Last verified: {new Date(status.defaultProfile.lastVerifiedAt).toLocaleString()}
+                    {t("admin.rtc.dashboard.lastVerified", "Last verified: {{date}}", {
+                      date: new Date(status.defaultProfile.lastVerifiedAt).toLocaleString(),
+                    })}
                   </p>
                 )}
-                <button onClick={() => onVerify(status.defaultProfile!)}>Verify Now</button>
+                <button onClick={() => onVerify(status.defaultProfile!)}>
+                  {t("admin.rtc.dashboard.verifyNow", "Verify Now")}
+                </button>
               </div>
             )}
 
             {status.degradedProfiles > 0 && (
               <div className="warning">
-                {status.degradedProfiles} degraded profile(s)
+                {t("admin.rtc.dashboard.degradedCount", "{{count}} degraded profile(s)", {
+                  count: status.degradedProfiles,
+                })}
               </div>
             )}
 
             {status.unhealthyProfiles > 0 && (
               <div className="error">
-                {status.unhealthyProfiles} unhealthy profile(s)
+                {t("admin.rtc.dashboard.unhealthyCount", "{{count}} unhealthy profile(s)", {
+                  count: status.unhealthyProfiles,
+                })}
               </div>
             )}
           </div>
@@ -86,19 +97,19 @@ export function ProviderHealthDashboard({ profiles, schemas, onVerify, onRefresh
       </div>
 
       <div className="capabilities-matrix">
-        <h3>Capabilities Matrix</h3>
+        <h3>{t("admin.rtc.dashboard.capabilitiesTitle", "Capabilities Matrix")}</h3>
         <div className="provider-table-scroll">
           <table>
             <thead>
               <tr>
-                <th>Provider</th>
-                <th>Audio</th>
-                <th>Video</th>
-                <th>Live</th>
-                <th>Screen Share</th>
-                <th>Recording</th>
-                <th>Webhook</th>
-                <th>Active Query</th>
+                <th>{t("admin.rtc.dashboard.col.provider", "Provider")}</th>
+                <th>{t("admin.rtc.dashboard.col.audio", "Audio")}</th>
+                <th>{t("admin.rtc.dashboard.col.video", "Video")}</th>
+                <th>{t("admin.rtc.dashboard.col.live", "Live")}</th>
+                <th>{t("admin.rtc.dashboard.col.screenShare", "Screen Share")}</th>
+                <th>{t("admin.rtc.dashboard.col.recording", "Recording")}</th>
+                <th>{t("admin.rtc.dashboard.col.webhook", "Webhook")}</th>
+                <th>{t("admin.rtc.dashboard.col.activeQuery", "Active Query")}</th>
               </tr>
             </thead>
             <tbody>

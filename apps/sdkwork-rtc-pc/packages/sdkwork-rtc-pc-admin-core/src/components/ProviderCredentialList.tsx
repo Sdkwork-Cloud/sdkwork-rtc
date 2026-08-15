@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderCredential } from "../types/providerCredential";
 
 interface Props {
@@ -6,28 +8,33 @@ interface Props {
 }
 
 export function ProviderCredentialList({ credentials, onRevoke }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="provider-credential-list">
       <table>
         <thead>
           <tr>
-            <th>Role</th>
-            <th>Label</th>
-            <th>Status</th>
-            <th>Expires</th>
-            <th>Actions</th>
+            <th>{t("admin.rtc.credentials.col.role", "Role")}</th>
+            <th>{t("admin.rtc.credentials.col.label", "Label")}</th>
+            <th>{t("admin.rtc.credentials.col.status", "Status")}</th>
+            <th>{t("admin.rtc.credentials.col.expires", "Expires")}</th>
+            <th>{t("admin.rtc.credentials.col.actions", "Actions")}</th>
           </tr>
         </thead>
         <tbody>
           {credentials.map((cred) => (
             <tr key={cred.id}>
-              <td>{cred.credentialRole}</td>
+              <td>
+                {t(`admin.rtc.credentials.role.${cred.credentialRole}`, cred.credentialRole)}
+              </td>
               <td>{cred.credentialLabel}</td>
               <td>{cred.status}</td>
               <td>{cred.expiresAt ?? "-"}</td>
               <td>
                 {cred.status === "active" && (
-                  <button onClick={() => onRevoke(cred)}>Revoke</button>
+                  <button onClick={() => onRevoke(cred)}>
+                    {t("admin.rtc.credentials.revoke", "Revoke")}
+                  </button>
                 )}
               </td>
             </tr>

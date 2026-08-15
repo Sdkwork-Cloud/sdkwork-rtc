@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderPluginDescriptor } from "../types/providerSchema";
 
 interface Props {
@@ -6,18 +8,19 @@ interface Props {
 }
 
 export function ProviderPluginList({ plugins, onSelect }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="provider-plugin-list">
       <table>
         <thead>
           <tr>
-            <th>Provider</th>
-            <th>Display Name</th>
-            <th>Domain</th>
-            <th>Required Capabilities</th>
-            <th>Optional Capabilities</th>
-            <th>Default</th>
-            <th>Actions</th>
+            <th>{t("admin.rtc.plugins.col.provider", "Provider")}</th>
+            <th>{t("admin.rtc.plugins.col.displayName", "Display Name")}</th>
+            <th>{t("admin.rtc.plugins.col.domain", "Domain")}</th>
+            <th>{t("admin.rtc.plugins.col.required", "Required Capabilities")}</th>
+            <th>{t("admin.rtc.plugins.col.optional", "Optional Capabilities")}</th>
+            <th>{t("admin.rtc.plugins.col.default", "Default")}</th>
+            <th>{t("admin.rtc.plugins.col.actions", "Actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -48,11 +51,13 @@ export function ProviderPluginList({ plugins, onSelect }: Props) {
               </td>
               <td>
                 {plugin.defaultSelected && (
-                  <span className="default-badge">Default</span>
+                  <span className="default-badge">{t("admin.rtc.plugins.default", "Default")}</span>
                 )}
               </td>
               <td>
-                <button onClick={() => onSelect(plugin)}>Configure</button>
+                <button onClick={() => onSelect(plugin)}>
+                  {t("admin.rtc.plugins.configure", "Configure")}
+                </button>
               </td>
             </tr>
           ))}

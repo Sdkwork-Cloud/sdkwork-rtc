@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { RoomCreateCommand } from "../types/room";
 
@@ -14,6 +15,7 @@ export interface RoomCreateDialogProps {
 }
 
 export function RoomCreateDialog({ open, onClose, onCreate }: RoomCreateDialogProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [roomId, setRoomId] = useState("");
   const [saving, setSaving] = useState(false);
@@ -22,7 +24,7 @@ export function RoomCreateDialog({ open, onClose, onCreate }: RoomCreateDialogPr
   const handleSubmit = useCallback(async () => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError("Room title is required.");
+      setError(t("admin.rtc.rooms.create.titleRequired", "Room title is required."));
       return;
     }
     setSaving(true);
@@ -36,11 +38,11 @@ export function RoomCreateDialog({ open, onClose, onCreate }: RoomCreateDialogPr
       setRoomId("");
       onClose();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Failed to create room");
+      setError(caught instanceof Error ? caught.message : t("admin.rtc.rooms.create.failed", "Failed to create room"));
     } finally {
       setSaving(false);
     }
-  }, [onClose, onCreate, roomId, title]);
+  }, [onClose, onCreate, roomId, t, title]);
 
   if (!open) {
     return null;
@@ -49,25 +51,25 @@ export function RoomCreateDialog({ open, onClose, onCreate }: RoomCreateDialogPr
   return (
     <div className="admin-dialog-overlay">
       <div className="admin-dialog">
-        <h3>创建通话房间</h3>
+        <h3>{t("admin.rtc.rooms.create.title", "Create Call Room")}</h3>
         <div className="admin-dialog-form">
           <label>
-            房间标题 <span className="admin-required">*</span>
+            {t("admin.rtc.rooms.create.titleLabel", "Room Title")} <span className="admin-required">*</span>
             <input
               type="text"
               value={title}
-              placeholder="e.g. 产品评审会议"
+              placeholder={t("admin.rtc.rooms.create.titlePlaceholder", "e.g. Product review meeting")}
               maxLength={120}
               autoFocus
               onChange={(event) => setTitle(event.target.value)}
             />
           </label>
           <label>
-            房间 ID（可选，留空自动生成）
+            {t("admin.rtc.rooms.create.roomIdLabel", "Room ID (optional, auto-generated if empty)")}
             <input
               type="text"
               value={roomId}
-              placeholder="room-{uuid} 自动生成"
+              placeholder={t("admin.rtc.rooms.create.roomIdPlaceholder", "room-{uuid} auto-generated")}
               onChange={(event) => setRoomId(event.target.value)}
             />
           </label>
@@ -75,10 +77,12 @@ export function RoomCreateDialog({ open, onClose, onCreate }: RoomCreateDialogPr
         {error && <div className="admin-error">{error}</div>}
         <div className="admin-dialog-actions">
           <button type="button" onClick={onClose} disabled={saving}>
-            Cancel
+            {t("admin.rtc.cancel", "Cancel")}
           </button>
           <button type="button" className="admin-btn-primary" onClick={() => void handleSubmit()} disabled={saving}>
-            {saving ? "Creating..." : "Create Room"}
+            {saving
+              ? t("admin.rtc.rooms.create.creating", "Creating...")
+              : t("admin.rtc.rooms.create", "Create Room")}
           </button>
         </div>
       </div>

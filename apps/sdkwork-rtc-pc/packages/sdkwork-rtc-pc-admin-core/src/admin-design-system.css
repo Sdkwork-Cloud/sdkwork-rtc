@@ -632,7 +632,8 @@
 
 .admin-badge-status-active,
 .admin-badge-status-ready,
-.admin-badge-status-joined {
+.admin-badge-status-joined,
+.admin-badge-status-completed {
   background: var(--rtc-admin-success-bg);
   color: var(--rtc-admin-success-fg);
 }
@@ -652,12 +653,14 @@
 
 .admin-badge-status-preparing,
 .admin-badge-status-pending,
-.admin-badge-status-closing {
+.admin-badge-status-closing,
+.admin-badge-status-requested {
   background: var(--rtc-admin-warning-bg);
   color: var(--rtc-admin-warning-fg);
 }
 
-.admin-badge-status-processing {
+.admin-badge-status-processing,
+.admin-badge-status-running {
   background: var(--rtc-admin-info-bg);
   color: var(--rtc-admin-info-fg);
 }

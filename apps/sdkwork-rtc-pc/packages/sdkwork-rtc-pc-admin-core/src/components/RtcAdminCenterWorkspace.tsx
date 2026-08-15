@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { RtcAdminCenterServices } from "../types/adminServices";
 import type { Room } from "../types/room";
@@ -73,6 +74,7 @@ function useSdkWorkPaginatedList<T>(
   fetchPage: (cursor?: string) => Promise<{ items: T[]; nextCursor?: string | null }>,
   deps: unknown[] = [],
 ): PaginatedListState<T> {
+  const { t } = useTranslation();
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +91,7 @@ function useSdkWorkPaginatedList<T>(
       setNextCursor(cursor || undefined);
       setHasMore(Boolean(cursor));
     } catch (err) {
-      setError(formatSdkWorkError(err, "Failed to load data"));
+      setError(formatSdkWorkError(err, t("admin.rtc.errorFailedLoad", "Failed to load data")));
     } finally {
       setLoading(false);
     }
@@ -109,7 +111,7 @@ function useSdkWorkPaginatedList<T>(
       setNextCursor(cursor || undefined);
       setHasMore(Boolean(cursor));
     } catch (err) {
-      setError(formatSdkWorkError(err, "Failed to load more"));
+      setError(formatSdkWorkError(err, t("admin.rtc.errorFailedLoadMore", "Failed to load more")));
     } finally {
       setLoading(false);
     }
@@ -131,8 +133,9 @@ function AdminError({ message }: { message: string }) {
   );
 }
 
-function AdminLoading({ label = "Loading RTC admin data..." }: { label?: string }) {
-  return <p>{label}</p>;
+function AdminLoading({ label }: { label?: string }) {
+  const { t } = useTranslation();
+  return <p>{label ?? t("admin.rtc.loadingAdmin", "Loading RTC admin data...")}</p>;
 }
 
 function parseParamRoute(route: string, prefix: string): string | null {
@@ -147,6 +150,7 @@ export function RtcAdminCenterWorkspace({
     window.location.hash = path;
   },
 }: RtcAdminCenterWorkspaceProps) {
+  const { t } = useTranslation();
   const [roomFilter, setRoomFilter] = useState(DEFAULT_ROOM_FILTER);
   const [roomSort, setRoomSort] = useState("-createdAt");
   const [sessionFilter, setSessionFilter] = useState<MediaSessionFilterState>(DEFAULT_MEDIA_SESSION_FILTER);
@@ -169,12 +173,15 @@ export function RtcAdminCenterWorkspace({
   const [capabilitySaving, setCapabilitySaving] = useState(false);
 
   const [queryJobForm, setQueryJobForm] = useState<ProviderQueryJobCreateCommand>({
-    provider: "volcengine",
+    provider: "",
     queryKind: "room_state",
     roomId: "",
+    mediaSessionId: "",
   });
   const [queryJobError, setQueryJobError] = useState<string | null>(null);
+  const [queryJobFormError, setQueryJobFormError] = useState<string | null>(null);
   const [queryJobLoading, setQueryJobLoading] = useState(false);
+  const [queryJobRefreshing, setQueryJobRefreshing] = useState(false);
   const [activeQueryJobId, setActiveQueryJobId] = useState<string | null>(null);
   const [queryJobDetail, setQueryJobDetail] = useState<Awaited<ReturnType<typeof services.queryJobs.get>> | null>(null);
   const [querySnapshots, setQuerySnapshots] = useState<Awaited<ReturnType<typeof services.queryJobs.listSnapshots>>["items"]>([]);
@@ -258,7 +265,7 @@ export function RtcAdminCenterWorkspace({
       ]);
       setDashboardData({ profiles: profiles.items, schemas });
     } catch (err) {
-      setDashboardError(formatSdkWorkError(err, "Failed to load dashboard"));
+      setDashboardError(formatSdkWorkError(err, t("admin.rtc.errorFailedDashboard", "Failed to load dashboard")));
     } finally {
       setDashboardLoading(false);
     }
@@ -280,7 +287,7 @@ export function RtcAdminCenterWorkspace({
         if (active) setSchemas(items);
       })
       .catch((err) => {
-        if (active) setSchemasError(formatSdkWorkError(err, "Failed to load schemas"));
+        if (active) setSchemasError(formatSdkWorkError(err, t("admin.rtc.errorFailedSchemas", "Failed to load schemas")));
       })
       .finally(() => {
         if (active) setSchemasLoading(false);
@@ -311,7 +318,11 @@ export function RtcAdminCenterWorkspace({
       await Promise.all([accountsList.refresh(), profilesList.refresh(), refreshDashboard()]);
       navigateTo("#/admin/provider-profiles");
     } catch (error) {
-      setWizardError(error instanceof Error ? error.message : "Failed to persist provider wizard");
+      setWizardError(
+        error instanceof Error
+          ? error.message
+          : t("admin.rtc.errorFailedPersistWizard", "Failed to persist provider wizard"),
+      );
     } finally {
       setWizardSaving(false);
     }
@@ -329,49 +340,128 @@ export function RtcAdminCenterWorkspace({
       setSelectedProfile(null);
       await profilesList.refresh();
     } catch (error) {
-      setCapabilityError(error instanceof Error ? error.message : "Failed to configure capabilities");
+      setCapabilityError(
+        error instanceof Error
+          ? error.message
+          : t("admin.rtc.errorFailedCapabilities", "Failed to configure capabilities"),
+      );
     } finally {
       setCapabilitySaving(false);
     }
   };
 
+  /** Query kinds that target a media session (room-only targets use a room id). */
+  const QUERY_KIND_TARGETS: Record<ProviderQueryJobCreateCommand["queryKind"], "room" | "session"> = {
+    room_online_users: "room",
+    room_state: "room",
+    media_session_state: "session",
+    recording_artifacts: "session",
+    quality_samples: "session",
+  };
+
   const handleCreateQueryJob = async () => {
+    const providerOptions = schemas.map((schema) => schema.provider);
+    const provider = queryJobForm.provider || providerOptions[0] || "";
+    if (!provider) {
+      setQueryJobFormError(
+        t("admin.rtc.queryJobs.validation.providerRequired", "Select a provider to query."),
+      );
+      return;
+    }
+    const target = QUERY_KIND_TARGETS[queryJobForm.queryKind];
+    const targetId =
+      target === "session" ? (queryJobForm.mediaSessionId ?? "").trim() : (queryJobForm.roomId ?? "").trim();
+    if (!targetId) {
+      setQueryJobFormError(
+        target === "session"
+          ? t(
+              "admin.rtc.queryJobs.validation.sessionRequired",
+              "This query kind requires a media session ID.",
+            )
+          : t("admin.rtc.queryJobs.validation.roomRequired", "This query kind requires a room ID."),
+      );
+      return;
+    }
+    setQueryJobFormError(null);
     setQueryJobLoading(true);
     setQueryJobError(null);
     try {
       const job = await services.queryJobs.create({
         ...queryJobForm,
-        roomId: queryJobForm.roomId || null,
-        mediaSessionId: queryJobForm.mediaSessionId || null,
-        providerSessionId: queryJobForm.providerSessionId || null,
-        providerProfileId: queryJobForm.providerProfileId || null,
+        provider,
+        roomId: target === "room" ? targetId : null,
+        mediaSessionId: target === "session" ? targetId : null,
       });
       setActiveQueryJobId(job.id);
       setQueryJobDetail(job);
       const snapshots = await services.queryJobs.listSnapshots(job.id);
       setQuerySnapshots(snapshots.items);
     } catch (error) {
-      setQueryJobError(error instanceof Error ? error.message : "Failed to create query job");
+      setQueryJobError(
+        error instanceof Error
+          ? error.message
+          : t("admin.rtc.errorFailedQueryJobCreate", "Failed to create query job"),
+      );
     } finally {
       setQueryJobLoading(false);
     }
   };
 
   const handleLoadQueryJob = async () => {
-    if (!activeQueryJobId) {
+    const jobId = activeQueryJobId?.trim();
+    if (!jobId) {
+      setQueryJobFormError(
+        t("admin.rtc.queryJobs.validation.jobIdRequired", "Enter a query job ID to load."),
+      );
       return;
     }
+    setQueryJobFormError(null);
     setQueryJobLoading(true);
     setQueryJobError(null);
     try {
-      const job = await services.queryJobs.get(activeQueryJobId);
+      const job = await services.queryJobs.get(jobId);
       setQueryJobDetail(job);
-      const snapshots = await services.queryJobs.listSnapshots(activeQueryJobId);
+      // Sync the form with the loaded job so refresh/retry targets the same scope.
+      setQueryJobForm((current) => ({
+        ...current,
+        provider: job.provider,
+        queryKind: job.queryKind,
+        roomId: job.roomId ?? "",
+        mediaSessionId: job.mediaSessionId ?? "",
+      }));
+      const snapshots = await services.queryJobs.listSnapshots(jobId);
       setQuerySnapshots(snapshots.items);
     } catch (error) {
-      setQueryJobError(error instanceof Error ? error.message : "Failed to load query job");
+      setQueryJobError(
+        error instanceof Error
+          ? error.message
+          : t("admin.rtc.errorFailedQueryJobLoad", "Failed to load query job"),
+      );
     } finally {
       setQueryJobLoading(false);
+    }
+  };
+
+  const handleRefreshQueryJob = async () => {
+    const jobId = activeQueryJobId ?? queryJobDetail?.id;
+    if (!jobId) {
+      return;
+    }
+    setQueryJobRefreshing(true);
+    setQueryJobError(null);
+    try {
+      const job = await services.queryJobs.get(jobId);
+      setQueryJobDetail(job);
+      const snapshots = await services.queryJobs.listSnapshots(jobId);
+      setQuerySnapshots(snapshots.items);
+    } catch (error) {
+      setQueryJobError(
+        error instanceof Error
+          ? error.message
+          : t("admin.rtc.errorFailedQueryJobLoad", "Failed to load query job"),
+      );
+    } finally {
+      setQueryJobRefreshing(false);
     }
   };
 
@@ -387,9 +477,13 @@ export function RtcAdminCenterWorkspace({
       if (!session) {
         return (
           <div className="admin-card">
-            <h2>会话详情</h2>
-            <p className="admin-muted">Loading session {sessionId}...</p>
-            <button type="button" onClick={() => navigateTo("#/admin/media-sessions")}>Back</button>
+            <h2>{t("admin.rtc.sessionDetail.title", "Session Details")}</h2>
+            <p className="admin-muted">
+              {t("admin.rtc.sessionDetail.loading", "Loading session {{id}}...", { id: sessionId })}
+            </p>
+            <button type="button" onClick={() => navigateTo("#/admin/media-sessions")}>
+              {t("admin.rtc.back", "Back")}
+            </button>
           </div>
         );
       }
@@ -406,7 +500,11 @@ export function RtcAdminCenterWorkspace({
               .getCompletionRecord(session.id)
               .then(setCompletionRecord)
               .catch((error) =>
-                setCompletionError(error instanceof Error ? error.message : "Completion record unavailable"),
+                setCompletionError(
+                  error instanceof Error
+                    ? error.message
+                    : t("admin.rtc.errorCompletionUnavailable", "Completion record unavailable"),
+                ),
               )
               .finally(() => setCompletionLoading(false));
           }}
@@ -428,9 +526,13 @@ export function RtcAdminCenterWorkspace({
       if (!artifact) {
         return (
           <div className="admin-card">
-            <h2>记录文件详情</h2>
-            <p className="admin-muted">Loading artifact {artifactId}...</p>
-            <button type="button" onClick={() => navigateTo("#/admin/media-artifacts")}>Back</button>
+            <h2>{t("admin.rtc.artifactDetail.title", "Artifact Details")}</h2>
+            <p className="admin-muted">
+              {t("admin.rtc.artifactDetail.loading", "Loading artifact {{id}}...", { id: artifactId })}
+            </p>
+            <button type="button" onClick={() => navigateTo("#/admin/media-artifacts")}>
+              {t("admin.rtc.back", "Back")}
+            </button>
           </div>
         );
       }
@@ -450,9 +552,13 @@ export function RtcAdminCenterWorkspace({
       if (!room) {
         return (
           <div className="admin-card">
-            <h2>通话房间详情</h2>
-            <p className="admin-muted">Loading room {roomId}...</p>
-            <button type="button" onClick={() => navigateTo("#/admin/rooms")}>Back</button>
+            <h2>{t("admin.rtc.roomDetail.title", "Room Details")}</h2>
+            <p className="admin-muted">
+              {t("admin.rtc.roomDetail.loading", "Loading room {{id}}...", { id: roomId })}
+            </p>
+            <button type="button" onClick={() => navigateTo("#/admin/rooms")}>
+              {t("admin.rtc.back", "Back")}
+            </button>
           </div>
         );
       }
@@ -498,7 +604,7 @@ export function RtcAdminCenterWorkspace({
         return (
           <>
             {error && <AdminError message={error} />}
-            <h2>Provider Accounts</h2>
+            <h2>{t("admin.rtc.accounts.title", "Provider Accounts")}</h2>
             <ProviderAccountList
               accounts={data}
               onSelect={() => undefined}
@@ -509,7 +615,9 @@ export function RtcAdminCenterWorkspace({
             />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more accounts"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.accounts.loadMore", "Load more accounts")}
               </button>
             )}
           </>
@@ -522,7 +630,7 @@ export function RtcAdminCenterWorkspace({
         return (
           <>
             {error && <AdminError message={error} />}
-            <h2>Provider Profiles</h2>
+            <h2>{t("admin.rtc.profiles.title", "Provider Profiles")}</h2>
             <ProviderProfileList
               profiles={data}
               onSelect={(profile) => {
@@ -540,7 +648,9 @@ export function RtcAdminCenterWorkspace({
             />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more profiles"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.profiles.loadMore", "Load more profiles")}
               </button>
             )}
           </>
@@ -553,11 +663,13 @@ export function RtcAdminCenterWorkspace({
         return (
           <>
             {error && <AdminError message={error} />}
-            <h2>Provider Routes</h2>
+            <h2>{t("admin.rtc.routes.title", "Provider Routes")}</h2>
             <ProviderRouteList routes={data} />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more routes"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.routes.loadMore", "Load more routes")}
               </button>
             )}
           </>
@@ -586,7 +698,7 @@ export function RtcAdminCenterWorkspace({
             {capabilityError && <AdminError message={capabilityError} />}
             {!selectedPlugin ? (
               <>
-                <h2>Provider Plugins</h2>
+                <h2>{t("admin.rtc.plugins.title", "Provider Plugins")}</h2>
                 <ProviderPluginList
                   plugins={data}
                   onSelect={(plugin) => {
@@ -596,14 +708,18 @@ export function RtcAdminCenterWorkspace({
                 />
                 {hasMore && (
                   <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                    {loading ? "Loading..." : "Load more plugins"}
+                    {loading
+                      ? t("admin.rtc.loadingShort", "Loading...")
+                      : t("admin.rtc.plugins.loadMore", "Load more plugins")}
                   </button>
                 )}
               </>
             ) : profileForCapability ? (
               <>
-                <h2>Configure Capabilities</h2>
-                {capabilitySaving && <AdminLoading label="Saving capabilities..." />}
+                <h2>{t("admin.rtc.capabilities.title", "Configure Capabilities")}</h2>
+                {capabilitySaving && (
+                  <AdminLoading label={t("admin.rtc.capabilities.saving", "Saving capabilities...")} />
+                )}
                 <ProviderCapabilityConfig
                   providerName={selectedPlugin.displayName}
                   currentCapabilities={profileCapabilitiesToBackendKeys(profileForCapability.capabilities)}
@@ -619,9 +735,13 @@ export function RtcAdminCenterWorkspace({
             ) : (
               <div>
                 <h2>{selectedPlugin.displayName}</h2>
-                <p>No active provider profile found for {selectedPlugin.providerKind}.</p>
-                <p>Create one via the Setup Wizard first.</p>
-                <button onClick={() => setSelectedPlugin(null)}>Back</button>
+                <p>
+                  {t("admin.rtc.plugins.noProfile", "No active provider profile found for {{provider}}.", {
+                    provider: selectedPlugin.providerKind,
+                  })}
+                </p>
+                <p>{t("admin.rtc.plugins.noProfileHint", "Create one via the Setup Wizard first.")}</p>
+                <button onClick={() => setSelectedPlugin(null)}>{t("admin.rtc.back", "Back")}</button>
               </div>
             )}
           </>
@@ -636,9 +756,9 @@ export function RtcAdminCenterWorkspace({
             {wizardError && <AdminError message={wizardError} />}
             {!wizardSchema ? (
               <div className="admin-wizard-picker">
-                <h2>Provider Setup Wizard</h2>
+                <h2>{t("admin.rtc.wizard.title", "Provider Setup Wizard")}</h2>
                 <p className="admin-wizard-picker-hint">
-                  Configure a new RTC provider step by step
+                  {t("admin.rtc.wizard.hint", "Configure a new RTC provider step by step")}
                 </p>
                 <div className="admin-wizard-picker-cards">
                   {schemas.map((schema) => (
@@ -656,7 +776,11 @@ export function RtcAdminCenterWorkspace({
               </div>
             ) : (
               <>
-                {wizardSaving && <AdminLoading label="Persisting provider configuration..." />}
+                {wizardSaving && (
+                  <AdminLoading
+                    label={t("admin.rtc.wizard.saving", "Persisting provider configuration...")}
+                  />
+                )}
                 <ProviderConfigWizard
                   schema={wizardSchema}
                   onComplete={(result) => void handleWizardComplete(result)}
@@ -674,7 +798,7 @@ export function RtcAdminCenterWorkspace({
         return (
           <>
             {error && <AdminError message={error} />}
-            <h2>Rooms</h2>
+            <h2>{t("admin.rtc.rooms.title", "Rooms")}</h2>
             <RoomFilter
               filter={roomFilter}
               onChange={setRoomFilter}
@@ -708,11 +832,15 @@ export function RtcAdminCenterWorkspace({
             />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more rooms"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.rooms.loadMore", "Load more rooms")}
               </button>
             )}
             <div className="form-actions">
-              <button type="button" onClick={() => setRoomCreateOpen(true)}>Create Room</button>
+              <button type="button" onClick={() => setRoomCreateOpen(true)}>
+                {t("admin.rtc.rooms.create", "Create Room")}
+              </button>
             </div>
             <RoomCreateDialog
               open={roomCreateOpen}
@@ -751,7 +879,9 @@ export function RtcAdminCenterWorkspace({
             />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more sessions"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.sessions.loadMore", "Load more sessions")}
               </button>
             )}
           </>
@@ -783,7 +913,9 @@ export function RtcAdminCenterWorkspace({
             />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more artifacts"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.artifacts.loadMore", "Load more artifacts")}
               </button>
             )}
           </>
@@ -811,7 +943,9 @@ export function RtcAdminCenterWorkspace({
             />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more samples"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.quality.loadMore", "Load more samples")}
               </button>
             )}
           </>
@@ -850,33 +984,57 @@ export function RtcAdminCenterWorkspace({
         return (
           <>
             {error && <AdminError message={error} />}
-            <h2>Webhook Events</h2>
+            <h2>{t("admin.rtc.webhooks.title", "Webhook Events")}</h2>
             <ProviderWebhookEventList events={data} />
             {hasMore && (
               <button type="button" onClick={() => void loadMore()} disabled={loading}>
-                {loading ? "Loading..." : "Load more events"}
+                {loading
+                  ? t("admin.rtc.loadingShort", "Loading...")
+                  : t("admin.rtc.webhooks.loadMore", "Load more events")}
               </button>
             )}
           </>
         );
       }
 
-      case "/admin/query-jobs":
+      case "/admin/query-jobs": {
+        const providerOptions = schemas.map((schema) => schema.provider);
+        const effectiveProvider = queryJobForm.provider || providerOptions[0] || "";
+        const queryKindOptions = Object.keys(QUERY_KIND_TARGETS) as ProviderQueryJobCreateCommand["queryKind"][];
+        const target = QUERY_KIND_TARGETS[queryJobForm.queryKind];
         return (
           <>
             {queryJobError && <AdminError message={queryJobError} />}
-            <h2>Query Jobs</h2>
+            <h2>{t("admin.rtc.queryJobs.title", "Query Jobs")}</h2>
             <div className="query-job-form">
-              <label>
-                Provider
-                <input
-                  value={queryJobForm.provider}
-                  onChange={(event) => setQueryJobForm({ ...queryJobForm, provider: event.target.value })}
-                />
-              </label>
-              <label>
-                Query Kind
+              <div className="form-field">
+                <label htmlFor="query-job-provider">
+                  {t("admin.rtc.queryJobs.provider", "Provider")}
+                </label>
                 <select
+                  id="query-job-provider"
+                  value={effectiveProvider}
+                  onChange={(event) =>
+                    setQueryJobForm({ ...queryJobForm, provider: event.target.value })
+                  }
+                  disabled={schemasLoading || providerOptions.length === 0}
+                >
+                  {providerOptions.length === 0 && (
+                    <option value="">{t("admin.rtc.queryJobs.noProviders", "No providers available")}</option>
+                  )}
+                  {providerOptions.map((provider) => (
+                    <option key={provider} value={provider}>
+                      {provider}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-field">
+                <label htmlFor="query-job-kind">
+                  {t("admin.rtc.queryJobs.queryKind", "Query Kind")}
+                </label>
+                <select
+                  id="query-job-kind"
                   value={queryJobForm.queryKind}
                   onChange={(event) =>
                     setQueryJobForm({
@@ -885,47 +1043,97 @@ export function RtcAdminCenterWorkspace({
                     })
                   }
                 >
-                  <option value="room_online_users">room_online_users</option>
-                  <option value="room_state">room_state</option>
-                  <option value="media_session_state">media_session_state</option>
-                  <option value="recording_artifacts">recording_artifacts</option>
-                  <option value="quality_samples">quality_samples</option>
+                  {queryKindOptions.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {t(`admin.rtc.queryJobs.kind.${kind}`, kind)}
+                    </option>
+                  ))}
                 </select>
-              </label>
-              <label>
-                Room ID
+              </div>
+              <div className="form-field">
+                <label htmlFor="query-job-room-id">
+                  {t("admin.rtc.queryJobs.roomId", "Room ID")}
+                </label>
                 <input
+                  id="query-job-room-id"
                   value={queryJobForm.roomId ?? ""}
+                  placeholder={t(
+                    "admin.rtc.queryJobs.roomIdPlaceholder",
+                    "Required for room-targeted queries",
+                  )}
                   onChange={(event) => setQueryJobForm({ ...queryJobForm, roomId: event.target.value })}
                 />
-              </label>
-              <label>
-                Job ID
+              </div>
+              <div className="form-field">
+                <label htmlFor="query-job-session-id">
+                  {t("admin.rtc.queryJobs.mediaSessionId", "Media Session ID")}
+                </label>
                 <input
+                  id="query-job-session-id"
+                  value={queryJobForm.mediaSessionId ?? ""}
+                  placeholder={t(
+                    "admin.rtc.queryJobs.sessionIdPlaceholder",
+                    "Required for session/quality/recording queries",
+                  )}
+                  onChange={(event) =>
+                    setQueryJobForm({ ...queryJobForm, mediaSessionId: event.target.value })
+                  }
+                />
+              </div>
+              <p className="query-job-hint">
+                {target === "session"
+                  ? t(
+                      "admin.rtc.queryJobs.targetHint.session",
+                      "This query kind targets a media session — provide its ID.",
+                    )
+                  : t(
+                      "admin.rtc.queryJobs.targetHint.room",
+                      "This query kind targets a room — provide its ID.",
+                    )}
+              </p>
+              {queryJobFormError && <div className="admin-error">{queryJobFormError}</div>}
+              <div className="form-field">
+                <label htmlFor="query-job-id">
+                  {t("admin.rtc.queryJobs.jobId", "Job ID")}
+                </label>
+                <input
+                  id="query-job-id"
                   value={activeQueryJobId ?? ""}
+                  placeholder={t("admin.rtc.queryJobs.jobIdPlaceholder", "Paste a job ID to load it")}
                   onChange={(event) => setActiveQueryJobId(event.target.value || null)}
                 />
-              </label>
+              </div>
               <div className="form-actions">
                 <button onClick={() => void handleCreateQueryJob()} disabled={queryJobLoading}>
-                  Create Job
+                  {t("admin.rtc.queryJobs.create", "Create Job")}
                 </button>
-                <button onClick={() => void handleLoadQueryJob()} disabled={queryJobLoading}>
-                  Load Job
+                <button
+                  onClick={() => void handleLoadQueryJob()}
+                  disabled={queryJobLoading || !activeQueryJobId?.trim()}
+                >
+                  {t("admin.rtc.queryJobs.load", "Load Job")}
                 </button>
               </div>
             </div>
-            {queryJobLoading && <AdminLoading label="Working on query job..." />}
-            <ProviderQueryJobPanel job={queryJobDetail} snapshots={querySnapshots} />
+            {queryJobLoading && (
+              <AdminLoading label={t("admin.rtc.queryJobs.working", "Working on query job...")} />
+            )}
+            <ProviderQueryJobPanel
+              job={queryJobDetail}
+              snapshots={querySnapshots}
+              onRefresh={() => void handleRefreshQueryJob()}
+              refreshing={queryJobRefreshing}
+            />
           </>
         );
+      }
 
       default:
         return (
           <div>
-            <h2>Page Not Found</h2>
-            <p>Unknown admin route: {route}</p>
-            <a href="#/admin/dashboard">Go to Dashboard</a>
+            <h2>{t("admin.rtc.notFound.title", "Page Not Found")}</h2>
+            <p>{t("admin.rtc.notFound.unknownRoute", "Unknown admin route: {{route}}", { route })}</p>
+            <a href="#/admin/dashboard">{t("admin.rtc.notFound.goDashboard", "Go to Dashboard")}</a>
           </div>
         );
     }

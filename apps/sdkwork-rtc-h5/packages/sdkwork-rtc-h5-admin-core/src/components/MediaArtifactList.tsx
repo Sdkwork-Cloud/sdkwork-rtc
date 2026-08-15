@@ -1,4 +1,6 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 import type {
   MediaArtifactListParams,
@@ -25,21 +27,47 @@ export const DEFAULT_MEDIA_ARTIFACT_FILTER: MediaArtifactFilterState = {
   dateRange: "all",
 };
 
-const ARTIFACT_STATUS_LABELS: Record<RtcArtifactStatus, string> = {
-  pending: "Pending",
-  processing: "Processing",
-  ready: "Ready",
-  failed: "Failed",
-  deleted: "Deleted",
-};
+const ARTIFACT_STATUS_VALUES: RtcArtifactStatus[] = [
+  "pending",
+  "processing",
+  "ready",
+  "failed",
+  "deleted",
+];
 
-const ARTIFACT_KIND_LABELS: Record<string, string> = {
-  recording: "Recording",
-  transcript: "Transcript",
-  screen_share: "Screen Share",
-  snapshot: "Snapshot",
-  other: "Other",
-};
+function artifactStatusLabel(status: RtcArtifactStatus, t: TFunction): string {
+  switch (status) {
+    case "pending":
+      return t("admin.rtc.artifacts.status.pending", "Pending");
+    case "processing":
+      return t("admin.rtc.artifacts.status.processing", "Processing");
+    case "ready":
+      return t("admin.rtc.artifacts.status.ready", "Ready");
+    case "failed":
+      return t("admin.rtc.artifacts.status.failed", "Failed");
+    case "deleted":
+      return t("admin.rtc.artifacts.status.deleted", "Deleted");
+    default:
+      return status;
+  }
+}
+
+function artifactKindLabel(kind: string, t: TFunction): string {
+  switch (kind) {
+    case "recording":
+      return t("admin.rtc.artifacts.kind.recording", "Recording");
+    case "transcript":
+      return t("admin.rtc.artifacts.kind.transcript", "Transcript");
+    case "screen_share":
+      return t("admin.rtc.artifacts.kind.screenShare", "Screen Share");
+    case "snapshot":
+      return t("admin.rtc.artifacts.kind.snapshot", "Snapshot");
+    case "other":
+      return t("admin.rtc.artifacts.kind.other", "Other");
+    default:
+      return kind;
+  }
+}
 
 export function mediaArtifactDateRangeCreatedAfter(
   dateRange: MediaArtifactFilterState["dateRange"],
@@ -80,6 +108,7 @@ export function MediaArtifactList({
   onRefresh,
   onExportAll,
 }: MediaArtifactListProps) {
+  const { t } = useTranslation();
   const [exporting, setExporting] = useState(false);
 
   const handleExportAll = useCallback(async () => {
@@ -88,7 +117,16 @@ export function MediaArtifactList({
       const rows = onExportAll ? await onExportAll() : artifacts;
       exportRowsToCsv(
         `media-artifacts-export-${new Date().toISOString().slice(0, 10)}.csv`,
-        ["ID", "Session", "Kind", "Status", "Owner", "File", "Started", "Duration"],
+        [
+          t("admin.rtc.artifacts.csv.id", "ID"),
+          t("admin.rtc.artifacts.csv.session", "Session"),
+          t("admin.rtc.artifacts.csv.kind", "Kind"),
+          t("admin.rtc.artifacts.csv.status", "Status"),
+          t("admin.rtc.artifacts.csv.owner", "Owner"),
+          t("admin.rtc.artifacts.csv.file", "File"),
+          t("admin.rtc.artifacts.csv.started", "Started"),
+          t("admin.rtc.artifacts.csv.duration", "Duration"),
+        ],
         rows.map((artifact) => [
           artifact.id,
           artifact.mediaSessionId,
@@ -103,18 +141,20 @@ export function MediaArtifactList({
     } finally {
       setExporting(false);
     }
-  }, [artifacts, onExportAll]);
+  }, [artifacts, onExportAll, t]);
 
   return (
-    <div className="admin-card">
+    <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
-        <h2>通话记录文件</h2>
+        <h2>{t("admin.rtc.artifacts.title", "Recording Files")}</h2>
         <div className="admin-card-actions">
           <button type="button" onClick={onRefresh} disabled={loading || exporting}>
-            {loading ? "Loading..." : "Refresh"}
+            {loading ? t("admin.rtc.loadingShort", "Loading...") : t("admin.rtc.refresh", "Refresh")}
           </button>
           <button type="button" onClick={() => void handleExportAll()} disabled={exporting || loading}>
-            {exporting ? "Exporting..." : "Export All"}
+            {exporting
+              ? t("admin.rtc.exporting", "Exporting...")
+              : t("admin.rtc.artifacts.exportAll", "Export All")}
           </button>
         </div>
       </div>
@@ -122,7 +162,10 @@ export function MediaArtifactList({
       <div className="admin-filter-bar">
         <input
           type="search"
-          placeholder="Search by artifact ID or session ID..."
+          placeholder={t(
+            "admin.rtc.artifacts.filter.search",
+            "Search by artifact ID or session ID...",
+          )}
           value={filter.search}
           onChange={(event) => onChangeFilter({ ...filter, search: event.target.value })}
         />
@@ -135,10 +178,10 @@ export function MediaArtifactList({
             })
           }
         >
-          <option value="all">All Status</option>
-          {Object.entries(ARTIFACT_STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
+          <option value="all">{t("admin.rtc.artifacts.filter.allStatus", "All Status")}</option>
+          {ARTIFACT_STATUS_VALUES.map((status) => (
+            <option key={status} value={status}>
+              {artifactStatusLabel(status, t)}
             </option>
           ))}
         </select>
@@ -151,13 +194,13 @@ export function MediaArtifactList({
             })
           }
         >
-          <option value="all">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">Last 7 Days</option>
-          <option value="month">Last 30 Days</option>
+          <option value="all">{t("admin.rtc.artifacts.filter.allTime", "All Time")}</option>
+          <option value="today">{t("admin.rtc.artifacts.filter.today", "Today")}</option>
+          <option value="week">{t("admin.rtc.artifacts.filter.week", "Last 7 Days")}</option>
+          <option value="month">{t("admin.rtc.artifacts.filter.month", "Last 30 Days")}</option>
         </select>
         <button type="button" onClick={onResetFilter}>
-          Clear Filters
+          {t("admin.rtc.artifacts.filter.clear", "Clear Filters")}
         </button>
       </div>
 
@@ -165,22 +208,24 @@ export function MediaArtifactList({
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Artifact</th>
-              <th>Session</th>
-              <th>Kind</th>
-              <th>Status</th>
-              <th>File</th>
-              <th>Drive</th>
-              <th>Started</th>
-              <th>Duration</th>
-              <th>Actions</th>
+              <th>{t("admin.rtc.artifacts.col.artifact", "Artifact")}</th>
+              <th>{t("admin.rtc.artifacts.col.session", "Session")}</th>
+              <th>{t("admin.rtc.artifacts.col.kind", "Kind")}</th>
+              <th>{t("admin.rtc.artifacts.col.status", "Status")}</th>
+              <th>{t("admin.rtc.artifacts.col.file", "File")}</th>
+              <th>{t("admin.rtc.artifacts.col.drive", "Drive")}</th>
+              <th>{t("admin.rtc.artifacts.col.started", "Started")}</th>
+              <th>{t("admin.rtc.artifacts.col.duration", "Duration")}</th>
+              <th>{t("admin.rtc.artifacts.col.actions", "Actions")}</th>
             </tr>
           </thead>
           <tbody>
             {artifacts.length === 0 ? (
               <tr>
                 <td colSpan={9} className="admin-empty-state">
-                  {loading ? "Loading artifacts..." : "No media artifacts found."}
+                  {loading
+                    ? t("admin.rtc.artifacts.emptyLoading", "Loading artifacts...")
+                    : t("admin.rtc.artifacts.empty", "No media artifacts found.")}
                 </td>
               </tr>
             ) : (
@@ -194,23 +239,27 @@ export function MediaArtifactList({
                       </button>
                     </td>
                     <td>{artifact.mediaSessionId}</td>
-                    <td>{ARTIFACT_KIND_LABELS[artifact.artifactKind] ?? artifact.artifactKind}</td>
+                    <td>{artifactKindLabel(artifact.artifactKind, t)}</td>
                     <td>
                       <span className={`admin-badge admin-badge-status-${artifact.artifactStatus}`}>
-                        {ARTIFACT_STATUS_LABELS[artifact.artifactStatus]}
+                        {artifactStatusLabel(artifact.artifactStatus, t)}
                       </span>
                     </td>
                     <td title={artifact.resource?.fileName ?? undefined}>
                       {artifact.resource?.fileName ?? "-"}
                     </td>
                     <td className="admin-detail-mono" title={artifact.drive?.driveUri ?? undefined}>
-                      {drive ? `node ${drive.nodeId?.slice(0, 12)}…` : "-"}
+                      {drive
+                        ? t("admin.rtc.artifacts.node", "node {{id}}…", {
+                            id: drive.nodeId?.slice(0, 12),
+                          })
+                        : "-"}
                     </td>
                     <td>{formatDateTime(artifact.startedAt)}</td>
                     <td>{formatDurationMs(artifact.durationMs)}</td>
                     <td>
                       <button className="admin-action-btn" onClick={() => onSelect(artifact)}>
-                        View
+                        {t("admin.rtc.view", "View")}
                       </button>
                     </td>
                   </tr>
@@ -222,7 +271,11 @@ export function MediaArtifactList({
       </div>
 
       <div className="admin-list-footer">
-        <span>{artifacts.length} artifact(s) displayed</span>
+        <span>
+          {t("admin.rtc.artifacts.footer", "{{count}} artifact(s) displayed", {
+            count: artifacts.length,
+          })}
+        </span>
       </div>
     </div>
   );

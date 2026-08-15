@@ -1212,6 +1212,49 @@
   overflow: auto;
 }
 
+/* Query Job Tooling */
+.query-job-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 560px;
+  margin-bottom: 16px;
+}
+
+.query-job-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--rtc-admin-text-muted);
+}
+
+.query-job-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.query-job-detail-header h3 {
+  margin: 0;
+}
+
+.query-job-payload {
+  margin: 0;
+  padding: 8px 10px;
+  max-width: 520px;
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--rtc-admin-border-soft);
+  border-radius: 6px;
+  background: var(--rtc-admin-surface-subtle, rgba(0, 0, 0, 0.03));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--rtc-admin-text);
+}
+
 .admin-auth-login {
   min-height: 100vh;
   display: flex;

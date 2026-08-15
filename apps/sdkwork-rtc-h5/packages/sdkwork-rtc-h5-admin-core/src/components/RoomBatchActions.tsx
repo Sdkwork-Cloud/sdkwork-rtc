@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Room, RoomBatchAction } from "../types/room";
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export function RoomBatchActions({ selectedRooms, onAction, onClearSelection }: Props) {
+  const { t } = useTranslation();
   if (selectedRooms.length === 0) return null;
 
   const activeCount = selectedRooms.filter((r) => r.status === "active").length;
@@ -16,9 +18,13 @@ export function RoomBatchActions({ selectedRooms, onAction, onClearSelection }: 
   return (
     <div className="room-batch-actions">
       <div className="batch-selection-info">
-        <span className="batch-count">{selectedRooms.length} room(s) selected</span>
+        <span className="batch-count">
+          {t("admin.rtc.rooms.batch.selected", "{{count}} room(s) selected", {
+            count: selectedRooms.length,
+          })}
+        </span>
         <button className="batch-clear" onClick={onClearSelection}>
-          Clear Selection
+          {t("admin.rtc.rooms.batch.clearSelection", "Clear Selection")}
         </button>
       </div>
 
@@ -33,7 +39,7 @@ export function RoomBatchActions({ selectedRooms, onAction, onClearSelection }: 
               })
             }
           >
-            Archive ({activeCount})
+            {t("admin.rtc.rooms.batch.archive", "Archive ({{count}})", { count: activeCount })}
           </button>
         )}
 
@@ -47,7 +53,7 @@ export function RoomBatchActions({ selectedRooms, onAction, onClearSelection }: 
               })
             }
           >
-            Disable ({activeCount})
+            {t("admin.rtc.rooms.batch.disable", "Disable ({{count}})", { count: activeCount })}
           </button>
         )}
 
@@ -60,17 +66,25 @@ export function RoomBatchActions({ selectedRooms, onAction, onClearSelection }: 
             })
           }
         >
-          Export Selected
+          {t("admin.rtc.rooms.batch.export", "Export Selected")}
         </button>
       </div>
 
       <div className="batch-status-summary">
-        {activeCount > 0 && <span className="status-badge active">{activeCount} active</span>}
+        {activeCount > 0 && (
+          <span className="status-badge active">
+            {t("admin.rtc.rooms.batch.activeCount", "{{count}} active", { count: activeCount })}
+          </span>
+        )}
         {archivedCount > 0 && (
-          <span className="status-badge archived">{archivedCount} archived</span>
+          <span className="status-badge archived">
+            {t("admin.rtc.rooms.batch.archivedCount", "{{count}} archived", { count: archivedCount })}
+          </span>
         )}
         {disabledCount > 0 && (
-          <span className="status-badge disabled">{disabledCount} disabled</span>
+          <span className="status-badge disabled">
+            {t("admin.rtc.rooms.batch.disabledCount", "{{count}} disabled", { count: disabledCount })}
+          </span>
         )}
       </div>
     </div>

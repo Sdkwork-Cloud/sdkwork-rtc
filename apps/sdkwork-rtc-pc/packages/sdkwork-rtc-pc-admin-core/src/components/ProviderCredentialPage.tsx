@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ProviderAccount } from "../types/providerAccount";
 import type { ProviderApplication } from "../types/providerApplication";
@@ -38,6 +39,7 @@ export function ProviderCredentialPage({
   applicationService,
   services,
 }: ProviderCredentialPageProps) {
+  const { t } = useTranslation();
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [selectedApplicationId, setSelectedApplicationId] = useState<string>("");
   const [applications, setApplications] = useState<ProviderApplication[]>([]);
@@ -60,13 +62,17 @@ export function ProviderCredentialPage({
         const page = await applicationService.list(accountId, { limit: 200 });
         setApplications(page.items);
       } catch (caught) {
-        setError(caught instanceof Error ? caught.message : "Failed to load applications");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : t("admin.rtc.applications.failedLoad", "Failed to load applications"),
+        );
         setApplications([]);
       } finally {
         setLoading(false);
       }
     },
-    [applicationService],
+    [applicationService, t],
   );
 
   const loadCredentials = useCallback(
@@ -81,13 +87,17 @@ export function ProviderCredentialPage({
         const page = await services.list(applicationId, { limit: 200 });
         setCredentials(page.items);
       } catch (caught) {
-        setError(caught instanceof Error ? caught.message : "Failed to load credentials");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : t("admin.rtc.credentials.failedLoad", "Failed to load credentials"),
+        );
         setCredentials([]);
       } finally {
         setLoading(false);
       }
     },
-    [services],
+    [services, t],
   );
 
   useEffect(() => {
@@ -111,16 +121,20 @@ export function ProviderCredentialPage({
         await services.revoke(credential.id);
         await loadCredentials(selectedApplicationId || applications[0]?.id || "");
       } catch (caught) {
-        setError(caught instanceof Error ? caught.message : "Failed to revoke credential");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : t("admin.rtc.credentials.failedRevoke", "Failed to revoke credential"),
+        );
       }
     },
-    [applications, loadCredentials, selectedApplicationId, services],
+    [applications, loadCredentials, selectedApplicationId, services, t],
   );
 
   return (
     <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
-        <h2>Provider 凭据</h2>
+        <h2>{t("admin.rtc.credentials.title", "Provider Credentials")}</h2>
       </div>
       <div className="admin-filter-bar">
         <select
@@ -131,7 +145,9 @@ export function ProviderCredentialPage({
           }}
           disabled={accountsLoading || accounts.length === 0}
         >
-          {accounts.length === 0 && <option value="">No accounts available</option>}
+          {accounts.length === 0 && (
+            <option value="">{t("admin.rtc.applications.noAccounts", "No accounts available")}</option>
+          )}
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>
               {account.name} ({account.provider})
@@ -143,7 +159,9 @@ export function ProviderCredentialPage({
           onChange={(event) => setSelectedApplicationId(event.target.value)}
           disabled={loading || applications.length === 0}
         >
-          {applications.length === 0 && <option value="">No applications</option>}
+          {applications.length === 0 && (
+            <option value="">{t("admin.rtc.credentials.noApplications", "No applications")}</option>
+          )}
           {applications.map((application) => (
             <option key={application.id} value={application.id}>
               {application.name} ({application.code})
@@ -153,25 +171,34 @@ export function ProviderCredentialPage({
       </div>
       {error && <div className="admin-error">{error}</div>}
       {loading ? (
-        <p className="admin-muted">Loading credentials...</p>
+        <p className="admin-muted">
+          {t("admin.rtc.credentials.loading", "Loading credentials...")}
+        </p>
       ) : credentials.length === 0 ? (
-        <p className="admin-muted">No credentials for this application.</p>
+        <p className="admin-muted">
+          {t("admin.rtc.credentials.empty", "No credentials for this application.")}
+        </p>
       ) : (
         <div className="admin-table-wrapper">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Role</th>
-                <th>Label</th>
-                <th>Status</th>
-                <th>Expires</th>
-                <th>Actions</th>
+                <th>{t("admin.rtc.credentials.col.role", "Role")}</th>
+                <th>{t("admin.rtc.credentials.col.label", "Label")}</th>
+                <th>{t("admin.rtc.credentials.col.status", "Status")}</th>
+                <th>{t("admin.rtc.credentials.col.expires", "Expires")}</th>
+                <th>{t("admin.rtc.credentials.col.actions", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
               {credentials.map((credential) => (
                 <tr key={credential.id}>
-                  <td className="admin-cell-primary">{credential.credentialRole}</td>
+                  <td className="admin-cell-primary">
+                    {t(
+                      `admin.rtc.credentials.role.${credential.credentialRole}`,
+                      credential.credentialRole,
+                    )}
+                  </td>
                   <td>{credential.credentialLabel ?? "-"}</td>
                   <td>
                     <span className={`admin-badge admin-badge-status-${credential.status}`}>
@@ -185,7 +212,7 @@ export function ProviderCredentialPage({
                       onClick={() => void handleRevoke(credential)}
                       disabled={credential.status !== "active"}
                     >
-                      Revoke
+                      {t("admin.rtc.credentials.revoke", "Revoke")}
                     </button>
                   </td>
                 </tr>

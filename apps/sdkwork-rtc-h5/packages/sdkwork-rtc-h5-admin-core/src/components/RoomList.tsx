@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import type { Room, RoomBatchAction } from "../types/room";
 import { buildRoomSortParam, parseRoomSortParam, type RoomSortField } from "../types/room";
 import { RoomBatchActions } from "./RoomBatchActions";
@@ -24,6 +25,7 @@ export function RoomList({
   onSortChange,
   fetchAllRooms,
 }: Props) {
+  const { t } = useTranslation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
   const { field: sortField, direction: sortDirection } = parseRoomSortParam(sort);
@@ -69,32 +71,41 @@ export function RoomList({
     [onSortChange, sortDirection, sortField],
   );
 
-  const exportToCsv = useCallback((roomsToExport: Room[]) => {
-    const escapeCsvField = (field: string): string => {
-      if (field.includes(",") || field.includes('"') || field.includes("\n")) {
-        return `"${field.replace(/"/g, '""')}"`;
-      }
-      return field;
-    };
-    const headers = ["ID", "Title", "Status", "Owner", "Created At"];
-    const rows = roomsToExport.map((r) => [
-      r.id,
-      r.title,
-      r.status,
-      r.ownerUserId,
-      r.createdAt ?? "",
-    ]);
-    const csv = [headers, ...rows]
-      .map((row) => row.map(escapeCsvField).join(","))
-      .join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `rooms-export-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, []);
+  const exportToCsv = useCallback(
+    (roomsToExport: Room[]) => {
+      const escapeCsvField = (field: string): string => {
+        if (field.includes(",") || field.includes('"') || field.includes("\n")) {
+          return `"${field.replace(/"/g, '""')}"`;
+        }
+        return field;
+      };
+      const headers = [
+        t("admin.rtc.rooms.csv.id", "ID"),
+        t("admin.rtc.rooms.csv.title", "Title"),
+        t("admin.rtc.rooms.csv.status", "Status"),
+        t("admin.rtc.rooms.csv.owner", "Owner"),
+        t("admin.rtc.rooms.csv.createdAt", "Created At"),
+      ];
+      const rows = roomsToExport.map((r) => [
+        r.id,
+        r.title,
+        r.status,
+        r.ownerUserId,
+        r.createdAt ?? "",
+      ]);
+      const csv = [headers, ...rows]
+        .map((row) => row.map(escapeCsvField).join(","))
+        .join("\n");
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `rooms-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    [t],
+  );
 
   const handleExportAll = useCallback(async () => {
     setExporting(true);
@@ -121,13 +132,15 @@ export function RoomList({
   return (
     <div className="room-list-container">
       <div className="room-list-header">
-        <h2>Room Management</h2>
+        <h2>{t("admin.rtc.rooms.management", "Room Management")}</h2>
         <div className="room-list-actions">
           <button onClick={onRefresh} disabled={loading || exporting}>
-            {loading ? "Loading..." : "Refresh"}
+            {loading ? t("admin.rtc.loadingShort", "Loading...") : t("admin.rtc.refresh", "Refresh")}
           </button>
           <button onClick={() => void handleExportAll()} disabled={exporting || loading}>
-            {exporting ? "Exporting..." : "Export All"}
+            {exporting
+              ? t("admin.rtc.exporting", "Exporting...")
+              : t("admin.rtc.rooms.exportAll", "Export All")}
           </button>
         </div>
       </div>
@@ -150,23 +163,26 @@ export function RoomList({
                 />
               </th>
               <th className="col-title sortable" onClick={() => handleSort("title")}>
-                Title {sortField === "title" && (sortDirection === "asc" ? "↑" : "↓")}
+                {t("admin.rtc.rooms.col.title", "Title")}{" "}
+                {sortField === "title" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
               <th className="col-status sortable" onClick={() => handleSort("status")}>
-                Status {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
+                {t("admin.rtc.rooms.col.status", "Status")}{" "}
+                {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
-              <th className="col-owner">Owner</th>
+              <th className="col-owner">{t("admin.rtc.rooms.col.owner", "Owner")}</th>
               <th className="col-created sortable" onClick={() => handleSort("createdAt")}>
-                Created {sortField === "createdAt" && (sortDirection === "asc" ? "↑" : "↓")}
+                {t("admin.rtc.rooms.col.createdAt", "Created")}{" "}
+                {sortField === "createdAt" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
-              <th className="col-actions">Actions</th>
+              <th className="col-actions">{t("admin.rtc.rooms.col.actions", "Actions")}</th>
             </tr>
           </thead>
           <tbody>
             {rooms.length === 0 ? (
               <tr>
                 <td colSpan={6} className="empty-state">
-                  No rooms found. Create your first room to get started.
+                  {t("admin.rtc.rooms.empty", "No rooms found. Create your first room to get started.")}
                 </td>
               </tr>
             ) : (
@@ -197,7 +213,7 @@ export function RoomList({
                   </td>
                   <td className="col-actions">
                     <button className="action-btn" onClick={() => onSelect(room)}>
-                      View
+                      {t("admin.rtc.view", "View")}
                     </button>
                   </td>
                 </tr>
@@ -209,7 +225,10 @@ export function RoomList({
 
       <div className="room-list-footer">
         <span>
-          {rooms.length} room(s) displayed | {selectedIds.size} selected
+          {t("admin.rtc.rooms.footer", "{{count}} room(s) displayed | {{selected}} selected", {
+            count: rooms.length,
+            selected: selectedIds.size,
+          })}
         </span>
       </div>
     </div>

@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 import type {
   MediaSessionListParams,
@@ -36,13 +38,30 @@ export const DEFAULT_MEDIA_SESSION_FILTER: MediaSessionFilterState = {
   dateRange: "all",
 };
 
-const SESSION_STATUS_LABELS: Record<RtcMediaSessionStatus, string> = {
-  preparing: "Preparing",
-  active: "Active",
-  closing: "Closing",
-  ended: "Ended",
-  failed: "Failed",
-};
+const SESSION_STATUS_VALUES: RtcMediaSessionStatus[] = [
+  "preparing",
+  "active",
+  "closing",
+  "ended",
+  "failed",
+];
+
+function sessionStatusLabel(status: RtcMediaSessionStatus, t: TFunction): string {
+  switch (status) {
+    case "preparing":
+      return t("admin.rtc.sessions.status.preparing", "Preparing");
+    case "active":
+      return t("admin.rtc.sessions.status.active", "Active");
+    case "closing":
+      return t("admin.rtc.sessions.status.closing", "Closing");
+    case "ended":
+      return t("admin.rtc.sessions.status.ended", "Ended");
+    case "failed":
+      return t("admin.rtc.sessions.status.failed", "Failed");
+    default:
+      return status;
+  }
+}
 
 export function mediaSessionDateRangeCreatedAfter(
   dateRange: MediaSessionFilterState["dateRange"],
@@ -73,6 +92,7 @@ export function MediaSessionList({
   onRefresh,
   onExportAll,
 }: MediaSessionListProps) {
+  const { t } = useTranslation();
   const [exporting, setExporting] = useState(false);
 
   const filteredCount = sessions.length;
@@ -83,7 +103,17 @@ export function MediaSessionList({
       const rows = onExportAll ? await onExportAll() : sessions;
       exportRowsToCsv(
         `media-sessions-export-${new Date().toISOString().slice(0, 10)}.csv`,
-        ["ID", "Room", "Mode", "Status", "Owner", "Started", "Ended", "Duration", "Participants"],
+        [
+          t("admin.rtc.sessions.csv.id", "ID"),
+          t("admin.rtc.sessions.csv.room", "Room"),
+          t("admin.rtc.sessions.csv.mode", "Mode"),
+          t("admin.rtc.sessions.csv.status", "Status"),
+          t("admin.rtc.sessions.csv.owner", "Owner"),
+          t("admin.rtc.sessions.csv.started", "Started"),
+          t("admin.rtc.sessions.csv.ended", "Ended"),
+          t("admin.rtc.sessions.csv.duration", "Duration"),
+          t("admin.rtc.sessions.csv.participants", "Participants"),
+        ],
         rows.map((session) => [
           session.id,
           session.roomId,
@@ -99,20 +129,20 @@ export function MediaSessionList({
     } finally {
       setExporting(false);
     }
-  }, [onExportAll, sessions]);
-
-  const statusOptions = useMemo(() => Object.keys(SESSION_STATUS_LABELS) as RtcMediaSessionStatus[], []);
+  }, [onExportAll, sessions, t]);
 
   return (
     <div className="admin-card">
       <div className="admin-card-header">
-        <h2>实时会话</h2>
+        <h2>{t("admin.rtc.sessions.title", "Live Sessions")}</h2>
         <div className="admin-card-actions">
           <button type="button" onClick={onRefresh} disabled={loading || exporting}>
-            {loading ? "Loading..." : "Refresh"}
+            {loading ? t("admin.rtc.loadingShort", "Loading...") : t("admin.rtc.refresh", "Refresh")}
           </button>
           <button type="button" onClick={() => void handleExportAll()} disabled={exporting || loading}>
-            {exporting ? "Exporting..." : "Export All"}
+            {exporting
+              ? t("admin.rtc.exporting", "Exporting...")
+              : t("admin.rtc.sessions.exportAll", "Export All")}
           </button>
         </div>
       </div>
@@ -120,7 +150,7 @@ export function MediaSessionList({
       <div className="admin-filter-bar">
         <input
           type="search"
-          placeholder="Search by session ID or room ID..."
+          placeholder={t("admin.rtc.sessions.filter.search", "Search by session ID or room ID...")}
           value={filter.search}
           onChange={(event) => onChangeFilter({ ...filter, search: event.target.value })}
         />
@@ -133,10 +163,10 @@ export function MediaSessionList({
             })
           }
         >
-          <option value="all">All Status</option>
-          {statusOptions.map((status) => (
+          <option value="all">{t("admin.rtc.sessions.filter.allStatus", "All Status")}</option>
+          {SESSION_STATUS_VALUES.map((status) => (
             <option key={status} value={status}>
-              {SESSION_STATUS_LABELS[status]}
+              {sessionStatusLabel(status, t)}
             </option>
           ))}
         </select>
@@ -149,13 +179,13 @@ export function MediaSessionList({
             })
           }
         >
-          <option value="all">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">Last 7 Days</option>
-          <option value="month">Last 30 Days</option>
+          <option value="all">{t("admin.rtc.sessions.filter.allTime", "All Time")}</option>
+          <option value="today">{t("admin.rtc.sessions.filter.today", "Today")}</option>
+          <option value="week">{t("admin.rtc.sessions.filter.week", "Last 7 Days")}</option>
+          <option value="month">{t("admin.rtc.sessions.filter.month", "Last 30 Days")}</option>
         </select>
         <button type="button" onClick={onResetFilter}>
-          Clear Filters
+          {t("admin.rtc.sessions.filter.clear", "Clear Filters")}
         </button>
       </div>
 
@@ -163,22 +193,24 @@ export function MediaSessionList({
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Session</th>
-              <th>Room</th>
-              <th>Mode</th>
-              <th>Status</th>
-              <th>Owner</th>
-              <th>Started</th>
-              <th>Duration</th>
-              <th>Participants</th>
-              <th>Actions</th>
+              <th>{t("admin.rtc.sessions.col.session", "Session")}</th>
+              <th>{t("admin.rtc.sessions.col.room", "Room")}</th>
+              <th>{t("admin.rtc.sessions.col.mode", "Mode")}</th>
+              <th>{t("admin.rtc.sessions.col.status", "Status")}</th>
+              <th>{t("admin.rtc.sessions.col.owner", "Owner")}</th>
+              <th>{t("admin.rtc.sessions.col.started", "Started")}</th>
+              <th>{t("admin.rtc.sessions.col.duration", "Duration")}</th>
+              <th>{t("admin.rtc.sessions.col.participants", "Participants")}</th>
+              <th>{t("admin.rtc.sessions.col.actions", "Actions")}</th>
             </tr>
           </thead>
           <tbody>
             {sessions.length === 0 ? (
               <tr>
                 <td colSpan={9} className="admin-empty-state">
-                  {loading ? "Loading sessions..." : "No media sessions found."}
+                  {loading
+                    ? t("admin.rtc.sessions.emptyLoading", "Loading sessions...")
+                    : t("admin.rtc.sessions.empty", "No media sessions found.")}
                 </td>
               </tr>
             ) : (
@@ -197,7 +229,7 @@ export function MediaSessionList({
                   </td>
                   <td>
                     <span className={`admin-badge admin-badge-status-${session.status}`}>
-                      {SESSION_STATUS_LABELS[session.status]}
+                      {sessionStatusLabel(session.status, t)}
                     </span>
                   </td>
                   <td>{session.ownerUserId}</td>
@@ -206,7 +238,7 @@ export function MediaSessionList({
                   <td>{session.participantCount ?? 0}</td>
                   <td>
                     <button className="admin-action-btn" onClick={() => onSelect(session)}>
-                      View
+                      {t("admin.rtc.view", "View")}
                     </button>
                   </td>
                 </tr>
@@ -218,7 +250,12 @@ export function MediaSessionList({
 
       <div className="admin-list-footer">
         <span>
-          {filteredCount} session(s) displayed{totalCount !== undefined ? ` of ${totalCount}` : ""}
+          {t("admin.rtc.sessions.footer", "{{count}} session(s) displayed", {
+            count: filteredCount,
+          })}
+          {totalCount !== undefined
+            ? t("admin.rtc.sessions.footerOf", " of {{total}}", { total: totalCount })
+            : ""}
         </span>
       </div>
     </div>

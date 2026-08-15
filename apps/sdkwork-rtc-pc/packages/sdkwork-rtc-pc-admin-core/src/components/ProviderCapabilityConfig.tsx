@@ -1,21 +1,76 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 interface ProviderCapability {
   key: string;
-  label: string;
-  description: string;
   category: "core" | "media" | "advanced";
 }
 
 const AVAILABLE_CAPABILITIES: ProviderCapability[] = [
-  { key: "audio", label: "Audio", description: "音频通话能力", category: "core" },
-  { key: "video", label: "Video", description: "视频通话能力", category: "core" },
-  { key: "live", label: "Live Streaming", description: "直播推流能力", category: "core" },
-  { key: "screen-share", label: "Screen Share", description: "屏幕共享能力", category: "media" },
-  { key: "recording", label: "Recording", description: "录制能力", category: "media" },
-  { key: "webhook", label: "Webhook", description: "Webhook回调能力", category: "advanced" },
-  { key: "active-query", label: "Active Query", description: "主动查询能力", category: "advanced" },
+  { key: "audio", category: "core" },
+  { key: "video", category: "core" },
+  { key: "live", category: "core" },
+  { key: "screen-share", category: "media" },
+  { key: "recording", category: "media" },
+  { key: "webhook", category: "advanced" },
+  { key: "active-query", category: "advanced" },
 ];
+
+function capabilityLabel(key: string, t: TFunction): string {
+  switch (key) {
+    case "audio":
+      return t("admin.rtc.capabilities.label.audio", "Audio");
+    case "video":
+      return t("admin.rtc.capabilities.label.video", "Video");
+    case "live":
+      return t("admin.rtc.capabilities.label.live", "Live Streaming");
+    case "screen-share":
+      return t("admin.rtc.capabilities.label.screenShare", "Screen Share");
+    case "recording":
+      return t("admin.rtc.capabilities.label.recording", "Recording");
+    case "webhook":
+      return t("admin.rtc.capabilities.label.webhook", "Webhook");
+    case "active-query":
+      return t("admin.rtc.capabilities.label.activeQuery", "Active Query");
+    default:
+      return key;
+  }
+}
+
+function capabilityDescription(key: string, t: TFunction): string {
+  switch (key) {
+    case "audio":
+      return t("admin.rtc.capabilities.desc.audio", "Audio calling capability");
+    case "video":
+      return t("admin.rtc.capabilities.desc.video", "Video calling capability");
+    case "live":
+      return t("admin.rtc.capabilities.desc.live", "Live streaming capability");
+    case "screen-share":
+      return t("admin.rtc.capabilities.desc.screenShare", "Screen sharing capability");
+    case "recording":
+      return t("admin.rtc.capabilities.desc.recording", "Recording capability");
+    case "webhook":
+      return t("admin.rtc.capabilities.desc.webhook", "Webhook callback capability");
+    case "active-query":
+      return t("admin.rtc.capabilities.desc.activeQuery", "Active query capability");
+    default:
+      return "";
+  }
+}
+
+function categoryLabel(category: string, t: TFunction): string {
+  switch (category) {
+    case "core":
+      return t("admin.rtc.capabilities.category.core", "Core Capabilities");
+    case "media":
+      return t("admin.rtc.capabilities.category.media", "Media Capabilities");
+    case "advanced":
+      return t("admin.rtc.capabilities.category.advanced", "Advanced Capabilities");
+    default:
+      return category;
+  }
+}
 
 interface Props {
   providerName: string;
@@ -34,6 +89,7 @@ export function ProviderCapabilityConfig({
   onSave,
   onCancel,
 }: Props) {
+  const { t } = useTranslation();
   const [capabilities, setCapabilities] = useState<Record<string, boolean>>({
     ...currentCapabilities,
   });
@@ -69,23 +125,21 @@ export function ProviderCapabilityConfig({
     {} as Record<string, ProviderCapability[]>
   );
 
-  const categoryLabels: Record<string, string> = {
-    core: "Core Capabilities",
-    media: "Media Capabilities",
-    advanced: "Advanced Capabilities",
-  };
-
   return (
     <div className="provider-capability-config">
       <div className="capability-header">
-        <h3>Configure {providerName} Capabilities</h3>
-        <p>Select which capabilities to enable for this provider profile.</p>
+        <h3>
+          {t("admin.rtc.capabilities.configureTitle", "Configure {{name}} Capabilities", {
+            name: providerName,
+          })}
+        </h3>
+        <p>{t("admin.rtc.capabilities.hint", "Select which capabilities to enable for this provider profile.")}</p>
       </div>
 
       <div className="capability-groups">
         {Object.entries(grouped).map(([category, caps]) => (
           <div key={category} className="capability-group">
-            <h4>{categoryLabels[category] ?? category}</h4>
+            <h4>{categoryLabel(category, t)}</h4>
             <div className="capability-list">
               {caps.map((cap) => {
                 const isRequired = requiredCapabilities.includes(cap.key);
@@ -105,10 +159,16 @@ export function ProviderCapabilityConfig({
                     </div>
                     <div className="capability-info">
                       <span className="capability-label">
-                        {cap.label}
-                        {isRequired && <span className="required-badge">Required</span>}
+                        {capabilityLabel(cap.key, t)}
+                        {isRequired && (
+                          <span className="required-badge">
+                            {t("admin.rtc.capabilities.required", "Required")}
+                          </span>
+                        )}
                       </span>
-                      <span className="capability-description">{cap.description}</span>
+                      <span className="capability-description">
+                        {capabilityDescription(cap.key, t)}
+                      </span>
                     </div>
                   </div>
                 );
@@ -119,30 +179,34 @@ export function ProviderCapabilityConfig({
       </div>
 
       <div className="capability-summary">
-        <h4>Summary</h4>
+        <h4>{t("admin.rtc.capabilities.summary", "Summary")}</h4>
         <div className="summary-stats">
           <span className="stat enabled">
-            {Object.entries(capabilities)
-              .filter(([key, val]) => val && supportedCapabilities.includes(key))
-              .length}{" "}
-            Enabled
+            {t("admin.rtc.capabilities.enabledCount", "{{count}} Enabled", {
+              count: Object.entries(capabilities)
+                .filter(([key, val]) => val && supportedCapabilities.includes(key))
+                .length,
+            })}
           </span>
           <span className="stat disabled">
-            {Object.entries(capabilities)
-              .filter(([key, val]) => !val && supportedCapabilities.includes(key))
-              .length}{" "}
-            Disabled
+            {t("admin.rtc.capabilities.disabledCount", "{{count}} Disabled", {
+              count: Object.entries(capabilities)
+                .filter(([key, val]) => !val && supportedCapabilities.includes(key))
+                .length,
+            })}
           </span>
           <span className="stat required">
-            {requiredCapabilities.length} Required
+            {t("admin.rtc.capabilities.requiredCount", "{{count}} Required", {
+              count: requiredCapabilities.length,
+            })}
           </span>
         </div>
       </div>
 
       <div className="form-actions">
-        <button onClick={onCancel}>Cancel</button>
+        <button onClick={onCancel}>{t("admin.rtc.cancel", "Cancel")}</button>
         <button onClick={handleSave} className="primary">
-          Save Capabilities
+          {t("admin.rtc.capabilities.save", "Save Capabilities")}
         </button>
       </div>
     </div>

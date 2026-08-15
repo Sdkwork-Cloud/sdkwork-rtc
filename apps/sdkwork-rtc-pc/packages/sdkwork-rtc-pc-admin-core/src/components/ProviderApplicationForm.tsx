@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ProviderApplicationCommand } from "../types/providerApplication";
 import type { ProviderConfigSchema } from "../types/providerSchema";
 import { ProviderSchemaForm, validateSchemaFields } from "./ProviderSchemaForm";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function ProviderApplicationForm({ schema, initial, onSubmit, onCancel }: Props) {
+  const { t } = useTranslation();
   const [values, setValues] = useState<Record<string, unknown>>(() => ({
     code: initial?.code ?? "",
     name: initial?.name ?? "",
@@ -27,7 +29,7 @@ export function ProviderApplicationForm({ schema, initial, onSubmit, onCancel }:
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = () => {
-    const newErrors = validateSchemaFields(schema.applicationFields, values);
+    const newErrors = validateSchemaFields(schema.applicationFields, values, t, schema);
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     onSubmit({
@@ -48,7 +50,11 @@ export function ProviderApplicationForm({ schema, initial, onSubmit, onCancel }:
 
   return (
     <div className="provider-application-form">
-      <h3>{schema.displayName} Application</h3>
+      <h3>
+        {t("admin.rtc.applications.form.title", "{{name}} Application", {
+          name: schema.displayName,
+        })}
+      </h3>
       <ProviderSchemaForm
         schema={schema}
         values={values}
@@ -57,8 +63,8 @@ export function ProviderApplicationForm({ schema, initial, onSubmit, onCancel }:
         errors={errors}
       />
       <div className="form-actions">
-        <button onClick={onCancel}>Cancel</button>
-        <button onClick={handleSubmit} className="primary">Save</button>
+        <button onClick={onCancel}>{t("admin.rtc.cancel", "Cancel")}</button>
+        <button onClick={handleSubmit} className="primary">{t("admin.rtc.save", "Save")}</button>
       </div>
     </div>
   );

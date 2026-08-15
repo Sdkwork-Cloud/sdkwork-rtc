@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { QualitySampleListParams, RtcQualitySample } from "../types/qualitySample";
 import { exportRowsToCsv, formatDateTime, formatPercentRate } from "../utils/format";
@@ -55,6 +56,7 @@ export function QualitySampleList({
   onRefresh,
   onExportAll,
 }: QualitySampleListProps) {
+  const { t } = useTranslation();
   const [exporting, setExporting] = useState(false);
 
   const handleExportAll = useCallback(async () => {
@@ -63,7 +65,16 @@ export function QualitySampleList({
       const rows = onExportAll ? await onExportAll() : samples;
       exportRowsToCsv(
         `quality-samples-export-${new Date().toISOString().slice(0, 10)}.csv`,
-        ["ID", "Session", "Participant", "Latency (ms)", "Jitter (ms)", "Packet Loss", "Bitrate (kbps)", "Sampled At"],
+        [
+          t("admin.rtc.quality.csv.id", "ID"),
+          t("admin.rtc.quality.csv.session", "Session"),
+          t("admin.rtc.quality.csv.participant", "Participant"),
+          t("admin.rtc.quality.csv.latency", "Latency (ms)"),
+          t("admin.rtc.quality.csv.jitter", "Jitter (ms)"),
+          t("admin.rtc.quality.csv.packetLoss", "Packet Loss"),
+          t("admin.rtc.quality.csv.bitrate", "Bitrate (kbps)"),
+          t("admin.rtc.quality.csv.sampledAt", "Sampled At"),
+        ],
         rows.map((sample) => [
           sample.id,
           sample.mediaSessionId,
@@ -78,18 +89,20 @@ export function QualitySampleList({
     } finally {
       setExporting(false);
     }
-  }, [onExportAll, samples]);
+  }, [onExportAll, samples, t]);
 
   return (
     <div className="admin-card admin-card-fill">
       <div className="admin-card-header">
-        <h2>质量监控</h2>
+        <h2>{t("admin.rtc.quality.title", "Quality Monitoring")}</h2>
         <div className="admin-card-actions">
           <button type="button" onClick={onRefresh} disabled={loading || exporting}>
-            {loading ? "Loading..." : "Refresh"}
+            {loading ? t("admin.rtc.loadingShort", "Loading...") : t("admin.rtc.refresh", "Refresh")}
           </button>
           <button type="button" onClick={() => void handleExportAll()} disabled={exporting || loading}>
-            {exporting ? "Exporting..." : "Export All"}
+            {exporting
+              ? t("admin.rtc.exporting", "Exporting...")
+              : t("admin.rtc.quality.exportAll", "Export All")}
           </button>
         </div>
       </div>
@@ -97,7 +110,10 @@ export function QualitySampleList({
       <div className="admin-filter-bar">
         <input
           type="search"
-          placeholder="Search by sample ID or session ID..."
+          placeholder={t(
+            "admin.rtc.quality.filter.search",
+            "Search by sample ID or session ID...",
+          )}
           value={filter.search}
           onChange={(event) => onChangeFilter({ ...filter, search: event.target.value })}
         />
@@ -110,13 +126,13 @@ export function QualitySampleList({
             })
           }
         >
-          <option value="all">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">Last 7 Days</option>
-          <option value="month">Last 30 Days</option>
+          <option value="all">{t("admin.rtc.quality.filter.allTime", "All Time")}</option>
+          <option value="today">{t("admin.rtc.quality.filter.today", "Today")}</option>
+          <option value="week">{t("admin.rtc.quality.filter.week", "Last 7 Days")}</option>
+          <option value="month">{t("admin.rtc.quality.filter.month", "Last 30 Days")}</option>
         </select>
         <button type="button" onClick={onResetFilter}>
-          Clear Filters
+          {t("admin.rtc.quality.filter.clear", "Clear Filters")}
         </button>
       </div>
 
@@ -124,20 +140,22 @@ export function QualitySampleList({
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Session</th>
-              <th>Participant</th>
-              <th>Latency</th>
-              <th>Jitter</th>
-              <th>Packet Loss</th>
-              <th>Bitrate</th>
-              <th>Sampled At</th>
+              <th>{t("admin.rtc.quality.col.session", "Session")}</th>
+              <th>{t("admin.rtc.quality.col.participant", "Participant")}</th>
+              <th>{t("admin.rtc.quality.col.latency", "Latency")}</th>
+              <th>{t("admin.rtc.quality.col.jitter", "Jitter")}</th>
+              <th>{t("admin.rtc.quality.col.packetLoss", "Packet Loss")}</th>
+              <th>{t("admin.rtc.quality.col.bitrate", "Bitrate")}</th>
+              <th>{t("admin.rtc.quality.col.sampledAt", "Sampled At")}</th>
             </tr>
           </thead>
           <tbody>
             {samples.length === 0 ? (
               <tr>
                 <td colSpan={7} className="admin-empty-state">
-                  {loading ? "Loading quality samples..." : "No quality samples found."}
+                  {loading
+                    ? t("admin.rtc.quality.emptyLoading", "Loading quality samples...")
+                    : t("admin.rtc.quality.empty", "No quality samples found.")}
                 </td>
               </tr>
             ) : (
@@ -158,7 +176,11 @@ export function QualitySampleList({
       </div>
 
       <div className="admin-list-footer">
-        <span>{samples.length} sample(s) displayed</span>
+        <span>
+          {t("admin.rtc.quality.footer", "{{count}} sample(s) displayed", {
+            count: samples.length,
+          })}
+        </span>
       </div>
     </div>
   );

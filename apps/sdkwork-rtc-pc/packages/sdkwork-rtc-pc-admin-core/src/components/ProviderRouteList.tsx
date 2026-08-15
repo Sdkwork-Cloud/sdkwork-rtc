@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderRoute } from "../types/providerRoute";
 
 interface Props {
@@ -5,16 +7,17 @@ interface Props {
 }
 
 export function ProviderRouteList({ routes }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="provider-route-list">
       <table>
         <thead>
           <tr>
-            <th>Profile ID</th>
-            <th>Type</th>
-            <th>Region</th>
-            <th>Priority</th>
-            <th>Status</th>
+            <th>{t("admin.rtc.routes.col.profileId", "Profile ID")}</th>
+            <th>{t("admin.rtc.routes.col.type", "Type")}</th>
+            <th>{t("admin.rtc.routes.col.region", "Region")}</th>
+            <th>{t("admin.rtc.routes.col.priority", "Priority")}</th>
+            <th>{t("admin.rtc.routes.col.status", "Status")}</th>
           </tr>
         </thead>
         <tbody>

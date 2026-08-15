@@ -1,4 +1,5 @@
 export { ProviderSchemaService } from "./services/providerSchemaService";
+export { initRtcAdminI18n, rtcAdminMessages } from "./i18n";
 export { ProviderAccountService } from "./services/providerAccountService";
 export { ProviderApplicationService } from "./services/providerApplicationService";
 export { ProviderCredentialService } from "./services/providerCredentialService";

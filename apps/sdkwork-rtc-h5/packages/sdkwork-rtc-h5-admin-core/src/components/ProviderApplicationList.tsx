@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderApplication } from "../types/providerApplication";
 
 interface Props {
@@ -7,17 +9,18 @@ interface Props {
 }
 
 export function ProviderApplicationList({ applications, onSelect, onDisable }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="provider-application-list">
       <table>
         <thead>
           <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Status</th>
-            <th>App ID</th>
-            <th>Region</th>
-            <th>Actions</th>
+            <th>{t("admin.rtc.applications.col.code", "Code")}</th>
+            <th>{t("admin.rtc.applications.col.name", "Name")}</th>
+            <th>{t("admin.rtc.applications.col.status", "Status")}</th>
+            <th>{t("admin.rtc.applications.col.appId", "App ID")}</th>
+            <th>{t("admin.rtc.applications.col.region", "Region")}</th>
+            <th>{t("admin.rtc.applications.col.actions", "Actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -29,9 +32,13 @@ export function ProviderApplicationList({ applications, onSelect, onDisable }: P
               <td>{app.providerApplicationId}</td>
               <td>{app.region ?? "-"}</td>
               <td>
-                <button onClick={() => onSelect(app)}>Edit</button>
+                <button onClick={() => onSelect(app)}>
+                  {t("admin.rtc.applications.edit", "Edit")}
+                </button>
                 {app.status === "active" && (
-                  <button onClick={() => onDisable(app)}>Disable</button>
+                  <button onClick={() => onDisable(app)}>
+                    {t("admin.rtc.applications.disable", "Disable")}
+                  </button>
                 )}
               </td>
             </tr>

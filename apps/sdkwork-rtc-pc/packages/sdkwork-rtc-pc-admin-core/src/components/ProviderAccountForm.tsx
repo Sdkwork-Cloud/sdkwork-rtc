@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ProviderAccountCommand } from "../types/providerAccount";
 import type { ProviderConfigSchema } from "../types/providerSchema";
 import { ProviderSchemaForm, validateSchemaFields } from "./ProviderSchemaForm";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function ProviderAccountForm({ schema, initial, onSubmit, onCancel }: Props) {
+  const { t } = useTranslation();
   const [values, setValues] = useState<Record<string, unknown>>(() => ({
     code: initial?.code ?? "",
     name: initial?.name ?? "",
@@ -23,7 +25,7 @@ export function ProviderAccountForm({ schema, initial, onSubmit, onCancel }: Pro
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = () => {
-    const newErrors = validateSchemaFields(schema.accountFields, values);
+    const newErrors = validateSchemaFields(schema.accountFields, values, t, schema);
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     onSubmit({
@@ -40,7 +42,9 @@ export function ProviderAccountForm({ schema, initial, onSubmit, onCancel }: Pro
 
   return (
     <div className="provider-account-form">
-      <h3>{schema.displayName} Account</h3>
+      <h3>
+        {t("admin.rtc.accounts.form.title", "{{name}} Account", { name: schema.displayName })}
+      </h3>
       <ProviderSchemaForm
         schema={schema}
         values={values}
@@ -49,8 +53,8 @@ export function ProviderAccountForm({ schema, initial, onSubmit, onCancel }: Pro
         errors={errors}
       />
       <div className="form-actions">
-        <button onClick={onCancel}>Cancel</button>
-        <button onClick={handleSubmit} className="primary">Save</button>
+        <button onClick={onCancel}>{t("admin.rtc.cancel", "Cancel")}</button>
+        <button onClick={handleSubmit} className="primary">{t("admin.rtc.save", "Save")}</button>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Room } from "../types/room";
 import type { RtcMediaSession } from "../types/mediaSession";
 import { formatDateTime, formatDurationMs } from "../utils/format";
@@ -22,66 +23,77 @@ export function RoomDetailPanel({
   onSelectSession,
   onBack,
 }: RoomDetailPanelProps) {
+  const { t } = useTranslation();
   const activeSessions = sessions.filter((session) => session.status === "active");
 
   return (
     <div className="admin-card">
       <div className="admin-card-header">
-        <h2>通话房间详情</h2>
+        <h2>{t("admin.rtc.roomDetail.title", "Room Details")}</h2>
         <div className="admin-card-actions">
           <button type="button" onClick={onBack}>
-            Back
+            {t("admin.rtc.back", "Back")}
           </button>
         </div>
       </div>
 
       <div className="admin-detail-grid">
         <div className="admin-detail-item">
-          <span className="admin-detail-label">Room ID</span>
+          <span className="admin-detail-label">{t("admin.rtc.roomDetail.roomId", "Room ID")}</span>
           <span className="admin-detail-value admin-detail-mono">{room.id}</span>
         </div>
         <div className="admin-detail-item">
-          <span className="admin-detail-label">Title</span>
+          <span className="admin-detail-label">{t("admin.rtc.roomDetail.titleLabel", "Title")}</span>
           <span className="admin-detail-value">{room.title}</span>
         </div>
         <div className="admin-detail-item">
-          <span className="admin-detail-label">Status</span>
+          <span className="admin-detail-label">{t("admin.rtc.status", "Status")}</span>
           <span className="admin-detail-value">
             <span className={`admin-badge admin-badge-status-${room.status}`}>{room.status}</span>
           </span>
         </div>
         <div className="admin-detail-item">
-          <span className="admin-detail-label">Owner</span>
+          <span className="admin-detail-label">{t("admin.rtc.roomDetail.owner", "Owner")}</span>
           <span className="admin-detail-value">{room.ownerUserId}</span>
         </div>
         <div className="admin-detail-item">
-          <span className="admin-detail-label">Organization</span>
+          <span className="admin-detail-label">
+            {t("admin.rtc.roomDetail.organization", "Organization")}
+          </span>
           <span className="admin-detail-value">{room.organizationId}</span>
         </div>
         <div className="admin-detail-item">
-          <span className="admin-detail-label">Created</span>
+          <span className="admin-detail-label">
+            {t("admin.rtc.roomDetail.created", "Created")}
+          </span>
           <span className="admin-detail-value">{formatDateTime(room.createdAt)}</span>
         </div>
       </div>
 
       <div className="admin-section">
-        <h3>房间会话 ({sessions.length})</h3>
+        <h3>
+          {t("admin.rtc.roomDetail.sessions", "Room Sessions ({{count}})", {
+            count: sessions.length,
+          })}
+        </h3>
         {sessionsLoading ? (
-          <p className="admin-muted">Loading sessions...</p>
+          <p className="admin-muted">{t("admin.rtc.roomDetail.loadingSessions", "Loading sessions...")}</p>
         ) : sessions.length === 0 ? (
-          <p className="admin-muted">No media sessions recorded in this room.</p>
+          <p className="admin-muted">
+            {t("admin.rtc.roomDetail.noSessions", "No media sessions recorded in this room.")}
+          </p>
         ) : (
           <div className="admin-table-wrapper">
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Session</th>
-                  <th>Mode</th>
-                  <th>Status</th>
-                  <th>Started</th>
-                  <th>Duration</th>
-                  <th>Participants</th>
-                  <th>Actions</th>
+                  <th>{t("admin.rtc.roomDetail.col.session", "Session")}</th>
+                  <th>{t("admin.rtc.roomDetail.col.mode", "Mode")}</th>
+                  <th>{t("admin.rtc.roomDetail.col.status", "Status")}</th>
+                  <th>{t("admin.rtc.roomDetail.col.started", "Started")}</th>
+                  <th>{t("admin.rtc.roomDetail.col.duration", "Duration")}</th>
+                  <th>{t("admin.rtc.roomDetail.col.participants", "Participants")}</th>
+                  <th>{t("admin.rtc.roomDetail.col.actions", "Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -103,7 +115,7 @@ export function RoomDetailPanel({
                     <td>{session.participantCount ?? 0}</td>
                     <td>
                       <button className="admin-action-btn" onClick={() => onSelectSession(session)}>
-                        View
+                        {t("admin.rtc.view", "View")}
                       </button>
                     </td>
                   </tr>
@@ -114,7 +126,9 @@ export function RoomDetailPanel({
         )}
         {activeSessions.length > 0 && (
           <p className="admin-muted">
-            {activeSessions.length} session(s) currently active in this room.
+            {t("admin.rtc.roomDetail.activeSessions", "{{count}} session(s) currently active in this room.", {
+              count: activeSessions.length,
+            })}
           </p>
         )}
       </div>

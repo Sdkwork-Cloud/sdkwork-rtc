@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ProviderWebhookEvent } from "../types/providerWebhookEvent";
 
 interface Props {
@@ -5,17 +7,18 @@ interface Props {
 }
 
 export function ProviderWebhookEventList({ events }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="provider-webhook-event-list">
       <table>
         <thead>
           <tr>
-            <th>Provider</th>
-            <th>Event Type</th>
-            <th>Event Kind</th>
-            <th>Status</th>
-            <th>Room ID</th>
-            <th>Received At</th>
+            <th>{t("admin.rtc.webhooks.col.provider", "Provider")}</th>
+            <th>{t("admin.rtc.webhooks.col.eventType", "Event Type")}</th>
+            <th>{t("admin.rtc.webhooks.col.eventKind", "Event Kind")}</th>
+            <th>{t("admin.rtc.webhooks.col.status", "Status")}</th>
+            <th>{t("admin.rtc.webhooks.col.roomId", "Room ID")}</th>
+            <th>{t("admin.rtc.webhooks.col.receivedAt", "Received At")}</th>
           </tr>
         </thead>
         <tbody>

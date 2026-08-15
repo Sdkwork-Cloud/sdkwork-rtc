@@ -3,12 +3,171 @@
    sidebar, cards, tables, badges, dialogs)
    ============================================================ */
 
+/* ------------------------------------------------------------
+   Theme tokens — light values are the legacy defaults; the
+   `.dark` class (toggled by the host shell on <html>) switches
+   every surface, border and text color to a dark palette.
+   ------------------------------------------------------------ */
+
+:root {
+  /* Surfaces & backgrounds */
+  --rtc-admin-bg: #f4f6fb;
+  --rtc-admin-surface: #ffffff;
+  --rtc-admin-surface-muted: #f8fafc;
+  --rtc-admin-surface-hover: #f1f5f9;
+  --rtc-admin-surface-selected: #e8f0ff;
+  --rtc-admin-input-bg: #ffffff;
+  --rtc-admin-selection-bg: #e7f1ff;
+  --rtc-admin-selection-border: #b6d4fe;
+  --rtc-admin-toolbar-bg: #eef4ff;
+  --rtc-admin-auth-bg: #f7f8fa;
+  --rtc-admin-row-hover: #f8f9fa;
+
+  /* Borders & dividers */
+  --rtc-admin-border: #e5eaf2;
+  --rtc-admin-border-soft: #dee2e6;
+  --rtc-admin-border-strong: #cbd5e1;
+  --rtc-admin-border-soft-2: #ced4da;
+  --rtc-admin-divider: #eef2f7;
+  --rtc-admin-row-border: #edf0f3;
+
+  /* Text */
+  --rtc-admin-text: #1f2937;
+  --rtc-admin-text-strong: #0f172a;
+  --rtc-admin-text-title: #1a1a1a;
+  --rtc-admin-text-secondary: #334155;
+  --rtc-admin-text-soft: #475569;
+  --rtc-admin-text-muted: #64748b;
+  --rtc-admin-text-faint: #94a3b8;
+  --rtc-admin-text-b-muted: #6c757d;
+  --rtc-admin-text-b-secondary: #495057;
+  --rtc-admin-link: #1d4ed8;
+  --rtc-admin-link-b: #0b5ed7;
+
+  /* Actions */
+  --rtc-admin-primary: #2563eb;
+  --rtc-admin-primary-hover: #1d4ed8;
+  --rtc-admin-btn-primary: #0b5ed7;
+  --rtc-admin-btn-primary-hover: #0a58ca;
+  --rtc-admin-danger: #ef4444;
+  --rtc-admin-danger-hover: #dc2626;
+  --rtc-admin-focus-ring: rgba(59, 130, 246, 0.12);
+  --rtc-admin-focus-ring-2: rgba(11, 94, 215, 0.2);
+
+  /* Elevation & overlays */
+  --rtc-admin-shadow: rgba(15, 23, 42, 0.05);
+  --rtc-admin-overlay: rgba(15, 23, 42, 0.55);
+  --rtc-admin-dialog-shadow: rgba(15, 23, 42, 0.3);
+
+  /* Error banner */
+  --rtc-admin-error-bg: #fef2f2;
+  --rtc-admin-error-border: #fecaca;
+  --rtc-admin-error-fg: #b91c1c;
+
+  /* Semantic badge pairs */
+  --rtc-admin-success-bg: #dcfce7;
+  --rtc-admin-success-fg: #15803d;
+  --rtc-admin-danger-bg: #fee2e2;
+  --rtc-admin-danger-fg: #b91c1c;
+  --rtc-admin-warning-bg: #fef9c3;
+  --rtc-admin-warning-fg: #a16207;
+  --rtc-admin-info-bg: #dbeafe;
+  --rtc-admin-info-fg: #1d4ed8;
+  --rtc-admin-violet-bg: #e0e7ff;
+  --rtc-admin-violet-fg: #4338ca;
+  --rtc-admin-pink-bg: #fce7f3;
+  --rtc-admin-pink-fg: #be185d;
+  --rtc-admin-neutral-bg: #eef2f7;
+  --rtc-admin-neutral-fg: #64748b;
+  --rtc-admin-b-success-bg: #d1e7dd;
+  --rtc-admin-b-success-fg: #0f5132;
+  --rtc-admin-b-danger-bg: #f8d7da;
+  --rtc-admin-b-danger-fg: #842029;
+  --rtc-admin-b-warning-bg: #fff3cd;
+  --rtc-admin-b-warning-fg: #664d03;
+  --rtc-admin-b-neutral-bg: #e2e3e5;
+  --rtc-admin-b-neutral-fg: #41464b;
+}
+
+.dark {
+  --rtc-admin-bg: #0f1115;
+  --rtc-admin-surface: #17191f;
+  --rtc-admin-surface-muted: #1c2129;
+  --rtc-admin-surface-hover: #232936;
+  --rtc-admin-surface-selected: #1d2b45;
+  --rtc-admin-input-bg: #1c2129;
+  --rtc-admin-selection-bg: #16263f;
+  --rtc-admin-selection-border: #2d4a77;
+  --rtc-admin-toolbar-bg: #16263f;
+  --rtc-admin-auth-bg: #0f1115;
+  --rtc-admin-row-hover: #1c2129;
+
+  --rtc-admin-border: #2a3140;
+  --rtc-admin-border-soft: #2a3140;
+  --rtc-admin-border-strong: #3a4354;
+  --rtc-admin-border-soft-2: #3a4354;
+  --rtc-admin-divider: #242b38;
+  --rtc-admin-row-border: #242b38;
+
+  --rtc-admin-text: #e2e8f0;
+  --rtc-admin-text-strong: #f8fafc;
+  --rtc-admin-text-title: #f8fafc;
+  --rtc-admin-text-secondary: #cbd5e1;
+  --rtc-admin-text-soft: #94a3b8;
+  --rtc-admin-text-muted: #94a3b8;
+  --rtc-admin-text-faint: #64748b;
+  --rtc-admin-text-b-muted: #94a3b8;
+  --rtc-admin-text-b-secondary: #cbd5e1;
+  --rtc-admin-link: #60a5fa;
+  --rtc-admin-link-b: #60a5fa;
+
+  --rtc-admin-primary: #3b82f6;
+  --rtc-admin-primary-hover: #2563eb;
+  --rtc-admin-btn-primary: #1a6fe0;
+  --rtc-admin-btn-primary-hover: #2f7be6;
+  --rtc-admin-danger: #f87171;
+  --rtc-admin-danger-hover: #ef4444;
+  --rtc-admin-focus-ring: rgba(59, 130, 246, 0.28);
+  --rtc-admin-focus-ring-2: rgba(59, 130, 246, 0.3);
+
+  --rtc-admin-shadow: rgba(0, 0, 0, 0.35);
+  --rtc-admin-overlay: rgba(0, 0, 0, 0.65);
+  --rtc-admin-dialog-shadow: rgba(0, 0, 0, 0.55);
+
+  --rtc-admin-error-bg: #2b1215;
+  --rtc-admin-error-border: #7f1d1d;
+  --rtc-admin-error-fg: #fca5a5;
+
+  --rtc-admin-success-bg: #022c22;
+  --rtc-admin-success-fg: #6ee7b7;
+  --rtc-admin-danger-bg: #2c0a0a;
+  --rtc-admin-danger-fg: #fca5a5;
+  --rtc-admin-warning-bg: #2a2306;
+  --rtc-admin-warning-fg: #fde047;
+  --rtc-admin-info-bg: #0c1a2e;
+  --rtc-admin-info-fg: #93c5fd;
+  --rtc-admin-violet-bg: #1e1b3a;
+  --rtc-admin-violet-fg: #a5b4fc;
+  --rtc-admin-pink-bg: #3a0d2e;
+  --rtc-admin-pink-fg: #f9a8d4;
+  --rtc-admin-neutral-bg: #1f2633;
+  --rtc-admin-neutral-fg: #cbd5e1;
+  --rtc-admin-b-success-bg: #04291c;
+  --rtc-admin-b-success-fg: #6ee7b7;
+  --rtc-admin-b-danger-bg: #2c0a0a;
+  --rtc-admin-b-danger-fg: #fca5a5;
+  --rtc-admin-b-warning-bg: #2a2306;
+  --rtc-admin-b-warning-fg: #fde047;
+  --rtc-admin-b-neutral-bg: #1f2633;
+  --rtc-admin-b-neutral-fg: #cbd5e1;
+}
+
 .admin-layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f4f6fb;
-  color: #1f2937;
+  background: var(--rtc-admin-bg);
+  color: var(--rtc-admin-text);
 }
 
 .admin-header {
@@ -113,8 +272,8 @@
 .admin-sidebar {
   width: 232px;
   flex-shrink: 0;
-  background: #ffffff;
-  border-right: 1px solid #e5eaf2;
+  background: var(--rtc-admin-surface);
+  border-right: 1px solid var(--rtc-admin-border);
   padding: 16px 12px;
   overflow-y: auto;
 }
@@ -122,7 +281,7 @@
 .admin-sidebar-title {
   font-size: 13px;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--rtc-admin-text-faint);
   letter-spacing: 0.6px;
   text-transform: uppercase;
   padding: 0 8px 12px;
@@ -135,7 +294,7 @@
 .admin-sidebar-group-label {
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--rtc-admin-text-muted);
   padding: 8px 8px 6px;
 }
 
@@ -153,40 +312,40 @@
   display: block;
   padding: 8px 10px;
   border-radius: 8px;
-  color: #334155;
+  color: var(--rtc-admin-text-secondary);
   text-decoration: none;
   font-size: 14px;
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .admin-sidebar-items a:hover {
-  background: #f1f5f9;
+  background: var(--rtc-admin-surface-hover);
 }
 
 .admin-sidebar-items a.active {
-  background: #e8f0ff;
-  color: #1d4ed8;
+  background: var(--rtc-admin-surface-selected);
+  color: var(--rtc-admin-link);
   font-weight: 600;
 }
 
 .admin-sidebar-footer {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #eef2f7;
+  border-top: 1px solid var(--rtc-admin-divider);
 }
 
 .admin-sidebar-footer a {
   display: block;
   padding: 8px 10px;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--rtc-admin-text-muted);
   text-decoration: none;
   font-size: 13px;
 }
 
 .admin-sidebar-footer a:hover {
-  background: #f1f5f9;
-  color: #1d4ed8;
+  background: var(--rtc-admin-surface-hover);
+  color: var(--rtc-admin-link);
 }
 
 .admin-content {
@@ -194,22 +353,63 @@
   min-width: 0;
   padding: 24px;
   overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* ------------------------------------------------------------
+   Workspace page root. Fills the host content viewport so pages
+   with tables can flex to the available height and scroll their
+   table body internally instead of scrolling the whole page.
+   ------------------------------------------------------------ */
+
+.rtc-admin-page {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.rtc-admin-page > h2 {
+  flex-shrink: 0;
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--rtc-admin-text-strong);
 }
 
 .admin-card {
-  background: #ffffff;
-  border: 1px solid #e5eaf2;
+  background: var(--rtc-admin-surface);
+  border: 1px solid var(--rtc-admin-border);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 1px 3px var(--rtc-admin-shadow);
   margin-bottom: 20px;
+}
+
+/* Cards that own the page-level table stretch to fill the
+   remaining viewport height (used by the list pages). */
+.admin-card-fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 20px;
+}
+
+.admin-card-fill > .admin-card-header,
+.admin-card-fill > .admin-filter-bar,
+.admin-card-fill > .admin-list-footer,
+.admin-card-fill > .admin-muted,
+.admin-card-fill > .admin-error {
+  flex-shrink: 0;
 }
 
 .admin-card h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--rtc-admin-text-strong);
 }
 
 .admin-card-header {
@@ -232,9 +432,9 @@
 .admin-filter-bar button,
 .admin-dialog-actions button,
 .form-actions button {
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #334155;
+  border: 1px solid var(--rtc-admin-border-strong);
+  background: var(--rtc-admin-surface);
+  color: var(--rtc-admin-text-secondary);
   font-size: 13px;
   padding: 7px 14px;
   border-radius: 8px;
@@ -245,8 +445,8 @@
 .admin-card-actions button:hover:not(:disabled),
 .admin-filter-bar button:hover:not(:disabled),
 .admin-dialog-actions button:hover:not(:disabled) {
-  background: #f1f5f9;
-  border-color: #94a3b8;
+  background: var(--rtc-admin-surface-hover);
+  border-color: var(--rtc-admin-text-faint);
 }
 
 .admin-card-actions button:disabled,
@@ -257,23 +457,23 @@
 }
 
 .admin-btn-primary {
-  background: #2563eb !important;
-  border-color: #2563eb !important;
+  background: var(--rtc-admin-primary) !important;
+  border-color: var(--rtc-admin-primary) !important;
   color: #ffffff !important;
 }
 
 .admin-btn-primary:hover:not(:disabled) {
-  background: #1d4ed8 !important;
+  background: var(--rtc-admin-primary-hover) !important;
 }
 
 .admin-btn-danger {
-  background: #ef4444 !important;
-  border-color: #ef4444 !important;
+  background: var(--rtc-admin-danger) !important;
+  border-color: var(--rtc-admin-danger) !important;
   color: #ffffff !important;
 }
 
 .admin-btn-danger:hover:not(:disabled) {
-  background: #dc2626 !important;
+  background: var(--rtc-admin-danger-hover) !important;
 }
 
 .admin-filter-bar {
@@ -283,8 +483,8 @@
   flex-wrap: wrap;
   margin-bottom: 16px;
   padding: 12px;
-  background: #f8fafc;
-  border: 1px solid #e5eaf2;
+  background: var(--rtc-admin-surface-muted);
+  border: 1px solid var(--rtc-admin-border);
   border-radius: 10px;
 }
 
@@ -293,12 +493,12 @@
 .admin-filter-bar select,
 .admin-dialog-form input,
 .admin-dialog-form select {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--rtc-admin-border-strong);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
-  background: #ffffff;
-  color: #1f2937;
+  background: var(--rtc-admin-input-bg);
+  color: var(--rtc-admin-text);
   outline: none;
 }
 
@@ -311,12 +511,17 @@
 .admin-filter-bar select:focus,
 .admin-dialog-form input:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 0 3px var(--rtc-admin-focus-ring);
 }
 
+/* Table wrapper doubles as the internal scroll area: on list
+   pages (flex column) it flexes to fill the available height and
+   scrolls vertically; elsewhere it only scrolls horizontally. */
 .admin-table-wrapper {
-  overflow-x: auto;
-  border: 1px solid #e5eaf2;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--rtc-admin-border);
   border-radius: 10px;
 }
 
@@ -329,19 +534,22 @@
 .admin-table th {
   text-align: left;
   padding: 10px 12px;
-  background: #f8fafc;
-  color: #64748b;
+  background: var(--rtc-admin-surface-muted);
+  color: var(--rtc-admin-text-muted);
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.2px;
   white-space: nowrap;
-  border-bottom: 1px solid #e5eaf2;
+  border-bottom: 1px solid var(--rtc-admin-border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .admin-table td {
   padding: 10px 12px;
-  border-bottom: 1px solid #eef2f7;
-  color: #1f2937;
+  border-bottom: 1px solid var(--rtc-admin-divider);
+  color: var(--rtc-admin-text);
   vertical-align: middle;
 }
 
@@ -350,7 +558,7 @@
 }
 
 .admin-table tbody tr:hover {
-  background: #f8fafc;
+  background: var(--rtc-admin-surface-muted);
 }
 
 .admin-cell-primary {
@@ -360,7 +568,7 @@
 .admin-link {
   border: none;
   background: none;
-  color: #1d4ed8;
+  color: var(--rtc-admin-link);
   font-size: 13px;
   padding: 0;
   cursor: pointer;
@@ -375,14 +583,14 @@
 .admin-sub-id {
   display: block;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--rtc-admin-text-faint);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .admin-action-btn {
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #1d4ed8;
+  border: 1px solid var(--rtc-admin-border-strong);
+  background: var(--rtc-admin-surface);
+  color: var(--rtc-admin-link);
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 6px;
@@ -390,7 +598,7 @@
 }
 
 .admin-action-btn:hover:not(:disabled) {
-  background: #e8f0ff;
+  background: var(--rtc-admin-surface-selected);
 }
 
 .admin-action-btn:disabled {
@@ -400,7 +608,7 @@
 
 .admin-empty-state {
   text-align: center;
-  color: #94a3b8;
+  color: var(--rtc-admin-text-faint);
   padding: 40px 16px !important;
 }
 
@@ -410,7 +618,7 @@
   justify-content: space-between;
   margin-top: 12px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--rtc-admin-text-muted);
 }
 
 .admin-badge {
@@ -424,49 +632,52 @@
 
 .admin-badge-status-active,
 .admin-badge-status-ready,
-.admin-badge-status-joined {
-  background: #dcfce7;
-  color: #15803d;
+.admin-badge-status-joined,
+.admin-badge-status-completed {
+  background: var(--rtc-admin-success-bg);
+  color: var(--rtc-admin-success-fg);
 }
 
 .admin-badge-status-ended,
 .admin-badge-status-archived {
-  background: #eef2f7;
-  color: #64748b;
+  background: var(--rtc-admin-neutral-bg);
+  color: var(--rtc-admin-neutral-fg);
 }
 
 .admin-badge-status-failed,
 .admin-badge-status-disabled,
 .admin-badge-status-deleted {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--rtc-admin-danger-bg);
+  color: var(--rtc-admin-danger-fg);
 }
 
 .admin-badge-status-preparing,
 .admin-badge-status-pending,
-.admin-badge-status-closing {
-  background: #fef9c3;
-  color: #a16207;
+.admin-badge-status-closing,
+.admin-badge-status-requested {
+  background: var(--rtc-admin-warning-bg);
+  color: var(--rtc-admin-warning-fg);
 }
 
-.admin-badge-status-processing {
-  background: #dbeafe;
-  color: #1d4ed8;
+.admin-badge-status-processing,
+.admin-badge-status-running {
+  background: var(--rtc-admin-info-bg);
+  color: var(--rtc-admin-info-fg);
 }
 
 .admin-badge-mode-audio {
-  background: #e0e7ff;
-  color: #4338ca;
+  background: var(--rtc-admin-violet-bg);
+  color: var(--rtc-admin-violet-fg);
 }
 
 .admin-badge-mode-video {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--rtc-admin-info-bg);
+  color: var(--rtc-admin-info-fg);
 }
 
 .admin-badge-mode-live {
-  background: #fce7f3;
-  color: #be185d;
+  background: var(--rtc-admin-pink-bg);
+  color: var(--rtc-admin-pink-fg);
 }
 
 .admin-detail-grid {
@@ -494,14 +705,14 @@
 .admin-detail-label {
   font-size: 11px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--rtc-admin-text-faint);
   letter-spacing: 0.3px;
   text-transform: uppercase;
 }
 
 .admin-detail-value {
   font-size: 13px;
-  color: #1f2937;
+  color: var(--rtc-admin-text);
   word-break: break-word;
 }
 
@@ -513,14 +724,14 @@
 .admin-section {
   margin-top: 22px;
   padding-top: 18px;
-  border-top: 1px solid #eef2f7;
+  border-top: 1px solid var(--rtc-admin-divider);
 }
 
 .admin-section h3 {
   margin: 0 0 12px;
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--rtc-admin-text-secondary);
 }
 
 .admin-sub-section {
@@ -531,18 +742,18 @@
   margin: 0 0 10px;
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--rtc-admin-text-muted);
 }
 
 .admin-muted {
-  color: #94a3b8;
+  color: var(--rtc-admin-text-faint);
   font-size: 13px;
 }
 
 .admin-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  background: var(--rtc-admin-error-bg);
+  border: 1px solid var(--rtc-admin-error-border);
+  color: var(--rtc-admin-error-fg);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 13px;
@@ -554,7 +765,7 @@
 }
 
 .admin-resource-link a {
-  color: #1d4ed8;
+  color: var(--rtc-admin-link);
   font-size: 13px;
   text-decoration: none;
 }
@@ -564,13 +775,13 @@
 }
 
 .admin-required {
-  color: #ef4444;
+  color: var(--rtc-admin-danger);
 }
 
 .admin-dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
+  background: var(--rtc-admin-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -580,22 +791,22 @@
 
 .admin-dialog {
   width: min(440px, 100%);
-  background: #ffffff;
+  background: var(--rtc-admin-surface);
   border-radius: 14px;
   padding: 22px;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 24px 60px var(--rtc-admin-dialog-shadow);
 }
 
 .admin-dialog h3 {
   margin: 0 0 14px;
   font-size: 16px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--rtc-admin-text-strong);
 }
 
 .admin-dialog p {
   font-size: 13px;
-  color: #475569;
+  color: var(--rtc-admin-text-soft);
   line-height: 1.6;
   margin: 0 0 14px;
 }
@@ -610,7 +821,7 @@
   display: grid;
   gap: 6px;
   font-size: 12px;
-  color: #475569;
+  color: var(--rtc-admin-text-soft);
   font-weight: 500;
 }
 
@@ -618,6 +829,49 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* Provider Setup Wizard provider picker (previously inline styles). */
+.admin-wizard-picker {
+  text-align: center;
+  padding: 48px;
+  flex-shrink: 0;
+}
+
+.admin-wizard-picker-hint {
+  color: var(--rtc-admin-text-b-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.admin-wizard-picker-cards {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.admin-wizard-picker-card {
+  padding: 16px 24px;
+  border: 1px solid var(--rtc-admin-border-soft);
+  border-radius: 8px;
+  background: var(--rtc-admin-surface);
+  color: var(--rtc-admin-text);
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.admin-wizard-picker-card:hover {
+  background: var(--rtc-admin-surface-hover);
+  border-color: var(--rtc-admin-link);
+}
+
+.admin-wizard-picker-card-desc {
+  display: block;
+  font-size: 13px;
+  color: var(--rtc-admin-text-b-muted);
+  margin-top: 4px;
 }
 
 /* Mobile responsiveness */
@@ -644,7 +898,7 @@
   .admin-sidebar {
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid #e5eaf2;
+    border-bottom: 1px solid var(--rtc-admin-border);
     max-height: 260px;
   }
   .admin-detail-grid {

@@ -1,10 +1,19 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { ProviderConfigSchema } from "../types/providerSchema";
 import type { ProviderAccountCommand } from "../types/providerAccount";
 import type { ProviderApplicationCommand } from "../types/providerApplication";
 import type { ProviderCredentialCommand } from "../types/providerCredential";
 import type { ProviderProfileCommand } from "../types/providerProfile";
 import { ProviderSchemaForm, validateSchemaFields } from "./ProviderSchemaForm";
+import {
+  schemaFieldLabel,
+  schemaFieldPlaceholder,
+  schemaProviderDescription,
+  schemaRoleDescription,
+  schemaRoleLabel,
+} from "../utils/schemaI18n";
 
 interface Props {
   schema: ProviderConfigSchema;
@@ -23,15 +32,25 @@ type Step = "account" | "application" | "credentials" | "profile" | "review";
 
 const STEPS: Step[] = ["account", "application", "credentials", "profile", "review"];
 
-const STEP_LABELS: Record<Step, string> = {
-  account: "Account",
-  application: "Application",
-  credentials: "Credentials",
-  profile: "Profile",
-  review: "Review",
-};
+function stepLabel(step: Step, t: TFunction): string {
+  switch (step) {
+    case "account":
+      return t("admin.rtc.wizard.step.account", "Account");
+    case "application":
+      return t("admin.rtc.wizard.step.application", "Application");
+    case "credentials":
+      return t("admin.rtc.wizard.step.credentials", "Credentials");
+    case "profile":
+      return t("admin.rtc.wizard.step.profile", "Profile");
+    case "review":
+      return t("admin.rtc.wizard.step.review", "Review");
+    default:
+      return step;
+  }
+}
 
 export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<Step>("account");
   const [accountValues, setAccountValues] = useState<Record<string, unknown>>({});
   const [applicationValues, setApplicationValues] = useState<Record<string, unknown>>({});
@@ -63,7 +82,7 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
       default:
         return true;
     }
-    const newErrors = validateSchemaFields(fields, values);
+    const newErrors = validateSchemaFields(fields, values, t, schema);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -155,8 +174,12 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
   return (
     <div className="provider-config-wizard">
       <div className="wizard-header">
-        <h2>Configure {schema.displayName}</h2>
-        <p>{schema.description}</p>
+        <h2>
+          {t("admin.rtc.wizard.configureTitle", "Configure {{name}}", {
+            name: schema.displayName,
+          })}
+        </h2>
+        <p>{schemaProviderDescription(schema.provider, schema.description, t)}</p>
       </div>
 
       <div className="wizard-steps">
@@ -166,7 +189,7 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
             className={`wizard-step ${index === stepIndex ? "active" : ""} ${index < stepIndex ? "completed" : ""}`}
           >
             <span className="step-number">{index + 1}</span>
-            <span className="step-label">{STEP_LABELS[step]}</span>
+            <span className="step-label">{stepLabel(step, t)}</span>
           </div>
         ))}
       </div>
@@ -174,8 +197,12 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
       <div className="wizard-content">
         {currentStep === "account" && (
           <div>
-            <h3>Provider Account</h3>
-            <p>Configure the cloud account for {schema.displayName}</p>
+            <h3>{t("admin.rtc.wizard.accountTitle", "Provider Account")}</h3>
+            <p>
+              {t("admin.rtc.wizard.accountHint", "Configure the cloud account for {{name}}", {
+                name: schema.displayName,
+              })}
+            </p>
             <ProviderSchemaForm
               schema={schema}
               values={accountValues}
@@ -188,8 +215,12 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
 
         {currentStep === "application" && (
           <div>
-            <h3>Provider Application</h3>
-            <p>Configure the RTC application for {schema.displayName}</p>
+            <h3>{t("admin.rtc.wizard.applicationTitle", "Provider Application")}</h3>
+            <p>
+              {t("admin.rtc.wizard.applicationHint", "Configure the RTC application for {{name}}", {
+                name: schema.displayName,
+              })}
+            </p>
             <ProviderSchemaForm
               schema={schema}
               values={applicationValues}
@@ -202,8 +233,14 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
 
         {currentStep === "credentials" && (
           <div>
-            <h3>Provider Credentials</h3>
-            <p>Select and configure credential roles for {schema.displayName}</p>
+            <h3>{t("admin.rtc.wizard.credentialsTitle", "Provider Credentials")}</h3>
+            <p>
+              {t(
+                "admin.rtc.wizard.credentialsHint",
+                "Select and configure credential roles for {{name}}",
+                { name: schema.displayName },
+              )}
+            </p>
             {schema.credentialRoles.map((role) => (
               <div key={role.role} className="credential-role-card">
                 <label className="credential-role-toggle">
@@ -218,14 +255,14 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
                       }
                     }}
                   />
-                  <strong>{role.label}</strong>
+                  <strong>{schemaRoleLabel(schema.provider, role, t)}</strong>
                 </label>
-                <p>{role.description}</p>
+                <p>{schemaRoleDescription(schema.provider, role, t)}</p>
                 {selectedCredentialRoles.includes(role.role) && (
                   <div className="credential-fields">
                     {role.fields.map((field) => (
                       <div key={field.key} className="form-field">
-                        <label>{field.label}</label>
+                        <label>{schemaFieldLabel(schema.provider, field, t)}</label>
                         <input
                           type={field.type === "secret_ref" ? "password" : "text"}
                           value={(credentialValues[role.role]?.[field.key] as string) ?? ""}
@@ -238,7 +275,7 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
                               },
                             })
                           }
-                          placeholder={field.placeholder ?? undefined}
+                          placeholder={schemaFieldPlaceholder(schema.provider, field, t)}
                         />
                       </div>
                     ))}
@@ -251,8 +288,12 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
 
         {currentStep === "profile" && (
           <div>
-            <h3>Provider Profile</h3>
-            <p>Configure the RTC provider profile for {schema.displayName}</p>
+            <h3>{t("admin.rtc.wizard.profileTitle", "Provider Profile")}</h3>
+            <p>
+              {t("admin.rtc.wizard.profileHint", "Configure the RTC provider profile for {{name}}", {
+                name: schema.displayName,
+              })}
+            </p>
             <ProviderSchemaForm
               schema={schema}
               values={profileValues}
@@ -265,37 +306,38 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
 
         {currentStep === "review" && (
           <div>
-            <h3>Review Configuration</h3>
+            <h3>{t("admin.rtc.wizard.reviewTitle", "Review Configuration")}</h3>
             <div className="review-section">
-              <h4>Account</h4>
+              <h4>{t("admin.rtc.wizard.reviewAccount", "Account")}</h4>
               <dl>
-                <dt>Provider</dt><dd>{schema.provider}</dd>
-                <dt>Code</dt><dd>{accountValues.code as string}</dd>
-                <dt>Name</dt><dd>{accountValues.name as string}</dd>
-                <dt>Environment</dt><dd>{accountValues.environment as string}</dd>
+                <dt>{t("admin.rtc.wizard.reviewProvider", "Provider")}</dt><dd>{schema.provider}</dd>
+                <dt>{t("admin.rtc.wizard.reviewCode", "Code")}</dt><dd>{accountValues.code as string}</dd>
+                <dt>{t("admin.rtc.wizard.reviewName", "Name")}</dt><dd>{accountValues.name as string}</dd>
+                <dt>{t("admin.rtc.wizard.reviewEnvironment", "Environment")}</dt><dd>{accountValues.environment as string}</dd>
               </dl>
             </div>
             <div className="review-section">
-              <h4>Application</h4>
+              <h4>{t("admin.rtc.wizard.reviewApplication", "Application")}</h4>
               <dl>
-                <dt>App ID</dt><dd>{applicationValues.providerApplicationId as string}</dd>
-                <dt>Region</dt><dd>{applicationValues.region as string ?? "default"}</dd>
+                <dt>{t("admin.rtc.wizard.reviewAppId", "App ID")}</dt><dd>{applicationValues.providerApplicationId as string}</dd>
+                <dt>{t("admin.rtc.wizard.reviewRegion", "Region")}</dt><dd>{applicationValues.region as string ?? "default"}</dd>
               </dl>
             </div>
             <div className="review-section">
-              <h4>Credentials</h4>
+              <h4>{t("admin.rtc.wizard.reviewCredentials", "Credentials")}</h4>
               <ul>
-                {selectedCredentialRoles.map((role) => (
-                  <li key={role}>{schema.credentialRoles.find((r) => r.role === role)?.label}</li>
-                ))}
+                {selectedCredentialRoles.map((roleKey) => {
+                  const role = schema.credentialRoles.find((r) => r.role === roleKey);
+                  return <li key={roleKey}>{role ? schemaRoleLabel(schema.provider, role, t) : roleKey}</li>;
+                })}
               </ul>
             </div>
             <div className="review-section">
-              <h4>Profile</h4>
+              <h4>{t("admin.rtc.wizard.reviewProfile", "Profile")}</h4>
               <dl>
-                <dt>Code</dt><dd>{profileValues.code as string}</dd>
-                <dt>Default</dt><dd>{profileValues.isDefault ? "Yes" : "No"}</dd>
-                <dt>Region</dt><dd>{profileValues.region as string ?? "default"}</dd>
+                <dt>{t("admin.rtc.wizard.reviewCode", "Code")}</dt><dd>{profileValues.code as string}</dd>
+                <dt>{t("admin.rtc.wizard.reviewDefault", "Default")}</dt><dd>{profileValues.isDefault ? t("admin.rtc.yes", "Yes") : t("admin.rtc.no", "No")}</dd>
+                <dt>{t("admin.rtc.wizard.reviewRegion", "Region")}</dt><dd>{profileValues.region as string ?? "default"}</dd>
               </dl>
             </div>
           </div>
@@ -303,16 +345,16 @@ export function ProviderConfigWizard({ schema, onComplete, onCancel }: Props) {
       </div>
 
       <div className="wizard-actions">
-        <button onClick={onCancel}>Cancel</button>
-        {stepIndex > 0 && <button onClick={handleBack}>Back</button>}
+        <button onClick={onCancel}>{t("admin.rtc.cancel", "Cancel")}</button>
+        {stepIndex > 0 && <button onClick={handleBack}>{t("admin.rtc.back", "Back")}</button>}
         {stepIndex < STEPS.length - 1 && (
           <button onClick={handleNext} className="primary">
-            Next
+            {t("admin.rtc.wizard.next", "Next")}
           </button>
         )}
         {stepIndex === STEPS.length - 1 && (
           <button onClick={handleComplete} className="primary">
-            Complete Setup
+            {t("admin.rtc.wizard.complete", "Complete Setup")}
           </button>
         )}
       </div>
