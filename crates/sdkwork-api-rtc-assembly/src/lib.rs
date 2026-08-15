@@ -7,7 +7,7 @@ mod generated;
 
 pub use bootstrap::{
     assemble_api_router, assemble_api_router_with_pool, assemble_api_router_with_service,
-    assemble_backend_api_contribution_with_pool, ApiAssembly,
+    assemble_backend_api_contribution_with_pool, assemble_reconcile_service, ApiAssembly,
 };
 
 pub fn assembly_route_count() -> usize {

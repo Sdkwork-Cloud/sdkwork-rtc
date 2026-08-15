@@ -1,7 +1,5 @@
+use sdkwork_api_rtc_assembly::assemble_reconcile_service;
 use sdkwork_communication_rtc_worker::{RtcWorker, RtcWorkerJob};
-use sdkwork_api_rtc_standalone_gateway::bootstrap::{
-    build_builtin_provider_registry, build_rtc_reconcile_bootstrap,
-};
 use tracing::info;
 
 #[tokio::main]
@@ -10,9 +8,7 @@ async fn main() -> anyhow::Result<()> {
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
 
-    let registry = build_builtin_provider_registry()?;
-    let bootstrap = build_rtc_reconcile_bootstrap(registry).await?;
-    let service = bootstrap.service;
+    let service = assemble_reconcile_service().await?;
 
     let hydrated_scopes = service.hydrate_for_reconciliation().await?;
     info!(

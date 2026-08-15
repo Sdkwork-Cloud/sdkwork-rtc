@@ -23,24 +23,28 @@ use sdkwork_web_core::HttpRouteManifest;
 /// Indivisible host-neutral API assembly contribution (web-bootstrap contract).
 pub type ApiAssembly = ApiAssemblyContribution;
 
-async fn bootstrap_product_service() -> anyhow::Result<Arc<RtcProductService>> {
+async fn connect_service_from_env() -> anyhow::Result<(RtcProductService, Option<DatabasePool>)> {
     let registry = build_builtin_provider_registry()?;
     let mut service = RtcProductService::new(registry);
-
+    let mut database_pool = None;
     if let Some(bootstrap) = connect_rtc_persistence_bootstrap_from_env()
         .await
         .map_err(|error| anyhow::anyhow!("connect RTC persistence: {error}"))?
     {
+        database_pool = bootstrap.pool;
         service = service.with_persistence(bootstrap.persistence);
-        hydrate_service_from_persistence(&mut service)
-            .await
-            .map_err(anyhow::Error::msg)?;
     } else if rtc_persistence_required() {
         return Err(anyhow::anyhow!(
             "RTC database persistence is required when SDKWORK_RTC_ENVIRONMENT is not development, dev, local, or test"
         ));
     }
+    Ok((service, database_pool))
+}
 
+/// Builds the RTC product service for the `sdkwork-rtc-reconcile` CLI without
+/// startup hydration; reconciliation hydrates its own runtime state.
+pub async fn assemble_reconcile_service() -> anyhow::Result<Arc<RtcProductService>> {
+    let (service, _database_pool) = connect_service_from_env().await?;
     Ok(Arc::new(service))
 }
 
@@ -138,7 +142,18 @@ pub async fn assemble_api_router_with_service(
 }
 
 pub async fn assemble_api_router() -> anyhow::Result<ApiAssembly> {
-    Ok(assemble_api_router_with_service(bootstrap_product_service().await?).await)
+    let (mut service, database_pool) = connect_service_from_env().await?;
+    hydrate_service_from_persistence(&mut service)
+        .await
+        .map_err(anyhow::Error::msg)?;
+    let mut assembly = assemble_api_router_with_service(Arc::new(service)).await;
+    // Readiness comes from the contribution: DB-gated when a pool was
+    // connected, always-ready otherwise (matches the standalone host contract).
+    assembly.readiness_check = match database_pool {
+        Some(pool) => Arc::new(DatabasePoolReadinessCheck::new(pool)),
+        None => Arc::new(sdkwork_web_bootstrap::AlwaysReady),
+    };
+    Ok(assembly)
 }
 
 /// Assemble the RTC contribution against a caller-provided database pool so the

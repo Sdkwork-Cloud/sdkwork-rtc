@@ -1,16 +1,6 @@
-use std::sync::Arc;
-
-use axum::Router;
-use sdkwork_api_rtc_assembly::assemble_api_router_with_service;
+use sdkwork_api_rtc_assembly::assemble_api_router;
 use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
 use tracing::info;
-
-use sdkwork_communication_rtc_service::rtc_persistence_required;
-use sdkwork_communication_rtc_service::validate_production_runtime_profile;
-use sdkwork_api_rtc_standalone_gateway::{
-    bootstrap::{build_builtin_provider_registry, build_rtc_api_bootstrap},
-    readiness::RtcDatabaseReadinessCheck,
-};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -18,27 +8,12 @@ async fn main() -> anyhow::Result<()> {
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
 
-    validate_production_runtime_profile().map_err(anyhow::Error::msg)?;
-
-    let registry = build_builtin_provider_registry()?;
-    let bootstrap = build_rtc_api_bootstrap(registry).await?;
-    let service = bootstrap.service;
-
-    let assembly = assemble_api_router_with_service(service).await;
+    let assembly = assemble_api_router().await?;
 
     let metrics = HttpMetricsRegistry::new();
-
-    let service_router_config = if let Some(pool) = bootstrap.database_pool {
-        ServiceRouterConfig::default()
-            .with_readiness_check(Arc::new(RtcDatabaseReadinessCheck::new(pool)))
-            .with_metrics(metrics.clone())
-    } else if rtc_persistence_required() {
-        ServiceRouterConfig::default().with_metrics(metrics.clone())
-    } else {
-        ServiceRouterConfig::default()
-            .with_always_ready()
-            .with_metrics(metrics)
-    };
+    let service_router_config = ServiceRouterConfig::default()
+        .with_readiness_check(assembly.readiness_check.clone())
+        .with_metrics(metrics);
 
     let app = service_router(assembly.router, service_router_config);
 
