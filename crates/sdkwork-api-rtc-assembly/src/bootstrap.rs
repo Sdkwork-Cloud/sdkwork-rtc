@@ -15,9 +15,7 @@ use sdkwork_communication_rtc_service::rtc_persistence_required;
 use sdkwork_database_sqlx::DatabasePool;
 use sdkwork_rtc_plugin_bootstrap::build_builtin_provider_registry;
 use sdkwork_rtc_service_host::RtcProductService;
-use sdkwork_web_bootstrap::{
-    ApiAssemblyContribution, DatabasePoolReadinessCheck, ReadinessCheck,
-};
+use sdkwork_web_bootstrap::{ApiAssemblyContribution, DatabasePoolReadinessCheck, ReadinessCheck};
 use sdkwork_web_core::HttpRouteManifest;
 
 /// Indivisible host-neutral API assembly contribution (web-bootstrap contract).
@@ -51,8 +49,8 @@ pub async fn assemble_reconcile_service() -> anyhow::Result<Arc<RtcProductServic
 async fn hydrate_service_from_persistence(service: &mut RtcProductService) -> Result<(), String> {
     let tenant_id =
         std::env::var("SDKWORK_RTC_HYDRATE_TENANT_ID").unwrap_or_else(|_| "default".into());
-    let organization_id = std::env::var("SDKWORK_RTC_HYDRATE_ORGANIZATION_ID")
-        .unwrap_or_else(|_| "default".into());
+    let organization_id =
+        std::env::var("SDKWORK_RTC_HYDRATE_ORGANIZATION_ID").unwrap_or_else(|_| "default".into());
     service
         .hydrate_from_persistence(tenant_id, organization_id)
         .await
@@ -61,9 +59,10 @@ async fn hydrate_service_from_persistence(service: &mut RtcProductService) -> Re
 }
 
 /// Boots the RTC product service on a caller-provided shared pool.
-async fn bootstrap_service_with_pool(pool: &DatabasePool) -> Result<Arc<RtcProductService>, String> {
-    let registry =
-        build_builtin_provider_registry().map_err(|error| format!("{error}"))?;
+async fn bootstrap_service_with_pool(
+    pool: &DatabasePool,
+) -> Result<Arc<RtcProductService>, String> {
+    let registry = build_builtin_provider_registry().map_err(|error| format!("{error}"))?;
     let mut service = RtcProductService::new(registry);
     let persistence = persistence_from_database_pool(pool.clone())
         .await
@@ -94,7 +93,9 @@ fn openapi_documents() -> Result<Vec<serde_json::Value>, String> {
         ),
         (
             "sdkwork-rtc-backend-api",
-            include_str!("../../../apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json"),
+            include_str!(
+                "../../../apis/backend-api/communication/sdkwork-rtc-backend-api.openapi.json"
+            ),
         ),
     ]
     .into_iter()
@@ -122,17 +123,9 @@ fn contribution_from(
     )
 }
 
-pub async fn assemble_api_router_with_service(
-    service: Arc<RtcProductService>,
-) -> ApiAssembly {
-    let app_router = sdkwork_routes_rtc_app_api::wrap_router_with_web_framework_from_env(
-        sdkwork_routes_rtc_app_api::gateway_mount(service.clone()),
-    )
-    .await;
-    let backend_router = sdkwork_routes_rtc_backend_api::wrap_router_with_web_framework_from_env(
-        sdkwork_routes_rtc_backend_api::gateway_mount(service),
-    )
-    .await;
+pub async fn assemble_api_router_with_service(service: Arc<RtcProductService>) -> ApiAssembly {
+    let app_router = sdkwork_routes_rtc_app_api::gateway_mount(service.clone());
+    let backend_router = sdkwork_routes_rtc_backend_api::gateway_mount(service);
 
     contribution_from(
         Router::new().merge(app_router).merge(backend_router),
@@ -164,10 +157,7 @@ pub async fn assemble_api_router_with_pool(pool: DatabasePool) -> Result<ApiAsse
     let router = Router::new()
         .merge(sdkwork_routes_rtc_app_api::gateway_mount(service.clone()))
         .merge(sdkwork_routes_rtc_backend_api::gateway_mount(service));
-    contribution_from(
-        router,
-        Arc::new(DatabasePoolReadinessCheck::new(pool)),
-    )
+    contribution_from(router, Arc::new(DatabasePoolReadinessCheck::new(pool)))
 }
 
 /// Compose the RTC backend contribution on a shared pool owned by the
@@ -192,7 +182,9 @@ pub async fn assemble_backend_api_contribution_with_pool(
         router,
         sdkwork_routes_rtc_backend_api::gateway_route_manifest(),
         vec![backend_openapi],
-        vec![Arc::new(sdkwork_routes_rtc_backend_api::RtcBackendContextInjector)],
+        vec![Arc::new(
+            sdkwork_routes_rtc_backend_api::RtcBackendContextInjector,
+        )],
         Arc::new(DatabasePoolReadinessCheck::new(pool)),
     )
 }

@@ -1,5 +1,8 @@
 use sdkwork_api_rtc_assembly::assemble_api_router;
-use sdkwork_web_bootstrap::{HttpMetricsRegistry, ServiceRouterConfig, service_router};
+use sdkwork_iam_web_adapter::{
+    build_web_framework_builder, iam_web_request_context_resolver_from_env,
+};
+use sdkwork_web_bootstrap::{ComposedApiAssembly, infra_public_path_prefixes};
 use tracing::info;
 
 #[tokio::main]
@@ -9,13 +12,15 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let assembly = assemble_api_router().await?;
-
-    let metrics = HttpMetricsRegistry::new();
-    let service_router_config = ServiceRouterConfig::default()
-        .with_readiness_check(assembly.readiness_check.clone())
-        .with_metrics(metrics);
-
-    let app = service_router(assembly.router, service_router_config);
+    let framework = build_web_framework_builder(
+        iam_web_request_context_resolver_from_env().await,
+        assembly.route_manifest.clone(),
+        infra_public_path_prefixes(),
+    );
+    let app = ComposedApiAssembly::try_compose("SDKWork RTC API", vec![assembly])
+        .map_err(anyhow::Error::msg)?
+        .into_hosted(framework)
+        .router;
 
     let bind_addr = std::env::var("SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND")
         .unwrap_or_else(|_| "127.0.0.1:18088".into());

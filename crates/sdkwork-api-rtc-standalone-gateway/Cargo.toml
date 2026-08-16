@@ -21,6 +21,7 @@ sdkwork-api-rtc-assembly.workspace = true
 anyhow = "1.0.98"
 axum.workspace = true
 sdkwork-communication-rtc-worker.workspace = true
+sdkwork-iam-web-adapter.workspace = true
 sdkwork-web-bootstrap.workspace = true
 tokio.workspace = true
 tracing.workspace = true

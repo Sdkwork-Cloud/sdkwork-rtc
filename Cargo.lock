@@ -1850,6 +1850,7 @@ dependencies = [
  "axum",
  "sdkwork-api-rtc-assembly",
  "sdkwork-communication-rtc-worker",
+ "sdkwork-iam-web-adapter",
  "sdkwork-web-bootstrap",
  "tokio",
  "tracing",

@@ -46,7 +46,7 @@ catalogs:
       specifier: ^4.1.14
       version: 4.2.2
     typescript:
-      specifier: ^6.0.2
+      specifier: ~6.0.2
       version: 6.0.3
     vite:
       specifier: ^8.0.3
@@ -57,6 +57,9 @@ catalogs:
     vitest:
       specifier: ^4.1.8
       version: 4.1.8
+
+overrides:
+  '@sdkwork/sdk-common': workspace:*
 
 importers:
 
@@ -161,8 +164,8 @@ importers:
   ../sdkwork-core/sdkwork-core-pc-react:
     dependencies:
       '@sdkwork/sdk-common':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
     devDependencies:
       '@testing-library/react':
         specifier: ^16.3.2
@@ -236,8 +239,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -267,8 +270,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../../sdkwork-appbase/packages/common/foundation/sdkwork-runtime-bootstrap
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
     devDependencies:
       typescript:
         specifier: ^6.0.2
@@ -383,8 +386,8 @@ importers:
         specifier: workspace:*
         version: link:../../../sdkwork-iam-common/packages/sdkwork-iam-runtime
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/user-center-core-pc-react':
         specifier: workspace:*
         version: link:../sdkwork-user-center-core-pc-react
@@ -688,8 +691,8 @@ importers:
         specifier: workspace:*
         version: link:packages/sdkwork-rtc-h5-shell
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       lucide-react:
         specifier: 'catalog:'
         version: 1.7.0(react@19.2.7)
@@ -725,8 +728,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -763,8 +766,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -825,8 +828,8 @@ importers:
         specifier: workspace:*
         version: link:packages/sdkwork-rtc-mp-shell
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
     devDependencies:
       '@types/node':
         specifier: ^25.9.2
@@ -847,8 +850,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -900,8 +903,8 @@ importers:
         specifier: workspace:*
         version: link:packages/sdkwork-rtc-pc-shell
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.2.2(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))
@@ -940,8 +943,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -969,8 +972,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -2744,10 +2747,6 @@ packages:
 
   '@rushstack/ts-command-line@5.3.10':
     resolution: {integrity: sha512-fwI076HYknC0IrMXdY6UmjDv+PH7NHhNJX3/pY2UblSE5XrXgndXZPiOe/6ZtuFpn6DvVDVNhtkIzQ+Qu/MhVQ==}
-
-  '@sdkwork/sdk-common@1.0.3':
-    resolution: {integrity: sha512-EGCm742ya1VL9hZ+9SVVArUxieFxIwQ3MMpt8Tv6Vc++U5ug4qG2TBUQ/hKAeJIwhL5Tvbhs6Tzy31P8fBO/cQ==}
-    engines: {node: '>=18.0.0'}
 
   '@shikijs/core@2.5.0':
     resolution: {integrity: sha512-uu/8RExTKtavlpH7XqnVYBrfBkUc20ngXiX9NSrBhOVZYv/7XQRKUyhtkeflY5QsxC0GbJThCerruZfsUaSldg==}
@@ -6100,8 +6099,6 @@ snapshots:
       string-argv: 0.3.2
     transitivePeerDependencies:
       - '@types/node'
-
-  '@sdkwork/sdk-common@1.0.3': {}
 
   '@shikijs/core@2.5.0':
     dependencies:

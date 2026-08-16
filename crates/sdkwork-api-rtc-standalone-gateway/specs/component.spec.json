@@ -78,6 +78,13 @@
     "runtimeEntrypoints": [
       "src/main.rs"
     ],
+    "requiredPorts": [
+      {
+        "name": "applicationApiAssembly",
+        "export": "sdkwork_api_rtc_assembly::assemble_api_router",
+        "provider": "sdkwork-api-rtc-assembly"
+      }
+    ],
     "routeManifest": null,
     "sdkClients": [],
     "sdkDependencies": [],
