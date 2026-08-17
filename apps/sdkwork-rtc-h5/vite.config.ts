@@ -26,11 +26,11 @@ export default defineConfig(({ mode }) => {
         // field through tsc).
         "@sdkwork/rtc-app-sdk": path.resolve(
           rtcRoot,
-          "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/generated/server-openapi/dist/index.js",
+          "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts",
         ),
         "@sdkwork/rtc-backend-sdk": path.resolve(
           rtcRoot,
-          "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/generated/server-openapi/dist/index.js",
+          "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/src/index.ts",
         ),
       },
     },

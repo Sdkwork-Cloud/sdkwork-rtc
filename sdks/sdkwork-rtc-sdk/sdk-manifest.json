@@ -2105,5 +2105,11 @@
         }
       ]
     }
+  },
+  "typescript": {
+    "composedRoot": "sdkwork-rtc-sdk-typescript",
+    "composedEntry": "sdkwork-rtc-sdk-typescript/src/index.ts",
+    "transportRoot": "sdkwork-rtc-sdk-typescript/generated/server-openapi",
+    "transportEntry": "sdkwork-rtc-sdk-typescript/generated/server-openapi/src/index.ts"
   }
 }
