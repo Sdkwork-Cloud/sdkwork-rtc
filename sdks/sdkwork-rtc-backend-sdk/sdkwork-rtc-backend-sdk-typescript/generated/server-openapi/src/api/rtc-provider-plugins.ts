@@ -14,32 +14,28 @@ export class RtcProviderPluginsRtcProviderPluginsApi {
 
 /** Rtc provider Plugins list. */
   async list(requestOptions?: ApiRequestOptions): Promise<{ items: RtcProviderPluginDescriptor[]; pageInfo: PageInfo; }> {
-    return this.client.request<{ items: RtcProviderPluginDescriptor[]; pageInfo: PageInfo; }>(backendApiPath(`/rtc/provider_plugins`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcProviderPluginDescriptor[]; pageInfo: PageInfo; }>(backendApiPath(`/rtc/provider_plugins`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc provider Plugins retrieve. */
   async retrieve(provider: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderPluginDescriptor> {
-    return this.client.request<RtcProviderPluginDescriptor>(backendApiPath(`/rtc/provider_plugins/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderPluginDescriptor>(backendApiPath(`/rtc/provider_plugins/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcProviderPluginsRtcApi {
-  private client: HttpClient;
   public readonly providerPlugins: RtcProviderPluginsRtcProviderPluginsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.providerPlugins = new RtcProviderPluginsRtcProviderPluginsApi(client);
   }
 
 }
 
 export class RtcProviderPluginsApi {
-  private client: HttpClient;
   public readonly rtc: RtcProviderPluginsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcProviderPluginsRtcApi(client);
   }
 
@@ -49,13 +45,7 @@ export function createRtcProviderPluginsApi(client: HttpClient): RtcProviderPlug
   return new RtcProviderPluginsApi(client);
 }
 
-function appendQueryString(path: string, rawQueryString: string): string {
-  const query = rawQueryString.replace(/^\?+/, '');
-  if (!query) {
-    return path;
-  }
-  return path.includes('?') ? `${path}&${query}` : `${path}?${query}`;
-}
+
 
 interface PathParameterSpec {
   name: string;

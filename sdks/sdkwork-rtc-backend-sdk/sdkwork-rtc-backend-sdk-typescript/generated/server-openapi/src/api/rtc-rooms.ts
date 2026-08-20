@@ -39,7 +39,7 @@ export class RtcRoomsRtcRoomsApi {
       { name: 'ownerUserId', value: params?.ownerUserId, style: 'form', explode: true, allowReserved: false },
       { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcRoom[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/rooms`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcRoom[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/rooms`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc rooms create. */
@@ -50,32 +50,28 @@ export class RtcRoomsRtcRoomsApi {
       },
       {}
     );
-    return this.client.request<RtcRoom>(backendApiPath(`/rtc/rooms`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcRoom>(backendApiPath(`/rtc/rooms`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc rooms retrieve. */
   async retrieve(roomId: string, requestOptions?: ApiRequestOptions): Promise<RtcRoom> {
-    return this.client.request<RtcRoom>(backendApiPath(`/rtc/rooms/${serializePathParameter(roomId, { name: 'roomId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcRoom>(backendApiPath(`/rtc/rooms/${serializePathParameter(roomId, { name: 'roomId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcRoomsRtcApi {
-  private client: HttpClient;
   public readonly rooms: RtcRoomsRtcRoomsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rooms = new RtcRoomsRtcRoomsApi(client);
   }
 
 }
 
 export class RtcRoomsApi {
-  private client: HttpClient;
   public readonly rtc: RtcRoomsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcRoomsRtcApi(client);
   }
 

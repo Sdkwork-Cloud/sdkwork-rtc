@@ -12,7 +12,7 @@
   "generatedFiles": [
     {
       "path": "bin/publish-core.mjs",
-      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+      "sha256": "a47e95119bf3eafcbcb2102f7024c147f967924e4e3f343d1a29effb4b6765df"
     },
     {
       "path": "bin/publish.ps1",
@@ -40,11 +40,11 @@
     },
     {
       "path": "package.json",
-      "sha256": "799b67c8cc4b665bf33b0baff8164c325b65a3be0c8a42dcd7008e9fdbefbc05"
+      "sha256": "cda1ca53366c4d10cc6939094cdf3c30b65eea8e030b780c7e1e04c918d413eb"
     },
     {
       "path": "README.md",
-      "sha256": "5460d3276c399a2e9f6a9c67dcd92c2a3784283249f1d4cac0c6a8d205bfb77f"
+      "sha256": "af354d4f011fcaa0777a7ee1966857f7531273c5c040e92017bbdac3f3f0d4d5"
     },
     {
       "path": "sdkwork-sdk.json",
@@ -52,7 +52,7 @@
     },
     {
       "path": "src/api/base.ts",
-      "sha256": "02ad25e6bf331ff241ba387c2947ddf1900dd849038e08c2757416a3aa788a04"
+      "sha256": "94d136c54a008dfe7602e373a0b2c79176bbf2fc6e7c899fc23b1f12f750380f"
     },
     {
       "path": "src/api/index.ts",
@@ -64,55 +64,55 @@
     },
     {
       "path": "src/api/rtc-media-artifacts.ts",
-      "sha256": "590d0eb7eee91038d2a229a9e64323fae33c05adf725ec710ad424f56947aad3"
+      "sha256": "47b77334feb725329881746c0ec65ece90e7a56a7842141361a06a9ded90a7e9"
     },
     {
       "path": "src/api/rtc-media-sessions.ts",
-      "sha256": "15ff7e4af08cf38e63eb6779343ae37e5fc948f4e7ab84e8c4ae07d62a9eea2e"
+      "sha256": "e1f06ee8b630d5f294bd335a68d61585a75868275b893bf4b6d3c0251bc705cf"
     },
     {
       "path": "src/api/rtc-provider-accounts.ts",
-      "sha256": "c211b623d508c6bfc45a4c493876d865e3998a40999bbd2f991ea4681811fdfb"
+      "sha256": "e79e7143eeee806e2695401367f88298719da023ffa5935fa020a3de4d1537a3"
     },
     {
       "path": "src/api/rtc-provider-applications.ts",
-      "sha256": "fb60650e97002291de315d37b9326745ee376babef235e0a334b419722c88829"
+      "sha256": "261397d3aa897decbeb7f1e2d743530cbac8c034b10adbfaa33d826b74100cd0"
     },
     {
       "path": "src/api/rtc-provider-credentials.ts",
-      "sha256": "acd9b706e55457fd384d90d535aec5d6582ce1f4194fe7f7c58e92bb0d316295"
+      "sha256": "1f0a1a78b244aab909bccb89951433e456767b712d88e09c8a087850e4c17817"
     },
     {
       "path": "src/api/rtc-provider-plugins.ts",
-      "sha256": "86aec6e8f66aee1bdcf4cd83b57927d412d201c61a97f9e71050a91dc24b4d44"
+      "sha256": "1fd4e6c1b8aa317967a2db7fdee9356751d22d6f9fb7584bd216f233c0d215a2"
     },
     {
       "path": "src/api/rtc-provider-profiles.ts",
-      "sha256": "ff17499f01ba3587271d423d9092c814aa4ec5fe1627a4ad6f16bbf457fc1339"
+      "sha256": "015d2ce2c28e5f79a2e3baa7b0e675bdad49709c8f10f2f23ac527743f592d1b"
     },
     {
       "path": "src/api/rtc-provider-query-jobs.ts",
-      "sha256": "dc5f7b0634ec895411c4f9056f62c9b033b447b9cea2998e17b68fc323b90b00"
+      "sha256": "b769c7398bacd86789079ad72d23e56fb35b9fb24c89a94347f6ac253f731ad5"
     },
     {
       "path": "src/api/rtc-provider-routes.ts",
-      "sha256": "0bef1aaa04dc9abf64fffa5eb2a491b61b3eda5d8d08dbef4b0dae1f22320f8c"
+      "sha256": "fc57a73f88e12402bce02dff7ed658e5121ea6df189bcecd274fefdaaacb2ed3"
     },
     {
       "path": "src/api/rtc-provider-schemas.ts",
-      "sha256": "bbd876ec2140661896c19d95c4bcd7775c14b3e2e759a672322ad757433b92f6"
+      "sha256": "cc8ca856f3da36b18290be4a12f31b975d68cfac16d54e34befc3918e2a01d03"
     },
     {
       "path": "src/api/rtc-provider-webhooks.ts",
-      "sha256": "e67cc8a42dc61d0f98c8a1e93749b119c4e74f8d944ed679011a8a9ad9e8a463"
+      "sha256": "c93238f2179e9cb98b045e2fdd6fcdddb3ad641d0524acac06bdded8e775efd4"
     },
     {
       "path": "src/api/rtc-quality-samples.ts",
-      "sha256": "8b5919627b412238719c3d16a02e643b66c8d3e97a28b1b7e59f5adab11a17a2"
+      "sha256": "a89a36bb41fd2e23882f10c86353a11a79551471f4bedd31b67abad13fd028a4"
     },
     {
       "path": "src/api/rtc-rooms.ts",
-      "sha256": "19577b1eea92837dd2d9b5acab7d7cc0f4ed12005eddd40129573ec53cdd3f58"
+      "sha256": "55d08fb0ff899a66a1353695342fd26c18ed692eef67ccef934b5663dfc4f72e"
     },
     {
       "path": "src/auth/index.ts",
@@ -120,7 +120,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "959c2a1f20f3029fe15077f2c8f67dc913cd6a397740bc599b6b96fd81022a71"
+      "sha256": "bab0f740731f04f1f6e3c591cba91b1577f0ca521054d187755f437925d3dc6d"
     },
     {
       "path": "src/http/index.ts",

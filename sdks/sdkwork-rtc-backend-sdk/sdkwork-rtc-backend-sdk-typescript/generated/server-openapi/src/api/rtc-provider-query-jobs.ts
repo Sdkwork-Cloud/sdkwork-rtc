@@ -29,7 +29,7 @@ export class RtcProviderQueryJobsRtcProviderQueryJobsSnapshotsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcProviderQuerySnapshot[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}/snapshots`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcProviderQuerySnapshot[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}/snapshots`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -55,32 +55,28 @@ export class RtcProviderQueryJobsRtcProviderQueryJobsApi {
       },
       {}
     );
-    return this.client.request<RtcProviderQueryJob>(backendApiPath(`/rtc/provider_query_jobs`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderQueryJob>(backendApiPath(`/rtc/provider_query_jobs`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Query Jobs retrieve. */
   async retrieve(providerQueryJobId: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderQueryJob> {
-    return this.client.request<RtcProviderQueryJob>(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderQueryJob>(backendApiPath(`/rtc/provider_query_jobs/${serializePathParameter(providerQueryJobId, { name: 'providerQueryJobId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcProviderQueryJobsRtcApi {
-  private client: HttpClient;
   public readonly providerQueryJobs: RtcProviderQueryJobsRtcProviderQueryJobsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.providerQueryJobs = new RtcProviderQueryJobsRtcProviderQueryJobsApi(client);
   }
 
 }
 
 export class RtcProviderQueryJobsApi {
-  private client: HttpClient;
   public readonly rtc: RtcProviderQueryJobsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcProviderQueryJobsRtcApi(client);
   }
 

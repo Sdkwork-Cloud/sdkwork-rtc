@@ -41,7 +41,7 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcProviderRoute[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_routes`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcProviderRoute[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_routes`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc provider Routes create. */
@@ -52,12 +52,12 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
       },
       {}
     );
-    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Routes retrieve. */
   async retrieve(providerRouteId: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderRoute> {
-    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Routes update. */
@@ -68,7 +68,7 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
       },
       {}
     );
-    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'PATCH' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, ...(body !== undefined ? { body, contentType: 'application/json' } : {}), ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Routes disable. */
@@ -79,27 +79,23 @@ export class RtcProviderRoutesRtcProviderRoutesApi {
       },
       {}
     );
-    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}/disable`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderRoute>(backendApiPath(`/rtc/provider_routes/${serializePathParameter(providerRouteId, { name: 'providerRouteId', style: 'simple', explode: false })}/disable`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcProviderRoutesRtcApi {
-  private client: HttpClient;
   public readonly providerRoutes: RtcProviderRoutesRtcProviderRoutesApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.providerRoutes = new RtcProviderRoutesRtcProviderRoutesApi(client);
   }
 
 }
 
 export class RtcProviderRoutesApi {
-  private client: HttpClient;
   public readonly rtc: RtcProviderRoutesRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcProviderRoutesRtcApi(client);
   }
 

@@ -22,7 +22,7 @@ export class RtcProviderCredentialsRtcProviderCredentialsApi {
 
 /** Rtc provider Credentials retrieve. */
   async retrieve(providerCredentialId: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderCredential> {
-    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Credentials update. */
@@ -33,7 +33,7 @@ export class RtcProviderCredentialsRtcProviderCredentialsApi {
       },
       {}
     );
-    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'PATCH' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, ...(body !== undefined ? { body, contentType: 'application/json' } : {}), ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Credentials revoke. */
@@ -44,7 +44,7 @@ export class RtcProviderCredentialsRtcProviderCredentialsApi {
       },
       {}
     );
-    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}/revoke`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_credentials/${serializePathParameter(providerCredentialId, { name: 'providerCredentialId', style: 'simple', explode: false })}/revoke`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -77,7 +77,7 @@ export class RtcProviderCredentialsRtcProviderApplicationsCredentialsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcProviderCredential[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcProviderCredential[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc provider Applications credentials create. */
@@ -88,28 +88,24 @@ export class RtcProviderCredentialsRtcProviderApplicationsCredentialsApi {
       },
       {}
     );
-    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderCredential>(backendApiPath(`/rtc/provider_applications/${serializePathParameter(providerApplicationId, { name: 'providerApplicationId', style: 'simple', explode: false })}/credentials`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcProviderCredentialsRtcProviderApplicationsApi {
-  private client: HttpClient;
   public readonly credentials: RtcProviderCredentialsRtcProviderApplicationsCredentialsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.credentials = new RtcProviderCredentialsRtcProviderApplicationsCredentialsApi(client);
   }
 
 }
 
 export class RtcProviderCredentialsRtcApi {
-  private client: HttpClient;
   public readonly providerApplications: RtcProviderCredentialsRtcProviderApplicationsApi;
   public readonly providerCredentials: RtcProviderCredentialsRtcProviderCredentialsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.providerApplications = new RtcProviderCredentialsRtcProviderApplicationsApi(client);
     this.providerCredentials = new RtcProviderCredentialsRtcProviderCredentialsApi(client);
   }
@@ -117,11 +113,9 @@ export class RtcProviderCredentialsRtcApi {
 }
 
 export class RtcProviderCredentialsApi {
-  private client: HttpClient;
   public readonly rtc: RtcProviderCredentialsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcProviderCredentialsRtcApi(client);
   }
 

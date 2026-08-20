@@ -31,27 +31,23 @@ export class RtcQualitySamplesRtcQualitySamplesApi {
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcQualitySample[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/quality_samples`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcQualitySample[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/quality_samples`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
 export class RtcQualitySamplesRtcApi {
-  private client: HttpClient;
   public readonly qualitySamples: RtcQualitySamplesRtcQualitySamplesApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.qualitySamples = new RtcQualitySamplesRtcQualitySamplesApi(client);
   }
 
 }
 
 export class RtcQualitySamplesApi {
-  private client: HttpClient;
   public readonly rtc: RtcQualitySamplesRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcQualitySamplesRtcApi(client);
   }
 

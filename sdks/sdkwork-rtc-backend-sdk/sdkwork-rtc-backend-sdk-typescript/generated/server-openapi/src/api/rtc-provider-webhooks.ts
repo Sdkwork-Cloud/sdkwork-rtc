@@ -32,7 +32,7 @@ export class RtcProviderWebhooksRtcProviderWebhooksEventsApi {
       },
       {}
     );
-    return this.client.request<RtcProviderWebhookEvent>(backendApiPath(`/rtc/provider_webhooks/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}/events`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', skipAuth: true, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderWebhookEvent>(backendApiPath(`/rtc/provider_webhooks/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}/events`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), skipAuth: true, sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc provider Webhooks events list. */
@@ -44,38 +44,32 @@ export class RtcProviderWebhooksRtcProviderWebhooksEventsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcProviderWebhookEvent[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_webhooks/events`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcProviderWebhookEvent[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/provider_webhooks/events`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
 export class RtcProviderWebhooksRtcProviderWebhooksApi {
-  private client: HttpClient;
   public readonly events: RtcProviderWebhooksRtcProviderWebhooksEventsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.events = new RtcProviderWebhooksRtcProviderWebhooksEventsApi(client);
   }
 
 }
 
 export class RtcProviderWebhooksRtcApi {
-  private client: HttpClient;
   public readonly providerWebhooks: RtcProviderWebhooksRtcProviderWebhooksApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.providerWebhooks = new RtcProviderWebhooksRtcProviderWebhooksApi(client);
   }
 
 }
 
 export class RtcProviderWebhooksApi {
-  private client: HttpClient;
   public readonly rtc: RtcProviderWebhooksRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcProviderWebhooksRtcApi(client);
   }
 

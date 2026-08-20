@@ -29,38 +29,32 @@ export class RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcMediaArtifact[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/recording_artifacts`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcMediaArtifact[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/recording_artifacts`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
 export class RtcRecordingArtifactsRtcMediaSessionsApi {
-  private client: HttpClient;
   public readonly recordingArtifacts: RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.recordingArtifacts = new RtcRecordingArtifactsRtcMediaSessionsRecordingArtifactsApi(client);
   }
 
 }
 
 export class RtcRecordingArtifactsRtcApi {
-  private client: HttpClient;
   public readonly mediaSessions: RtcRecordingArtifactsRtcMediaSessionsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.mediaSessions = new RtcRecordingArtifactsRtcMediaSessionsApi(client);
   }
 
 }
 
 export class RtcRecordingArtifactsApi {
-  private client: HttpClient;
   public readonly rtc: RtcRecordingArtifactsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcRecordingArtifactsRtcApi(client);
   }
 

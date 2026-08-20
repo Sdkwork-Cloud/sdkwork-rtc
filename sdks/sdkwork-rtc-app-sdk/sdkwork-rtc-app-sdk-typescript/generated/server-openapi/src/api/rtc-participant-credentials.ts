@@ -24,38 +24,32 @@ export class RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsApi 
       },
       {}
     );
-    return this.client.request<RtcParticipantCredential>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/participants/${serializePathParameter(participantId, { name: 'participantId', style: 'simple', explode: false })}/credential`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcParticipantCredential>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/participants/${serializePathParameter(participantId, { name: 'participantId', style: 'simple', explode: false })}/credential`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcParticipantCredentialsRtcMediaSessionsApi {
-  private client: HttpClient;
   public readonly participantCredentials: RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.participantCredentials = new RtcParticipantCredentialsRtcMediaSessionsParticipantCredentialsApi(client);
   }
 
 }
 
 export class RtcParticipantCredentialsRtcApi {
-  private client: HttpClient;
   public readonly mediaSessions: RtcParticipantCredentialsRtcMediaSessionsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.mediaSessions = new RtcParticipantCredentialsRtcMediaSessionsApi(client);
   }
 
 }
 
 export class RtcParticipantCredentialsApi {
-  private client: HttpClient;
   public readonly rtc: RtcParticipantCredentialsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcParticipantCredentialsRtcApi(client);
   }
 
@@ -65,13 +59,7 @@ export function createRtcParticipantCredentialsApi(client: HttpClient): RtcParti
   return new RtcParticipantCredentialsApi(client);
 }
 
-function appendQueryString(path: string, rawQueryString: string): string {
-  const query = rawQueryString.replace(/^\?+/, '');
-  if (!query) {
-    return path;
-  }
-  return path.includes('?') ? `${path}&${query}` : `${path}?${query}`;
-}
+
 
 interface PathParameterSpec {
   name: string;

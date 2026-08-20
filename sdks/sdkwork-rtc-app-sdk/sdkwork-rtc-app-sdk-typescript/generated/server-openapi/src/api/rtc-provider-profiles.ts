@@ -29,38 +29,32 @@ export class RtcProviderProfilesRtcProviderProfilesActiveApi {
       { name: 'sort', value: params?.sort, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcActiveProviderProfile[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/provider_profiles/active`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcActiveProviderProfile[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/provider_profiles/active`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
 export class RtcProviderProfilesRtcProviderProfilesApi {
-  private client: HttpClient;
   public readonly active: RtcProviderProfilesRtcProviderProfilesActiveApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.active = new RtcProviderProfilesRtcProviderProfilesActiveApi(client);
   }
 
 }
 
 export class RtcProviderProfilesRtcApi {
-  private client: HttpClient;
   public readonly providerProfiles: RtcProviderProfilesRtcProviderProfilesApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.providerProfiles = new RtcProviderProfilesRtcProviderProfilesApi(client);
   }
 
 }
 
 export class RtcProviderProfilesApi {
-  private client: HttpClient;
   public readonly rtc: RtcProviderProfilesRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcProviderProfilesRtcApi(client);
   }
 

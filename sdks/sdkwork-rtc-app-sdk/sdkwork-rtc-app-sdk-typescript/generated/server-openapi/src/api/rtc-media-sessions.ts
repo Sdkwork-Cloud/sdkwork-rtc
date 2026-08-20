@@ -14,7 +14,7 @@ export class RtcMediaSessionsRtcMediaSessionsCompletionRecordApi {
 
 /** Rtc media Sessions completion Record retrieve. */
   async retrieve(mediaSessionId: string, requestOptions?: ApiRequestOptions): Promise<RtcMediaSessionCompletionRecord> {
-    return this.client.request<RtcMediaSessionCompletionRecord>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/completion_record`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcMediaSessionCompletionRecord>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}/completion_record`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -55,7 +55,7 @@ export class RtcMediaSessionsRtcMediaSessionsApi {
       { name: 'ownerUserId', value: params?.ownerUserId, style: 'form', explode: true, allowReserved: false },
       { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcMediaSession[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/media_sessions`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcMediaSession[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(appApiPath(`/rtc/media_sessions`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc media Sessions create. */
@@ -66,32 +66,28 @@ export class RtcMediaSessionsRtcMediaSessionsApi {
       },
       {}
     );
-    return this.client.request<RtcMediaSession>(appApiPath(`/rtc/media_sessions`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'POST' as any, body, headers: requestHeaders, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcMediaSession>(appApiPath(`/rtc/media_sessions`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 
 /** Rtc media Sessions retrieve. */
   async retrieve(mediaSessionId: string, requestOptions?: ApiRequestOptions): Promise<RtcMediaSession> {
-    return this.client.request<RtcMediaSession>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcMediaSession>(appApiPath(`/rtc/media_sessions/${serializePathParameter(mediaSessionId, { name: 'mediaSessionId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcMediaSessionsRtcApi {
-  private client: HttpClient;
   public readonly mediaSessions: RtcMediaSessionsRtcMediaSessionsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.mediaSessions = new RtcMediaSessionsRtcMediaSessionsApi(client);
   }
 
 }
 
 export class RtcMediaSessionsApi {
-  private client: HttpClient;
   public readonly rtc: RtcMediaSessionsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcMediaSessionsRtcApi(client);
   }
 

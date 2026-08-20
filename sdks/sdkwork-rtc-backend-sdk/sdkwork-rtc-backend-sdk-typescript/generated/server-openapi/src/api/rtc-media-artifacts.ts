@@ -33,32 +33,28 @@ export class RtcMediaArtifactsRtcMediaArtifactsApi {
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
       { name: 'createdAfter', value: params?.createdAfter, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<{ items: RtcMediaArtifact[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/media_artifacts`), query), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcMediaArtifact[]; pageInfo: { mode: 'cursor'; nextCursor?: string | null; hasMore: boolean; }; }>(appendQueryString(backendApiPath(`/rtc/media_artifacts`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc media Artifacts retrieve. */
   async retrieve(mediaArtifactId: string, requestOptions?: ApiRequestOptions): Promise<RtcMediaArtifact> {
-    return this.client.request<RtcMediaArtifact>(backendApiPath(`/rtc/media_artifacts/${serializePathParameter(mediaArtifactId, { name: 'mediaArtifactId', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcMediaArtifact>(backendApiPath(`/rtc/media_artifacts/${serializePathParameter(mediaArtifactId, { name: 'mediaArtifactId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcMediaArtifactsRtcApi {
-  private client: HttpClient;
   public readonly mediaArtifacts: RtcMediaArtifactsRtcMediaArtifactsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.mediaArtifacts = new RtcMediaArtifactsRtcMediaArtifactsApi(client);
   }
 
 }
 
 export class RtcMediaArtifactsApi {
-  private client: HttpClient;
   public readonly rtc: RtcMediaArtifactsRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcMediaArtifactsRtcApi(client);
   }
 

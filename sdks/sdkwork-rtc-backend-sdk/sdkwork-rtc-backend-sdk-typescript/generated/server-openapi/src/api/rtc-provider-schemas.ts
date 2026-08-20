@@ -14,32 +14,28 @@ export class RtcProviderSchemasRtcProviderSchemasApi {
 
 /** Rtc provider Schemas list. */
   async list(requestOptions?: ApiRequestOptions): Promise<{ items: RtcProviderConfigSchema[]; pageInfo: PageInfo; }> {
-    return this.client.request<{ items: RtcProviderConfigSchema[]; pageInfo: PageInfo; }>(backendApiPath(`/rtc/provider_schemas`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<{ items: RtcProviderConfigSchema[]; pageInfo: PageInfo; }>(backendApiPath(`/rtc/provider_schemas`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Rtc provider Schemas retrieve. */
   async retrieve(provider: string, requestOptions?: ApiRequestOptions): Promise<RtcProviderConfigSchema> {
-    return this.client.request<RtcProviderConfigSchema>(backendApiPath(`/rtc/provider_schemas/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`), { signal: requestOptions?.signal, timeout: requestOptions?.timeout, method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+    return this.client.request<RtcProviderConfigSchema>(backendApiPath(`/rtc/provider_schemas/${serializePathParameter(provider, { name: 'provider', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class RtcProviderSchemasRtcApi {
-  private client: HttpClient;
   public readonly providerSchemas: RtcProviderSchemasRtcProviderSchemasApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.providerSchemas = new RtcProviderSchemasRtcProviderSchemasApi(client);
   }
 
 }
 
 export class RtcProviderSchemasApi {
-  private client: HttpClient;
   public readonly rtc: RtcProviderSchemasRtcApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.rtc = new RtcProviderSchemasRtcApi(client);
   }
 
@@ -49,13 +45,7 @@ export function createRtcProviderSchemasApi(client: HttpClient): RtcProviderSche
   return new RtcProviderSchemasApi(client);
 }
 
-function appendQueryString(path: string, rawQueryString: string): string {
-  const query = rawQueryString.replace(/^\?+/, '');
-  if (!query) {
-    return path;
-  }
-  return path.includes('?') ? `${path}&${query}` : `${path}?${query}`;
-}
+
 
 interface PathParameterSpec {
   name: string;
