@@ -1,6 +1,6 @@
 {
   "name": "@sdkwork/rtc-backend-sdk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "SDKWork composed consumer facade for @sdkwork/rtc-backend-sdk.",
   "type": "module",
   "private": false,

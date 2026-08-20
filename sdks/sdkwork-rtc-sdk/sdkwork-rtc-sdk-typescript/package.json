@@ -1,6 +1,6 @@
 {
   "name": "@sdkwork/rtc-sdk",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Provider-neutral RTC media SDK with JDBC-style provider package loading",
   "type": "module",
   "main": "./dist/index.js",
