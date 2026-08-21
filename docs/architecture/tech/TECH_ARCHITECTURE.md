@@ -180,8 +180,8 @@ Topology spec: `specs/topology.spec.json` (archetype `application-http-gateway`)
 
 | Profile | Use case |
 | --- | --- |
-| `standalone.split-services` | Local dev, on-prem appliance (systemd) |
-| `cloud.split-services` | Platform API gateway + K8s |
+| `standalone.development` / `standalone.production` | Local dev, on-prem appliance (systemd) |
+| `cloud.development` / `cloud.production` | Platform API gateway + K8s |
 
 Release artifacts: server tar.gz, container image (`ghcr.io/sdkwork/rtc-standalone-gateway`), cloud gateway config bundle.
 

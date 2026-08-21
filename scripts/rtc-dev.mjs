@@ -38,23 +38,9 @@ function flutterCommand() {
   return process.platform === 'win32' ? 'flutter.bat' : 'flutter';
 }
 
-function toTopologyHosting(deploymentProfile) {
-  const normalized = String(deploymentProfile ?? '').trim().toLowerCase();
-  if (normalized === 'standalone' || normalized === 'self-hosted') {
-    return 'self-hosted';
-  }
-  if (normalized === 'cloud' || normalized === 'cloud-hosted') {
-    return 'cloud-hosted';
-  }
-  throw new Error(
-    `deployment-profile must be standalone or cloud, received: ${deploymentProfile}`,
-  );
-}
-
 function parseArgs(argv) {
   const settings = {
     deploymentProfile: 'standalone',
-    serviceLayout: 'split-services',
     target: 'pc',
     dryRun: false,
     help: false,
@@ -77,9 +63,9 @@ function parseArgs(argv) {
       );
     }
     if (arg === '--service-layout') {
-      settings.serviceLayout = argv[index + 1] ?? settings.serviceLayout;
-      index += 1;
-      continue;
+      throw new Error(
+        '--service-layout is retired; use --deployment-profile standalone|cloud',
+      );
     }
     if (arg === '--target') {
       settings.target = argv[index + 1] ?? settings.target;
@@ -96,18 +82,16 @@ function parseArgs(argv) {
     }
   }
 
-  settings.hosting = toTopologyHosting(settings.deploymentProfile);
   return settings;
 }
 
 function printHelp() {
   console.log(`Usage: node scripts/rtc-dev.mjs [options]
 
-Topology-aware RTC dev entry. Loads configs/topology profile env via @sdkwork/app-topology.
+Topology-aware RTC dev entry. Loads etc/topology profile env via @sdkwork/app-topology.
 
 Options:
   --deployment-profile <standalone|cloud>             Default: standalone
-  --service-layout <unified-process|split-services>   Default: split-services
   --target <pc|h5|flutter|server>                     Default: pc
   --dry-run                                           Print plan without executing
   --help, -h
@@ -243,7 +227,7 @@ async function main() {
   }
 
   const profileId =
-    resolveDevProfileId(settings.hosting, settings.serviceLayout) || DEFAULT_DEV_PROFILE_ID;
+    resolveDevProfileId(settings.deploymentProfile) || DEFAULT_DEV_PROFILE_ID;
   const profileEnv = loadProfile(profileId);
   const runtimeEnv = mergeRepoDevBootstrapAccessTokenEnv({
     repoRoot: REPO_ROOT,

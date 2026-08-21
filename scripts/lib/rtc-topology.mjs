@@ -27,8 +27,7 @@ export const IAM_APPLICATION_BOOTSTRAP_ENV = {
 const spec = loadTopologySpec(SPEC_PATH);
 const runtime = createTopologyRuntime(spec, REPO_ROOT);
 
-export const VALID_HOSTING = runtime.hostingValues;
-export const VALID_SERVICE_LAYOUTS = runtime.serviceLayoutValues;
+export const VALID_DEPLOYMENT_PROFILES = runtime.deploymentProfileValues;
 export const DEFAULT_DEV_PROFILE_ID = runtime.defaults.developmentProfileId;
 export const DEFAULT_BUILD_PROFILE_ID = runtime.defaults.productionProfileId;
 export const PLATFORM_CONFIG_BUNDLE_PROFILE = 'platform-config-bundle';
@@ -43,18 +42,16 @@ export function findGatewayPackageTarget(targetId) {
   return runtime.findPackageTarget(targetId);
 }
 
-export function resolveDevProfileId(hosting, serviceLayout = 'split-services') {
-  runtime.assertHosting(hosting);
-  runtime.assertServiceLayout(serviceLayout);
-  return buildProfileId(hosting, serviceLayout, 'development');
+export function resolveDevProfileId(deploymentProfile) {
+  runtime.assertDeploymentProfile(deploymentProfile);
+  return buildProfileId(deploymentProfile, 'development');
 }
 
 export const loadProfile = runtime.loadProfile;
 export const applyProfileEnv = runtime.applyProfileEnv;
 export const mergeRuntimeEnv = runtime.mergeRuntimeEnv;
 export const loadEnvFile = runtime.loadEnvFile;
-export const assertHosting = runtime.assertHosting;
-export const assertServiceLayout = runtime.assertServiceLayout;
+export const assertDeploymentProfile = runtime.assertDeploymentProfile;
 export const resolveSurfaceHttpUrl = runtime.resolveSurfaceHttpUrl.bind(runtime);
 export const resolveSurfaceBind = runtime.resolveSurfaceBind.bind(runtime);
 export const shouldAutostartGateway = runtime.shouldAutostartGateway;

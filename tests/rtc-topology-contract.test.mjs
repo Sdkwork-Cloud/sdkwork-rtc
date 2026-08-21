@@ -37,19 +37,18 @@ test('declares v2 topology spec and profile env files for sdkwork-rtc', async ()
   assert.equal(await exists('scripts/lib/rtc-topology.mjs'), true);
   assert.equal(await exists('scripts/rtc-dev.mjs'), true);
   assert.equal(await exists('docs/topology-standard.md'), true);
-  assert.equal(await exists('configs/topology/README.md'), true);
+  assert.equal(await exists('etc/topology/README.md'), true);
 
   const spec = await readJson('specs/topology.spec.json');
-  assert.equal(spec.schemaVersion, 2);
+  assert.equal(spec.schemaVersion, 5);
   assert.equal(spec.kind, 'sdkwork.app.topology');
   assert.equal(spec.appId, 'sdkwork-rtc');
   assert.equal(spec.archetype, 'application-http-gateway');
-  assert.equal(spec.defaults.developmentProfileId, 'standalone.split-services.development');
+  assert.equal(spec.defaults.developmentProfileId, 'standalone.development');
   assert.ok(spec.surfaces['application.public-ingress']);
   assert.ok(spec.surfaces['platform.api-gateway']);
 
   for (const profileId of [
-    'standalone.split-services.development',
     'standalone.development',
     'cloud.development',
     'cloud.production',

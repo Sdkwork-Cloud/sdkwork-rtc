@@ -297,7 +297,7 @@ async function copyPackageAssets(stageRoot) {
   const copies = [
     ['deployments/templates/server.env.example', 'config/server.env.example'],
     ['configs/rtc-runtime.env.example', 'config/rtc-runtime.env.example'],
-    ['configs/topology/cloud.split-services.production.env', 'config/cloud.split-services.production.env'],
+    ['etc/topology/cloud.production.env', 'config/cloud.production.env'],
     ['deployments/systemd/sdkwork-api-rtc-standalone-gateway.service', 'deployments/systemd/sdkwork-api-rtc-standalone-gateway.service'],
     ['deployments/systemd/sdkwork-rtc-reconcile.service', 'deployments/systemd/sdkwork-rtc-reconcile.service'],
     ['deployments/systemd/sdkwork-rtc-reconcile.timer', 'deployments/systemd/sdkwork-rtc-reconcile.timer'],
@@ -385,7 +385,7 @@ function createInstallManifest(context) {
     configExamples: [
       'config/server.env.example',
       'config/rtc-runtime.env.example',
-      'config/cloud.split-services.production.env',
+      'config/cloud.production.env',
     ],
     healthPath: '/healthz',
     readinessPath: '/readyz',

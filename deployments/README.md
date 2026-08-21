@@ -28,7 +28,7 @@ sdkwork-rtc.
 
 ## Kubernetes
 
-See `kubernetes/README.md` for cloud split-services manifests (`rtc-standalone-gateway`, `rtc-reconcile` CronJob).
+See `kubernetes/README.md` for cloud production manifests (`rtc-standalone-gateway`, `rtc-reconcile` CronJob).
 
 ## systemd (standalone appliance)
 

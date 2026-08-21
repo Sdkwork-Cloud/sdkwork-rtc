@@ -26,7 +26,6 @@ services:
     environment:
       SDKWORK_RTC_ENVIRONMENT: production
       SDKWORK_RTC_DEPLOYMENT_PROFILE: standalone
-      SDKWORK_RTC_SERVICE_LAYOUT: split-services
       SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND: 0.0.0.0:18088
       SDKWORK_DATABASE_ENGINE: postgresql
       SDKWORK_DATABASE_HOST: postgres

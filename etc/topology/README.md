@@ -1,6 +1,6 @@
 # RTC topology profiles
 
-Machine contract: `specs/topology.spec.json` (`schemaVersion: 2`, archetype `application-http-gateway`).
+Machine contract: `specs/topology.spec.json` (`schemaVersion: 5`, archetype `application-http-gateway`).
 
 Platform standard: `../../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 
@@ -8,9 +8,8 @@ Platform standard: `../../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 
 | Profile id | Command |
 | --- | --- |
-| `standalone.split-services.development` | `pnpm dev`, `pnpm dev:browser:postgres:standalone:local`, `pnpm dev:flutter-android` |
+| `standalone.development` | `pnpm dev`, `pnpm dev:browser:postgres:standalone:local`, `pnpm dev:flutter-android`, `pnpm dev:server` |
 | `cloud.development` | `pnpm dev:browser:cloud` |
-| `standalone.development` | `pnpm dev:server` |
 | `cloud.production` | packaging / release |
 
 Loader: `scripts/lib/rtc-topology.mjs` → `@sdkwork/app-topology`.

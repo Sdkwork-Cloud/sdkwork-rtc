@@ -28,7 +28,6 @@ COPY sdkwork-rtc/deployments/templates/server.env.example /etc/sdkwork/rtc/serve
 
 ENV SDKWORK_RTC_ENVIRONMENT=production \
     SDKWORK_RTC_DEPLOYMENT_PROFILE=cloud \
-    SDKWORK_RTC_SERVICE_LAYOUT=split-services \
     SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND=0.0.0.0:18088
 
 EXPOSE 18088

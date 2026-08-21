@@ -1,14 +1,14 @@
 # RTC Kubernetes Deployments
 
-Cloud split-services topology for production RTC authority.
+Cloud production topology for RTC authority (`cloud.production`).
 
 ## Layout
 
 | Path | Purpose |
 |------|---------|
-| `cloud-split-services/namespace.yaml` | `sdkwork-rtc` namespace |
-| `cloud-split-services/rtc-standalone-gateway/` | Standalone gateway Deployment, Service, runtime ConfigMap |
-| `cloud-split-services/rtc-reconcile/` | Session reconciliation CronJob (`sdkwork-rtc-reconcile`) |
+| `cloud/namespace.yaml` | `sdkwork-rtc` namespace |
+| `cloud/rtc-standalone-gateway/` | Standalone gateway Deployment, Service, runtime ConfigMap |
+| `cloud/rtc-reconcile/` | Session reconciliation CronJob (`sdkwork-rtc-reconcile`) |
 
 ## Prerequisites
 
@@ -21,9 +21,9 @@ Cloud split-services topology for production RTC authority.
 ## Apply order
 
 ```powershell
-kubectl apply -f deployments/kubernetes/cloud-split-services/namespace.yaml
-kubectl apply -f deployments/kubernetes/cloud-split-services/rtc-standalone-gateway/
-kubectl apply -f deployments/kubernetes/cloud-split-services/rtc-reconcile/
+kubectl apply -f deployments/kubernetes/cloud/namespace.yaml
+kubectl apply -f deployments/kubernetes/cloud/rtc-standalone-gateway/
+kubectl apply -f deployments/kubernetes/cloud/rtc-reconcile/
 ```
 
 ## Related

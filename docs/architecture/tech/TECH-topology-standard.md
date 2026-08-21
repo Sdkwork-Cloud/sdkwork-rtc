@@ -1,13 +1,13 @@
 > Migrated from `docs/topology-standard.md` on 2026-06-24.
 > Owner: SDKWork maintainers
 
-Archetype: `application-http-gateway` (`specs/topology.spec.json`, `schemaVersion: 2`).
+Archetype: `application-http-gateway` (`specs/topology.spec.json`, `schemaVersion: 5`).
 
 Platform standard: `../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 
 ## Default dev profile
 
-`standalone.split-services.development` — start the RTC API server and a client renderer:
+`standalone.development` — start the RTC API server and a client renderer:
 
 ```bash
 pnpm dev
@@ -73,4 +73,3 @@ Framework validator:
 ```bash
 node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs validate --root . --spec specs/topology.spec.json
 ```
-

@@ -27,7 +27,6 @@ Copy `deployments/templates/server.env.example` to a protected location and set:
 - `SDKWORK_RTC_APP_CONTEXT_SIGNATURE_SECRET` — shared HMAC secret (store in secret manager, not ConfigMap); **required** when `SDKWORK_RTC_APP_CONTEXT_REQUIRE_SIGNATURE=true`; must match the value used by upstream gateways or IAM proxies that sign `x-sdkwork-*` headers
 - `SDKWORK_RTC_HYDRATE_TENANT_ID` / `SDKWORK_RTC_HYDRATE_ORGANIZATION_ID` — tenant scope loaded into in-memory runtime at API server startup
 - `SDKWORK_RTC_DEPLOYMENT_PROFILE` — `standalone` or `cloud`
-- `SDKWORK_RTC_SERVICE_LAYOUT=split-services`
 - Database URL and pool settings (`SDKWORK_DATABASE_*` per deployment template)
 - JWT / IAM verification settings consumed by `sdkwork-iam-web-adapter`
 - Provider plugin credentials (Volcengine, Tencent, Agora, Aliyun, LiveKit) via secret manager
@@ -65,9 +64,9 @@ Raise caps only when a single tenant scope routinely exceeds defaults and memory
 
 ## Deployment profiles
 
-### Kubernetes (cloud split-services)
+### Kubernetes (cloud.production)
 
-Manifests: `deployments/kubernetes/cloud-split-services/`
+Manifests: `deployments/kubernetes/cloud/`
 
 1. Create namespace and ConfigMaps from `*.example.yaml` (replace placeholders).
 2. Deploy `rtc-standalone-gateway` Deployment + Service (port `18088`, health at `/healthz`, metrics at `/metrics`).

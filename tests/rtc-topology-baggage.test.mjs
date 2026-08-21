@@ -114,11 +114,11 @@ for (const { id, pattern } of bannedPatterns) {
 }
 
 const spec = JSON.parse(readText('specs/topology.spec.json'));
-assert.equal(spec.schemaVersion, 2);
+assert.equal(spec.schemaVersion, 5);
 assert.equal(spec.archetype, 'application-http-gateway');
-assert.equal(spec.defaults.developmentProfileId, 'standalone.split-services.development');
+assert.equal(spec.defaults.developmentProfileId, 'standalone.development');
 
-const profileDir = path.join(repoRoot, 'configs/topology');
+const profileDir = path.join(repoRoot, 'etc/topology');
 const profileFiles = fs.readdirSync(profileDir).filter((name) => name.endsWith('.env'));
 assert.ok(profileFiles.length >= 4, 'topology profile env files required');
 
@@ -141,8 +141,8 @@ assert.ok(
 );
 assert.ok(fs.existsSync(path.join(repoRoot, 'docs/topology-standard.md')), 'topology-standard doc required');
 assert.ok(
-  fs.existsSync(path.join(repoRoot, 'configs/topology/README.md')),
-  'configs/topology/README.md required',
+  fs.existsSync(path.join(repoRoot, 'etc/topology/README.md')),
+  'etc/topology/README.md required',
 );
 
 const runtimeExample = readText('configs/rtc-runtime.env.example');

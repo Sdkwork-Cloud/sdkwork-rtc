@@ -4,12 +4,14 @@
   "appId": "sdkwork-rtc",
   "applicationCode": "rtc",
   "archetype": "application-http-gateway",
-  "profileRoot": "configs/topology",
+  "profileRoot": "etc/topology",
   "profilePattern": "{deploymentProfile}.{environment}.env",
   "vocabulary": {
     "environment": {
       "allowed": [
         "development",
+        "test",
+        "staging",
         "production"
       ]
     },
@@ -34,10 +36,14 @@
     "gatewayBind": "127.0.0.1:3900"
   },
   "profileFiles": {
-    "standalone.development": "configs/topology/standalone.development.env",
-    "standalone.production": "configs/topology/standalone.production.env",
-    "cloud.development": "configs/topology/cloud.development.env",
-    "cloud.production": "configs/topology/cloud.production.env"
+    "standalone.development": "etc/topology/standalone.development.env",
+    "standalone.production": "etc/topology/standalone.production.env",
+    "cloud.development": "etc/topology/cloud.development.env",
+    "cloud.production": "etc/topology/cloud.production.env",
+    "standalone.test": "etc/topology/standalone.test.env",
+    "standalone.staging": "etc/topology/standalone.staging.env",
+    "cloud.test": "etc/topology/cloud.test.env",
+    "cloud.staging": "etc/topology/cloud.staging.env"
   },
   "envKeys": {
     "environment": "SDKWORK_RTC_ENVIRONMENT",
@@ -91,6 +97,20 @@
             "binary": "sdkwork-api-rtc-standalone-gateway",
             "required": true,
             "role": "api-standalone-gateway"
+          },
+          {
+            "id": "rtc-browser",
+            "role": "client",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "bindEnv": "SDKWORK_RTC_WEB_DEV_INGRESS_BIND",
+            "runtimeTargets": [
+              "browser"
+            ],
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "required": true
           }
         ],
         "capabilitySubset": [
@@ -98,13 +118,92 @@
         ],
         "healthSurfaces": [
           "application.public-ingress"
+        ],
+        "browserDeliveries": [
+          {
+            "id": "rtc-adaptive-web",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "originMode": "same-origin",
+            "deliveryMode": "dev-server-proxy",
+            "clientProcessId": "rtc-browser",
+            "apiSurfaceId": "application.public-ingress",
+            "preserveCanonicalPaths": true,
+            "tabletArchitecture": "pc-web",
+            "renderers": {
+              "pc-web": {
+                "applicationRoot": "apps/sdkwork-rtc-pc",
+                "script": "dev",
+                "defaultPort": 4951,
+                "portEnv": "SDKWORK_RTC_PC_INTERNAL_DEV_PORT",
+                "env": {}
+              },
+              "h5": {
+                "applicationRoot": "apps/sdkwork-rtc-h5",
+                "script": "dev",
+                "defaultPort": 4952,
+                "portEnv": "SDKWORK_RTC_H5_INTERNAL_DEV_PORT",
+                "env": {}
+              }
+            }
+          }
         ]
       },
       "cloud.development": {
-        "processes": [],
+        "processes": [
+          {
+            "id": "rtc-browser",
+            "role": "client",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "bindEnv": "SDKWORK_RTC_WEB_DEV_INGRESS_BIND",
+            "runtimeTargets": [
+              "browser"
+            ],
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "required": true
+          }
+        ],
         "healthSurfaces": [
           "application.public-ingress",
           "platform.api-gateway"
+        ],
+        "browserDeliveries": [
+          {
+            "id": "rtc-adaptive-web",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "originMode": "same-origin",
+            "deliveryMode": "dev-server-proxy",
+            "clientProcessId": "rtc-browser",
+            "apiSurfaceId": "application.public-ingress",
+            "preserveCanonicalPaths": true,
+            "tabletArchitecture": "pc-web",
+            "renderers": {
+              "pc-web": {
+                "applicationRoot": "apps/sdkwork-rtc-pc",
+                "script": "dev",
+                "defaultPort": 4951,
+                "portEnv": "SDKWORK_RTC_PC_INTERNAL_DEV_PORT",
+                "env": {}
+              },
+              "h5": {
+                "applicationRoot": "apps/sdkwork-rtc-h5",
+                "script": "dev",
+                "defaultPort": 4952,
+                "portEnv": "SDKWORK_RTC_H5_INTERNAL_DEV_PORT",
+                "env": {}
+              }
+            }
+          }
         ]
       },
       "cloud.production": {
@@ -144,6 +243,162 @@
         ],
         "healthSurfaces": [
           "application.public-ingress"
+        ]
+      },
+      "standalone.test": {
+        "processes": [
+          {
+            "id": "application.public-ingress",
+            "crate": "sdkwork-api-rtc-standalone-gateway",
+            "binary": "sdkwork-api-rtc-standalone-gateway",
+            "required": true,
+            "role": "api-standalone-gateway"
+          },
+          {
+            "id": "rtc-browser",
+            "role": "client",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "bindEnv": "SDKWORK_RTC_WEB_DEV_INGRESS_BIND",
+            "runtimeTargets": [
+              "browser"
+            ],
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "required": true
+          }
+        ],
+        "capabilitySubset": [
+          "application-http"
+        ],
+        "healthSurfaces": [
+          "application.public-ingress"
+        ],
+        "browserDeliveries": [
+          {
+            "id": "rtc-adaptive-web",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "originMode": "same-origin",
+            "deliveryMode": "dev-server-proxy",
+            "clientProcessId": "rtc-browser",
+            "apiSurfaceId": "application.public-ingress",
+            "preserveCanonicalPaths": true,
+            "tabletArchitecture": "pc-web",
+            "renderers": {
+              "pc-web": {
+                "applicationRoot": "apps/sdkwork-rtc-pc",
+                "script": "dev",
+                "defaultPort": 4951,
+                "portEnv": "SDKWORK_RTC_PC_INTERNAL_DEV_PORT",
+                "env": {}
+              },
+              "h5": {
+                "applicationRoot": "apps/sdkwork-rtc-h5",
+                "script": "dev",
+                "defaultPort": 4952,
+                "portEnv": "SDKWORK_RTC_H5_INTERNAL_DEV_PORT",
+                "env": {}
+              }
+            }
+          }
+        ]
+      },
+      "standalone.staging": {
+        "processes": [
+          {
+            "id": "application.public-ingress",
+            "crate": "sdkwork-api-rtc-standalone-gateway",
+            "binary": "sdkwork-api-rtc-standalone-gateway",
+            "required": true,
+            "role": "api-standalone-gateway"
+          }
+        ],
+        "capabilitySubset": [
+          "application-http"
+        ],
+        "healthSurfaces": [
+          "application.public-ingress"
+        ]
+      },
+      "cloud.test": {
+        "processes": [
+          {
+            "id": "rtc-browser",
+            "role": "client",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "bindEnv": "SDKWORK_RTC_WEB_DEV_INGRESS_BIND",
+            "runtimeTargets": [
+              "browser"
+            ],
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "required": true
+          }
+        ],
+        "healthSurfaces": [
+          "application.public-ingress",
+          "platform.api-gateway"
+        ],
+        "browserDeliveries": [
+          {
+            "id": "rtc-adaptive-web",
+            "applicationRoot": "apps/sdkwork-rtc-pc",
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "originMode": "same-origin",
+            "deliveryMode": "dev-server-proxy",
+            "clientProcessId": "rtc-browser",
+            "apiSurfaceId": "application.public-ingress",
+            "preserveCanonicalPaths": true,
+            "tabletArchitecture": "pc-web",
+            "renderers": {
+              "pc-web": {
+                "applicationRoot": "apps/sdkwork-rtc-pc",
+                "script": "dev",
+                "defaultPort": 4951,
+                "portEnv": "SDKWORK_RTC_PC_INTERNAL_DEV_PORT",
+                "env": {}
+              },
+              "h5": {
+                "applicationRoot": "apps/sdkwork-rtc-h5",
+                "script": "dev",
+                "defaultPort": 4952,
+                "portEnv": "SDKWORK_RTC_H5_INTERNAL_DEV_PORT",
+                "env": {}
+              }
+            }
+          }
+        ]
+      },
+      "cloud.staging": {
+        "processes": [
+          {
+            "id": "application.public-ingress",
+            "crate": "sdkwork-api-rtc-standalone-gateway",
+            "binary": "sdkwork-api-rtc-standalone-gateway",
+            "required": true,
+            "role": "api-standalone-gateway"
+          },
+          {
+            "id": "pc-renderer",
+            "package": "apps/sdkwork-rtc-pc",
+            "script": "dev",
+            "required": false,
+            "role": "client"
+          }
+        ],
+        "healthSurfaces": [
+          "application.public-ingress",
+          "platform.api-gateway"
         ]
       }
     }

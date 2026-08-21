@@ -38,8 +38,6 @@ spec:
               value: production
             - name: SDKWORK_RTC_DEPLOYMENT_PROFILE
               value: cloud
-            - name: SDKWORK_RTC_SERVICE_LAYOUT
-              value: split-services
             - name: SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND
               value: 0.0.0.0:18088
             - name: OTEL_SERVICE_NAME

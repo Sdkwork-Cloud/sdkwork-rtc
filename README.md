@@ -104,7 +104,7 @@ pnpm run verify
 
 ## Local Development (Topology)
 
-Default dev profile: `standalone.split-services.development`
+Default dev profile: `standalone.development`
 
 ```powershell
 pnpm dev                                                    # PC admin UI + RTC API server
@@ -114,7 +114,7 @@ pnpm dev:browser:cloud              # cloud deployment profile with platform API
 pnpm dev:server                                             # RTC API server only
 ```
 
-Topology authority: `specs/topology.spec.json`, profiles under `configs/topology/`.
+Topology authority: `specs/topology.spec.json`, profiles under `etc/topology/`.
 Human summary: [docs/topology-standard.md](docs/topology-standard.md).
 
 Provider adapter checks:

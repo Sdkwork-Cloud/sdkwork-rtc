@@ -5,4 +5,3 @@ metadata:
   labels:
     app.kubernetes.io/part-of: sdkwork-rtc
     sdkwork.io/deployment-profile: cloud
-    sdkwork.io/service-layout: split-services

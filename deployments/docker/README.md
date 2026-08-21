@@ -30,7 +30,7 @@ CI should clone them via `node sdkwork-rtc/scripts/prepare-ci-dependencies.mjs -
 
 Mount secrets and database configuration through environment variables or `EnvironmentFile`.
 See `deployments/templates/server.env.example` and Kubernetes manifests under
-`deployments/kubernetes/cloud-split-services/`.
+`deployments/kubernetes/cloud/`.
 
 ## Local compose
 

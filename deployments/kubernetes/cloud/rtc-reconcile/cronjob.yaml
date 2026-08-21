@@ -41,8 +41,6 @@ spec:
                   value: production
                 - name: SDKWORK_RTC_DEPLOYMENT_PROFILE
                   value: cloud
-                - name: SDKWORK_RTC_SERVICE_LAYOUT
-                  value: split-services
                 - name: OTEL_SERVICE_NAME
                   value: sdkwork-rtc-reconcile
               resources:
