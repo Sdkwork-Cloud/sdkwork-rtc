@@ -13,7 +13,8 @@
     "@sdkwork/rtc-sdk-provider-tencent": "workspace:*",
     "@sdkwork/rtc-sdk-provider-volcengine": "workspace:*",
     "react": "catalog:",
-    "@sdkwork/rtc-app-sdk": "workspace:*"
+    "@sdkwork/rtc-app-sdk": "workspace:*",
+    "@sdkwork/utils": "workspace:*"
   },
   "exports": {
     ".": {

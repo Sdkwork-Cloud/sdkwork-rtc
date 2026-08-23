@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@sdkwork/rtc-sdk": "workspace:*",
-    "@sdkwork/rtc-sdk-provider-volcengine": "workspace:*"
+    "@sdkwork/rtc-sdk-provider-volcengine": "workspace:*",
+    "@sdkwork/utils": "workspace:*"
   },
   "peerDependencies": {
     "lucide-react": ">=1.0.0",

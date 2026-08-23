@@ -6,7 +6,8 @@
   "types": "src/index.ts",
   "dependencies": {
     "@sdkwork/rtc-mp-core": "workspace:*",
-    "@sdkwork/rtc-app-sdk": "workspace:*"
+    "@sdkwork/rtc-app-sdk": "workspace:*",
+    "@sdkwork/utils": "workspace:*"
   },
   "exports": {
     ".": {

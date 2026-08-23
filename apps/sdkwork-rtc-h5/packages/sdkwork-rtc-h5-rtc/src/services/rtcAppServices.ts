@@ -4,6 +4,7 @@ import type {
   RtcMediaSession,
 } from "../types/appApi";
 import type { RtcAppSdkClient } from "@sdkwork/rtc-h5-core";
+import { uuid } from "@sdkwork/utils/id";
 
 export interface MediaSessionListParams {
   page?: number;
@@ -19,10 +20,7 @@ export interface MediaSessionListResult {
 }
 
 function createRtcCommandIdempotencyKey(scope: string): string {
-  const randomPart =
-    globalThis.crypto?.randomUUID?.() ??
-    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  return `rtc-${scope}-${randomPart}`;
+  return `rtc-${scope}-${uuid()}`;
 }
 
 export interface MediaSessionCreateOptions {

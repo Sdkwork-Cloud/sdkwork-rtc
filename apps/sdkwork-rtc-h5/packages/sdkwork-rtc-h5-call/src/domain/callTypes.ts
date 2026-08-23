@@ -2,9 +2,11 @@
  * RTC call domain types and pure state machine helpers.
  *
  * This module is the authoritative, UI-agnostic call domain for the mobile-browser
- * call surface. It intentionally depends on nothing but ECMAScript: signaling and
- * media implementations are injected by the host application through ports.
+ * call surface. Signaling and media implementations are injected by the host
+ * application through ports; UUID generation uses `@sdkwork/utils/id`.
  */
+
+import { uuid } from "@sdkwork/utils/id";
 
 export type RtcCallType = "voice" | "video";
 
@@ -187,11 +189,7 @@ export function normalizeRtcIdSegment(value: string): string {
 }
 
 export function createRtcRuntimeId(prefix: string, stablePart: string): string {
-  const randomPart =
-    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  return `${prefix}-${normalizeRtcIdSegment(stablePart) || "conversation"}-${randomPart}`;
+  return `${prefix}-${normalizeRtcIdSegment(stablePart) || "conversation"}-${uuid()}`;
 }
 
 export function formatRtcCallDuration(totalSeconds: number): string {
