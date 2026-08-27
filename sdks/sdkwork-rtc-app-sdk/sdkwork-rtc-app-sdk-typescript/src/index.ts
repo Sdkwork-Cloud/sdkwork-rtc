@@ -6,10 +6,13 @@ import type { SdkworkAppConfig } from '../generated/server-openapi/dist/types/co
 
 export { SdkworkAppClient, createGeneratedRtcAppClient };
 export type { SdkworkAppConfig };
-export * from '../generated/server-openapi/dist/types/index.js';
-export * from '../generated/server-openapi/dist/api/index.js';
-export * from '../generated/server-openapi/dist/http/index.js';
-export * from '../generated/server-openapi/dist/auth/index.js';
+// Generated transport only emits runtime for dist/index.{js,cjs}; subpaths are
+// declaration-only. Keep type re-exports as `export type *` so Vite never
+// resolves missing *.js under dist/{types,api,http,auth}/.
+export type * from '../generated/server-openapi/dist/types/index.js';
+export type * from '../generated/server-openapi/dist/api/index.js';
+export type * from '../generated/server-openapi/dist/http/index.js';
+export type * from '../generated/server-openapi/dist/auth/index.js';
 
 export type SdkworkRtcAppClient = SdkworkAppClient;
 

@@ -29,22 +29,10 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react()],
     resolve: {
-      alias: {
-        // The RTC app/backend SDK sources re-export from their generated
-        // bundle (dist/index.js) while keeping type-only re-exports against
-        // the generated declarations. Bundling through the source entry would
-        // resolve `dist/types/*.js` which is declarations-only, so resolve the
-        // runtime bundles directly here (types still come from the SDK types
-        // field through tsc).
-        "@sdkwork/rtc-app-sdk": path.resolve(
-          rtcRoot,
-          "sdks/sdkwork-rtc-app-sdk/sdkwork-rtc-app-sdk-typescript/src/index.ts",
-        ),
-        "@sdkwork/rtc-backend-sdk": path.resolve(
-          rtcRoot,
-          "sdks/sdkwork-rtc-backend-sdk/sdkwork-rtc-backend-sdk-typescript/src/index.ts",
-        ),
-      },
+      // Prefer package.json `exports.import` → generated/server-openapi/dist/index.js.
+      // Do not alias to src/index.ts: those files re-export declaration-only
+      // dist/{types,api,http,auth}/index.js paths that have no runtime emit.
+      alias: {},
     },
     server: { port: 3001 },
   };
