@@ -45,6 +45,7 @@
       },
       {
         "workspace": "sdkwork-utils",
+        "dependencyMode": "platform-framework",
         "surface": "open-api",
         "credentialMode": "protected-open-api-flexible"
       }

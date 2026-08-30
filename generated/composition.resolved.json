@@ -7,11 +7,14 @@
       "workspace": "sdkwork-drive-app-sdk",
       "surface": "app-api",
       "apiPrefix": "/app/v3/api",
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
+      "connectivityPlane": "platform",
+      "runtimeMode": "external-via-platform-surface",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_DRIVE_APP_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": true,
+      "sdkOwner": "sdkwork-drive",
+      "apiAuthority": "sdkwork-drive-app-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-h5-core",
       "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/specs/component.spec.json"
     },
@@ -23,7 +26,10 @@
       "runtimeMode": "same-origin-embedded",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_RTC_APP_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": false,
+      "sdkOwner": "sdkwork-rtc",
+      "apiAuthority": "sdkwork-rtc-app-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-h5-core",
       "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/specs/component.spec.json"
     },
@@ -35,19 +41,10 @@
       "runtimeMode": "same-origin-embedded",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_RTC_OPEN_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
-      "corePackage": "sdkwork-rtc-h5-core",
-      "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/specs/component.spec.json"
-    },
-    {
-      "workspace": "sdkwork-utils",
-      "surface": "open-api",
-      "apiPrefix": null,
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
-      "mountStatus": null,
-      "envKey": null,
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": false,
+      "sdkOwner": "sdkwork-rtc",
+      "apiAuthority": "sdkwork-rtc-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-h5-core",
       "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/specs/component.spec.json"
     },
@@ -59,7 +56,10 @@
       "runtimeMode": "same-origin-embedded",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_RTC_BACKEND_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": false,
+      "sdkOwner": "sdkwork-rtc",
+      "apiAuthority": "sdkwork-rtc-backend-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-h5-admin-core",
       "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-admin-core/specs/component.spec.json"
     },
@@ -67,11 +67,14 @@
       "workspace": "sdkwork-drive-app-sdk",
       "surface": "app-api",
       "apiPrefix": "/app/v3/api",
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
+      "connectivityPlane": "platform",
+      "runtimeMode": "external-via-platform-surface",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_DRIVE_APP_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": true,
+      "sdkOwner": "sdkwork-drive",
+      "apiAuthority": "sdkwork-drive-app-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-mp-core",
       "source": "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/specs/component.spec.json"
     },
@@ -83,19 +86,10 @@
       "runtimeMode": "same-origin-embedded",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_RTC_APP_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
-      "corePackage": "sdkwork-rtc-mp-core",
-      "source": "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/specs/component.spec.json"
-    },
-    {
-      "workspace": "sdkwork-utils",
-      "surface": "open-api",
-      "apiPrefix": null,
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
-      "mountStatus": null,
-      "envKey": null,
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": false,
+      "sdkOwner": "sdkwork-rtc",
+      "apiAuthority": "sdkwork-rtc-app-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-mp-core",
       "source": "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/specs/component.spec.json"
     },
@@ -103,11 +97,14 @@
       "workspace": "sdkwork-drive-app-sdk",
       "surface": "app-api",
       "apiPrefix": "/app/v3/api",
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
+      "connectivityPlane": "platform",
+      "runtimeMode": "external-via-platform-surface",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_DRIVE_APP_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": true,
+      "sdkOwner": "sdkwork-drive",
+      "apiAuthority": "sdkwork-drive-app-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-pc-core",
       "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/specs/component.spec.json"
     },
@@ -119,7 +116,10 @@
       "runtimeMode": "same-origin-embedded",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_RTC_APP_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": false,
+      "sdkOwner": "sdkwork-rtc",
+      "apiAuthority": "sdkwork-rtc-app-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-pc-core",
       "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/specs/component.spec.json"
     },
@@ -131,19 +131,10 @@
       "runtimeMode": "same-origin-embedded",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_RTC_OPEN_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
-      "corePackage": "sdkwork-rtc-pc-core",
-      "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/specs/component.spec.json"
-    },
-    {
-      "workspace": "sdkwork-utils",
-      "surface": "open-api",
-      "apiPrefix": null,
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
-      "mountStatus": null,
-      "envKey": null,
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": false,
+      "sdkOwner": "sdkwork-rtc",
+      "apiAuthority": "sdkwork-rtc-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-pc-core",
       "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/specs/component.spec.json"
     },
@@ -155,41 +146,1829 @@
       "runtimeMode": "same-origin-embedded",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_RTC_BACKEND_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": false,
+      "sdkOwner": "sdkwork-rtc",
+      "apiAuthority": "sdkwork-rtc-backend-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-pc-admin-core",
       "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-core/specs/component.spec.json"
-    },
-    {
-      "workspace": "sdkwork-utils",
-      "surface": "open-api",
-      "apiPrefix": null,
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
-      "mountStatus": null,
-      "envKey": null,
-      "forbidProductSameOriginFallback": false,
-      "corePackage": "sdkwork-rtc-workspace",
-      "source": "specs/component.spec.json"
     },
     {
       "workspace": "sdkwork-drive-app-sdk",
       "surface": "app-api",
       "apiPrefix": "/app/v3/api",
-      "connectivityPlane": "application",
-      "runtimeMode": "same-origin-embedded",
+      "connectivityPlane": "platform",
+      "runtimeMode": "external-via-platform-surface",
       "mountStatus": null,
       "envKey": "VITE_SDKWORK_DRIVE_APP_API_BASE_URL",
-      "forbidProductSameOriginFallback": false,
+      "forbidApplicationSameOriginFallback": true,
+      "sdkOwner": "sdkwork-drive",
+      "apiAuthority": "sdkwork-drive-app-api",
+      "consumerSdkOwner": "sdkwork-rtc",
       "corePackage": "sdkwork-rtc-workspace",
       "source": "specs/component.spec.json"
     }
   ],
   "permissions": {
     "inheritanceMode": "module-catalog-with-overrides",
-    "inheritedManifests": []
+    "inheritedManifests": [
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "manifestRef": "../sdkwork-iam/iam/modules/drive/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-rtc-app-sdk",
+        "manifestRef": "specs/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-rtc-sdk",
+        "manifestRef": "specs/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-rtc-backend-sdk",
+        "manifestRef": "specs/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "manifestRef": "../sdkwork-iam/iam/modules/drive/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-rtc-app-sdk",
+        "manifestRef": "specs/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "manifestRef": "../sdkwork-iam/iam/modules/drive/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-rtc-app-sdk",
+        "manifestRef": "specs/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-rtc-sdk",
+        "manifestRef": "specs/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-rtc-backend-sdk",
+        "manifestRef": "specs/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "manifestRef": "../sdkwork-iam/iam/modules/drive/iam.module.manifest.json",
+        "inheritPermissions": true
+      }
+    ]
+  },
+  "architecture": {
+    "components": [
+      {
+        "name": "sdkwork_rtc_flutter_mobile_admin_core",
+        "type": "flutter-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_admin_core",
+        "domain": "communication",
+        "capability": "admin-core",
+        "surface": "backend-admin",
+        "languages": [
+          "dart"
+        ],
+        "source": "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_admin_core/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork_rtc_flutter_mobile_commons",
+        "type": "flutter-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_commons",
+        "domain": "communication",
+        "capability": "commons",
+        "surface": null,
+        "languages": [
+          "dart"
+        ],
+        "source": "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_commons/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork_rtc_flutter_mobile_core",
+        "type": "flutter-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core",
+        "domain": "communication",
+        "capability": "core",
+        "surface": null,
+        "languages": [
+          "dart"
+        ],
+        "source": "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_core/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork_rtc_flutter_mobile_rtc",
+        "type": "flutter-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "dart"
+        ],
+        "source": "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_rtc/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork_rtc_flutter_mobile_shell",
+        "type": "flutter-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_shell",
+        "domain": "communication",
+        "capability": "shell",
+        "surface": null,
+        "languages": [
+          "dart"
+        ],
+        "source": "apps/sdkwork-rtc-flutter-mobile/packages/sdkwork_rtc_flutter_mobile_shell/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-flutter-mobile",
+        "type": "flutter-app-root",
+        "root": "apps/sdkwork-rtc-flutter-mobile",
+        "domain": "rtc",
+        "capability": "rtc",
+        "surface": "app",
+        "languages": [
+          "dart"
+        ],
+        "source": "apps/sdkwork-rtc-flutter-mobile/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "lib/main.dart"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-app-sdk"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "pubspec.yaml#environment.sdk"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-h5-admin-core",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-admin-core",
+        "domain": "communication",
+        "capability": "admin-core",
+        "surface": "backend-admin",
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-admin-core/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-backend-sdk",
+            "surface": "backend-api",
+            "credentialMode": "authenticated-backend-admin"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-h5-admin-shell",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-admin-shell",
+        "domain": "communication",
+        "capability": "admin-shell",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-admin-shell/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-h5-call",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-call",
+        "domain": "communication",
+        "capability": "rtc-call",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-call/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-h5-core",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core",
+        "domain": "communication",
+        "capability": "core",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-core/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-drive-app-sdk",
+            "surface": "app-api",
+            "credentialMode": "authenticated-app-api"
+          },
+          {
+            "workspace": "sdkwork-rtc-app-sdk",
+            "surface": "app-api",
+            "credentialMode": "authenticated-app-api"
+          },
+          {
+            "workspace": "sdkwork-rtc-sdk",
+            "surface": "open-api",
+            "credentialMode": "protected-open-api-flexible"
+          },
+          {
+            "workspace": "sdkwork-utils",
+            "dependencyMode": "platform-framework",
+            "surface": "open-api",
+            "credentialMode": "protected-open-api-flexible"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-h5-rtc",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-rtc",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-rtc/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-h5-shell",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-shell",
+        "domain": "communication",
+        "capability": "shell",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-h5/packages/sdkwork-rtc-h5-shell/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-h5",
+        "type": "h5-app-root",
+        "root": "apps/sdkwork-rtc-h5",
+        "domain": "rtc",
+        "capability": "rtc",
+        "surface": "app",
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-h5/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "src/main.tsx"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-app-sdk"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "package.json#scripts.dev"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-mp-core",
+        "type": "mini-program-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core",
+        "domain": "communication",
+        "capability": "core",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-core/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-drive-app-sdk",
+            "surface": "app-api",
+            "credentialMode": "authenticated-app-api"
+          },
+          {
+            "workspace": "sdkwork-rtc-app-sdk",
+            "surface": "app-api",
+            "credentialMode": "authenticated-app-api"
+          },
+          {
+            "workspace": "sdkwork-utils",
+            "dependencyMode": "platform-framework",
+            "surface": "open-api",
+            "credentialMode": "protected-open-api-flexible"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-mp-host",
+        "type": "mini-program-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-host",
+        "domain": "communication",
+        "capability": "host",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-host/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-mp-rtc",
+        "type": "mini-program-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-rtc",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-rtc/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-mp-shell",
+        "type": "mini-program-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-shell",
+        "domain": "communication",
+        "capability": "shell",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-mini-program/packages/sdkwork-rtc-mp-shell/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-mini-program",
+        "type": "mini-program-app-root",
+        "root": "apps/sdkwork-rtc-mini-program",
+        "domain": "rtc",
+        "capability": "rtc",
+        "surface": "app",
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-mini-program/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "src/app.js"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-app-sdk"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "package.json#scripts.build"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-pc-admin-core",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-core",
+        "domain": "communication",
+        "capability": "admin-core",
+        "surface": "backend-admin",
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-core/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-backend-sdk",
+            "surface": "backend-api",
+            "credentialMode": "authenticated-backend-admin"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-pc-admin-shell",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-shell",
+        "domain": "communication",
+        "capability": "admin-shell",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-admin-shell/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-pc-core",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core",
+        "domain": "communication",
+        "capability": "core",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-core/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-drive-app-sdk",
+            "surface": "app-api",
+            "credentialMode": "authenticated-app-api"
+          },
+          {
+            "workspace": "sdkwork-rtc-app-sdk",
+            "surface": "app-api",
+            "credentialMode": "authenticated-app-api"
+          },
+          {
+            "workspace": "sdkwork-rtc-sdk",
+            "surface": "open-api",
+            "credentialMode": "protected-open-api-flexible"
+          },
+          {
+            "workspace": "sdkwork-utils",
+            "dependencyMode": "platform-framework",
+            "surface": "open-api",
+            "credentialMode": "protected-open-api-flexible"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-pc-rtc",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-rtc/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "package.json#scripts.typecheck"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-pc-shell",
+        "type": "react-package",
+        "root": "sdkwork-rtc/apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-shell",
+        "domain": "communication",
+        "capability": "shell",
+        "surface": null,
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-pc/packages/sdkwork-rtc-pc-shell/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-pc",
+        "type": "pc-app-root",
+        "root": "apps/sdkwork-rtc-pc",
+        "domain": "rtc",
+        "capability": "rtc",
+        "surface": "app",
+        "languages": [
+          "typescript"
+        ],
+        "source": "apps/sdkwork-rtc-pc/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "src/main.tsx"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-app-sdk"
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "package.json#scripts.dev"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-api-rtc-assembly",
+        "type": "rust-api-assembly",
+        "root": "crates/sdkwork-api-rtc-assembly",
+        "domain": "application",
+        "capability": "api-assembly",
+        "surface": "api-assembly",
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-api-rtc-assembly/specs/component.spec.json",
+        "layerRole": "runtime-composition",
+        "publicExports": [
+          "."
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": "assembly-manifest.json",
+        "runtimeEntrypoints": [],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-api-rtc-standalone-gateway",
+        "type": "rust-api-standalone-gateway",
+        "root": "crates/sdkwork-api-rtc-standalone-gateway",
+        "domain": "communication",
+        "capability": "api-gateway",
+        "surface": "gateway-api",
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-api-rtc-standalone-gateway/specs/component.spec.json",
+        "layerRole": "runtime-gateway",
+        "publicExports": [],
+        "providedPorts": [],
+        "requiredPorts": [
+          {
+            "name": "applicationApiAssembly",
+            "export": "sdkwork_api_rtc_assembly::assemble_api_router",
+            "provider": "sdkwork-api-rtc-assembly"
+          }
+        ],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "src/main.rs"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-communication-rtc-repository-sqlx",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-communication-rtc-repository-sqlx",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-communication-rtc-repository-sqlx/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "connect_rtc_persistence_bootstrap_from_env",
+          "RtcPostgresPersistencePort",
+          "RtcSqlitePersistencePort",
+          "RTC_TABLES"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-communication-rtc-service",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-communication-rtc-service",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-communication-rtc-service/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "RtcPersistencePort",
+          "RtcMediaSession",
+          "RtcProviderWebhookEvent",
+          "RTC_APP_API_AUTHORITY",
+          "RTC_BACKEND_API_AUTHORITY"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-communication-rtc-worker",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-communication-rtc-worker",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-communication-rtc-worker/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "RtcWorker",
+          "RtcWorkerJob",
+          "RtcSessionReconcileResult"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-routes-rtc-app-api",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-routes-rtc-app-api",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": "app",
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-routes-rtc-app-api/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "build_sdkwork_rtc_app_api_router",
+          "wrap_router_with_web_framework_from_env"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-routes-rtc-backend-api",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-routes-rtc-backend-api",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": "backend-admin",
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-routes-rtc-backend-api/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "build_sdkwork_rtc_backend_api_router",
+          "wrap_router_with_web_framework_from_env"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-api-registry",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-rtc-api-registry",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-rtc-api-registry/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "HttpMethod"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-app-context",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-rtc-app-context",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-rtc-app-context/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "AppContext",
+          "app_context_from_web_request",
+          "app_context_from_web_principal"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-openapi",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-rtc-openapi",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-rtc-openapi/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "build_openapi_document",
+          "extract_routes_from_function",
+          "render_docs_html"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-service-host",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/crates/sdkwork-rtc-service-host",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "crates/sdkwork-rtc-service-host/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "RtcProductService",
+          "RtcProviderPluginRegistry",
+          "RtcDriveRecordingArtifactImporter"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-adapter-agora",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/plugins/rtc-agora",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "plugins/rtc-agora/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "AgoraRtcProvider",
+          "AgoraRtcProviderConfig",
+          "AgoraRtcProviderPluginFactory",
+          "AgoraRtcOpenApiExecutor",
+          "AgoraRtcOpenApiRequest",
+          "AgoraRtcOpenApiResponse",
+          "AGORA_RTC_PLUGIN_ID",
+          "create_agora_rtc_provider_plugin_factory"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-adapter-aliyun",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/plugins/rtc-aliyun",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "plugins/rtc-aliyun/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "AliyunRtcProvider",
+          "AliyunRtcProviderConfig",
+          "AliyunRtcProviderPluginFactory",
+          "AliyunRtcOpenApiExecutor",
+          "AliyunRtcOpenApiRequest",
+          "AliyunRtcOpenApiResponse",
+          "ALIYUN_RTC_PLUGIN_ID",
+          "create_aliyun_rtc_provider_plugin_factory"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-adapter-livekit",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/plugins/rtc-livekit",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "plugins/rtc-livekit/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "LivekitRtcProvider",
+          "LivekitRtcProviderConfig",
+          "LivekitRtcProviderPluginFactory",
+          "LivekitRtcOpenApiExecutor",
+          "LivekitRtcOpenApiRequest",
+          "LivekitRtcOpenApiResponse",
+          "LIVEKIT_RTC_PLUGIN_ID",
+          "create_livekit_rtc_provider_plugin_factory"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-adapter-tencent",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/plugins/rtc-tencent",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "plugins/rtc-tencent/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "TencentRtcProvider",
+          "TencentRtcProviderConfig",
+          "TencentRtcProviderPluginFactory",
+          "TencentRtcOpenApiExecutor",
+          "TencentRtcOpenApiRequest",
+          "TencentRtcOpenApiResponse",
+          "TENCENT_RTC_PLUGIN_ID",
+          "create_tencent_rtc_provider_plugin_factory"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-adapter-volcengine",
+        "type": "rust-crate",
+        "root": "sdkwork-rtc/plugins/rtc-volcengine",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "rust"
+        ],
+        "source": "plugins/rtc-volcengine/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "VolcengineRtcProvider",
+          "VolcengineRtcProviderConfig",
+          "VolcengineRtcProviderPluginFactory",
+          "VolcengineRtcOpenApiExecutor",
+          "VolcengineRtcOpenApiRequest",
+          "VolcengineRtcOpenApiResponse",
+          "VOLCENGINE_RTC_PLUGIN_ID",
+          "create_volcengine_rtc_provider_plugin_factory"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "Cargo.toml"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-app-sdk",
+        "type": "sdk-family",
+        "root": "sdkwork-rtc/sdks/sdkwork-rtc-app-sdk",
+        "domain": "communication",
+        "capability": "app-sdk",
+        "surface": null,
+        "languages": [
+          "typescript",
+          "dart",
+          "rust",
+          "java",
+          "python",
+          "go"
+        ],
+        "source": "sdks/sdkwork-rtc-app-sdk/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-sdk",
+            "role": "provider-runtime-sdk",
+            "required": true,
+            "dependencyMode": "consumer-sdk",
+            "apiPrefix": null,
+            "generatedTransportImportPolicy": "forbidden",
+            "packageByLanguage": {
+              "typescript": "@sdkwork/rtc-sdk",
+              "rust": "sdkwork-rtc-sdk",
+              "java": "com.sdkwork:sdkwork-rtc-sdk",
+              "python": "sdkwork-rtc-sdk",
+              "go": "github.com/sdkwork/sdkwork-rtc-sdk"
+            }
+          },
+          {
+            "workspace": "sdkwork-drive-app-sdk",
+            "role": "drive-media-resource-app-capability",
+            "required": true,
+            "dependencyMode": "consumer-sdk",
+            "apiPrefix": "/app/v3/api",
+            "apiAuthority": "sdkwork-drive.app",
+            "generatedTransportImportPolicy": "forbidden",
+            "packageByLanguage": {
+              "typescript": "@sdkwork/drive-app-sdk",
+              "rust": "sdkwork-drive-app-sdk",
+              "java": "com.sdkwork:sdkwork-drive-app-sdk",
+              "python": "sdkwork-drive-app-sdk",
+              "go": "github.com/sdkwork/sdkwork-drive-app-sdk"
+            }
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "bin/generate-sdk.mjs"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-backend-sdk",
+        "type": "sdk-family",
+        "root": "sdkwork-rtc/sdks/sdkwork-rtc-backend-sdk",
+        "domain": "communication",
+        "capability": "backend-sdk",
+        "surface": null,
+        "languages": [
+          "typescript",
+          "dart",
+          "rust",
+          "java",
+          "python",
+          "go"
+        ],
+        "source": "sdks/sdkwork-rtc-backend-sdk/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-rtc-sdk",
+            "role": "provider-runtime-sdk",
+            "required": true,
+            "dependencyMode": "consumer-sdk",
+            "apiPrefix": null,
+            "generatedTransportImportPolicy": "forbidden",
+            "packageByLanguage": {
+              "typescript": "@sdkwork/rtc-sdk",
+              "rust": "sdkwork-rtc-sdk",
+              "java": "com.sdkwork:sdkwork-rtc-sdk",
+              "python": "sdkwork-rtc-sdk",
+              "go": "github.com/sdkwork/sdkwork-rtc-sdk"
+            }
+          },
+          {
+            "workspace": "sdkwork-drive-backend-sdk",
+            "role": "drive-media-resource-backend-capability",
+            "required": true,
+            "dependencyMode": "consumer-sdk",
+            "apiPrefix": "/backend/v3/api",
+            "apiAuthority": "sdkwork-drive.backend",
+            "generatedTransportImportPolicy": "forbidden",
+            "packageByLanguage": {
+              "typescript": "@sdkwork/drive-backend-sdk",
+              "rust": "sdkwork-drive-backend-sdk",
+              "java": "com.sdkwork:sdkwork-drive-backend-sdk",
+              "python": "sdkwork-drive-backend-sdk",
+              "go": "github.com/sdkwork/sdkwork-drive-backend-sdk"
+            }
+          }
+        ],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "bin/generate-sdk.mjs"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-sdk",
+        "type": "sdk-family",
+        "root": "sdkwork-rtc/sdks/sdkwork-rtc-sdk",
+        "domain": "rtc",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "csharp",
+          "flutter",
+          "go",
+          "java",
+          "kotlin",
+          "python",
+          "rust",
+          "swift",
+          "typescript"
+        ],
+        "source": "sdks/sdkwork-rtc-sdk/specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [],
+        "routeManifest": null,
+        "runtimeEntrypoints": [
+          "sdk-manifest.json"
+        ],
+        "dependencyApiSurfaces": []
+      },
+      {
+        "name": "sdkwork-rtc-workspace",
+        "type": "app",
+        "root": "sdkwork-rtc",
+        "domain": "communication",
+        "capability": "rtc",
+        "surface": null,
+        "languages": [
+          "javascript",
+          "rust",
+          "typescript"
+        ],
+        "source": "specs/component.spec.json",
+        "layerRole": null,
+        "publicExports": [
+          "sdks/sdkwork-rtc-sdk",
+          "sdks/sdkwork-rtc-app-sdk",
+          "sdks/sdkwork-rtc-backend-sdk"
+        ],
+        "providedPorts": [],
+        "requiredPorts": [],
+        "sdkDependencies": [
+          {
+            "workspace": "sdkwork-utils",
+            "role": "cross-language-utility-library",
+            "dependencyMode": "platform-framework",
+            "packages": [
+              "sdkwork-utils-rust",
+              "@sdkwork/utils"
+            ]
+          },
+          {
+            "workspace": "sdkwork-drive-app-sdk",
+            "role": "drive-media-resource-app-capability",
+            "apiAuthority": "sdkwork-drive-app-api",
+            "apiPrefix": "/app/v3/api/drive"
+          }
+        ],
+        "routeManifest": [
+          "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+          "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json"
+        ],
+        "runtimeEntrypoints": [
+          "crates/sdkwork-api-rtc-standalone-gateway/src/main.rs",
+          "package.json#scripts.verify"
+        ],
+        "dependencyApiSurfaces": [
+          {
+            "workspace": "sdkwork-rtc-app-sdk",
+            "sdkFamily": "sdkwork-rtc-app-sdk",
+            "apiAuthority": "sdkwork-rtc-app-api",
+            "surface": "app-api",
+            "apiPrefix": "/app/v3/api/rtc"
+          },
+          {
+            "workspace": "sdkwork-rtc-backend-sdk",
+            "sdkFamily": "sdkwork-rtc-backend-sdk",
+            "apiAuthority": "sdkwork-rtc-backend-api",
+            "surface": "backend-api",
+            "apiPrefix": "/backend/v3/api/rtc"
+          }
+        ]
+      }
+    ],
+    "frontend": {
+      "packages": [
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-h5-admin-core",
+          "name": "@sdkwork/rtc-h5-admin-core",
+          "role": "core"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-h5-admin-shell",
+          "name": "@sdkwork/rtc-h5-admin-shell",
+          "role": "shell"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-h5-call",
+          "name": "@sdkwork/rtc-h5-call",
+          "role": "capability"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-h5-commons",
+          "name": "@sdkwork/rtc-h5-commons",
+          "role": "commons"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-h5-core",
+          "name": "@sdkwork/rtc-h5-core",
+          "role": "core"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-h5-rtc",
+          "name": "@sdkwork/rtc-h5-rtc",
+          "role": "capability"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-h5-shell",
+          "name": "@sdkwork/rtc-h5-shell",
+          "role": "shell"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-h5",
+          "architecture": "h5",
+          "directoryName": "sdkwork-rtc-mobile-react-meeting",
+          "name": "@sdkwork/rtc-mobile-react-meeting",
+          "role": "capability"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-mini-program",
+          "architecture": "mp",
+          "directoryName": "sdkwork-rtc-mp-core",
+          "name": "@sdkwork/rtc-mp-core",
+          "role": "core"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-mini-program",
+          "architecture": "mp",
+          "directoryName": "sdkwork-rtc-mp-host",
+          "name": "@sdkwork/rtc-mp-host",
+          "role": "host"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-mini-program",
+          "architecture": "mp",
+          "directoryName": "sdkwork-rtc-mp-rtc",
+          "name": "@sdkwork/rtc-mp-rtc",
+          "role": "capability"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-mini-program",
+          "architecture": "mp",
+          "directoryName": "sdkwork-rtc-mp-shell",
+          "name": "@sdkwork/rtc-mp-shell",
+          "role": "shell"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-pc",
+          "architecture": "pc",
+          "directoryName": "sdkwork-rtc-pc-admin-core",
+          "name": "@sdkwork/rtc-pc-admin-core",
+          "role": "core"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-pc",
+          "architecture": "pc",
+          "directoryName": "sdkwork-rtc-pc-admin-shell",
+          "name": "@sdkwork/rtc-pc-admin-shell",
+          "role": "shell"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-pc",
+          "architecture": "pc",
+          "directoryName": "sdkwork-rtc-pc-commons",
+          "name": "@sdkwork/rtc-pc-commons",
+          "role": "commons"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-pc",
+          "architecture": "pc",
+          "directoryName": "sdkwork-rtc-pc-core",
+          "name": "@sdkwork/rtc-pc-core",
+          "role": "core"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-pc",
+          "architecture": "pc",
+          "directoryName": "sdkwork-rtc-pc-rtc",
+          "name": "@sdkwork/rtc-pc-rtc",
+          "role": "capability"
+        },
+        {
+          "appRoot": "apps/sdkwork-rtc-pc",
+          "architecture": "pc",
+          "directoryName": "sdkwork-rtc-pc-shell",
+          "name": "@sdkwork/rtc-pc-shell",
+          "role": "shell"
+        }
+      ]
+    },
+    "rust": {
+      "crates": [
+        {
+          "packageName": "sdkwork-api-rtc-assembly",
+          "manifest": "crates/sdkwork-api-rtc-assembly/Cargo.toml",
+          "dependencies": [
+            "axum",
+            "tokio",
+            "sdkwork-web-bootstrap",
+            "sdkwork-web-core",
+            "anyhow",
+            "serde-json",
+            "sdkwork-database-sqlx",
+            "sdkwork-communication-rtc-repository-sqlx",
+            "sdkwork-communication-rtc-service",
+            "sdkwork-rtc-service-host",
+            "sdkwork-rtc-plugin-bootstrap",
+            "sdkwork-routes-rtc-app-api",
+            "sdkwork-routes-rtc-backend-api"
+          ]
+        },
+        {
+          "packageName": "sdkwork-api-rtc-standalone-gateway",
+          "manifest": "crates/sdkwork-api-rtc-standalone-gateway/Cargo.toml",
+          "dependencies": [
+            "sdkwork-api-rtc-assembly",
+            "anyhow",
+            "axum",
+            "sdkwork-communication-rtc-worker",
+            "sdkwork-iam-web-adapter",
+            "sdkwork-web-bootstrap",
+            "tokio",
+            "tracing",
+            "tracing-subscriber"
+          ]
+        },
+        {
+          "packageName": "sdkwork-communication-rtc-repository-sqlx",
+          "manifest": "crates/sdkwork-communication-rtc-repository-sqlx/Cargo.toml",
+          "dependencies": [
+            "sdkwork-rtc-database-host",
+            "sdkwork-database-config",
+            "sdkwork-database-repository",
+            "sdkwork-database-sqlx",
+            "sdkwork-communication-rtc-service",
+            "serde",
+            "serde-json",
+            "sqlx",
+            "tokio"
+          ]
+        },
+        {
+          "packageName": "sdkwork-communication-rtc-service",
+          "manifest": "crates/sdkwork-communication-rtc-service/Cargo.toml",
+          "dependencies": [
+            "sdkwork-utils-rust",
+            "serde",
+            "serde-json"
+          ]
+        },
+        {
+          "packageName": "sdkwork-communication-rtc-worker",
+          "manifest": "crates/sdkwork-communication-rtc-worker/Cargo.toml",
+          "dependencies": [
+            "sdkwork-rtc-service-host",
+            "tokio"
+          ]
+        },
+        {
+          "packageName": "sdkwork-routes-rtc-app-api",
+          "manifest": "crates/sdkwork-routes-rtc-app-api/Cargo.toml",
+          "dependencies": [
+            "axum",
+            "serde",
+            "serde-json",
+            "uuid",
+            "sdkwork-iam-web-adapter",
+            "sdkwork-rtc-app-context",
+            "sdkwork-communication-rtc-service",
+            "sdkwork-utils-rust",
+            "sdkwork-web-axum",
+            "sdkwork-web-contract",
+            "sdkwork-web-core",
+            "serde",
+            "serde-json",
+            "http-body-util",
+            "tokio",
+            "tower"
+          ]
+        },
+        {
+          "packageName": "sdkwork-routes-rtc-backend-api",
+          "manifest": "crates/sdkwork-routes-rtc-backend-api/Cargo.toml",
+          "dependencies": [
+            "axum",
+            "serde",
+            "serde-json",
+            "uuid",
+            "sdkwork-iam-web-adapter",
+            "sdkwork-rtc-app-context",
+            "sdkwork-communication-rtc-service",
+            "sdkwork-utils-rust",
+            "sdkwork-web-axum",
+            "sdkwork-web-contract",
+            "sdkwork-web-core",
+            "serde",
+            "serde-json",
+            "http-body-util",
+            "tokio",
+            "tower"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-api-registry",
+          "manifest": "crates/sdkwork-rtc-api-registry/Cargo.toml",
+          "dependencies": [
+            "serde"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-app-context",
+          "manifest": "crates/sdkwork-rtc-app-context/Cargo.toml",
+          "dependencies": [
+            "axum",
+            "base64",
+            "hmac",
+            "sdkwork-web-core",
+            "sha2"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-database-host",
+          "manifest": "crates/sdkwork-rtc-database-host/Cargo.toml",
+          "dependencies": [
+            "dotenvy",
+            "sdkwork-database-config",
+            "sdkwork-database-lifecycle",
+            "sdkwork-database-spi",
+            "sdkwork-database-sqlx"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-openapi",
+          "manifest": "crates/sdkwork-rtc-openapi/Cargo.toml",
+          "dependencies": [
+            "sdkwork-rtc-api-registry",
+            "serde-json"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-plugin-bootstrap",
+          "manifest": "crates/sdkwork-rtc-plugin-bootstrap/Cargo.toml",
+          "dependencies": [
+            "sdkwork-communication-rtc-service",
+            "sdkwork-rtc-adapter-agora",
+            "sdkwork-rtc-adapter-aliyun",
+            "sdkwork-rtc-adapter-livekit",
+            "sdkwork-rtc-adapter-tencent",
+            "sdkwork-rtc-adapter-volcengine",
+            "sdkwork-rtc-service-host"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-service-host",
+          "manifest": "crates/sdkwork-rtc-service-host/Cargo.toml",
+          "dependencies": [
+            "sdkwork-communication-rtc-service",
+            "sdkwork-drive-storage-contract",
+            "sdkwork-drive-workspace-service",
+            "sdkwork-routes-rtc-app-api",
+            "sdkwork-routes-rtc-backend-api",
+            "serde-json",
+            "uuid",
+            "sdkwork-drive-config",
+            "sdkwork-drive-storage-local",
+            "sqlx",
+            "tokio"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-adapter-agora",
+          "manifest": "plugins/rtc-agora/Cargo.toml",
+          "dependencies": [
+            "sdkwork-communication-rtc-service",
+            "sdkwork-utils-rust",
+            "serde-json",
+            "hmac",
+            "sha2"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-adapter-aliyun",
+          "manifest": "plugins/rtc-aliyun/Cargo.toml",
+          "dependencies": [
+            "sdkwork-communication-rtc-service",
+            "sdkwork-utils-rust",
+            "serde-json"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-adapter-livekit",
+          "manifest": "plugins/rtc-livekit/Cargo.toml",
+          "dependencies": [
+            "sdkwork-communication-rtc-service",
+            "sdkwork-utils-rust",
+            "serde-json",
+            "hmac",
+            "sha2"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-adapter-tencent",
+          "manifest": "plugins/rtc-tencent/Cargo.toml",
+          "dependencies": [
+            "sdkwork-communication-rtc-service",
+            "sdkwork-utils-rust",
+            "serde-json",
+            "hmac",
+            "sha2",
+            "flate2"
+          ]
+        },
+        {
+          "packageName": "sdkwork-rtc-adapter-volcengine",
+          "manifest": "plugins/rtc-volcengine/Cargo.toml",
+          "dependencies": [
+            "sdkwork-communication-rtc-service",
+            "sdkwork-utils-rust",
+            "serde-json",
+            "hmac",
+            "sha2"
+          ]
+        },
+        {
+          "packageName": "rtc_sdk",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-agora",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-agora/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-aliyun",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-aliyun/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-janus",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-janus/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-jitsi",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-jitsi/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-livekit",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-livekit/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-mediasoup",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-mediasoup/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-tencent",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-tencent/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-twilio",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-twilio/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-volcengine",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-volcengine/Cargo.toml",
+          "dependencies": []
+        },
+        {
+          "packageName": "rtc-sdk-provider-zego",
+          "manifest": "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-rust/providers/rtc-sdk-provider-zego/Cargo.toml",
+          "dependencies": []
+        }
+      ]
+    },
+    "routes": {
+      "manifests": [
+        {
+          "source": "sdks/_route-manifests/app-api/sdkwork-routes-rtc-app-api.route-manifest.json",
+          "packageName": "sdkwork-routes-rtc-app-api",
+          "surface": "app-api",
+          "routeCount": 9
+        },
+        {
+          "source": "sdks/_route-manifests/backend-api/sdkwork-routes-rtc-backend-api.route-manifest.json",
+          "packageName": "sdkwork-routes-rtc-backend-api",
+          "surface": "backend-api",
+          "routeCount": 46
+        }
+      ]
+    },
+    "runtime": {
+      "dependencyApiSurfaces": [
+        {
+          "component": "sdkwork-rtc-workspace",
+          "source": "specs/component.spec.json",
+          "workspace": "sdkwork-rtc-app-sdk",
+          "sdkFamily": "sdkwork-rtc-app-sdk",
+          "apiAuthority": "sdkwork-rtc-app-api",
+          "surface": "app-api",
+          "apiPrefix": "/app/v3/api/rtc"
+        },
+        {
+          "component": "sdkwork-rtc-workspace",
+          "source": "specs/component.spec.json",
+          "workspace": "sdkwork-rtc-backend-sdk",
+          "sdkFamily": "sdkwork-rtc-backend-sdk",
+          "apiAuthority": "sdkwork-rtc-backend-api",
+          "surface": "backend-api",
+          "apiPrefix": "/backend/v3/api/rtc"
+        }
+      ]
+    }
   },
   "env": {},
-  "requiresPlatformGatewayProcess": false,
+  "requiresPlatformApiSurface": true,
   "issues": [],
   "meta": {
     "resolver": "sdkwork-specs/tools/lib/composition-resolver.mjs",
