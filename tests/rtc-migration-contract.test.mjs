@@ -248,7 +248,7 @@ function parseRustStringArrayConstant(source, constantName) {
 }
 
 function readProviderSchemaCapabilities(providerKey) {
-  const schemaPath = workspacePath(rtcRoot, `configs/provider-schemas/${providerKey}.json`);
+  const schemaPath = workspacePath(rtcRoot, `specs/provider-schemas/${providerKey}.json`);
   const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
   return {
     required: schema.requiredCapabilities,
@@ -3141,11 +3141,11 @@ test("sdkwork-rtc PC React package exposes media runtime helpers instead of call
 
 test("sdkwork-rtc capability keys use media runtime terms instead of call workflow terms", () => {
   const capabilityFiles = [
-    "configs/provider-schemas/volcengine.json",
-    "configs/provider-schemas/aliyun.json",
-    "configs/provider-schemas/tencent.json",
-    "configs/provider-schemas/agora.json",
-    "configs/provider-schemas/livekit.json",
+    "specs/provider-schemas/volcengine.json",
+    "specs/provider-schemas/aliyun.json",
+    "specs/provider-schemas/tencent.json",
+    "specs/provider-schemas/agora.json",
+    "specs/provider-schemas/livekit.json",
     "sdks/sdkwork-rtc-sdk/sdk-manifest.json",
     "sdks/sdkwork-rtc-sdk/bin/rtc-standard-contract-constants.mjs",
     "sdks/sdkwork-rtc-sdk/sdkwork-rtc-sdk-typescript/src/capability-catalog.ts",
@@ -3466,7 +3466,7 @@ test("sdkwork-rtc builtin Rust provider adapters expose component-level plugin c
         factoryExport: expectation.factoryExport,
         factoryFunction: expectation.factoryFunction,
         descriptorMethod: "RtcProviderPort::descriptor",
-        capabilitiesSource: `configs/provider-schemas/${providerKey}.json`,
+        capabilitiesSource: `specs/provider-schemas/${providerKey}.json`,
       },
       `${componentSpecPath} must declare the RTC provider plugin contract`,
     );

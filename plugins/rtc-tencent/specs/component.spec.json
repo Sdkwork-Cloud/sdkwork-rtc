@@ -128,7 +128,7 @@
       "factoryExport": "TencentRtcProviderPluginFactory",
       "factoryFunction": "create_tencent_rtc_provider_plugin_factory",
       "descriptorMethod": "RtcProviderPort::descriptor",
-        "capabilitiesSource": "configs/provider-schemas/tencent.json"
+        "capabilitiesSource": "specs/provider-schemas/tencent.json"
     }
   },
   "integration": {

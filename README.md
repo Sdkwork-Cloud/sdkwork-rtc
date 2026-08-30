@@ -38,7 +38,7 @@ The repository follows the SDKWork project-root directory dictionary:
 - `sdks/`: SDK family workspaces, route manifests, materialized OpenAPI copies, and generated SDK output.
 - `plugins/`: RTC runtime provider plugins.
 - `apps/sdkwork-rtc-pc/packages/`: PC React application-surface package family. Root-level `packages/` is not used.
-- `tools/`, `scripts/`, `tests/`, `docs/`, `configs/`, `deployments/`, `jobs/`, `examples/`, and `apps/`: standard project-root support directories.
+- `tools/`, `scripts/`, `tests/`, `docs/`, `specs/`, `etc/`, `deployments/`, `jobs/`, `examples/`, and `apps/`: standard project-root support directories.
 
 ## Provider Model
 

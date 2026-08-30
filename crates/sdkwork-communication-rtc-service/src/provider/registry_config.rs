@@ -7,7 +7,7 @@ use crate::provider::registry::StaticProviderRegistry;
 use crate::provider::schema::plugin_descriptor_from_provider_schema;
 
 pub const PLATFORM_DEFAULT_PROVIDER_REGISTRY_JSON: &str =
-    include_str!("../../../../configs/provider-registry/platform-default.json");
+    include_str!("../../../../specs/provider-registry/platform-default.json");
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]

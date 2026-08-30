@@ -23,7 +23,8 @@ test("sdkwork-rtc uses the SDKWork standard project-root directory dictionary", 
     "tools",
     "plugins",
     "examples",
-    "configs",
+    "specs",
+    "etc",
     "deployments",
     "scripts",
     "docs",
@@ -636,17 +637,17 @@ test("sdkwork-rtc centralizes shared provider webhook and recording helpers in c
   }
 });
 
-test("sdkwork-rtc externalizes recording artifact lifecycle policy under configs/recording-policy", () => {
-  assert.ok(exists("configs/recording-policy/README.md"));
-  assert.ok(exists("configs/recording-policy/platform-default.json"));
-  const manifest = JSON.parse(read("configs/recording-policy/platform-default.json"));
+test("sdkwork-rtc externalizes recording artifact lifecycle policy under specs/recording-policy", () => {
+  assert.ok(exists("specs/recording-policy/README.md"));
+  assert.ok(exists("specs/recording-policy/platform-default.json"));
+  const manifest = JSON.parse(read("specs/recording-policy/platform-default.json"));
   assert.equal(manifest.interfaceVersion, "recording-policy/v1");
   const policySource = read(
     "crates/sdkwork-communication-rtc-service/src/domain/recording_policy.rs",
   );
   assert.match(
     policySource,
-    /configs\/recording-policy\/platform-default\.json/u,
+    /specs\/recording-policy\/platform-default\.json/u,
     "recording policy loader must include platform-default manifest",
   );
   assert.match(
@@ -676,16 +677,16 @@ test("sdkwork-rtc models live streaming capability dimensions on provider port",
   assert.match(appOpenApi, /cdnRelay/u);
 });
 
-test("sdkwork-rtc externalizes provider registry defaults under configs/provider-registry", () => {
-  assert.ok(exists("configs/provider-registry/README.md"));
-  assert.ok(exists("configs/provider-registry/platform-default.json"));
-  const manifest = JSON.parse(read("configs/provider-registry/platform-default.json"));
+test("sdkwork-rtc externalizes provider registry defaults under specs/provider-registry", () => {
+  assert.ok(exists("specs/provider-registry/README.md"));
+  assert.ok(exists("specs/provider-registry/platform-default.json"));
+  const manifest = JSON.parse(read("specs/provider-registry/platform-default.json"));
   assert.equal(manifest.interfaceVersion, "provider-registry/v1");
   assert.ok(Array.isArray(manifest.plugins) && manifest.plugins.length >= 5);
   const registryConfig = read("crates/sdkwork-communication-rtc-service/src/provider/registry_config.rs");
   assert.match(
     registryConfig,
-    /configs\/provider-registry\/platform-default\.json/u,
+    /specs\/provider-registry\/platform-default\.json/u,
     "registry loader must include platform-default manifest",
   );
   assert.match(

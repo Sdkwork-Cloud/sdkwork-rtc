@@ -9,7 +9,6 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const scanRoots = [
   'crates',
   'scripts',
-  'configs',
   'docs',
   'specs',
   'sdks',
@@ -145,7 +144,7 @@ assert.ok(
   'etc/topology/README.md required',
 );
 
-const runtimeExample = readText('configs/rtc-runtime.env.example');
+const runtimeExample = readText('etc/examples/rtc-runtime.env.example');
 assert.match(
   runtimeExample,
   /SDKWORK_RTC_APPLICATION_PUBLIC_INGRESS_BIND/u,

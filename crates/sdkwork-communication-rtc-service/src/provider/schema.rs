@@ -46,11 +46,11 @@ pub struct CredentialRoleSchema {
 
 pub fn load_provider_config_schema(provider: &str) -> Option<ProviderConfigSchema> {
     let schema_json = match provider {
-        "tencent" => include_str!("../../../../configs/provider-schemas/tencent.json"),
-        "volcengine" => include_str!("../../../../configs/provider-schemas/volcengine.json"),
-        "agora" => include_str!("../../../../configs/provider-schemas/agora.json"),
-        "aliyun" => include_str!("../../../../configs/provider-schemas/aliyun.json"),
-        "livekit" => include_str!("../../../../configs/provider-schemas/livekit.json"),
+        "tencent" => include_str!("../../../../specs/provider-schemas/tencent.json"),
+        "volcengine" => include_str!("../../../../specs/provider-schemas/volcengine.json"),
+        "agora" => include_str!("../../../../specs/provider-schemas/agora.json"),
+        "aliyun" => include_str!("../../../../specs/provider-schemas/aliyun.json"),
+        "livekit" => include_str!("../../../../specs/provider-schemas/livekit.json"),
         _ => return None,
     };
     serde_json::from_str(schema_json).ok()

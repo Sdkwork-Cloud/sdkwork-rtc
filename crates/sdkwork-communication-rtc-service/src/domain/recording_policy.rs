@@ -4,7 +4,7 @@ use super::recording::{RtcMediaArtifact, RtcRecordingArtifactStatus};
 use crate::time::rfc3339_age_ms;
 
 pub const PLATFORM_DEFAULT_RECORDING_POLICY_JSON: &str =
-    include_str!("../../../../configs/recording-policy/platform-default.json");
+    include_str!("../../../../specs/recording-policy/platform-default.json");
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

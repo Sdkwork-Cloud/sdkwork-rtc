@@ -123,7 +123,7 @@
       "factoryExport": "AliyunRtcProviderPluginFactory",
       "factoryFunction": "create_aliyun_rtc_provider_plugin_factory",
       "descriptorMethod": "RtcProviderPort::descriptor",
-        "capabilitiesSource": "configs/provider-schemas/aliyun.json"
+        "capabilitiesSource": "specs/provider-schemas/aliyun.json"
     }
   },
   "integration": {

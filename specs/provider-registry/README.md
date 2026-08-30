@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`configs/provider-registry/` declares the default RTC provider plugin roster for `StaticProviderRegistry` and runtime factory bootstrap. Capability lists remain authoritative in `configs/provider-schemas/<providerKind>.json`.
+`specs/provider-registry/` declares the default RTC provider plugin roster for `StaticProviderRegistry` and runtime factory bootstrap. Capability lists remain authoritative in `specs/provider-schemas/<providerKind>.json`.
 
 ## Files
 
@@ -16,7 +16,7 @@ Set `SDKWORK_RTC_PROVIDER_REGISTRY_PATH` to an alternate manifest path when depl
 
 ## Related
 
-- `configs/provider-schemas/` — per-provider admin form schema and capability declarations
+- `specs/provider-schemas/` — per-provider admin form schema and capability declarations
 - `crates/sdkwork-communication-rtc-service/src/provider/registry_config.rs` — manifest loader
 
 ## Verification

@@ -1,18 +1,15 @@
 import {
   createClient as createGeneratedRtcBackendClient,
   SdkworkBackendClient,
-} from '../generated/server-openapi/dist/index.js';
-import type { SdkworkBackendConfig } from '../generated/server-openapi/dist/types/common.js';
+} from '../generated/server-openapi/src/index';
+import type { SdkworkBackendConfig } from '../generated/server-openapi/src/types/common';
 
 export { SdkworkBackendClient, createGeneratedRtcBackendClient };
 export type { SdkworkBackendConfig };
-// Generated transport only emits runtime for dist/index.{js,cjs}; subpaths are
-// declaration-only. Keep type re-exports as `export type *` so Vite never
-// resolves missing *.js under dist/{types,api,http,auth}/.
-export type * from '../generated/server-openapi/dist/types/index.js';
-export type * from '../generated/server-openapi/dist/api/index.js';
-export type * from '../generated/server-openapi/dist/http/index.js';
-export type * from '../generated/server-openapi/dist/auth/index.js';
+export * from '../generated/server-openapi/src/types';
+export * from '../generated/server-openapi/src/api';
+export * from '../generated/server-openapi/src/http';
+export * from '../generated/server-openapi/src/auth';
 
 export type SdkworkRtcBackendClient = SdkworkBackendClient;
 

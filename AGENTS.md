@@ -44,7 +44,8 @@ No `sdkwork.app.config.json` is present at this root. This repository is the RTC
 - `tools/`: reusable Node validation and generation tools.
 - `plugins/`: RTC runtime provider plugins such as Volcengine, Tencent, Agora, Aliyun, and LiveKit.
 - `examples/`: maintained RTC examples.
-- `configs/`: safe config templates, schemas, profiles, and non-secret defaults.
+- `specs/`: canonical machine contracts, provider schemas, provider registry, and recording policy defaults.
+- `etc/`: runtime configuration templates, topology profiles, and example environment variables.
 - `deployments/`: deployment descriptors and runbooks.
 - `scripts/`: thin command wrappers.
 - `docs/`: maintained documentation and migration records.

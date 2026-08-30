@@ -45,7 +45,7 @@ impl ProviderPluginDescriptor {
         let plugin_id = plugin_id.into();
         let provider_kind = provider_kind.into();
         Self {
-            config_schema_ref: format!("configs/provider-schemas/{provider_kind}.json"),
+            config_schema_ref: format!("specs/provider-schemas/{provider_kind}.json"),
             plugin_id,
             domain,
             provider_kind,

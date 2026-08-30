@@ -28,10 +28,10 @@ The following are implemented and verified by `pnpm run verify`:
 ## Completed in this workspace (2026-06-29)
 
 - `sdkwork-communication-rtc-service` modularized: `lib.rs` is a thin assembly root; domain, provider, and time modules own contract types and ports.
-- Provider registry defaults externalized to `configs/provider-registry/platform-default.json`; runtime bootstrap reads the same manifest via `platform_default_provider_kinds()`.
+- Provider registry defaults externalized to `specs/provider-registry/platform-default.json`; runtime bootstrap reads the same manifest via `platform_default_provider_kinds()`.
 - `sdkwork-rtc-plugin-bootstrap` crate wires adapter factories from the manifest; `sdkwork-rtc-service-host` stays adapter-free.
-- Shared provider plugin helpers live in `sdkwork-communication-rtc-service`: `provider_webhook_parse.rs`, `provider_recording_export.rs`, and `plugin_descriptor_from_provider_schema()`; capability authority is `configs/provider-schemas/*.json` (not duplicated Rust constants).
-- `RtcRecordingPolicy` port, `configs/recording-policy/platform-default.json`, and reconcile integration soft-delete aged artifacts; hard-delete uses optional `RtcRecordingArtifactHardDeletePort` (Drive purge when wired).
+- Shared provider plugin helpers live in `sdkwork-communication-rtc-service`: `provider_webhook_parse.rs`, `provider_recording_export.rs`, and `plugin_descriptor_from_provider_schema()`; capability authority is `specs/provider-schemas/*.json` (not duplicated Rust constants).
+- `RtcRecordingPolicy` port, `specs/recording-policy/platform-default.json`, and reconcile integration soft-delete aged artifacts; hard-delete uses optional `RtcRecordingArtifactHardDeletePort` (Drive purge when wired).
 - Live streaming capability dimensions: `domain/live_stream.rs` defines broadcast/audience surfaces and CDN relay contracts; `RtcProviderCapabilitySnapshot` exposes `liveBroadcast`, `liveAudience`, and `cdnRelay`; `RtcProviderPort` adds CDN relay and audience playback hooks; Tencent plugin implements CDN relay via signed OpenAPI (`StartPublishCdnStream` / `StopPublishCdnStream`).
 
 ## Explicitly out of scope here

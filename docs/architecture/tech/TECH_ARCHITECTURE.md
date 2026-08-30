@@ -77,9 +77,9 @@ See [TECH-rtc-im-boundary.md](TECH-rtc-im-boundary.md) for dependency direction.
 | `crates/sdkwork-rtc-service-host` | Drive-backed recording import |
 | `crates/sdkwork-api-rtc-standalone-gateway` | Production HTTP entrypoint |
 | `plugins/rtc-*` | Vendor provider adapters |
-| `configs/provider-registry/` | Default provider plugin roster (`platform-default.json`) |
-| `configs/recording-policy/` | Recording artifact retention and lifecycle thresholds (`platform-default.json`) |
-| `configs/provider-schemas/` | Provider admin schemas and capability declarations |
+| `specs/provider-registry/` | Default provider plugin roster (`platform-default.json`) |
+| `specs/recording-policy/` | Recording artifact retention and lifecycle thresholds (`platform-default.json`) |
+| `specs/provider-schemas/` | Provider admin schemas and capability declarations |
 | `sdks/` | SDK generation workspaces and route manifests |
 | `apps/` | Runnable client application roots |
 
@@ -129,7 +129,7 @@ Production runtimes keep an in-memory working set in `sdkwork-rtc-service-host` 
 | `SDKWORK_RTC_HYDRATION_MAX_IDEMPOTENCY_RECORDS` | `500` | `10000` |
 | `SDKWORK_RTC_HYDRATION_MAX_SESSION_TOKEN_GRANTS` | `500` | `10000` |
 
-**DB-driven reconciliation.** `sdkwork-rtc-reconcile` uses `build_rtc_reconcile_bootstrap` (skips the gateway's fixed `SDKWORK_RTC_HYDRATE_*` scope at bootstrap). At runtime `hydrate_for_reconciliation` discovers tenant scopes from `rtc_media_session` rows in `Preparing`, `Active`, `Closing`, or `Failed` (`list_active_reconcile_scopes`), with optional override `SDKWORK_RTC_RECONCILE_TENANT_SCOPES`, then hydrates each scope with the same bounded caps before reconciliation passes. Per scope it closes stale active sessions (TTL + grace from provider profile), syncs provider drift when `active_query` is supported, compensates `Failed` sessions that still hold provider session ids, and runs recording-artifact lifecycle passes from `configs/recording-policy/platform-default.json`. RTC does not call IM signaling APIs; cross-service IM/RTC drift healing is owned by `sdkwork-im`.
+**DB-driven reconciliation.** `sdkwork-rtc-reconcile` uses `build_rtc_reconcile_bootstrap` (skips the gateway's fixed `SDKWORK_RTC_HYDRATE_*` scope at bootstrap). At runtime `hydrate_for_reconciliation` discovers tenant scopes from `rtc_media_session` rows in `Preparing`, `Active`, `Closing`, or `Failed` (`list_active_reconcile_scopes`), with optional override `SDKWORK_RTC_RECONCILE_TENANT_SCOPES`, then hydrates each scope with the same bounded caps before reconciliation passes. Per scope it closes stale active sessions (TTL + grace from provider profile), syncs provider drift when `active_query` is supported, compensates `Failed` sessions that still hold provider session ids, and runs recording-artifact lifecycle passes from `specs/recording-policy/platform-default.json`. RTC does not call IM signaling APIs; cross-service IM/RTC drift healing is owned by `sdkwork-im`.
 
 Participant join credentials persist hashed `rtc_session_token_grant` rows (never raw tokens). Lifecycle rules:
 

@@ -123,7 +123,7 @@
       "factoryExport": "AgoraRtcProviderPluginFactory",
       "factoryFunction": "create_agora_rtc_provider_plugin_factory",
       "descriptorMethod": "RtcProviderPort::descriptor",
-        "capabilitiesSource": "configs/provider-schemas/agora.json"
+        "capabilitiesSource": "specs/provider-schemas/agora.json"
     }
   },
   "integration": {
