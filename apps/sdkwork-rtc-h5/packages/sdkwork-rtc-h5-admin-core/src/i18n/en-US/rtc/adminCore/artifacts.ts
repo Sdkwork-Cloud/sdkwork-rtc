@@ -1,0 +1,50 @@
+/**
+ * RTC admin domain copy (en-US) — `artifacts` capability fragment.
+ *
+ * Flat `admin.rtc.*` keys shared with the Cloud Router host catalog; every
+ * key must also exist in the matching en/zh fragment (host merge enforces
+ * en/zh key parity).
+ */
+export const adminRtcArtifactsEn = {
+  "admin.rtc.artifacts.loadMore": "Load more artifacts",
+  "admin.rtc.artifacts.title": "Recording Files",
+  "admin.rtc.artifacts.exportAll": "Export All",
+  "admin.rtc.artifacts.status.pending": "Pending",
+  "admin.rtc.artifacts.status.processing": "Processing",
+  "admin.rtc.artifacts.status.ready": "Ready",
+  "admin.rtc.artifacts.status.failed": "Failed",
+  "admin.rtc.artifacts.status.deleted": "Deleted",
+  "admin.rtc.artifacts.kind.recording": "Recording",
+  "admin.rtc.artifacts.kind.transcript": "Transcript",
+  "admin.rtc.artifacts.kind.screenShare": "Screen Share",
+  "admin.rtc.artifacts.kind.snapshot": "Snapshot",
+  "admin.rtc.artifacts.kind.other": "Other",
+  "admin.rtc.artifacts.filter.search": "Search by artifact ID or session ID...",
+  "admin.rtc.artifacts.filter.allStatus": "All Status",
+  "admin.rtc.artifacts.filter.allTime": "All Time",
+  "admin.rtc.artifacts.filter.today": "Today",
+  "admin.rtc.artifacts.filter.week": "Last 7 Days",
+  "admin.rtc.artifacts.filter.month": "Last 30 Days",
+  "admin.rtc.artifacts.filter.clear": "Clear Filters",
+  "admin.rtc.artifacts.col.artifact": "Artifact",
+  "admin.rtc.artifacts.col.session": "Session",
+  "admin.rtc.artifacts.col.kind": "Kind",
+  "admin.rtc.artifacts.col.status": "Status",
+  "admin.rtc.artifacts.col.file": "File",
+  "admin.rtc.artifacts.col.drive": "Drive",
+  "admin.rtc.artifacts.col.started": "Started",
+  "admin.rtc.artifacts.col.duration": "Duration",
+  "admin.rtc.artifacts.col.actions": "Actions",
+  "admin.rtc.artifacts.emptyLoading": "Loading artifacts...",
+  "admin.rtc.artifacts.empty": "No media artifacts found.",
+  "admin.rtc.artifacts.csv.id": "ID",
+  "admin.rtc.artifacts.csv.session": "Session",
+  "admin.rtc.artifacts.csv.kind": "Kind",
+  "admin.rtc.artifacts.csv.status": "Status",
+  "admin.rtc.artifacts.csv.owner": "Owner",
+  "admin.rtc.artifacts.csv.file": "File",
+  "admin.rtc.artifacts.csv.started": "Started",
+  "admin.rtc.artifacts.csv.duration": "Duration",
+  "admin.rtc.artifacts.node": "node {{id}}…",
+  "admin.rtc.artifacts.footer": "{{count}} artifact(s) displayed",
+} as const;

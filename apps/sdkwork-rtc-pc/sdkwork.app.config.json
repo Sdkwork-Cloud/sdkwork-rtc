@@ -39,11 +39,17 @@
   "runtime": {
     "family": "web",
     "framework": "react",
-    "runtimes": ["WEB"],
-    "deliveryModes": ["WEB_URL"],
+    "runtimes": [
+      "WEB"
+    ],
+    "deliveryModes": [
+      "WEB_URL"
+    ],
     "defaultPlatform": "WEB",
     "defaultArchitecture": "universal",
-    "supportedDeploymentProfiles": ["cloud"],
+    "supportedDeploymentProfiles": [
+      "cloud"
+    ],
     "defaultDeploymentProfile": "cloud"
   },
   "media": {
@@ -62,13 +68,61 @@
         "alphaChannel": false,
         "sortOrder": 0,
         "enabled": true,
-        "metadata": { "generatedPlaceholder": true }
+        "metadata": {
+          "generatedPlaceholder": true
+        }
       },
       "platform": [],
-      "metadata": { "generatedPlaceholder": true }
+      "metadata": {
+        "generatedPlaceholder": true
+      }
     },
-    "screenshots": [],
-    "previews": [],
+    "screenshots": [
+      {
+        "id": "sdkwork-rtc-sdkwork-rtc-pc-web-screenshot",
+        "type": "SCREENSHOT",
+        "purpose": "CATALOG_SCREENSHOT",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc-sdkwork-rtc-pc/media/web-screenshot.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "deviceClass": "BROWSER",
+        "displayType": "WEB_DESKTOP",
+        "width": 1920,
+        "height": 1080,
+        "format": "PNG",
+        "fileSizeBytes": 1048576,
+        "alphaChannel": false,
+        "caption": "SDKWork RTC PC product screenshot.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork RTC PC app screenshot."
+        }
+      }
+    ],
+    "previews": [
+      {
+        "id": "sdkwork-rtc-sdkwork-rtc-pc-catalog-preview",
+        "type": "PREVIEW_IMAGE",
+        "purpose": "CATALOG_PREVIEW",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc-sdkwork-rtc-pc/media/preview-cover.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "width": 1600,
+        "height": 900,
+        "format": "PNG",
+        "fileSizeBytes": 786432,
+        "alphaChannel": false,
+        "caption": "SDKWork RTC PC preview.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork RTC PC preview cover."
+        }
+      }
+    ],
     "metadata": {
       "assetVersion": "0.1.0",
       "defaultLocale": "en-US"
@@ -76,9 +130,15 @@
   },
   "publish": {
     "status": "ACTIVE",
-    "installSkill": { "name": "sdkwork-skills-app" },
-    "platforms": ["WEB"],
-    "installPlatforms": ["WEB"],
+    "installSkill": {
+      "name": "sdkwork-skills-app"
+    },
+    "platforms": [
+      "WEB"
+    ],
+    "installPlatforms": [
+      "WEB"
+    ],
     "defaultPackageId": "web-universal-cloud-browser-zip",
     "storeUrl": "https://sdkwork.com/apps/sdkwork-rtc-sdkwork-rtc-pc",
     "stores": [],
@@ -125,7 +185,10 @@
           "checksum": "3f915ff33f915ff33f915ff33f915ff33f915ff33f915ff33f915ff33f915ff3",
           "architecture": "universal",
           "deploymentProfile": "cloud",
-          "runtimeTarget": "browser"
+          "runtimeTarget": "browser",
+          "profileBinding": "fixed",
+          "targetPlatform": "web",
+          "clientArchitecture": "pc-web"
         }
       ],
       "metadata": {
@@ -139,20 +202,24 @@
   "release": {
     "currentVersion": "0.1.0",
     "defaultChannel": "STABLE",
-    "latest": { "STABLE": "0.1.0" },
+    "latest": {
+      "STABLE": "0.1.0"
+    },
     "notes": [
       {
         "version": "0.1.0",
         "releaseChannel": "STABLE",
         "title": "SDKWork RTC PC 0.1.0",
-        "summary": "SDKWork RTC PC App Standard v3 manifest.",
-        "content": "Migrated sdkwork-rtc-pc to SDKWork App Manifest Standard v3.",
+        "summary": "SDKWork RTC PC initialized standard release.",
+        "content": "Initial SDKWork App Standard v3 manifest for SDKWork RTC PC.",
         "highlights": [
-          "SDKWork App Standard v3 configuration",
-          "studio_app projection metadata",
-          "Cloud web distribution package"
+          "SDKWork App Standard v3 configuration initialized",
+          "platform_app projection metadata standardized",
+          "Download package matrix normalized"
         ],
-        "packageIds": ["web-universal-cloud-browser-zip"],
+        "packageIds": [
+          "web-universal-cloud-browser-zip"
+        ],
         "publishedAt": "2026-06-23T00:00:00Z",
         "current": true,
         "forceUpdate": false,
@@ -167,7 +234,9 @@
     "sbomRequired": true
   },
   "devApp": {
-    "build": { "targets": [] },
+    "build": {
+      "targets": []
+    },
     "sourceRoot": "apps/sdkwork-rtc-pc"
   },
   "metadata": {

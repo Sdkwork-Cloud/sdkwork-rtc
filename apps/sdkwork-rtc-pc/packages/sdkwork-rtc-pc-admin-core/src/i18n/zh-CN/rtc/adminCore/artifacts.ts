@@ -1,0 +1,50 @@
+/**
+ * RTC admin domain copy (zh-CN) — `artifacts` capability fragment.
+ *
+ * Flat `admin.rtc.*` keys shared with the Cloud Router host catalog; every
+ * key must also exist in the matching en/zh fragment (host merge enforces
+ * en/zh key parity).
+ */
+export const adminRtcArtifactsZh = {
+  "admin.rtc.artifacts.loadMore": "加载更多记录文件",
+  "admin.rtc.artifacts.title": "通话记录文件",
+  "admin.rtc.artifacts.exportAll": "导出全部",
+  "admin.rtc.artifacts.status.pending": "待处理",
+  "admin.rtc.artifacts.status.processing": "处理中",
+  "admin.rtc.artifacts.status.ready": "就绪",
+  "admin.rtc.artifacts.status.failed": "失败",
+  "admin.rtc.artifacts.status.deleted": "已删除",
+  "admin.rtc.artifacts.kind.recording": "录制",
+  "admin.rtc.artifacts.kind.transcript": "转写",
+  "admin.rtc.artifacts.kind.screenShare": "屏幕共享",
+  "admin.rtc.artifacts.kind.snapshot": "快照",
+  "admin.rtc.artifacts.kind.other": "其他",
+  "admin.rtc.artifacts.filter.search": "按记录文件 ID 或会话 ID 搜索...",
+  "admin.rtc.artifacts.filter.allStatus": "全部状态",
+  "admin.rtc.artifacts.filter.allTime": "全部时间",
+  "admin.rtc.artifacts.filter.today": "今天",
+  "admin.rtc.artifacts.filter.week": "最近 7 天",
+  "admin.rtc.artifacts.filter.month": "最近 30 天",
+  "admin.rtc.artifacts.filter.clear": "清除筛选",
+  "admin.rtc.artifacts.col.artifact": "记录文件",
+  "admin.rtc.artifacts.col.session": "会话",
+  "admin.rtc.artifacts.col.kind": "类型",
+  "admin.rtc.artifacts.col.status": "状态",
+  "admin.rtc.artifacts.col.file": "文件",
+  "admin.rtc.artifacts.col.drive": "Drive",
+  "admin.rtc.artifacts.col.started": "开始时间",
+  "admin.rtc.artifacts.col.duration": "时长",
+  "admin.rtc.artifacts.col.actions": "操作",
+  "admin.rtc.artifacts.emptyLoading": "正在加载记录文件...",
+  "admin.rtc.artifacts.empty": "暂无媒体记录文件。",
+  "admin.rtc.artifacts.csv.id": "ID",
+  "admin.rtc.artifacts.csv.session": "会话",
+  "admin.rtc.artifacts.csv.kind": "类型",
+  "admin.rtc.artifacts.csv.status": "状态",
+  "admin.rtc.artifacts.csv.owner": "所有者",
+  "admin.rtc.artifacts.csv.file": "文件",
+  "admin.rtc.artifacts.csv.started": "开始时间",
+  "admin.rtc.artifacts.csv.duration": "时长",
+  "admin.rtc.artifacts.node": "节点 {{id}}…",
+  "admin.rtc.artifacts.footer": "共 {{count}} 个记录文件",
+} as const;

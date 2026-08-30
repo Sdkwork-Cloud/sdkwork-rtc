@@ -61,7 +61,7 @@ export {
   RTC_CALL_ZH_CN,
   resolveRtcCallLocale,
   type RtcCallI18nTexts,
-} from "./i18n/dictionaries";
+} from "./i18n";
 export {
   RtcCallI18nProvider,
   useRtcCallI18n,

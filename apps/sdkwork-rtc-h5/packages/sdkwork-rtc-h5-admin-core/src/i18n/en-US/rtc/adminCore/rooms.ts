@@ -1,0 +1,52 @@
+/**
+ * RTC admin domain copy (en-US) — `rooms` capability fragment.
+ *
+ * Flat `admin.rtc.*` keys shared with the Cloud Router host catalog; every
+ * key must also exist in the matching en/zh fragment (host merge enforces
+ * en/zh key parity).
+ */
+export const adminRtcRoomsEn = {
+  "admin.rtc.rooms.title": "Rooms",
+  "admin.rtc.rooms.loadMore": "Load more rooms",
+  "admin.rtc.rooms.create": "Create Room",
+  "admin.rtc.rooms.management": "Room Management",
+  "admin.rtc.rooms.exportAll": "Export All",
+  "admin.rtc.rooms.empty": "No rooms found. Create your first room to get started.",
+  "admin.rtc.rooms.footer": "{{count}} room(s) displayed | {{selected}} selected",
+  "admin.rtc.rooms.csv.id": "ID",
+  "admin.rtc.rooms.csv.title": "Title",
+  "admin.rtc.rooms.csv.status": "Status",
+  "admin.rtc.rooms.csv.owner": "Owner",
+  "admin.rtc.rooms.csv.createdAt": "Created At",
+  "admin.rtc.rooms.col.title": "Title",
+  "admin.rtc.rooms.col.status": "Status",
+  "admin.rtc.rooms.col.owner": "Owner",
+  "admin.rtc.rooms.col.createdAt": "Created",
+  "admin.rtc.rooms.col.actions": "Actions",
+  "admin.rtc.rooms.filter.search": "Search rooms by title, ID, or owner...",
+  "admin.rtc.rooms.filter.allStatus": "All Status",
+  "admin.rtc.rooms.filter.allTime": "All Time",
+  "admin.rtc.rooms.filter.today": "Today",
+  "admin.rtc.rooms.filter.thisWeek": "This Week",
+  "admin.rtc.rooms.filter.thisMonth": "This Month",
+  "admin.rtc.rooms.filter.owner": "Owner User ID",
+  "admin.rtc.rooms.filter.clear": "Clear Filters",
+  "admin.rtc.rooms.filter.summary": "Showing {{filtered}} of {{total}} rooms",
+  "admin.rtc.rooms.filter.filtered": "Filtered",
+  "admin.rtc.rooms.create.title": "Create Call Room",
+  "admin.rtc.rooms.create.titleLabel": "Room Title",
+  "admin.rtc.rooms.create.titlePlaceholder": "e.g. Product review meeting",
+  "admin.rtc.rooms.create.roomIdLabel": "Room ID (optional, auto-generated if empty)",
+  "admin.rtc.rooms.create.roomIdPlaceholder": "room-{uuid} auto-generated",
+  "admin.rtc.rooms.create.creating": "Creating...",
+  "admin.rtc.rooms.create.titleRequired": "Room title is required.",
+  "admin.rtc.rooms.create.failed": "Failed to create room",
+  "admin.rtc.rooms.batch.selected": "{{count}} room(s) selected",
+  "admin.rtc.rooms.batch.clearSelection": "Clear Selection",
+  "admin.rtc.rooms.batch.archive": "Archive ({{count}})",
+  "admin.rtc.rooms.batch.disable": "Disable ({{count}})",
+  "admin.rtc.rooms.batch.export": "Export Selected",
+  "admin.rtc.rooms.batch.activeCount": "{{count}} active",
+  "admin.rtc.rooms.batch.archivedCount": "{{count}} archived",
+  "admin.rtc.rooms.batch.disabledCount": "{{count}} disabled",
+} as const;

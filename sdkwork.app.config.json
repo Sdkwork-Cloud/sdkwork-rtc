@@ -52,10 +52,10 @@
   "media": {
     "icons": {
       "primary": {
-        "id": "sdkwork-rtc-sdkwork-rtc-flutter-mobile-primary-icon",
+        "id": "sdkwork-rtc-primary-icon",
         "type": "ICON",
         "purpose": "PRIMARY",
-        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc-sdkwork-rtc-flutter-mobile/assets/icon-1024.png",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc/assets/icon-1024.png",
         "platform": "APP",
         "locale": "en-US",
         "width": 1024,
@@ -74,8 +74,52 @@
         "generatedPlaceholder": true
       }
     },
-    "screenshots": [],
-    "previews": [],
+    "screenshots": [
+      {
+        "id": "sdkwork-rtc-web-screenshot",
+        "type": "SCREENSHOT",
+        "purpose": "CATALOG_SCREENSHOT",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc/media/web-screenshot.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "deviceClass": "BROWSER",
+        "displayType": "WEB_DESKTOP",
+        "width": 1920,
+        "height": 1080,
+        "format": "PNG",
+        "fileSizeBytes": 1048576,
+        "alphaChannel": false,
+        "caption": "SDKWork RTC Mobile product screenshot.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork RTC Mobile app screenshot."
+        }
+      }
+    ],
+    "previews": [
+      {
+        "id": "sdkwork-rtc-catalog-preview",
+        "type": "PREVIEW_IMAGE",
+        "purpose": "CATALOG_PREVIEW",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc/media/preview-cover.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "width": 1600,
+        "height": 900,
+        "format": "PNG",
+        "fileSizeBytes": 786432,
+        "alphaChannel": false,
+        "caption": "SDKWork RTC Mobile preview.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork RTC Mobile preview cover."
+        }
+      }
+    ],
     "metadata": {
       "assetVersion": "0.1.0",
       "defaultLocale": "en-US"
@@ -107,9 +151,9 @@
   "artifacts": {
     "installConfig": {
       "defaultPackageId": "android-universal-cloud-apk",
-      "installCommand": "sdkwork install sdkwork-rtc-sdkwork-rtc-flutter-mobile",
-      "launchCommand": "sdkwork open sdkwork-rtc-sdkwork-rtc-flutter-mobile",
-      "uninstallCommand": "sdkwork uninstall sdkwork-rtc-sdkwork-rtc-flutter-mobile",
+      "installCommand": "sdkwork install sdkwork-rtc",
+      "launchCommand": "sdkwork open sdkwork-rtc",
+      "uninstallCommand": "sdkwork uninstall sdkwork-rtc",
       "packages": [
         {
           "id": "android-universal-cloud-apk",
@@ -124,7 +168,26 @@
           "checksum": "3f915ff33f915ff33f915ff33f915ff33f915ff33f915ff33f915ff33f915ff3",
           "architecture": "universal",
           "deploymentProfile": "cloud",
-          "runtimeTarget": "app"
+          "runtimeTarget": "flutter-android",
+          "profileBinding": "fixed",
+          "targetPlatform": "android",
+          "clientArchitecture": "flutter"
+        },
+        {
+          "id": "linux-x64-standalone-server-tar-gz",
+          "name": "Sdkwork Rtc standalone server archive",
+          "sourceType": "BINARY_URL",
+          "packageFormat": "TAR_GZ",
+          "platform": "API",
+          "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc/STABLE/0.1.0/linux-x64-standalone-server-tar-gz-0.1.0.tar.gz",
+          "architecture": "x64",
+          "checksumAlgorithm": "SHA-256",
+          "checksum": "19886443e6b087aa66d43f44620e52ad26016e942019bdad2dad221cd8f0db9b",
+          "deploymentProfile": "standalone",
+          "runtimeTarget": "server",
+          "profileBinding": "fixed",
+          "enabled": true,
+          "metadata": {}
         }
       ],
       "metadata": {
@@ -146,15 +209,16 @@
         "version": "0.1.0",
         "releaseChannel": "STABLE",
         "title": "SDKWork RTC Mobile 0.1.0",
-        "summary": "SDKWork RTC Flutter mobile App Standard v3 manifest.",
-        "content": "Migrated sdkwork-rtc-flutter-mobile to SDKWork App Manifest Standard v3.",
+        "summary": "SDKWork RTC Mobile initialized standard release.",
+        "content": "Initial SDKWork App Standard v3 manifest for SDKWork RTC Mobile.",
         "highlights": [
-          "SDKWork App Standard v3 configuration",
-          "Deep link auth callback surfaces",
-          "Mobile distribution package"
+          "SDKWork App Standard v3 configuration initialized",
+          "platform_app projection metadata standardized",
+          "Download package matrix normalized"
         ],
         "packageIds": [
-          "android-universal-cloud-apk"
+          "android-universal-cloud-apk",
+          "linux-x64-standalone-server-tar-gz"
         ],
         "publishedAt": "2026-06-23T00:00:00Z",
         "current": true,
@@ -177,6 +241,7 @@
   },
   "metadata": {
     "standardOwner": "sdkwork-platform",
-    "initializedAt": "2026-06-23T00:00:00Z"
+    "initializedAt": "2026-06-23T00:00:00Z",
+    "deploymentConfig": "etc/sdkwork.deployment.config.json"
   }
 }

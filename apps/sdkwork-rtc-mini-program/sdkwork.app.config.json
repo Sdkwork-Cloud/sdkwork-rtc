@@ -33,11 +33,17 @@
   "runtime": {
     "family": "mini-program",
     "framework": "mp-weixin",
-    "runtimes": ["MP_WEIXIN"],
-    "deliveryModes": ["WEB_URL"],
+    "runtimes": [
+      "MP_WEIXIN"
+    ],
+    "deliveryModes": [
+      "WEB_URL"
+    ],
     "defaultPlatform": "MP_WEIXIN",
     "defaultArchitecture": "universal",
-    "supportedDeploymentProfiles": ["cloud"],
+    "supportedDeploymentProfiles": [
+      "cloud"
+    ],
     "defaultDeploymentProfile": "cloud"
   },
   "media": {
@@ -56,13 +62,61 @@
         "alphaChannel": false,
         "sortOrder": 0,
         "enabled": true,
-        "metadata": { "generatedPlaceholder": true }
+        "metadata": {
+          "generatedPlaceholder": true
+        }
       },
       "platform": [],
-      "metadata": { "generatedPlaceholder": true }
+      "metadata": {
+        "generatedPlaceholder": true
+      }
     },
-    "screenshots": [],
-    "previews": [],
+    "screenshots": [
+      {
+        "id": "sdkwork-rtc-sdkwork-rtc-mini-program-web-screenshot",
+        "type": "SCREENSHOT",
+        "purpose": "CATALOG_SCREENSHOT",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc-sdkwork-rtc-mini-program/media/web-screenshot.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "deviceClass": "BROWSER",
+        "displayType": "WEB_DESKTOP",
+        "width": 1920,
+        "height": 1080,
+        "format": "PNG",
+        "fileSizeBytes": 1048576,
+        "alphaChannel": false,
+        "caption": "SDKWork RTC Mini Program product screenshot.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork RTC Mini Program app screenshot."
+        }
+      }
+    ],
+    "previews": [
+      {
+        "id": "sdkwork-rtc-sdkwork-rtc-mini-program-catalog-preview",
+        "type": "PREVIEW_IMAGE",
+        "purpose": "CATALOG_PREVIEW",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-rtc-sdkwork-rtc-mini-program/media/preview-cover.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "width": 1600,
+        "height": 900,
+        "format": "PNG",
+        "fileSizeBytes": 786432,
+        "alphaChannel": false,
+        "caption": "SDKWork RTC Mini Program preview.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork RTC Mini Program preview cover."
+        }
+      }
+    ],
     "metadata": {
       "assetVersion": "0.1.0",
       "defaultLocale": "en-US"
@@ -70,9 +124,15 @@
   },
   "publish": {
     "status": "ACTIVE",
-    "installSkill": { "name": "sdkwork-skills-app" },
-    "platforms": ["MP_WEIXIN"],
-    "installPlatforms": ["MP_WEIXIN"],
+    "installSkill": {
+      "name": "sdkwork-skills-app"
+    },
+    "platforms": [
+      "MP_WEIXIN"
+    ],
+    "installPlatforms": [
+      "MP_WEIXIN"
+    ],
     "defaultPackageId": "mp-weixin-universal-cloud-zip",
     "storeUrl": "https://sdkwork.com/apps/sdkwork-rtc-sdkwork-rtc-mini-program",
     "stores": [],
@@ -119,7 +179,10 @@
           "checksum": "3f915ff33f915ff33f915ff33f915ff33f915ff33f915ff33f915ff33f915ff3",
           "architecture": "universal",
           "deploymentProfile": "cloud",
-          "runtimeTarget": "mini-program"
+          "runtimeTarget": "mini-program",
+          "profileBinding": "fixed",
+          "targetPlatform": "mp-weixin",
+          "clientArchitecture": "mini-program"
         }
       ],
       "metadata": {
@@ -133,20 +196,24 @@
   "release": {
     "currentVersion": "0.1.0",
     "defaultChannel": "STABLE",
-    "latest": { "STABLE": "0.1.0" },
+    "latest": {
+      "STABLE": "0.1.0"
+    },
     "notes": [
       {
         "version": "0.1.0",
         "releaseChannel": "STABLE",
         "title": "SDKWork RTC Mini Program 0.1.0",
-        "summary": "SDKWork RTC mini program App Standard v3 manifest.",
-        "content": "Migrated sdkwork-rtc-mini-program to SDKWork App Manifest Standard v3.",
+        "summary": "SDKWork RTC Mini Program initialized standard release.",
+        "content": "Initial SDKWork App Standard v3 manifest for SDKWork RTC Mini Program.",
         "highlights": [
-          "SDKWork App Standard v3 configuration",
-          "Appbase IAM callback alignment",
-          "WeChat mini program distribution package"
+          "SDKWork App Standard v3 configuration initialized",
+          "platform_app projection metadata standardized",
+          "Download package matrix normalized"
         ],
-        "packageIds": ["mp-weixin-universal-cloud-zip"],
+        "packageIds": [
+          "mp-weixin-universal-cloud-zip"
+        ],
         "publishedAt": "2026-06-23T00:00:00Z",
         "current": true,
         "forceUpdate": false,
@@ -161,7 +228,9 @@
     "sbomRequired": true
   },
   "devApp": {
-    "build": { "targets": [] },
+    "build": {
+      "targets": []
+    },
     "sourceRoot": "apps/sdkwork-rtc-mini-program"
   },
   "metadata": {

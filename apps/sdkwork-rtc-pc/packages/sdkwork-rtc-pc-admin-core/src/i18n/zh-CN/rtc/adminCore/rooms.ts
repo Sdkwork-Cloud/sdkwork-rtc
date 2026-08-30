@@ -1,0 +1,52 @@
+/**
+ * RTC admin domain copy (zh-CN) — `rooms` capability fragment.
+ *
+ * Flat `admin.rtc.*` keys shared with the Cloud Router host catalog; every
+ * key must also exist in the matching en/zh fragment (host merge enforces
+ * en/zh key parity).
+ */
+export const adminRtcRoomsZh = {
+  "admin.rtc.rooms.title": "通话房间",
+  "admin.rtc.rooms.loadMore": "加载更多房间",
+  "admin.rtc.rooms.create": "创建房间",
+  "admin.rtc.rooms.management": "房间管理",
+  "admin.rtc.rooms.exportAll": "导出全部",
+  "admin.rtc.rooms.empty": "暂无房间，请先创建第一个房间。",
+  "admin.rtc.rooms.footer": "共 {{count}} 个房间 | 已选 {{selected}} 个",
+  "admin.rtc.rooms.csv.id": "ID",
+  "admin.rtc.rooms.csv.title": "标题",
+  "admin.rtc.rooms.csv.status": "状态",
+  "admin.rtc.rooms.csv.owner": "所有者",
+  "admin.rtc.rooms.csv.createdAt": "创建时间",
+  "admin.rtc.rooms.col.title": "标题",
+  "admin.rtc.rooms.col.status": "状态",
+  "admin.rtc.rooms.col.owner": "所有者",
+  "admin.rtc.rooms.col.createdAt": "创建时间",
+  "admin.rtc.rooms.col.actions": "操作",
+  "admin.rtc.rooms.filter.search": "按标题、ID 或所有者搜索房间...",
+  "admin.rtc.rooms.filter.allStatus": "全部状态",
+  "admin.rtc.rooms.filter.allTime": "全部时间",
+  "admin.rtc.rooms.filter.today": "今天",
+  "admin.rtc.rooms.filter.thisWeek": "本周",
+  "admin.rtc.rooms.filter.thisMonth": "本月",
+  "admin.rtc.rooms.filter.owner": "所有者用户 ID",
+  "admin.rtc.rooms.filter.clear": "清除筛选",
+  "admin.rtc.rooms.filter.summary": "显示 {{filtered}} / {{total}} 个房间",
+  "admin.rtc.rooms.filter.filtered": "已筛选",
+  "admin.rtc.rooms.create.title": "创建通话房间",
+  "admin.rtc.rooms.create.titleLabel": "房间标题",
+  "admin.rtc.rooms.create.titlePlaceholder": "例如：产品评审会议",
+  "admin.rtc.rooms.create.roomIdLabel": "房间 ID（可选，留空自动生成）",
+  "admin.rtc.rooms.create.roomIdPlaceholder": "room-{uuid} 自动生成",
+  "admin.rtc.rooms.create.creating": "正在创建...",
+  "admin.rtc.rooms.create.titleRequired": "房间标题为必填项。",
+  "admin.rtc.rooms.create.failed": "创建房间失败",
+  "admin.rtc.rooms.batch.selected": "已选 {{count}} 个房间",
+  "admin.rtc.rooms.batch.clearSelection": "清除选择",
+  "admin.rtc.rooms.batch.archive": "归档（{{count}}）",
+  "admin.rtc.rooms.batch.disable": "停用（{{count}}）",
+  "admin.rtc.rooms.batch.export": "导出所选",
+  "admin.rtc.rooms.batch.activeCount": "{{count}} 个启用",
+  "admin.rtc.rooms.batch.archivedCount": "{{count}} 个已归档",
+  "admin.rtc.rooms.batch.disabledCount": "{{count}} 个已停用",
+} as const;

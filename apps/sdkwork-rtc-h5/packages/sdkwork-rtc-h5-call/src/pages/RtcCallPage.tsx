@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { RtcCallScreen, resolveRtcCallScreenPhase } from "../components/CallScreen";
 import type { RtcCallDirection, RtcCallType } from "../domain/callTypes";
 import { useRtcCallSession } from "../hooks/useRtcCallSession";
-import type { RtcCallI18nTexts } from "../i18n/dictionaries";
+import type { RtcCallI18nTexts } from "../i18n";
 import {
   RtcCallI18nProvider,
   useRtcCallI18n,

@@ -12,7 +12,7 @@ import {
   RTC_CALL_ZH_CN,
   resolveRtcCallLocale,
   type RtcCallI18nTexts,
-} from "./dictionaries";
+} from "./";
 
 export type RtcCallLocale = "zh-CN" | "en-US";
 
