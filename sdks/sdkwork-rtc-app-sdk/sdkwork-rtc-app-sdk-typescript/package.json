@@ -1,6 +1,6 @@
 {
   "name": "@sdkwork/rtc-app-sdk",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "SDKWork composed consumer facade for @sdkwork/rtc-app-sdk.",
   "type": "module",
   "private": false,
