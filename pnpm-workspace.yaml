@@ -1,4 +1,5 @@
 packages:
+  - "../sdkwork-ui/sdkwork-ui-mobile-react"
   - "apps/sdkwork-rtc-pc"
   - "apps/sdkwork-rtc-pc/packages/*"
   - "apps/sdkwork-rtc-h5"
