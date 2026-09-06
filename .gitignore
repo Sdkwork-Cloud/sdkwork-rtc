@@ -67,3 +67,6 @@ Thumbs.db
 
 # Runtime-generated env config (not tracked)
 **/public/runtime-env.json
+
+# Build artifacts
+/bin/

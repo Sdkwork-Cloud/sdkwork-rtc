@@ -221,7 +221,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.media_sessions.read",
         "x-sdkwork-auth-mode": "dual-token"
       },
       "post": {
@@ -329,7 +328,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.media_sessions.write",
         "x-sdkwork-auth-mode": "dual-token",
         "x-sdkwork-rate-limit-tier": "openApiDefault",
         "x-sdkwork-idempotent": true,
@@ -448,7 +446,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.media_sessions.read",
         "x-sdkwork-auth-mode": "dual-token"
       }
     },
@@ -555,7 +552,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.media_sessions.read",
         "x-sdkwork-auth-mode": "dual-token"
       }
     },
@@ -681,7 +677,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.media_sessions.credentials.issue",
         "x-sdkwork-auth-mode": "dual-token",
         "x-sdkwork-rate-limit-tier": "authCritical",
         "x-sdkwork-idempotent": true,
@@ -845,7 +840,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.media_artifacts.read",
         "x-sdkwork-auth-mode": "dual-token"
       }
     },
@@ -989,7 +983,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.provider_profiles.read",
         "x-sdkwork-auth-mode": "dual-token"
       }
     },
@@ -1163,7 +1156,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.rooms.read",
         "x-sdkwork-auth-mode": "dual-token"
       }
     },
@@ -1270,7 +1262,6 @@
         "x-sdkwork-request-context": "WebRequestContext",
         "x-sdkwork-api-surface": "app-api",
         "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "rtc.rooms.read",
         "x-sdkwork-auth-mode": "dual-token"
       }
     }
